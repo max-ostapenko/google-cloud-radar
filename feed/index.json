@@ -1,10 +1,281 @@
 [
   {
+    "slug": "2026-08-22-bigqueryreservation-v1",
+    "date": "2026-08-22",
+    "api": "bigqueryreservation.v1",
+    "service_name": "BigQuery Reservation",
+    "title": "CEL Conditions and Precedence for Reservation Assignments",
+    "impact": "medium",
+    "breaking": false,
+    "tags": [
+      "bigquery",
+      "reservations",
+      "cel",
+      "governance"
+    ],
+    "interesting_score": 7,
+    "generated_at": "2026-08-22T15:25:10.322572+00:00"
+  },
+  {
+    "slug": "2026-08-22-aiplatform-v1beta1",
+    "date": "2026-08-22",
+    "api": "aiplatform.v1beta1",
+    "service_name": "Vertex AI",
+    "title": "Smart Transcription, Multi-Speaker Config, and Agentic Video",
+    "impact": "medium",
+    "breaking": true,
+    "tags": [
+      "AI",
+      "Vertex AI",
+      "Generative AI",
+      "Video",
+      "Speech"
+    ],
+    "interesting_score": 8,
+    "generated_at": "2026-08-22T05:31:36.233262+00:00"
+  },
+  {
+    "slug": "2026-08-22-aiplatform-v1",
+    "date": "2026-08-22",
+    "api": "aiplatform.v1",
+    "service_name": "Vertex AI",
+    "title": "Vertex AI adds Response Management and Smart Transcription",
+    "impact": "medium",
+    "breaking": false,
+    "tags": [
+      "AI",
+      "Vertex AI",
+      "Audio",
+      "Agents"
+    ],
+    "interesting_score": 7,
+    "generated_at": "2026-08-22T05:31:36.232473+00:00"
+  },
+  {
+    "slug": "2026-08-21-dataform-v1beta1",
+    "date": "2026-08-21",
+    "api": "dataform.v1beta1",
+    "service_name": "Dataform",
+    "title": "Git branch management arrives for Dataform Workspaces",
+    "impact": "medium",
+    "breaking": false,
+    "tags": [
+      "dataform",
+      "git",
+      "workspaces",
+      "automation"
+    ],
+    "interesting_score": 7,
+    "generated_at": "2026-08-21T20:29:32.578092+00:00"
+  },
+  {
+    "slug": "2026-08-19-datacatalog-v1beta1",
+    "date": "2026-08-19",
+    "api": "datacatalog.v1beta1",
+    "service_name": "Data Catalog",
+    "title": "Data Catalog adds support for Graph Nodes and Edges",
+    "impact": "medium",
+    "breaking": false,
+    "tags": [
+      "Data Catalog",
+      "Metadata",
+      "Graph Databases"
+    ],
+    "interesting_score": 5,
+    "generated_at": "2026-08-19T15:35:04.557106+00:00"
+  },
+  {
+    "slug": "2026-08-19-datacatalog-v1",
+    "date": "2026-08-19",
+    "api": "datacatalog.v1",
+    "service_name": "Data Catalog",
+    "title": "Data Catalog adds NODE and EDGE entry types",
+    "impact": "low",
+    "breaking": false,
+    "tags": [
+      "metadata",
+      "graph",
+      "datacatalog"
+    ],
+    "interesting_score": 5,
+    "generated_at": "2026-08-19T15:35:04.556304+00:00"
+  },
+  {
+    "slug": "2026-08-14-aiplatform-v1beta1",
+    "date": "2026-08-14",
+    "api": "aiplatform.v1beta1",
+    "service_name": "Vertex AI",
+    "title": "Video Outpainting, Audio Control, and Monitoring Refinements",
+    "impact": "medium",
+    "breaking": true,
+    "tags": [
+      "AI",
+      "Vertex AI",
+      "Video Generation",
+      "Agents",
+      "Speech"
+    ],
+    "interesting_score": 7,
+    "generated_at": "2026-08-14T02:13:29.080554+00:00"
+  },
+  {
+    "slug": "2026-08-14-aiplatform-v1",
+    "date": "2026-08-14",
+    "api": "aiplatform.v1",
+    "service_name": "Vertex AI",
+    "title": "Vertex AI adds Video Outpainting and Advanced Audio Control",
+    "impact": "medium",
+    "breaking": false,
+    "tags": [
+      "AI",
+      "Vertex AI",
+      "Generative Video",
+      "Audio",
+      "Agents"
+    ],
+    "interesting_score": 7,
+    "generated_at": "2026-08-14T02:13:29.079783+00:00"
+  },
+  {
+    "slug": "2026-08-13-looker-v1",
+    "date": "2026-08-13",
+    "api": "looker.v1",
+    "service_name": "Looker",
+    "title": "Looker adds ESA migration support to ExportMetadata",
+    "impact": "low",
+    "breaking": false,
+    "tags": [
+      "looker",
+      "bigquery",
+      "migration"
+    ],
+    "interesting_score": 4,
+    "generated_at": "2026-08-13T16:01:44.681373+00:00"
+  },
+  {
+    "slug": "2026-08-09-bigqueryreservation-v1",
+    "date": "2026-08-09",
+    "api": "bigqueryreservation.v1",
+    "service_name": "BigQuery Reservation",
+    "title": "New jobType for Materialized View Refresh assignments",
+    "impact": "medium",
+    "breaking": false,
+    "tags": [
+      "bigquery",
+      "reservations",
+      "materialized-views"
+    ],
+    "interesting_score": 6,
+    "generated_at": "2026-08-09T02:00:29.167004+00:00"
+  },
+  {
+    "slug": "2026-08-07-dataplex-v1",
+    "date": "2026-08-07",
+    "api": "dataplex.v1",
+    "service_name": "Dataplex",
+    "title": "Dataplex adds ChangeRequest comments and EntryLinkType events",
+    "impact": "low",
+    "breaking": false,
+    "tags": [
+      "dataplex",
+      "governance",
+      "logging",
+      "metadata"
+    ],
+    "interesting_score": 5,
+    "generated_at": "2026-08-07T15:59:32.404344+00:00"
+  },
+  {
+    "slug": "2026-08-07-aiplatform-v1beta1",
+    "date": "2026-08-07",
+    "api": "aiplatform.v1beta1",
+    "service_name": "Vertex AI",
+    "title": "Vertex AI: Session Compaction and Transcription Refactor",
+    "impact": "medium",
+    "breaking": true,
+    "tags": [
+      "AI",
+      "Vertex AI",
+      "Agents",
+      "Generative AI",
+      "Speech"
+    ],
+    "interesting_score": 8,
+    "generated_at": "2026-08-07T20:45:49.284689+00:00"
+  },
+  {
+    "slug": "2026-08-07-aiplatform-v1",
+    "date": "2026-08-07",
+    "api": "aiplatform.v1",
+    "service_name": "Vertex AI",
+    "title": "Vertex AI adds Session Compaction and Audio API updates",
+    "impact": "medium",
+    "breaking": true,
+    "tags": [
+      "AI",
+      "Vertex AI",
+      "Reasoning Engines",
+      "Audio",
+      "Evaluation"
+    ],
+    "interesting_score": 7,
+    "generated_at": "2026-08-07T20:45:49.283934+00:00"
+  },
+  {
+    "slug": "2026-08-06-dataform-v1beta1",
+    "date": "2026-08-06",
+    "api": "dataform.v1beta1",
+    "service_name": "Dataform",
+    "title": "Support for Notebooks, SQL assets, and GCS snapshots",
+    "impact": "medium",
+    "breaking": false,
+    "tags": [
+      "dataform",
+      "notebooks",
+      "sql",
+      "gcs"
+    ],
+    "interesting_score": 7,
+    "generated_at": "2026-08-06T07:43:11.441201+00:00"
+  },
+  {
+    "slug": "2026-08-06-dataform-v1",
+    "date": "2026-08-06",
+    "api": "dataform.v1",
+    "service_name": "Dataform",
+    "title": "Dataform adds support for SQL and Notebook pipelines",
+    "impact": "medium",
+    "breaking": false,
+    "tags": [
+      "dataform",
+      "notebooks",
+      "sql",
+      "pipelines"
+    ],
+    "interesting_score": 7,
+    "generated_at": "2026-08-06T07:43:11.440454+00:00"
+  },
+  {
+    "slug": "2026-07-30-analyticshub-v1",
+    "date": "2026-07-30",
+    "api": "analyticshub.v1",
+    "service_name": "Analytics Hub",
+    "title": "Deprecation of proposer field in QueryTemplate",
+    "impact": "low",
+    "breaking": false,
+    "tags": [
+      "deprecation",
+      "analyticshub"
+    ],
+    "interesting_score": 4,
+    "generated_at": "2026-07-30T11:54:44.461137+00:00"
+  },
+  {
     "slug": "2026-07-30-aiplatform-v1beta1",
     "date": "2026-07-30",
     "api": "aiplatform.v1beta1",
     "service_name": "Vertex AI",
-    "title": "Vertex AI: Task Stores, ASR Config, and HTTP Proxying",
+    "title": "Vertex AI: Task Stores, Speech Transcription, and Model Proxies",
     "impact": "medium",
     "breaking": false,
     "tags": [
@@ -12,27 +283,27 @@
       "Vertex AI",
       "Agents",
       "Generative AI",
-      "Reasoning Engine"
+      "Speech"
     ],
     "interesting_score": 7,
-    "generated_at": "2026-07-30T07:37:20.015218+00:00"
+    "generated_at": "2026-07-30T11:54:44.460656+00:00"
   },
   {
     "slug": "2026-07-30-aiplatform-v1",
     "date": "2026-07-30",
     "api": "aiplatform.v1",
     "service_name": "Vertex AI",
-    "title": "Vertex AI adds Compact HTTP Forwarding and Serving Profile Ops",
+    "title": "Vertex AI adds Compact HTTP Forwarding and Serving Operations",
     "impact": "medium",
     "breaking": false,
     "tags": [
       "AI",
       "Vertex AI",
-      "Model Serving",
-      "Operations"
+      "Operations",
+      "HTTP Proxy"
     ],
     "interesting_score": 6,
-    "generated_at": "2026-07-30T07:37:20.014491+00:00"
+    "generated_at": "2026-07-30T11:54:44.460102+00:00"
   },
   {
     "slug": "2026-07-26-bigqueryconnection-v1",

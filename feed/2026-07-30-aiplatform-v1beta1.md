@@ -2,14 +2,14 @@
 date: 2026-07-30
 api: aiplatform.v1beta1
 service: Vertex AI
-title: "Vertex AI: Task Stores, ASR Config, and HTTP Proxying"
+title: "Vertex AI: Task Stores, Speech Transcription, and Model Proxies"
 impact: medium
 breaking: false
-tags: ["AI", "Vertex AI", "Agents", "Generative AI", "Reasoning Engine"]
+tags: ["AI", "Vertex AI", "Agents", "Generative AI", "Speech"]
 interesting_score: 7
 ---
 
-# Vertex AI: Task Stores, ASR Config, and HTTP Proxying
+# Vertex AI: Task Stores, Speech Transcription, and Model Proxies
 
 **Date:** 2026-07-30  
 **API:** `aiplatform.v1beta1`  
@@ -17,12 +17,10 @@ interesting_score: 7
 
 ## Summary
 
-Vertex AI introduces Task Stores for agent task management, adds native ASR configuration to GenAI generation, and provides a new HTTP proxy method for model responses.
+Vertex AI expands agentic capabilities with Task Stores for decoupled task management and integrated speech-to-text transcription for generative models.
 
 ## Details
 
-Reasoning Engine tasks (a2aTasks) now support a new parent resource, TaskStore, allowing tasks to be managed at `projects/{project}/locations/{location}/taskStores/{task_store}/a2aTasks/{a2a_task}`. The GenaiVertexV1beta1GenerationConfig schema now includes a transcriptionConfig field, enabling developers to toggle Automatic Speech Recognition (ASR) directly within the generation configuration. 
+The Reasoning Engine's A2A (Agent-to-Agent) task framework has been significantly updated; tasks can now be managed via a new `taskStores` resource path, decoupling task persistence from the execution engine. For Generative AI workflows, a new `transcriptionConfig` in `GenaiVertexV1beta1GenerationConfig` enables integrated speech recognition (ASR). Additionally, the API introduces `publishers.v1.responses.compact`, a method for forwarding arbitrary HTTP requests to deployed models, supporting both streaming and non-streaming use cases. Agent monitoring has also been broadened, with `AgentResource` now supporting runtimes on Cloud Run, GKE, and GCE. Finally, a new `QUEUED` status has been added to interactions to represent tasks waiting for off-peak capacity.
 
-Additionally, a new publishers.v1.responses.compact method has been added to forward arbitrary HTTP requests to deployed models, supporting both streaming and non-streaming use cases. Other updates include a new 'QUEUED' status for interactions, a 'view' parameter for a2aTasks.get to filter between basic headers and full materialized state, and an exrColorSpaceOverride for video generation experiments.
-
-**Tags:** `AI` `Vertex AI` `Agents` `Generative AI` `Reasoning Engine`
+**Tags:** `AI` `Vertex AI` `Agents` `Generative AI` `Speech`

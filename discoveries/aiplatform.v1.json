@@ -7398,7 +7398,7 @@
                   ]
                 },
                 "list": {
-                  "description": "Lists agents in a location.",
+                  "description": "Lists the agents in a location that belong to the caller. An agent belongs to the end user recorded as its owner when it was created, so the response holds that caller's agents and no others. It is empty for a caller that is not an end user, and an agent with no recorded owner is listed for nobody.",
                   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/agents",
                   "httpMethod": "GET",
                   "id": "aiplatform.projects.locations.agents.list",
@@ -11485,6 +11485,62 @@
                       },
                       "scopes": [
                         "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    }
+                  }
+                },
+                "responses": {
+                  "methods": {
+                    "delete": {
+                      "description": "Deletes the response from the endpoint.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/endpoints/{endpointsId}/responses/{responsesId}",
+                      "httpMethod": "DELETE",
+                      "id": "aiplatform.projects.locations.endpoints.responses.delete",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the Response resource to be deleted. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}/responses/{response}`",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/endpoints/[^/]+/responses/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "response": {
+                        "$ref": "GoogleApiHttpBody"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform",
+                        "https://www.googleapis.com/auth/cloud-platform.read-only"
+                      ]
+                    },
+                    "get": {
+                      "description": "Gets the response from the endpoint.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/endpoints/{endpointsId}/responses/{responsesId}",
+                      "httpMethod": "GET",
+                      "id": "aiplatform.projects.locations.endpoints.responses.get",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the Response resource. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}/responses/{response}`",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/endpoints/[^/]+/responses/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "response": {
+                        "$ref": "GoogleApiHttpBody"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform",
+                        "https://www.googleapis.com/auth/cloud-platform.read-only"
                       ]
                     }
                   }
@@ -23496,6 +23552,58 @@
                             "https://www.googleapis.com/auth/cloud-platform",
                             "https://www.googleapis.com/auth/cloud-platform.read-only"
                           ]
+                        },
+                        "delete": {
+                          "description": "Deletes the response from the endpoint.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/publishers/{publishersId}/v1/responses/{responsesId}",
+                          "httpMethod": "DELETE",
+                          "id": "aiplatform.projects.locations.publishers.v1.responses.delete",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "Required. The name of the Response resource to be deleted. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}/responses/{response}`",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/publishers/[^/]+/v1/responses/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}",
+                          "response": {
+                            "$ref": "GoogleApiHttpBody"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform",
+                            "https://www.googleapis.com/auth/cloud-platform.read-only"
+                          ]
+                        },
+                        "get": {
+                          "description": "Gets the response from the endpoint.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/publishers/{publishersId}/v1/responses/{responsesId}",
+                          "httpMethod": "GET",
+                          "id": "aiplatform.projects.locations.publishers.v1.responses.get",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "Required. The name of the Response resource. Format: `projects/{project}/locations/{location}/endpoints/{endpoint}/responses/{response}`",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/publishers/[^/]+/v1/responses/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}",
+                          "response": {
+                            "$ref": "GoogleApiHttpBody"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform",
+                            "https://www.googleapis.com/auth/cloud-platform.read-only"
+                          ]
                         }
                       }
                     }
@@ -26210,6 +26318,34 @@
                       },
                       "response": {
                         "$ref": "GoogleCloudAiplatformV1AppendEventResponse"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "compact": {
+                      "description": "Compacts the event history of a given Session, which may run an LLM summarization call and rewrite the full event history. Compaction is a storage-side rewrite that can apply a stackable pipeline of rules (event-horizon preservation, tool-response truncation, thought stripping, and LLM summarization etc.)",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sessions/{sessionsId}:compact",
+                      "httpMethod": "POST",
+                      "id": "aiplatform.projects.locations.reasoningEngines.sessions.compact",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The resource name of the session to compact. Format: `projects/{project}/locations/{location}/reasoningEngines/{reasoning_engine}/sessions/{session}`",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/reasoningEngines/[^/]+/sessions/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}:compact",
+                      "request": {
+                        "$ref": "GoogleCloudAiplatformV1CompactSessionRequest"
+                      },
+                      "response": {
+                        "$ref": "GoogleLongrunningOperation"
                       },
                       "scopes": [
                         "https://www.googleapis.com/auth/cloud-platform"
@@ -35461,7 +35597,7 @@
       }
     }
   },
-  "revision": "20260725",
+  "revision": "20260815",
   "rootUrl": "https://aiplatform.googleapis.com/",
   "schemas": {
     "CloudAiLargeModelsVisionGenerateVideoExperiments": {
@@ -35471,6 +35607,10 @@
         "anchorLastFrame": {
           "description": "Optional. If true, anchors the last frame in video generation by generating a custom border mask.",
           "type": "boolean"
+        },
+        "audioControl": {
+          "$ref": "CloudAiLargeModelsVisionGenerateVideoExperimentsAudioControlConfig",
+          "description": "Optional. Audio control configuration."
         },
         "cfgScale": {
           "description": "CFG scale for video-transform, perf-generation, a2v, video-textures models.",
@@ -35537,6 +35677,10 @@
           "description": "The original REST API request JSON sent by the user, in the instances/parameters format. Preserved for saving alongside output artifacts so users can reproduce their requests. This field is populated by the API handler and is not user-settable.",
           "type": "string"
         },
+        "outpaintConfig": {
+          "$ref": "CloudAiLargeModelsVisionGenerateVideoExperimentsOutpaintConfig",
+          "description": "Config for Outpainting task."
+        },
         "promptInputs": {
           "$ref": "CloudAiLargeModelsVisionPromptInputs",
           "description": "Prompt chunks for \"ProModel\" prompting. If set, the prompt will not be rewritten, and top-level prompt ignored."
@@ -35561,14 +35705,35 @@
           "description": "If true (default), truncate input videos that exceed the model's maximum frame count by applying a frame_selection_config to __video_file__ inputs. Set to false to preserve the existing fail-fast behavior.",
           "type": "boolean"
         },
+        "videoTransform": {
+          "$ref": "CloudAiLargeModelsVisionGenerateVideoExperimentsVideoTransform",
+          "description": "Video transform configuration for omni editing models."
+        },
         "videoTransformMaskGcsUri": {
+          "deprecated": true,
           "description": "GCS URI of the grayscale video mask for Differential Diffusion. Maps to sdedit_video_tmax_scale_map ",
           "type": "string"
         },
         "videoTransformStrength": {
+          "deprecated": true,
           "description": "SDEdit: Scalar noise level (0.0 to 1.0) Maps to sdedit_tmax ",
           "format": "float",
           "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "CloudAiLargeModelsVisionGenerateVideoExperimentsAudioControlConfig": {
+      "description": "Configuration for audio control.",
+      "id": "CloudAiLargeModelsVisionGenerateVideoExperimentsAudioControlConfig",
+      "properties": {
+        "targetAudio": {
+          "$ref": "CloudAiLargeModelsVisionGenerateVideoRequestAudio",
+          "description": "Optional. Audio file to use as the target audio input to Omni. Only used when `use_target_audio_from_video` is false. Cannot be set simultaneously with `use_target_audio_from_video = true`."
+        },
+        "useTargetAudioFromVideo": {
+          "description": "Optional. When true, uses the audio track from the input video as the target audio instead of regenerating it. Mutually exclusive with `target_audio` below. Requires the input to be a video file, not an image sequence.",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -35616,6 +35781,56 @@
       },
       "type": "object"
     },
+    "CloudAiLargeModelsVisionGenerateVideoExperimentsOutpaintConfig": {
+      "description": "Config for Outpainting task.",
+      "id": "CloudAiLargeModelsVisionGenerateVideoExperimentsOutpaintConfig",
+      "properties": {
+        "inputFrames": {
+          "description": "The input frames for outpainting. Required.",
+          "items": {
+            "$ref": "CloudAiLargeModelsVisionGenerateVideoExperimentsOutpaintConfigFrameSource"
+          },
+          "type": "array"
+        },
+        "outputSpec": {
+          "description": "The output specification (defines target resolution and frame count). Required.",
+          "enum": [
+            "OUTPUT_SPEC_UNSPECIFIED",
+            "OUTPUT_SPEC_1920X1072x72",
+            "OUTPUT_SPEC_1280X720x192",
+            "OUTPUT_SPEC_960X544x432"
+          ],
+          "enumDescriptions": [
+            "",
+            "High spec: 1920x1072 resolution, 72 total frames.",
+            "Medium spec: 1280x720 resolution, 192 total frames.",
+            "Low spec: 960x544 resolution, 432 total frames."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "CloudAiLargeModelsVisionGenerateVideoExperimentsOutpaintConfigFrameSource": {
+      "description": "The input frame(s). It can be a full path or a glob pattern to images. The proto can be extended in the future for alternative ways to specify source of frames.",
+      "id": "CloudAiLargeModelsVisionGenerateVideoExperimentsOutpaintConfigFrameSource",
+      "properties": {
+        "globPattern": {
+          "type": "string"
+        },
+        "horizontalOffset": {
+          "description": "Horizontal offset in pixels to shift the input frame from center. Positive values shift right, negative values shift left. Optional. Default is 0 (centered).",
+          "format": "int32",
+          "type": "integer"
+        },
+        "verticalOffset": {
+          "description": "Vertical offset in pixels to shift the input frame from center. Positive values shift down, negative values shift up. Optional. Default is 0 (centered).",
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
     "CloudAiLargeModelsVisionGenerateVideoExperimentsSpatialAlignmentConfig": {
       "description": "Configuration for spatial alignment.",
       "id": "CloudAiLargeModelsVisionGenerateVideoExperimentsSpatialAlignmentConfig",
@@ -35638,6 +35853,47 @@
       },
       "type": "object"
     },
+    "CloudAiLargeModelsVisionGenerateVideoExperimentsVideoTransform": {
+      "id": "CloudAiLargeModelsVisionGenerateVideoExperimentsVideoTransform",
+      "properties": {
+        "initializationVideo": {
+          "$ref": "CloudAiLargeModelsVisionGenerateVideoRequestVideo",
+          "description": "Optional. Input for video transform (sdedit, diffdiff). Note the input video from the main GenerateVideoRequest will be used as the conditioning."
+        },
+        "mask": {
+          "$ref": "CloudAiLargeModelsVisionGenerateVideoRequestVideo",
+          "description": "Optional. Mask for video transform (diffdiff)."
+        },
+        "noiseStrength": {
+          "description": "Optional. Noise strength for video transform.",
+          "format": "float",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "CloudAiLargeModelsVisionGenerateVideoRequestAudio": {
+      "description": "The raw bytes or Cloud Storage URI for an audio input.",
+      "id": "CloudAiLargeModelsVisionGenerateVideoRequestAudio",
+      "properties": {
+        "blobId": {
+          "description": "Blob ID of the audio. This is used for storing the large audio in the request.",
+          "type": "string"
+        },
+        "bytesBase64Encoded": {
+          "description": "Base64 encoded bytes string representing the audio.",
+          "type": "string"
+        },
+        "gcsUri": {
+          "type": "string"
+        },
+        "mimeType": {
+          "description": "The MIME type of the content of the audio. Only audio in below listed MIME types are supported. - audio/wav - audio/mp3 - audio/mpeg",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "CloudAiLargeModelsVisionGenerateVideoRequestImage": {
       "description": "The image bytes or Cloud Storage URI to make the prediction on.",
       "id": "CloudAiLargeModelsVisionGenerateVideoRequestImage",
@@ -35655,6 +35911,27 @@
         },
         "mimeType": {
           "description": "The MIME type of the content of the image. Only the images in below listed MIME types are supported. - image/jpeg - image/png",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "CloudAiLargeModelsVisionGenerateVideoRequestVideo": {
+      "id": "CloudAiLargeModelsVisionGenerateVideoRequestVideo",
+      "properties": {
+        "blobId": {
+          "description": "Blob ID of the video. This is used for storing large videos in the request.",
+          "type": "string"
+        },
+        "bytesBase64Encoded": {
+          "description": "Base64 encoded bytes string representing the video.",
+          "type": "string"
+        },
+        "gcsUri": {
+          "type": "string"
+        },
+        "mimeType": {
+          "description": "The MIME type of the content of the video. Only the video in the below listed MIME types are supported. - video/mp4",
           "type": "string"
         }
       },
@@ -36295,7 +36572,7 @@
       "id": "GoogleCloudAiplatformV1Agent",
       "properties": {
         "base_agent": {
-          "description": "Required. The base agent for the agent. Supported values: * `antigravity-preview-05-2026`",
+          "description": "Required. Immutable. The base agent for the agent. Supported values: * `antigravity-preview-05-2026` Immutable: `UpdateAgent` rejects a change, including clearing it. The kind of agent this is gets derived from this field when the agent is created and is recorded then; nothing recomputes it afterwards, so a later change would leave the agent described as one kind and behaving as another. Create a new agent instead.",
           "type": "string"
         },
         "base_environment": {
@@ -36942,11 +37219,11 @@
       "type": "object"
     },
     "GoogleCloudAiplatformV1AudioTranscription": {
-      "description": "The transcription of an audio part. For multi-speaker audio, each speaker segment is a separate Part with its own AudioTranscription carrying the speaker_label.",
+      "description": "The transcription of an audio part. For multi-speaker audio, each speaker segment is a separate `Part` with its own `AudioTranscription` carrying the `speaker_label`.",
       "id": "GoogleCloudAiplatformV1AudioTranscription",
       "properties": {
         "speakerLabel": {
-          "description": "Optional. A label identifying the speaker of this audio segment (e.g. \"spk_1\", \"spk_2\"). Present when diarization is set.",
+          "description": "Optional. A label identifying the speaker of this audio segment (e.g. `spk_1`, `spk_2`). Present when `diarization` is set.",
           "type": "string"
         },
         "text": {
@@ -36954,7 +37231,7 @@
           "type": "string"
         },
         "words": {
-          "description": "Optional. Detailed word-level transcriptions and timing details. Present when word_timestamp is set.",
+          "description": "Optional. Detailed word-level transcriptions and timing details. Present when `word_timestamp` is set.",
           "items": {
             "$ref": "GoogleCloudAiplatformV1AudioTranscriptionWordInfo"
           },
@@ -36969,7 +37246,7 @@
       "properties": {
         "adaptationPhrases": {
           "deprecated": true,
-          "description": "Optional. A list of phrases to bias the ASR model towards.",
+          "description": "Optional. Deprecated: Use `custom_vocabulary` instead. A list of phrases to bias the speech recognition model towards.",
           "items": {
             "type": "string"
           },
@@ -36988,11 +37265,34 @@
         },
         "languageAuto": {
           "$ref": "GoogleCloudAiplatformV1AudioTranscriptionConfigLanguageAuto",
-          "description": "Optional. The model will detect the language automatically."
+          "deprecated": true,
+          "description": "Optional. Deprecated: Use top-level `language_codes` instead. The model will detect the language automatically."
+        },
+        "languageCodes": {
+          "description": "Optional. BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "languageHints": {
           "$ref": "GoogleCloudAiplatformV1AudioTranscriptionConfigLanguageHints",
-          "description": "Optional. Specifies one or more languages in the audio."
+          "deprecated": true,
+          "description": "Optional. Deprecated: Use top-level `language_codes` instead. Specifies one or more languages in the audio."
+        },
+        "mode": {
+          "description": "Optional. Configures transcription mode. Supported values: `VERBATIM`, `SMART`. If unspecified, defaults to `VERBATIM` transcription. In `SMART` mode, the model performs disfluency removal (eliminating filler words, repetitions, and false starts), light grammatical cleanup, automatic formatting (paragraphs, bullet points, numbered lists), and minor user edits (inline self-corrections). Timestamps and diarization are incompatible with mode `SMART`.",
+          "enum": [
+            "MODE_UNSPECIFIED",
+            "VERBATIM",
+            "SMART"
+          ],
+          "enumDescriptions": [
+            "Unspecified transcription mode.",
+            "Verbatim transcription mode.",
+            "Smart transcription mode."
+          ],
+          "type": "string"
         },
         "wordTimestamp": {
           "description": "Optional. Configures word-level timestamp generation.",
@@ -37002,17 +37302,20 @@
       "type": "object"
     },
     "GoogleCloudAiplatformV1AudioTranscriptionConfigLanguageAuto": {
-      "description": "Indicates the language of the audio should be automatically detected.",
+      "deprecated": true,
+      "description": "Deprecated: Use top-level `language_codes` instead. Indicates the language of the audio should be automatically detected.",
       "id": "GoogleCloudAiplatformV1AudioTranscriptionConfigLanguageAuto",
       "properties": {},
       "type": "object"
     },
     "GoogleCloudAiplatformV1AudioTranscriptionConfigLanguageHints": {
-      "description": "Provides hints to the model about possible languages present in the audio.",
+      "deprecated": true,
+      "description": "Deprecated: Use top-level `language_codes` instead. Provides hints to the model about possible languages present in the audio.",
       "id": "GoogleCloudAiplatformV1AudioTranscriptionConfigLanguageHints",
       "properties": {
         "languageCodes": {
-          "description": "Required. BCP-47 language codes. At least one must be specified.",
+          "deprecated": true,
+          "description": "Required. Deprecated: Use top-level `language_codes` instead. BCP-47 language codes. At least one must be specified.",
           "items": {
             "type": "string"
           },
@@ -38908,6 +39211,70 @@
           "enumDescriptions": [
             "Comet version unspecified.",
             "Comet 22 for translation + source + reference (source-reference-combined)."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "GoogleCloudAiplatformV1CompactSessionRequest": {
+      "description": "Request message for SessionService.CompactSession.",
+      "id": "GoogleCloudAiplatformV1CompactSessionRequest",
+      "properties": {
+        "compaction": {
+          "$ref": "GoogleCloudAiplatformV1CompactionConfig",
+          "description": "Required. The compaction configuration to apply. At least one compaction category (summarization or event editing) must be enabled within it."
+        }
+      },
+      "type": "object"
+    },
+    "GoogleCloudAiplatformV1CompactionConfig": {
+      "description": "Configuration for session compaction. Compaction has two independent categories that may be enabled individually or together. When both are enabled they run as a stackable pipeline (deterministic event editing first, then summarization if the session is still above the target). At least one category must be enabled; a config with neither is rejected (enforced server-side). This message is standalone so it can be reused across surfaces (e.g. on the compact request today, and on session creation for a future reactive trigger).",
+      "id": "GoogleCloudAiplatformV1CompactionConfig",
+      "properties": {
+        "eventEditing": {
+          "$ref": "GoogleCloudAiplatformV1CompactionConfigEventEditingConfig",
+          "description": "Optional. Event-history editing compaction configuration. Set to enable deterministic event editing (e.g. masking oversized tool responses). Can be combined with `summarization`."
+        },
+        "summarization": {
+          "$ref": "GoogleCloudAiplatformV1CompactionConfigLlmSummarizationConfig",
+          "description": "Optional. LLM summarization compaction configuration. Set to enable summarization-based compaction. Can be combined with `event_editing`."
+        }
+      },
+      "type": "object"
+    },
+    "GoogleCloudAiplatformV1CompactionConfigEventEditingConfig": {
+      "description": "Configuration for event-history editing-based compaction. When set, the event history is rewritten in place using deterministic rules (e.g. truncating/masking oversized tool responses, stripping model thoughts).",
+      "id": "GoogleCloudAiplatformV1CompactionConfigEventEditingConfig",
+      "properties": {
+        "mode": {
+          "description": "Required. The event-editing mode. Only `AUTO` is supported for MVP.",
+          "enum": [
+            "MODE_UNSPECIFIED",
+            "AUTO"
+          ],
+          "enumDescriptions": [
+            "Unspecified. Requests must set an explicit mode.",
+            "Platform-managed editing with server-side defaults (e.g. 5KB tool-response truncation threshold)."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "GoogleCloudAiplatformV1CompactionConfigLlmSummarizationConfig": {
+      "description": "Configuration for LLM summarization-based compaction. When set, the session context is summarized with an LLM once it exceeds the summarizer target threshold.",
+      "id": "GoogleCloudAiplatformV1CompactionConfigLlmSummarizationConfig",
+      "properties": {
+        "mode": {
+          "description": "Required. The summarization mode. Only `AUTO` is supported for MVP.",
+          "enum": [
+            "MODE_UNSPECIFIED",
+            "AUTO"
+          ],
+          "enumDescriptions": [
+            "Unspecified. Requests must set an explicit mode.",
+            "Platform-managed summarization with server-side defaults."
           ],
           "type": "string"
         }
@@ -42412,6 +42779,10 @@
           "deprecated": true,
           "description": "Optional. Deprecated: Use `agent_eval_data` instead. Data used for agent evaluation."
         },
+        "interactionsDataSource": {
+          "$ref": "GoogleCloudAiplatformV1EvaluationInstanceInteractionsDataSource",
+          "description": "Optional. Source for populating `AgentData` from an Interactions API interaction. If set, no other agent data source fields (`cloud_trace_agent_data_source`, `agent_eval_data`, `agent_data`) may be set. The request will be rejected with INVALID_ARGUMENT if multiple agent data sources are provided."
+        },
         "otherData": {
           "$ref": "GoogleCloudAiplatformV1EvaluationInstanceMapInstance",
           "description": "Optional. Other data used to populate placeholders based on their key. If a key conflicts with a field in the EvaluationInstance (e.g. `prompt`), the value of the field will take precedence over the value in other_data."
@@ -42648,6 +43019,21 @@
             "$ref": "GoogleCloudAiplatformV1Content"
           },
           "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "GoogleCloudAiplatformV1EvaluationInstanceInteractionsDataSource": {
+      "description": "Source for populating `AgentData` from an Interactions API interaction.",
+      "id": "GoogleCloudAiplatformV1EvaluationInstanceInteractionsDataSource",
+      "properties": {
+        "geminiAgentConfig": {
+          "$ref": "GoogleCloudAiplatformV1GeminiAgentConfig",
+          "description": "Optional. Gemini Agent (Vertex AI Agent resource)."
+        },
+        "interaction": {
+          "description": "Required. The interaction to evaluate. Format: `projects/{project}/locations/{location}/interactions/{interaction}`.",
+          "type": "string"
         }
       },
       "type": "object"
@@ -42979,6 +43365,10 @@
           "description": "Required. The display name of the Evaluation Run.",
           "type": "string"
         },
+        "encryptionSpec": {
+          "$ref": "GoogleCloudAiplatformV1EncryptionSpec",
+          "description": "Optional. Customer-managed encryption key spec for this EvaluationRun. If set, this EvaluationRun will be secured by this key."
+        },
         "error": {
           "$ref": "GoogleRpcStatus",
           "description": "Output only. Only populated when the evaluation run's state is FAILED or CANCELLED.",
@@ -43208,6 +43598,10 @@
         "agentEngine": {
           "description": "Optional. The resource name of the Agent Engine. Format: projects/{project}/locations/{location}/reasoningEngines/{reasoning_engine} For example: projects/123/locations/us-central1/reasoningEngines/456",
           "type": "string"
+        },
+        "geminiAgentConfig": {
+          "$ref": "GoogleCloudAiplatformV1GeminiAgentConfig",
+          "description": "Optional. Config for scraping a Gemini Agent via the Interactions API. The scraping service creates interactions against the agent and returns the resulting interaction traces for evaluation."
         },
         "sessionInput": {
           "$ref": "GoogleCloudAiplatformV1EvaluationRunInferenceConfigSessionInput",
@@ -46712,7 +47106,7 @@
       "id": "GoogleCloudAiplatformV1GatewayConfig",
       "properties": {
         "allowedProjects": {
-          "description": "Optional. Additional consumer projects permitted to attach their own PSC endpoint to this gateway's ServiceAttachment. This is the \"decoupled\" mode, where the customer creates the PSC endpoint in a project other than this gateway's `network` project. Each listed project is VPC-SC enforced: it must be within the caller's service perimeter. The owning SemanticGovernancePolicyEngine's own project is always permitted implicitly and need not be listed. Format: project ID or number.",
+          "description": "Optional. Additional consumer projects permitted to attach their own PSC endpoint to this gateway's ServiceAttachment. This is the \"decoupled\" mode, where the customer creates the PSC endpoint in a project other than this gateway's `network` project. Each listed project is VPC-SC enforced: it must be within the caller's service perimeter. The owning SemanticGovernancePolicyEngine's own project is always permitted implicitly and need not be listed. Format: `projects/{project}` (ID or number).",
           "items": {
             "type": "string"
           },
@@ -46724,7 +47118,7 @@
           "type": "string"
         },
         "dnsZoneName": {
-          "description": "Optional. FQDN of the private DNS zone to create DNS record set for PSC endpoint.",
+          "description": "Optional. Name of the private Cloud DNS managed zone in which to create the gateway's A-record. This is the managed zone's own name, not its DNS name: for a zone serving `example.internal.`, this field takes the zone name, such as `my-private-zone`. The zone's DNS name is combined with a generated per-gateway label to form the record's fully qualified name, which must stay within the 255-octet DNS limit. If the full name is too long, gateway provisioning fails when it attempts to create the DNS record.",
           "type": "string"
         },
         "ipAddress": {
@@ -46800,6 +47194,17 @@
       "properties": {
         "zone": {
           "description": "GDC zone. A cluster will be designated for the Vertex AI workload in this zone.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "GoogleCloudAiplatformV1GeminiAgentConfig": {
+      "description": "Config for scraping a Gemini Agent (a Vertex AI Agent resource scraped via the Vertex Interactions API).",
+      "id": "GoogleCloudAiplatformV1GeminiAgentConfig",
+      "properties": {
+        "geminiAgent": {
+          "description": "Required. The resource name of the Gemini Agent. Format: `projects/{project}/locations/{location}/agents/{agent}`. For example: `projects/123/locations/us-central1/agents/my-agent`.",
           "type": "string"
         }
       },
@@ -47080,6 +47485,7 @@
             "ON_DEMAND",
             "ON_DEMAND_PRIORITY",
             "ON_DEMAND_FLEX",
+            "ON_DEMAND_OFFPEAK",
             "PROVISIONED_THROUGHPUT"
           ],
           "enumDescriptions": [
@@ -47087,6 +47493,7 @@
             "The request was processed using Pay-As-You-Go quota.",
             "Type for Priority Pay-As-You-Go traffic.",
             "Type for Flex traffic.",
+            "Type for Off-Peak Pay-As-You-Go traffic.",
             "Type for Provisioned Throughput traffic."
           ],
           "readOnly": true,
@@ -47420,6 +47827,10 @@
           "description": "Optional. Allows the scenario generation to use cross region models. When this flag is set, the service may route traffic to other regions if a model is unavailable in the current region (e.g., to a `global` endpoint). If a fully-qualified model endpoint resource name with a different region than the request location is provided elsewhere in the request, this flag must be set to true or the request will fail.",
           "type": "boolean"
         },
+        "geminiAgentConfig": {
+          "$ref": "GoogleCloudAiplatformV1GeminiAgentConfig",
+          "description": "Optional. Config for a Gemini Agent to generate user scenarios for."
+        },
         "rootAgentId": {
           "description": "Optional. The agent id to identify the root agent. Required unless `gemini_agent_config` is set, in which case it is derived from the referenced Gemini Agent.",
           "type": "string"
@@ -47508,7 +47919,7 @@
         },
         "audioTranscriptionConfig": {
           "$ref": "GoogleCloudAiplatformV1AudioTranscriptionConfig",
-          "description": "Optional. Config for audio transcription (speech recognition)."
+          "description": "Optional. Configuration for audio transcription (speech recognition)."
         },
         "candidateCount": {
           "description": "Optional. The number of candidate responses to generate. A higher `candidate_count` can provide more options to choose from, but it also consumes more resources. This can be useful for generating a variety of responses and selecting the best one.",
@@ -48612,6 +49023,10 @@
         "inlineSource": {
           "$ref": "GoogleCloudAiplatformV1ImportEvaluationSetRequestInlineSource",
           "description": "Inline source for small payloads (< 4MB)."
+        },
+        "interactionsSource": {
+          "$ref": "GoogleCloudAiplatformV1ImportEvaluationSetRequestInteractionsSource",
+          "description": "Optional. Source for importing Interactions API interactions."
         }
       },
       "type": "object"
@@ -48721,6 +49136,24 @@
         "importSchemaConfig": {
           "$ref": "GoogleCloudAiplatformV1ImportEvaluationSetRequestImportSchemaConfig",
           "description": "Required. Schema configuration for the inline data."
+        }
+      },
+      "type": "object"
+    },
+    "GoogleCloudAiplatformV1ImportEvaluationSetRequestInteractionsSource": {
+      "description": "Source for importing interactions from the Interactions API into an EvaluationSet. The agent identity is specified once, with a list of interaction IDs to import.",
+      "id": "GoogleCloudAiplatformV1ImportEvaluationSetRequestInteractionsSource",
+      "properties": {
+        "geminiAgentConfig": {
+          "$ref": "GoogleCloudAiplatformV1GeminiAgentConfig",
+          "description": "Optional. Gemini Agent (Vertex AI Agent resource)."
+        },
+        "interactions": {
+          "description": "Required. The interactions to import. Format: `projects/{project}/locations/{location}/interactions/{interaction}`.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "type": "object"
@@ -55047,6 +55480,10 @@
           "$ref": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilityOpenTelemetry",
           "description": "Data source follows OpenTelemetry convention."
         },
+        "sessionScope": {
+          "$ref": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilitySessionScope",
+          "description": "Scope online evaluation to OTel sessions (i.e. group of traces with the same conversation ID)."
+        },
         "traceScope": {
           "$ref": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilityTraceScope",
           "description": "Scope online evaluation to single traces."
@@ -55099,6 +55536,71 @@
         "semconvVersion": {
           "description": "Required. Defines which version OTel Semantic Convention the data follows. Can be \"1.39.0\" or newer.",
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilitySessionScope": {
+      "description": "If chosen, the online evaluator will evaluate sessions matching specified `filter`. A session is a group of traces with a common `gen_ai.conversation.id`.",
+      "id": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilitySessionScope",
+      "properties": {
+        "filter": {
+          "description": "Optional. A list of predicates to filter sessions. Multiple predicates are combined using AND. The maximum number of predicates is 10.",
+          "items": {
+            "$ref": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilitySessionScopePredicate"
+          },
+          "type": "array"
+        },
+        "inactivityTrigger": {
+          "$ref": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilitySessionScopeInactivityTrigger",
+          "description": "Session is considered ready for evaluation when there are no new traces for a specified period of inactivity."
+        }
+      },
+      "type": "object"
+    },
+    "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilitySessionScopeInactivityTrigger": {
+      "description": "Configuration for inactivity based session completion.",
+      "id": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilitySessionScopeInactivityTrigger",
+      "properties": {
+        "threshold": {
+          "description": "Required. The amount of time that must pass with no new traces before a session is considered ready for evaluation. This is a required field if InactivityTrigger is used. The value must be a positive duration no greater than 7 days (604800 seconds).",
+          "format": "google-duration",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilitySessionScopePredicate": {
+      "description": "Defines a single filter predicate.",
+      "id": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilitySessionScopePredicate",
+      "properties": {
+        "duration": {
+          "$ref": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilityNumericPredicate",
+          "description": "Filter on the duration of a session (in seconds)."
+        },
+        "modelCallErrors": {
+          "$ref": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilityNumericPredicate",
+          "description": "Filter on the number of LLM call errors within a session."
+        },
+        "modelCalls": {
+          "$ref": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilityNumericPredicate",
+          "description": "Filter on the number of underlying LLM calls within a session."
+        },
+        "toolCallErrors": {
+          "$ref": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilityNumericPredicate",
+          "description": "Filter on the number of tool call errors within a session."
+        },
+        "toolCalls": {
+          "$ref": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilityNumericPredicate",
+          "description": "Filter on the number of underlying tool calls within a session."
+        },
+        "totalTokenUsage": {
+          "$ref": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilityNumericPredicate",
+          "description": "Filter on the total token usage within a session."
+        },
+        "userTurns": {
+          "$ref": "GoogleCloudAiplatformV1OnlineEvaluatorCloudObservabilityNumericPredicate",
+          "description": "Filter on the number of user turns within a session."
         }
       },
       "type": "object"
@@ -55556,7 +56058,7 @@
       "properties": {
         "audioTranscription": {
           "$ref": "GoogleCloudAiplatformV1AudioTranscription",
-          "description": "Optional. Audio (input or output) transcription. This is only set when this Part contains audio data."
+          "description": "Optional. Audio (input or output) transcription. This is only set when this `Part` contains audio data."
         },
         "codeExecutionResult": {
           "$ref": "GoogleCloudAiplatformV1CodeExecutionResult",
@@ -57606,7 +58108,7 @@
       "type": "object"
     },
     "GoogleCloudAiplatformV1QueryReasoningEngineRequest": {
-      "description": "Request message for ReasoningEngineExecutionService.Query.",
+      "description": "Request message for ReasoningEngineExecutionService.QueryReasoningEngine.",
       "id": "GoogleCloudAiplatformV1QueryReasoningEngineRequest",
       "properties": {
         "classMethod": {
@@ -57625,7 +58127,7 @@
       "type": "object"
     },
     "GoogleCloudAiplatformV1QueryReasoningEngineResponse": {
-      "description": "Response message for ReasoningEngineExecutionService.Query",
+      "description": "Response message for ReasoningEngineExecutionService.QueryReasoningEngine.",
       "id": "GoogleCloudAiplatformV1QueryReasoningEngineResponse",
       "properties": {
         "output": {
@@ -57951,6 +58453,14 @@
       "description": "A RagChunk includes the content of a chunk of a RagFile, and associated metadata.",
       "id": "GoogleCloudAiplatformV1RagChunk",
       "properties": {
+        "chunkId": {
+          "description": "The ID of the chunk.",
+          "type": "string"
+        },
+        "fileId": {
+          "description": "The ID of the file that the chunk belongs to.",
+          "type": "string"
+        },
         "pageSpan": {
           "$ref": "GoogleCloudAiplatformV1RagChunkPageSpan",
           "description": "If populated, represents where the chunk starts and ends in the document."
@@ -58569,6 +59079,23 @@
       },
       "type": "object"
     },
+    "GoogleCloudAiplatformV1RayClusterAutoscalingSpec": {
+      "description": "Ray cluster level autoscaling configuration.",
+      "id": "GoogleCloudAiplatformV1RayClusterAutoscalingSpec",
+      "properties": {
+        "idleTimeoutMinutes": {
+          "description": "Optional. The number of minutes that need to pass before an idle worker node is removed by the autoscaler. Default is 5 mins.",
+          "format": "int64",
+          "type": "string"
+        },
+        "upscalingSpeed": {
+          "description": "Optional. The number of nodes allowed to be pending as a multiple of the current number of nodes. [OSS Ray reference](https://docs.ray.io/en/latest/cluster/vms/user-guides/configuring-autoscaling.html#upscaling-and-downscaling-speed)",
+          "format": "int64",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "GoogleCloudAiplatformV1RayLogsSpec": {
       "description": "Configuration for the Ray OSS Logs.",
       "id": "GoogleCloudAiplatformV1RayLogsSpec",
@@ -58587,6 +59114,10 @@
         "disabled": {
           "description": "Optional. Flag to disable the Ray metrics collection.",
           "type": "boolean"
+        },
+        "enableUsageStatsCollection": {
+          "description": "Optional. Flag to enable the Ray usage stats collection by Anyscale. https://docs.ray.io/en/latest/cluster/usage-stats.html#usage-stats-collection Disable by default.",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -58602,6 +59133,10 @@
         "imageUri": {
           "description": "Optional. Default image for user to choose a preferred ML framework (for example, TensorFlow or Pytorch) by choosing from [Vertex prebuilt images](https://cloud.google.com/vertex-ai/docs/training/pre-built-containers). Either this or the resource_pool_images is required. Use this field if you need all the resource pools to have the same Ray image. Otherwise, use the {@code resource_pool_images} field.",
           "type": "string"
+        },
+        "rayClusterAutoscalingSpec": {
+          "$ref": "GoogleCloudAiplatformV1RayClusterAutoscalingSpec",
+          "description": "Optional. Optional Ray autoscaling configurations."
         },
         "rayLogsSpec": {
           "$ref": "GoogleCloudAiplatformV1RayLogsSpec",
@@ -59462,7 +59997,7 @@
           "type": "string"
         },
         "values": {
-          "description": "Optional. Corresponds to the label values of a reservation resource. This must be the full resource name of the reservation or reservation block.",
+          "description": "Optional. Corresponds to the label values of a reservation resource. This must be the resource name of the reservation, reservation block, or reservation sub- block.",
           "items": {
             "type": "string"
           },
@@ -60545,7 +61080,8 @@
             "STATE_RUNNING",
             "STATE_DEPROVISIONING",
             "STATE_TERMINATED",
-            "STATE_DELETED"
+            "STATE_DELETED",
+            "STATE_STOPPING"
           ],
           "enumDescriptions": [
             "The default value. This value is unused.",
@@ -60553,7 +61089,8 @@
             "Sandbox runtime is ready for serving.",
             "Sandbox runtime is halted, performing tear down tasks.",
             "Sandbox has terminated with underlying runtime failure.",
-            "Sandbox runtime has been deleted."
+            "Sandbox runtime has been deleted.",
+            "Sandbox runtime is stopping."
           ],
           "readOnly": true,
           "type": "string"
@@ -60593,6 +61130,11 @@
         },
         "sandboxInternalIp": {
           "description": "Output only. The internal IP address of the SandboxEnvironment.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "serviceAttachment": {
+          "description": "Output only. The name of the PSC-E service attachment created for private ingress to this SandboxEnvironment. Only populated when the template enables private ingress (see SandboxEnvironmentTemplate.ingress_control_config). VPC-SC customers use this to create a PSC endpoint in their VPC.",
           "readOnly": true,
           "type": "string"
         }
@@ -60676,6 +61218,10 @@
         "codeExecutionEnvironment": {
           "$ref": "GoogleCloudAiplatformV1SandboxEnvironmentSpecCodeExecutionEnvironment",
           "description": "Optional. The code execution environment."
+        },
+        "shellEnvironment": {
+          "$ref": "GoogleCloudAiplatformV1SandboxEnvironmentSpecShellEnvironment",
+          "description": "Optional. The shell environment for executing shell commands and scripts."
         }
       },
       "type": "object"
@@ -60713,6 +61259,12 @@
       },
       "type": "object"
     },
+    "GoogleCloudAiplatformV1SandboxEnvironmentSpecShellEnvironment": {
+      "description": "The shell environment.",
+      "id": "GoogleCloudAiplatformV1SandboxEnvironmentSpecShellEnvironment",
+      "properties": {},
+      "type": "object"
+    },
     "GoogleCloudAiplatformV1SandboxEnvironmentTemplate": {
       "description": "The specification of a SandboxEnvironmentTemplate. A SandboxEnvironmentTemplate defines a template for creating SandboxEnvironments.",
       "id": "GoogleCloudAiplatformV1SandboxEnvironmentTemplate",
@@ -60738,6 +61290,10 @@
         "egressControlConfig": {
           "$ref": "GoogleCloudAiplatformV1SandboxEnvironmentTemplateEgressControlConfig",
           "description": "Optional. The configuration for egress control of this template."
+        },
+        "ingressControlConfig": {
+          "$ref": "GoogleCloudAiplatformV1PrivateServiceConnectConfig",
+          "description": "Optional. The configuration for private ingress (PSC-E) of this template. When set, the sandbox router is exposed privately via a PSC service attachment so VPC-SC customers can connect from their VPC over a private endpoint instead of the public internet. The resulting service attachment is surfaced on `SandboxEnvironment.connection_info.service_attachment`. Only the PSC-E (service-attachment/ingress) portion of `PrivateServiceConnectConfig` applies here: `enable_private_service_connect` and `project_allowlist` (the consumer projects allowed to connect). The nested `psc_interface_config` (PSC-I / egress) is not used for sandbox ingress; sandbox egress is configured via `egress_control_config` instead."
         },
         "name": {
           "description": "Identifier. The resource name of the SandboxEnvironmentTemplate. Format: `projects/{project}/locations/{location}/reasoningEngines/{reasoning_engine}/sandboxEnvironmentTemplates/{sandbox_environment_template}`",
@@ -60851,7 +61407,7 @@
           "type": "boolean"
         },
         "networkAttachment": {
-          "description": "Optional. The name of the customer VPC NetworkAttachment used to draw a PSC interface IP into the customer VPC for sandbox egress.",
+          "description": "Optional. The name of the customer VPC `NetworkAttachment` used to draw a PSC interface IP into the customer VPC for sandbox egress.",
           "type": "string"
         }
       },
@@ -60866,11 +61422,11 @@
           "type": "string"
         },
         "targetNetwork": {
-          "description": "Required. The VPC network name in the target_project where the DNS zone specified by 'domain' is visible.",
+          "description": "Required. The VPC network name in the target_project where the DNS zone specified by `domain` is visible.",
           "type": "string"
         },
         "targetProject": {
-          "description": "Required. The project ID hosting the Cloud DNS managed zone that contains the 'domain'. The Vertex AI Service Agent requires the dns.peer role on this project.",
+          "description": "Required. The project ID hosting the Cloud DNS managed zone that contains the `domain`. The Vertex AI Service Agent requires the dns.peer role on this project.",
           "type": "string"
         }
       },
@@ -63188,6 +63744,13 @@
         "codeRepositoryState": {
           "description": "Serialized state of the code repository. This string will typically contain a JSON representation of the UI's CodeRepositoryService state (files, folders, content, and any metadata). The UI is responsible for serialization and deserialization.",
           "type": "string"
+        },
+        "deployedRegions": {
+          "description": "Optional. The Cloud Run regions in which the application is currently deployed. Used to rediscover and redeploy the app in the regions it already runs in, which may differ from the prompt's location.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "framework": {
           "description": "Optional. Framework used to build the application.",
@@ -66353,7 +66916,7 @@
       "type": "object"
     },
     "GoogleCloudAiplatformV1StreamQueryReasoningEngineRequest": {
-      "description": "Request message for ReasoningEngineExecutionService.StreamQuery.",
+      "description": "Request message for ReasoningEngineExecutionService.StreamQueryReasoningEngine.",
       "id": "GoogleCloudAiplatformV1StreamQueryReasoningEngineRequest",
       "properties": {
         "classMethod": {
@@ -70157,6 +70720,7 @@
             "ON_DEMAND",
             "ON_DEMAND_PRIORITY",
             "ON_DEMAND_FLEX",
+            "ON_DEMAND_OFFPEAK",
             "PROVISIONED_THROUGHPUT"
           ],
           "enumDescriptions": [
@@ -70164,6 +70728,7 @@
             "Type for Pay-As-You-Go traffic.",
             "Type for Priority Pay-As-You-Go traffic.",
             "Type for Flex traffic.",
+            "Type for Off-Peak Pay-As-You-Go traffic.",
             "Type for Provisioned Throughput traffic."
           ],
           "readOnly": true,
@@ -70447,6 +71012,10 @@
         },
         "gcsUri": {
           "description": "Optional. The Google Cloud Storage URI to store the video output. Required for Vertex if delivery is URI.",
+          "type": "string"
+        },
+        "resolution": {
+          "description": "Optional. The video output resolution. Supported values: \"360p\", \"720p\", \"1080p\", \"4k\".",
           "type": "string"
         }
       },
