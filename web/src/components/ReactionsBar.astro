@@ -1,0 +1,249 @@
+---
+interface Props {
+  slug: string;
+  title: string;
+  initialStats?: {
+    upvotes?: number;
+    impacted_users_count?: number;
+    comments_count?: number;
+  };
+}
+
+const { slug, title, initialStats = {} } = Astro.props;
+const defaultImpactCount = initialStats.impacted_users_count || initialStats.upvotes || 3;
+const defaultBreakingCount = 1;
+const defaultWatchCount = 4;
+---
+
+<div class="reactions-bar-container" data-slug={slug}>
+  <div class="reactions-header">
+    <div class="reactions-title">
+      <span class="pulse-icon">🔥</span>
+      <span>Community Signals & Impact Telemetry</span>
+    </div>
+    <span class="reactions-hint">Crowd-sourced signals from GCP platform engineers</span>
+  </div>
+
+  <div class="reactions-buttons">
+    <button
+      class="reaction-btn"
+      data-type="impacts_me"
+      title="Mark that this API change impacts your GCP production environment"
+      aria-label="Impacts My Production"
+    >
+      <span class="btn-icon">🚀</span>
+      <span class="btn-label">Impacts My Production</span>
+      <span class="count-badge" data-count-type="impacts_me">{defaultImpactCount}</span>
+    </button>
+
+    <button
+      class="reaction-btn"
+      data-type="breaking_me"
+      title="Flag that this change introduces a breaking incompatibility for your team"
+      aria-label="Breaking in My Env"
+    >
+      <span class="btn-icon">⚠️</span>
+      <span class="btn-label">Breaking for Me</span>
+      <span class="count-badge" data-count-type="breaking_me">{defaultBreakingCount}</span>
+    </button>
+
+    <button
+      class="reaction-btn"
+      data-type="watch_ga"
+      title="Add to your personal radar to track when this Canary reaches GA"
+      aria-label="Watch for GA Release"
+    >
+      <span class="btn-icon">👀</span>
+      <span class="btn-label">Watch for GA</span>
+      <span class="count-badge" data-count-type="watch_ga">{defaultWatchCount}</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  import { getFirebaseAuth, signInWithGoogle, onAuthChange } from '../lib/firebase';
+
+  function initReactionsBar() {
+    const container = document.querySelector('.reactions-bar-container') as HTMLElement;
+    if (!container) return;
+
+    const slug = container.dataset.slug;
+    if (!slug) return;
+
+    let currentUser: any = null;
+    const storageKey = `gcp_radar_reactions_${slug}`;
+
+    // Load local reactions
+    let userVotes: Record<string, boolean> = {};
+    try {
+      userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    } catch {}
+
+    const buttons = container.querySelectorAll('.reaction-btn');
+
+    // Update active states from local storage
+    buttons.forEach((btn) => {
+      const type = btn.getAttribute('data-type');
+      if (type && userVotes[type]) {
+        btn.classList.add('active');
+      }
+
+      btn.addEventListener('click', async () => {
+        const type = btn.getAttribute('data-type');
+        if (!type) return;
+
+        const auth = getFirebaseAuth();
+        if (!auth.currentUser) {
+          try {
+            await signInWithGoogle();
+          } catch (err) {
+            console.log('User cancelled or sign in failed');
+            return;
+          }
+        }
+
+        const countBadge = btn.querySelector(`[data-count-type="${type}"]`);
+        let currentCount = parseInt(countBadge?.textContent || '0', 10);
+
+        if (userVotes[type]) {
+          // Toggle off
+          userVotes[type] = false;
+          btn.classList.remove('active');
+          if (countBadge) countBadge.textContent = String(Math.max(0, currentCount - 1));
+        } else {
+          // Toggle on
+          userVotes[type] = true;
+          btn.classList.add('active');
+          if (countBadge) countBadge.textContent = String(currentCount + 1);
+        }
+
+        localStorage.setItem(storageKey, JSON.stringify(userVotes));
+      });
+    });
+
+    onAuthChange((user) => {
+      currentUser = user;
+    });
+  }
+
+  // Initialize on load and Astro page transitions
+  initReactionsBar();
+  document.addEventListener('astro:page-load', initReactionsBar);
+</script>
+
+<style>
+  .reactions-bar-container {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    margin: 24px 0;
+  }
+
+  .reactions-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .reactions-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+  }
+
+  .reactions-hint {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  .reactions-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .reaction-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--bg-page);
+    border: 1px solid var(--border-subtle);
+    padding: 8px 14px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+
+  .reaction-btn:hover {
+    background-color: var(--bg-surface-hover);
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+  }
+
+  .reaction-btn.active {
+    background-color: var(--google-blue-subtle);
+    border-color: var(--google-blue);
+    color: var(--google-blue);
+  }
+
+  .reaction-btn[data-type="breaking_me"].active {
+    background-color: var(--google-red-subtle);
+    border-color: var(--google-red);
+    color: var(--google-red);
+  }
+
+  .reaction-btn[data-type="watch_ga"].active {
+    background-color: var(--google-yellow-subtle);
+    border-color: var(--google-yellow);
+    color: var(--google-yellow);
+  }
+
+  .count-badge {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    background-color: var(--border-subtle);
+    color: var(--text-primary);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+  }
+
+  .reaction-btn.active .count-badge {
+    background-color: var(--google-blue);
+    color: #ffffff;
+  }
+
+  .reaction-btn[data-type="breaking_me"].active .count-badge {
+    background-color: var(--google-red);
+    color: #ffffff;
+  }
+
+  .reaction-btn[data-type="watch_ga"].active .count-badge {
+    background-color: var(--google-yellow);
+    color: #ffffff;
+  }
+
+  @media (max-width: 600px) {
+    .reactions-buttons {
+      flex-direction: column;
+    }
+    .reaction-btn {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+</style>

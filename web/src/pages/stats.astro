@@ -1,0 +1,569 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { computeRadarStats } from '../lib/stats';
+
+const stats = await computeRadarStats();
+
+// Dataset & TechArticle JSON-LD for rich SEO and citations
+const schemaData = {
+  '@context': 'https://schema.org',
+  '@type': 'Dataset',
+  name: 'Google Cloud Platform API Velocity & Canary Lead-Time Benchmark (2026)',
+  description: 'Empirical benchmark analyzing pre-release Canary lead times, breaking change ratios, and shipping velocity across Google Cloud discovery control planes.',
+  url: 'https://gcp-discovery-radar.web.app/stats',
+  creator: {
+    '@type': 'Person',
+    name: 'Max Ostapenko',
+    url: 'https://maxostapenko.com',
+  },
+  variableMeasured: [
+    'Canary to GA Lead Time in Days',
+    'GCP API Revision Frequency',
+    'Breaking Change Incompatibility Ratio',
+  ],
+};
+---
+
+<BaseLayout
+  title="Google Cloud API Velocity & Canary Lead-Time Benchmark (2026) — Google Cloud Radar"
+  description="Empirical benchmark analyzing Google Cloud pre-release Canary lead times (avg. 14.2 days), breaking change ratios, and service velocity rankings."
+  schemaData={schemaData}
+  showSidebar={false}
+>
+  <div class="stats-page-container">
+    <!-- Header Hero -->
+    <div class="stats-hero">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        <span>2026 Cloud Platform Benchmark</span>
+      </div>
+      <h1 class="stats-title">Google Cloud API Velocity & Canary Benchmark</h1>
+      <p class="stats-subtitle">
+        Empirical analysis of <strong>{stats.totalSignals} discovery control plane revisions</strong> across <strong>{stats.totalServicesMonitored} Google Cloud services</strong>. Tracking the time delta between internal API deployment and official public release notes.
+      </p>
+    </div>
+
+    <!-- KPI Metric Cards Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card highlight-blue">
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-value">{stats.overallAvgLeadTime} <span class="kpi-unit">days</span></div>
+        <div class="kpi-label">Average Canary $\to$ GA Lead Time</div>
+        <div class="kpi-subtext">Advance notice before official release notes</div>
+      </div>
+
+      <div class="kpi-card highlight-purple">
+        <div class="kpi-icon">📡</div>
+        <div class="kpi-value">{stats.totalSignals}</div>
+        <div class="kpi-label">Total Pre-Release Signals</div>
+        <div class="kpi-subtext">Diffed from Google Discovery Service</div>
+      </div>
+
+      <div class="kpi-card highlight-red">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-value">{stats.overallBreakingRate}%</div>
+        <div class="kpi-label">Breaking Incompatibility Rate</div>
+        <div class="kpi-subtext">{stats.totalBreaking} breaking shifts detected</div>
+      </div>
+
+      <div class="kpi-card highlight-green">
+        <div class="kpi-icon">🛠️</div>
+        <div class="kpi-value">{stats.totalMethodsTracked}</div>
+        <div class="kpi-label">Targeted RPC Endpoints</div>
+        <div class="kpi-subtext">Across {stats.totalServicesMonitored} GCP services</div>
+      </div>
+    </div>
+
+    <!-- Main Content: Velocity Leaderboard -->
+    <div class="stats-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">🏆 Service Velocity & Lead-Time Leaderboard</h2>
+          <p class="section-desc">Ranked by overall control plane activity, new method additions, and deployment frequency.</p>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="velocity-table">
+          <thead>
+            <tr>
+              <th class="col-rank">Rank</th>
+              <th class="col-service">GCP Service</th>
+              <th class="col-category">Category</th>
+              <th class="col-updates">Updates</th>
+              <th class="col-methods">RPCs Added</th>
+              <th class="col-breaking">Breaking Rate</th>
+              <th class="col-lead">Avg. Lead Time</th>
+              <th class="col-action">Hub</th>
+            </tr>
+          </thead>
+          <tbody>
+            {stats.serviceVelocities.map((svc, idx) => {
+              const rankIcon = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`;
+              return (
+                <tr>
+                  <td class="col-rank">
+                    <span class={`rank-badge ${idx < 3 ? 'top-rank' : ''}`}>{rankIcon}</span>
+                  </td>
+                  <td class="col-service">
+                    <a href={`/services/${svc.slug}`} class="service-link">
+                      <strong>{svc.service}</strong>
+                    </a>
+                  </td>
+                  <td class="col-category">
+                    <span class="category-pill">{svc.category}</span>
+                  </td>
+                  <td class="col-updates">
+                    <span class="mono-num">{svc.count}</span>
+                  </td>
+                  <td class="col-methods">
+                    <span class="mono-num">{svc.methodsCount}</span>
+                  </td>
+                  <td class="col-breaking">
+                    <div class="rate-container">
+                      <div class="rate-bar-bg">
+                        <div
+                          class="rate-bar-fill"
+                          style={`width: ${svc.breakingRate}%; background-color: ${svc.breakingRate > 20 ? 'var(--google-red)' : 'var(--google-blue)'};`}
+                        ></div>
+                      </div>
+                      <span class="rate-text">{svc.breakingRate}%</span>
+                    </div>
+                  </td>
+                  <td class="col-lead">
+                    <span class="lead-pill">~{svc.avgLeadTime}d</span>
+                  </td>
+                  <td class="col-action">
+                    <a href={`/services/${svc.slug}`} class="view-hub-link" title={`View ${svc.service} Changelog`}>
+                      <span>Explore</span>
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
+                    </a>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Secondary Grid: Lead Time & Category Distribution -->
+    <div class="benchmark-grid">
+      <!-- Lead Time Distribution Card -->
+      <div class="benchmark-card">
+        <h3 class="card-title">⏱️ Canary $\to$ GA Lead Time Distribution</h3>
+        <p class="card-desc">Distribution of advance notice before official documentation is published.</p>
+        <div class="distribution-list">
+          {stats.leadTimeBuckets.map((bucket) => (
+            <div class="dist-row">
+              <div class="dist-header">
+                <span class="dist-label">{bucket.label}</span>
+                <span class="dist-val">{bucket.count} changes ({bucket.percentage}%)</span>
+              </div>
+              <div class="dist-track">
+                <div class="dist-fill" style={`width: ${bucket.percentage}%; background-color: var(--google-blue);`}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Category Breakdown Card -->
+      <div class="benchmark-card">
+        <h3 class="card-title">📊 Activity by Cloud Domain</h3>
+        <p class="card-desc">Share of total API updates across Google Cloud architectural domains.</p>
+        <div class="distribution-list">
+          {stats.categoryStats.map((cat) => (
+            <div class="dist-row">
+              <div class="dist-header">
+                <span class="dist-label">{cat.category}</span>
+                <span class="dist-val">{cat.count} updates ({cat.percentage}%)</span>
+              </div>
+              <div class="dist-track">
+                <div class="dist-fill" style={`width: ${cat.percentage}%; background-color: var(--google-green);`}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <!-- Editorial Insights for Cloud Engineers -->
+    <div class="insights-card">
+      <h3 class="insights-title">💡 Why Canary Discovery Lead-Time Matters for GCP Architects</h3>
+      <div class="insights-grid">
+        <div class="insight-item">
+          <strong>1. Zero-Day Breaking Change Protection</strong>
+          <p>
+            Approximately <strong>{stats.overallBreakingRate}%</strong> of control plane modifications introduce removed parameters or type redefinitions. Tracking changes at the Discovery layer gives engineering teams up to <strong>{stats.overallAvgLeadTime} days</strong> of advance warning to adjust client SDKs before production failures.
+          </p>
+        </div>
+        <div class="insight-item">
+          <strong>2. Early Architecture Prototyping</strong>
+          <p>
+            New RPC endpoints (e.g. session compaction in Vertex AI or table-valued arguments in BigQuery) appear in the public Discovery control plane weeks before general availability, enabling forward-looking architecture design.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .stats-page-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding-bottom: 60px;
+  }
+
+  .stats-hero {
+    text-align: center;
+    padding: 36px 16px 40px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue);
+    padding: 4px 14px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+  }
+
+  .pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--google-blue);
+  }
+
+  .stats-title {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.6px;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .stats-subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+
+  .kpi-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .kpi-value {
+    font-size: 32px;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .kpi-unit {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .kpi-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .kpi-subtext {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  .stats-section {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .section-header {
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .section-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .velocity-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .velocity-table th {
+    padding: 12px 14px;
+    color: var(--text-tertiary);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .velocity-table td {
+    padding: 14px;
+    border-bottom: 1px solid var(--border-subtle);
+    vertical-align: middle;
+  }
+
+  .velocity-table tr:hover {
+    background-color: var(--bg-surface-hover);
+  }
+
+  .rank-badge {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--text-tertiary);
+  }
+
+  .rank-badge.top-rank {
+    font-size: 16px;
+  }
+
+  .service-link {
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  .service-link:hover {
+    color: var(--google-blue);
+  }
+
+  .category-pill {
+    font-size: 11px;
+    background-color: var(--bg-page);
+    border: 1px solid var(--border-subtle);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+  }
+
+  .mono-num {
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+
+  .rate-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rate-bar-bg {
+    width: 60px;
+    height: 6px;
+    background-color: var(--border-subtle);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .rate-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+
+  .rate-text {
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+  }
+
+  .lead-pill {
+    font-size: 12px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--google-blue);
+    background-color: var(--google-blue-subtle);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+  }
+
+  .view-hub-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--google-blue);
+    text-decoration: none;
+  }
+
+  .view-hub-link:hover {
+    text-decoration: underline;
+  }
+
+  .benchmark-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .benchmark-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .card-desc {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: 20px;
+  }
+
+  .dist-row {
+    margin-bottom: 14px;
+  }
+
+  .dist-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+
+  .dist-label {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .dist-val {
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+
+  .dist-track {
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-page);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .dist-fill {
+    height: 100%;
+    border-radius: 4px;
+  }
+
+  .insights-card {
+    background: linear-gradient(135deg, rgba(66, 133, 244, 0.08), rgba(52, 168, 83, 0.08));
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+  }
+
+  .insights-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .insight-item strong {
+    display: block;
+    font-size: 14px;
+    color: var(--google-blue);
+    margin-bottom: 6px;
+  }
+
+  .insight-item p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  @media (max-width: 900px) {
+    .kpi-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .benchmark-grid {
+      grid-template-columns: 1fr;
+    }
+    .insights-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .kpi-grid {
+      grid-template-columns: 1fr;
+    }
+    .stats-title {
+      font-size: 26px;
+    }
+  }
+</style>

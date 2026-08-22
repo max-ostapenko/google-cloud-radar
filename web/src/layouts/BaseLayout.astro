@@ -1,0 +1,119 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Sidebar from '../components/Sidebar.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  activeServiceSlug?: string;
+  activeCategory?: string;
+  ogType?: string;
+  ogImage?: string;
+  schemaData?: Record<string, any>;
+  showSidebar?: boolean;
+}
+
+const {
+  title,
+  description = 'Live pre-release intelligence for Google Cloud Platform. Real-time API changes, breaking changes, and method deprecations diffed from the Discovery Service.',
+  activeServiceSlug = '',
+  activeCategory = '',
+  ogType = 'website',
+  ogImage = '/og-image.png',
+  schemaData,
+  showSidebar = true,
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://gcp-discovery-radar.web.app');
+
+const defaultSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Google Cloud Radar',
+  url: canonicalURL.origin,
+  description: description,
+  author: {
+    '@type': 'Person',
+    name: 'Max Ostapenko',
+    url: 'https://maxostapenko.com',
+  },
+};
+
+const jsonLd = schemaData ? JSON.stringify(schemaData) : JSON.stringify(defaultSchema);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="Google Cloud Radar" />
+    <meta property="og:image" content={new URL(ogImage, canonicalURL.origin)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalURL} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(ogImage, canonicalURL.origin)} />
+    <meta name="twitter:creator" content="@maxostapenko" />
+
+    <!-- Feeds -->
+    <link rel="alternate" type="application/rss+xml" title="Google Cloud Radar Feed" href="/rss.xml" />
+    <link rel="alternate" type="application/json" title="Google Cloud Radar JSON Feed" href="/api/feed.json" />
+
+    <!-- Favicon / Icon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z' fill='%234285F4'/></svg>" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json" set:html={jsonLd}></script>
+  </head>
+  <body>
+    <Header currentPath={Astro.url.pathname} />
+
+    <div class="app-layout">
+      {showSidebar && (
+        <Sidebar activeServiceSlug={activeServiceSlug} activeCategory={activeCategory} />
+      )}
+      <main class="main-container">
+        <slot />
+      </main>
+    </div>
+
+    <Footer />
+
+    <script is:inline>
+      // Global copy-to-clipboard handler for method buttons
+      document.addEventListener('click', (e) => {
+        const target = e.target.closest('.copy-method-btn');
+        if (!target) return;
+        const textToCopy = target.getAttribute('data-copy');
+        if (textToCopy) {
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            const originalHtml = target.innerHTML;
+            target.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#188038" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+            target.style.color = '#188038';
+            setTimeout(() => {
+              target.innerHTML = originalHtml;
+              target.style.color = '';
+            }, 1800);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

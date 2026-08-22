@@ -1,0 +1,140 @@
+[
+  {
+    "id": "2026-08-07-aiplatform-v1beta1",
+    "slug": "2026-08-07-aiplatform-v1beta1",
+    "service_id": "vertex-ai",
+    "service_name": "Vertex AI",
+    "api": "aiplatform.v1beta1",
+    "category": "AI & Machine Learning",
+    "title": "Vertex AI: Session Compaction and Transcription Refactor",
+    "summary": "Vertex AI introduces session compaction for long-running agent histories and standardizes speech transcription configurations, alongside a breaking change to traffic type enums.",
+    "details_markdown": "A new `compact` method has been added to Reasoning Engine sessions (`projects.locations.reasoningEngines.sessions.compact`). This allows developers to manage context window limits by applying a 'stackable pipeline' of rules to session history, including LLM-based summarization, tool-response truncation, and 'thought stripping.' In transcription news, `languageHints` and `languageAuto` are being deprecated or removed across `GenaiVertexV1beta1TranscriptionConfig` and `GoogleCloudAiplatformV1beta1AudioTranscriptionConfig` in favor of a unified `languageCodes` array. Additionally, `GenaiVertexV1beta1EnvironmentConfig` has moved from camelCase to snake_case for `network_allowlist` and `network_mode` fields.\n\n**Breaking Change:** The `trafficType` enum used in `UsageMetadata` has changed its 5th value (index 4) from `PROVISIONED_THROUGHPUT` to `ON_DEMAND_OFFPEAK`. Developers relying on this specific enum value for billing or monitoring logic should update their code immediately.",
+    "impact": "medium",
+    "is_breaking": true,
+    "interesting_score": 8,
+    "tags": ["AI", "Vertex AI", "Agents", "Generative AI", "Speech"],
+    "extracted_methods": [
+      "projects.locations.reasoningEngines.sessions.compact"
+    ],
+    "status": "canary",
+    "first_detected_at": "2026-08-07T15:59:32.000Z",
+    "last_updated_at": "2026-08-07T15:59:32.000Z",
+    "stats": {
+      "upvotes": 42,
+      "impacted_users_count": 18,
+      "comments_count": 5
+    },
+    "extensions": {
+      "terraform": {
+        "provider_resource": "google_vertex_ai_reasoning_engine",
+        "has_open_issue": true,
+        "issue_url": "https://github.com/hashicorp/terraform-provider-google/issues/19280"
+      },
+      "iam_permissions": {
+        "new_permissions_required": ["aiplatform.reasoningEngines.compact"]
+      }
+    }
+  },
+  {
+    "id": "2026-08-09-bigqueryreservation-v1",
+    "slug": "2026-08-09-bigqueryreservation-v1",
+    "service_id": "bigquery-reservation",
+    "service_name": "BigQuery Reservation",
+    "api": "bigqueryreservation.v1",
+    "category": "Data Platform",
+    "title": "New jobType for Materialized View Refresh assignments",
+    "summary": "BigQuery now supports assigning reservations specifically for automated materialized view refreshes, allowing for better resource isolation and prioritization.",
+    "details_markdown": "BigQuery Reservation API introduces `MATERIALIZED_VIEW_REFRESH` under the `jobType` enum for Capacity Commitments and Reservations. This allows organizations to separate batch ETL queries from continuous materialized view background maintenance.",
+    "impact": "medium",
+    "is_breaking": false,
+    "interesting_score": 6,
+    "tags": ["bigquery", "reservations", "materialized-views"],
+    "extracted_methods": [],
+    "status": "canary",
+    "first_detected_at": "2026-08-09T02:00:29.000Z",
+    "last_updated_at": "2026-08-09T02:00:29.000Z",
+    "stats": {
+      "upvotes": 28,
+      "impacted_users_count": 9,
+      "comments_count": 2
+    }
+  },
+  {
+    "id": "2026-06-22-bigquery-v2",
+    "slug": "2026-06-22-bigquery-v2",
+    "service_id": "bigquery",
+    "service_name": "BigQuery",
+    "api": "bigquery.v2",
+    "category": "Data Platform",
+    "title": "Continuous Query & Iceberg Table Ingestion Extensions",
+    "summary": "BigQuery adds native continuous SQL streaming table configurations and extends external Iceberg catalog options.",
+    "details_markdown": "BigQuery adds support for continuous streaming query targets, as well as extended BigLake Iceberg REST catalog authentication fields.",
+    "impact": "high",
+    "is_breaking": false,
+    "interesting_score": 9,
+    "tags": ["bigquery", "streaming", "iceberg", "biglake"],
+    "extracted_methods": ["jobs.insert", "tables.patch"],
+    "status": "released",
+    "first_detected_at": "2026-06-22T04:00:00.000Z",
+    "last_updated_at": "2026-07-06T12:00:00.000Z",
+    "official_release_date": "2026-07-06T00:00:00.000Z",
+    "lead_time_days": 14,
+    "official_release_notes_url": "https://cloud.google.com/bigquery/docs/release-notes#July_06_2026",
+    "stats": {
+      "upvotes": 95,
+      "impacted_users_count": 64,
+      "comments_count": 12
+    }
+  },
+  {
+    "id": "2026-08-07-dataplex-v1",
+    "slug": "2026-08-07-dataplex-v1",
+    "service_id": "dataplex",
+    "service_name": "Dataplex",
+    "api": "dataplex.v1",
+    "category": "Data Platform",
+    "title": "Dataplex adds ChangeRequest comments and EntryLinkType events",
+    "summary": "Dataplex now supports reviewer comments on ChangeRequests and introduces a new event schema for tracking EntryLinkType lifecycle changes.",
+    "details_markdown": "Dataplex adds support for reviewer comments in `ChangeRequest` workflows, alongside metadata event types for tracking data lineage links across projects.",
+    "impact": "low",
+    "is_breaking": false,
+    "interesting_score": 5,
+    "tags": ["dataplex", "governance", "logging", "metadata"],
+    "extracted_methods": [],
+    "status": "canary",
+    "first_detected_at": "2026-08-07T15:59:32.000Z",
+    "last_updated_at": "2026-08-07T15:59:32.000Z",
+    "stats": {
+      "upvotes": 12,
+      "impacted_users_count": 3,
+      "comments_count": 0
+    }
+  },
+  {
+    "id": "2026-05-20-dataform-v1",
+    "slug": "2026-05-20-dataform-v1",
+    "service_id": "dataform",
+    "service_name": "Dataform",
+    "api": "dataform.v1",
+    "category": "Data Platform",
+    "title": "Improved Git branch handling and path clarifications",
+    "summary": "Dataform clarifies default branch behavior and enhances repository path validation.",
+    "details_markdown": "Dataform API v1 introduces explicit validation for Git default branch names and repository root directory path strings.",
+    "impact": "medium",
+    "is_breaking": false,
+    "interesting_score": 6,
+    "tags": ["dataform", "git", "sqlx"],
+    "extracted_methods": ["projects.locations.repositories.create"],
+    "status": "released",
+    "first_detected_at": "2026-05-20T02:00:00.000Z",
+    "last_updated_at": "2026-06-03T00:00:00.000Z",
+    "official_release_date": "2026-06-03T00:00:00.000Z",
+    "lead_time_days": 14,
+    "official_release_notes_url": "https://cloud.google.com/dataform/docs/release-notes#June_03_2026",
+    "stats": {
+      "upvotes": 34,
+      "impacted_users_count": 15,
+      "comments_count": 3
+    }
+  }
+]

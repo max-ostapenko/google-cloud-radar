@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "max-ostapenko"
+  },
+  "targets": {
+    "max-ostapenko": {
+      "hosting": {
+        "radar": [
+          "gcp-discovery-radar"
+        ]
+      }
+    }
+  }
+}

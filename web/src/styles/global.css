@@ -1,0 +1,257 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* Google Developer Theme Tokens (Light Mode Default) */
+  --bg-page: #f8f9fa;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --bg-surface-hover: #f1f3f4;
+  --bg-surface-active: #e8eaed;
+  --border-subtle: #dadce0;
+  --border-strong: #bdc1c6;
+  
+  --text-primary: #202124;
+  --text-secondary: #5f6368;
+  --text-tertiary: #80868b;
+  --text-on-accent: #ffffff;
+
+  --google-blue: #1a73e8;
+  --google-blue-hover: #1557d0;
+  --google-blue-subtle: #e8f0fe;
+  --google-blue-border: #aecbfa;
+
+  --google-red: #d93025;
+  --google-red-subtle: #fce8e6;
+  --google-red-border: #f5c2c7;
+
+  --google-green: #188038;
+  --google-green-subtle: #e6f4ea;
+  --google-green-border: #a8dab5;
+
+  --google-yellow: #e37400;
+  --google-yellow-subtle: #fef7e0;
+  --google-yellow-border: #fdd663;
+
+  --google-purple: #9334e6;
+  --google-purple-subtle: #f3e8fd;
+  --google-purple-border: #d7aefb;
+
+  --font-sans: 'Google Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Roboto Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  --shadow-sm: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+  --shadow-md: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  --shadow-lg: 0 2px 6px 2px rgba(60, 64, 67, 0.15), 0 8px 24px 4px rgba(60, 64, 67, 0.15);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+  
+  --header-height: 64px;
+  --sidebar-width: 280px;
+}
+
+[data-theme='dark'] {
+  --bg-page: #17181c;
+  --bg-surface: #202124;
+  --bg-surface-elevated: #28292c;
+  --bg-surface-hover: #303134;
+  --bg-surface-active: #3c4043;
+  --border-subtle: #3c4043;
+  --border-strong: #5f6368;
+
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a6;
+  --text-tertiary: #80868b;
+  --text-on-accent: #202124;
+
+  --google-blue: #8ab4f8;
+  --google-blue-hover: #aecbfa;
+  --google-blue-subtle: rgba(138, 180, 248, 0.15);
+  --google-blue-border: rgba(138, 180, 248, 0.4);
+
+  --google-red: #f28b82;
+  --google-red-subtle: rgba(242, 139, 130, 0.15);
+  --google-red-border: rgba(242, 139, 130, 0.4);
+
+  --google-green: #81c995;
+  --google-green-subtle: rgba(129, 201, 149, 0.15);
+  --google-green-border: rgba(129, 201, 149, 0.4);
+
+  --google-yellow: #fdd663;
+  --google-yellow-subtle: rgba(253, 214, 99, 0.15);
+  --google-yellow-border: rgba(253, 214, 99, 0.4);
+
+  --google-purple: #c58af9;
+  --google-purple-subtle: rgba(197, 138, 249, 0.15);
+  --google-purple-border: rgba(197, 138, 249, 0.4);
+
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px 0 rgba(0, 0, 0, 0.6);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-sans);
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: var(--google-blue);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code, pre {
+  font-family: var(--font-mono);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-page);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Badge Utilities */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  line-height: 1.4;
+}
+
+.badge-canary {
+  background-color: var(--google-yellow-subtle);
+  color: var(--google-yellow);
+  border: 1px solid var(--google-yellow-border);
+}
+
+.badge-released {
+  background-color: var(--google-green-subtle);
+  color: var(--google-green);
+  border: 1px solid var(--google-green-border);
+}
+
+.status-dot-green {
+  width: 6px;
+  height: 6px;
+  background-color: var(--google-green);
+  border-radius: 50%;
+}
+
+.status-dot-yellow {
+  width: 6px;
+  height: 6px;
+  background-color: var(--google-yellow);
+  border-radius: 50%;
+}
+
+.badge-breaking {
+  background-color: var(--google-red-subtle);
+  color: var(--google-red);
+  border: 1px solid var(--google-red-border);
+}
+
+.badge-impact-high {
+  background-color: var(--google-red-subtle);
+  color: var(--google-red);
+  border: 1px solid var(--google-red-border);
+}
+
+.badge-impact-medium {
+  background-color: var(--google-yellow-subtle);
+  color: var(--google-yellow);
+  border: 1px solid var(--google-yellow-border);
+}
+
+.badge-impact-low {
+  background-color: var(--google-green-subtle);
+  color: var(--google-green);
+  border: 1px solid var(--google-green-border);
+}
+
+.badge-service {
+  background-color: var(--google-blue-subtle);
+  color: var(--google-blue);
+  border: 1px solid var(--google-blue-border);
+}
+
+.badge-score {
+  background-color: var(--google-purple-subtle);
+  color: var(--google-purple);
+  border: 1px solid var(--google-purple-border);
+}
+
+.method-code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background-color: var(--bg-surface-hover);
+  color: var(--google-blue);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Container & Layout */
+.app-layout {
+  display: flex;
+  min-height: calc(100vh - var(--header-height));
+}
+
+.main-container {
+  flex: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .app-layout {
+    flex-direction: column;
+  }
+}

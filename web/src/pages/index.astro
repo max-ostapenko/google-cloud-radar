@@ -1,0 +1,438 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ChangeCard from '../components/ChangeCard.astro';
+import { getAllFeedEntries, getServicesList, getActiveDataSource } from '../lib/feed';
+
+const entries = await getAllFeedEntries();
+const services = await getServicesList();
+const dataSource = await getActiveDataSource();
+
+const breakingCount = entries.filter((e) => e.breaking).length;
+const highImpactCount = entries.filter((e) => e.impact === 'high').length;
+const aiCount = entries.filter((e) => e.category === 'AI & Machine Learning').length;
+const dataCount = entries.filter((e) => e.category === 'Data Platform').length;
+---
+
+<BaseLayout 
+  title="Google Cloud Radar — Real-Time Google API & Breaking Change Tracker"
+  description="Live pre-release intelligence for Google Cloud and Google APIs. Track silent method additions, schema changes, and breaking changes before official documentation catches up."
+>
+  <div class="feed-header">
+    <div class="hero-banner">
+      <div class="hero-content">
+        <div class="hero-tags-row">
+          <div class="hero-tag">
+            <span class="live-dot"></span>
+            <span>Automated Control Plane Intelligence</span>
+          </div>
+          <div class={`source-tag ${dataSource.type === 'database' ? 'source-db' : 'source-fs'}`}>
+            <span class="source-dot"></span>
+            <span>{dataSource.label}</span>
+          </div>
+        </div>
+        <h1 class="hero-title">Google Cloud Radar</h1>
+        <p class="hero-subtitle">
+          Tracking unreleased method additions, schema evolutions, and breaking changes directly from the Google Discovery Service every 5 hours — before they reach official release notes.
+        </p>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-box">
+          <span class="stat-number">{entries.length}</span>
+          <span class="stat-label">Total Insights</span>
+        </div>
+        <div class="stat-box breaking-stat">
+          <span class="stat-number">{breakingCount}</span>
+          <span class="stat-label">Breaking Changes</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-number">{services.length}</span>
+          <span class="stat-label">APIs Monitored</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Filter Pills -->
+    <div class="filters-bar">
+      <div class="filter-pills" id="filter-pills-container">
+        <button class="pill-btn active" data-filter="all">
+          All Updates <span class="pill-count">{entries.length}</span>
+        </button>
+        <button class="pill-btn pill-breaking" data-filter="breaking">
+          ⚠️ Breaking Only <span class="pill-count">{breakingCount}</span>
+        </button>
+        <button class="pill-btn" data-filter="high-impact">
+          🔥 High Impact <span class="pill-count">{highImpactCount}</span>
+        </button>
+        <button class="pill-btn" data-filter="category-ai">
+          🧠 Vertex AI & AI <span class="pill-count">{aiCount}</span>
+        </button>
+        <button class="pill-btn" data-filter="category-data">
+          📊 BigQuery & Data <span class="pill-count">{dataCount}</span>
+        </button>
+      </div>
+
+      <div class="feed-status-summary">
+        <span id="results-count-text">Showing <strong>{entries.length}</strong> updates</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="feed-timeline" id="cards-container">
+    {entries.map((entry) => (
+      <ChangeCard entry={entry} />
+    ))}
+  </div>
+
+  <div id="no-results" class="no-results-state" style="display: none;">
+    <div class="no-results-icon">🔍</div>
+    <h3>No API updates match your query</h3>
+    <p>Try searching for a different service name, method identifier, or clear your filters.</p>
+    <button id="clear-search-btn" class="clear-btn">Reset All Filters</button>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  // Client-side instant filtering & search logic
+  const searchInput = document.getElementById('global-search-input');
+  const pillButtons = document.querySelectorAll('.pill-btn');
+  const cards = document.querySelectorAll('.change-card');
+  const resultsCountText = document.getElementById('results-count-text');
+  const noResults = document.getElementById('no-results');
+  const clearBtn = document.getElementById('clear-search-btn');
+
+  let activeFilter = 'all';
+  let searchQuery = '';
+
+  function applyFilters() {
+    let visibleCount = 0;
+
+    cards.forEach((card) => {
+      const cardBreaking = card.getAttribute('data-breaking') === 'true';
+      const cardImpact = card.getAttribute('data-impact');
+      const cardCategory = card.getAttribute('data-category');
+      const cardText = card.getAttribute('data-text') || '';
+
+      // Check Pill Filter
+      let matchesPill = true;
+      if (activeFilter === 'breaking') {
+        matchesPill = cardBreaking;
+      } else if (activeFilter === 'high-impact') {
+        matchesPill = cardImpact === 'high';
+      } else if (activeFilter === 'category-ai') {
+        matchesPill = cardCategory === 'ai & machine learning';
+      } else if (activeFilter === 'category-data') {
+        matchesPill = cardCategory === 'data platform';
+      }
+
+      // Check Search Query
+      let matchesSearch = true;
+      if (searchQuery.trim()) {
+        matchesSearch = cardText.includes(searchQuery.trim().toLowerCase());
+      }
+
+      if (matchesPill && matchesSearch) {
+        card.style.display = 'block';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    if (resultsCountText) {
+      resultsCountText.innerHTML = `Showing <strong>${visibleCount}</strong> update${visibleCount === 1 ? '' : 's'}`;
+    }
+
+    if (noResults) {
+      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+  }
+
+  // Pill click handlers
+  pillButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      pillButtons.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFilter = btn.getAttribute('data-filter') || 'all';
+      applyFilters();
+    });
+  });
+
+  // Search input handler
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      applyFilters();
+    });
+  }
+
+  // Clear button
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      searchQuery = '';
+      activeFilter = 'all';
+      pillButtons.forEach((b) => b.classList.remove('active'));
+      const allPill = document.querySelector('[data-filter="all"]');
+      if (allPill) allPill.classList.add('active');
+      applyFilters();
+    });
+  }
+</script>
+
+<style>
+  .feed-header {
+    margin-bottom: 24px;
+  }
+
+  .hero-banner {
+    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-surface-hover) 100%);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .hero-content {
+    max-width: 680px;
+  }
+
+  .hero-tags-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--google-blue);
+    background-color: var(--google-blue-subtle);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+  }
+
+  .source-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+  }
+
+  .source-db {
+    background-color: var(--google-green-subtle);
+    color: var(--google-green);
+    border: 1px solid var(--google-green-border);
+  }
+
+  .source-fs {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .source-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--google-green);
+    border-radius: 50%;
+    animation: status-pulse 2s infinite;
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--google-blue);
+    border-radius: 50%;
+  }
+
+  .hero-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.25;
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+  }
+
+  .hero-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .stat-box {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 110px;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--google-blue);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .breaking-stat .stat-number {
+    color: var(--google-red);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-tertiary);
+  }
+
+  .filters-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .pill-btn:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+  }
+
+  .pill-btn.active {
+    background-color: var(--google-blue);
+    color: #ffffff;
+    border-color: var(--google-blue);
+  }
+
+  .pill-btn.active .pill-count {
+    background-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+  }
+
+  .pill-breaking.active {
+    background-color: var(--google-red);
+    border-color: var(--google-red);
+  }
+
+  .pill-count {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    background-color: var(--bg-surface-hover);
+    padding: 1px 6px;
+    border-radius: var(--radius-full);
+    color: var(--text-tertiary);
+  }
+
+  .feed-status-summary {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .no-results-state {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: var(--bg-surface);
+    border: 1px dashed var(--border-subtle);
+    border-radius: var(--radius-md);
+  }
+
+  .no-results-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  .no-results-state h3 {
+    font-size: 18px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  .no-results-state p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+
+  .clear-btn {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    background-color: var(--google-blue);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+  }
+
+  @media (max-width: 900px) {
+    .hero-banner {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 20px;
+    }
+    .hero-stats {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .stat-box {
+      flex: 1;
+      min-width: 0;
+      padding: 10px;
+    }
+  }
+</style>

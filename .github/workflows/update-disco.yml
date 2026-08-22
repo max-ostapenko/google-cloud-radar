@@ -36,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: pip install google-genai google-auth
 
-      - name: Update discoveries, generate feed, and open PR
+      - name: Update discoveries, correlate releases, sync Firestore DB, and open PR
         run: |
-          python scripts/update_disco.py && python scripts/open_pr.py
+          python scripts/update_disco.py && python scripts/correlate_releases.py && python scripts/seed_prod_firestore.py --database radar && python scripts/open_pr.py
 

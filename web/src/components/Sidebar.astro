@@ -1,0 +1,321 @@
+---
+import { getServicesList, type ServiceCategory } from '../lib/feed';
+
+interface Props {
+  activeServiceSlug?: string;
+  activeCategory?: string;
+}
+
+const { activeServiceSlug = '', activeCategory = '' } = Astro.props;
+
+const services = await getServicesList();
+
+// Group services by Category
+const categories: ServiceCategory[] = [
+  'AI & Machine Learning',
+  'Data Platform',
+  'FinOps & Billing',
+  'Analytics & Web',
+  'DevOps & Discovery',
+  'Core & Other',
+];
+
+const grouped = categories.map((category) => {
+  const items = services.filter((s) => s.category === category);
+  return {
+    category,
+    items,
+    totalCount: items.reduce((acc, curr) => acc + curr.count, 0),
+  };
+}).filter((g) => g.items.length > 0);
+---
+
+<aside class="gcp-sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-title">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 6h16M4 12h16M4 18h7"/>
+      </svg>
+      <span>APIs & Services</span>
+    </div>
+    <span class="total-services-badge">{services.length} Monitored</span>
+  </div>
+
+  <div class="sidebar-menu">
+    <a href="/" class={`sidebar-item all-item ${!activeServiceSlug && !activeCategory ? 'active' : ''}`}>
+      <span class="item-name">All Updates</span>
+      <span class="item-count">{services.reduce((a, b) => a + b.count, 0)}</span>
+    </a>
+
+    <a href="/breaking" class={`sidebar-item breaking-item ${activeCategory === 'breaking' ? 'active' : ''}`}>
+      <span class="item-name">⚠️ Breaking Changes</span>
+      <span class="item-badge-breaking">Alerts</span>
+    </a>
+
+    <div class="sidebar-divider"></div>
+
+    {grouped.map((group) => (
+      <div class="category-group">
+        <div class="category-title">
+          <span>{group.category}</span>
+          <span class="category-count">{group.totalCount}</span>
+        </div>
+        <ul class="service-list">
+          {group.items.map((item) => (
+            <li>
+              <a
+                href={`/services/${item.slug}`}
+                class={`service-link ${activeServiceSlug === item.slug ? 'active' : ''}`}
+                title={`${item.service} (${item.count} updates)`}
+              >
+                <span class="service-name">{item.service}</span>
+                <span class="service-count">{item.count}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="radar-status-card">
+      <div class="status-indicator">
+        <span class="status-pulse"></span>
+        <span class="status-text">Discovery Ingestion Active</span>
+      </div>
+      <p class="status-desc">Scanning Google Discovery Service every 5 hours via CI.</p>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .gcp-sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--bg-surface);
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--header-height));
+    position: sticky;
+    top: var(--header-height);
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sidebar-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+  }
+
+  .total-services-badge {
+    font-size: 11px;
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue);
+    padding: 2px 6px;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+  }
+
+  .sidebar-menu {
+    padding: 12px 8px;
+    flex: 1;
+  }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-decoration: none;
+    margin-bottom: 2px;
+    transition: all 0.15s ease;
+  }
+
+  .sidebar-item:hover {
+    background-color: var(--bg-surface-hover);
+    text-decoration: none;
+  }
+
+  .sidebar-item.active {
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue);
+    font-weight: 600;
+  }
+
+  .item-count {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+  }
+
+  .breaking-item {
+    color: var(--google-red);
+  }
+
+  .breaking-item.active {
+    background-color: var(--google-red-subtle);
+    color: var(--google-red);
+  }
+
+  .item-badge-breaking {
+    font-size: 10px;
+    font-weight: 700;
+    background-color: var(--google-red);
+    color: #ffffff;
+    padding: 1px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  .sidebar-divider {
+    height: 1px;
+    background-color: var(--border-subtle);
+    margin: 12px 4px;
+  }
+
+  .category-group {
+    margin-bottom: 16px;
+  }
+
+  .category-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-tertiary);
+  }
+
+  .category-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+
+  .service-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .service-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px 6px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .service-link:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  .service-link.active {
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue);
+    font-weight: 600;
+    border-left: 3px solid var(--google-blue);
+  }
+
+  .service-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .service-count {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+  }
+
+  .sidebar-footer {
+    padding: 12px;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .radar-status-card {
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--google-green);
+    margin-bottom: 4px;
+  }
+
+  .status-pulse {
+    width: 8px;
+    height: 8px;
+    background-color: var(--google-green);
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(24, 128, 56, 0.7);
+    animation: status-pulse 2s infinite;
+  }
+
+  @keyframes status-pulse {
+    0% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(24, 128, 56, 0.7);
+    }
+    70% {
+      transform: scale(1);
+      box-shadow: 0 0 0 6px rgba(24, 128, 56, 0);
+    }
+    100% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(24, 128, 56, 0);
+    }
+  }
+
+  .status-desc {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    line-height: 1.3;
+  }
+
+  @media (max-width: 900px) {
+    .gcp-sidebar {
+      width: 100%;
+      height: auto;
+      position: static;
+      border-right: none;
+      border-bottom: 1px solid var(--border-subtle);
+      max-height: 300px;
+    }
+  }
+</style>

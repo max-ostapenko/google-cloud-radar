@@ -1,0 +1,560 @@
+---
+interface Props {
+  currentPath?: string;
+}
+
+const { currentPath = '/' } = Astro.props;
+---
+
+<header class="gcp-header">
+  <div class="header-left">
+    <a href="/" class="brand-logo" title="Google Cloud Radar">
+      <div class="gcp-cloud-icon">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" fill="#4285F4" stroke="#4285F4"/>
+          <circle cx="12" cy="12" r="3" fill="#ffffff"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">Google Cloud <span class="brand-highlight">Radar</span></span>
+        <span class="canary-tag">Pre-Release Canary</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="header-center">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input 
+        type="search" 
+        id="global-search-input" 
+        placeholder="Filter by API, method, or service (e.g. vertex, compact, bigquery)..." 
+        aria-label="Filter API changes"
+      />
+      <span class="search-kbd">/</span>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <nav class="nav-links">
+      <a href="/" class={currentPath === '/' ? 'active' : ''}>Feed</a>
+      <a href="/breaking" class={currentPath === '/breaking' ? 'active breaking-nav' : 'breaking-nav'}>
+        <span class="breaking-dot"></span> Breaking
+      </a>
+      <a href="/stats" class={currentPath === '/stats' ? 'active' : ''}>Stats</a>
+      <a href="/rss.xml" class="icon-link" title="Global RSS Feed" target="_blank">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 11a9 9 0 0 1 9 9"></path>
+          <path d="M4 4a16 16 0 0 1 16 16"></path>
+          <circle cx="5" cy="19" r="1"></circle>
+        </svg>
+        <span>RSS</span>
+      </a>
+      <a href="/api/feed.json" class="icon-link" title="Public JSON Feed API" target="_blank">
+        <span class="json-tag">&#123; JSON &#125;</span>
+      </a>
+    </nav>
+
+    <div class="creator-badge">
+      <a href="https://maxostapenko.com" target="_blank" rel="noopener noreferrer" class="creator-link">
+        <span class="creator-label">By</span>
+        <span class="creator-name">Max Ostapenko</span>
+      </a>
+    </div>
+
+    <div class="auth-header-container" id="headerAuthContainer">
+      <button id="headerSignInBtn" class="header-signin-btn" type="button" title="Sign in with Google">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span>Sign in</span>
+      </button>
+
+      <div id="headerUserMenu" class="user-menu" style="display: none;">
+        <button id="userAvatarBtn" class="user-avatar-btn" aria-label="Open user menu" type="button">
+          <img id="headerUserAvatar" src="" alt="User avatar" class="header-avatar-img" />
+        </button>
+        <div id="userDropdown" class="user-dropdown" style="display: none;">
+          <div class="user-dropdown-header">
+            <strong id="dropdownUserName">Google Engineer</strong>
+            <span id="dropdownUserEmail">user@gmail.com</span>
+          </div>
+          <div class="dropdown-divider"></div>
+          <button id="headerSignOutBtn" class="dropdown-signout-btn" type="button">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <button id="theme-toggle" class="theme-btn" aria-label="Toggle dark mode" title="Toggle Theme">
+      <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/>
+        <line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/>
+        <line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <svg class="moon-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<script>
+  import { signInWithGoogle, signOutUser, onAuthChange } from '../lib/firebase';
+
+  function initHeaderAuth() {
+    const signInBtn = document.getElementById('headerSignInBtn');
+    const userMenu = document.getElementById('headerUserMenu');
+    const avatarBtn = document.getElementById('userAvatarBtn');
+    const avatarImg = document.getElementById('headerUserAvatar') as HTMLImageElement;
+    const dropdown = document.getElementById('userDropdown');
+    const dropdownName = document.getElementById('dropdownUserName');
+    const dropdownEmail = document.getElementById('dropdownUserEmail');
+    const signOutBtn = document.getElementById('headerSignOutBtn');
+
+    signInBtn?.addEventListener('click', async () => {
+      try {
+        await signInWithGoogle();
+      } catch (err) {
+        console.log('Sign in closed');
+      }
+    });
+
+    signOutBtn?.addEventListener('click', async () => {
+      await signOutUser();
+      if (dropdown) dropdown.style.display = 'none';
+    });
+
+    avatarBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+      }
+    });
+
+    document.addEventListener('click', () => {
+      if (dropdown) dropdown.style.display = 'none';
+    });
+
+    onAuthChange((user) => {
+      if (user) {
+        if (signInBtn) signInBtn.style.display = 'none';
+        if (userMenu) userMenu.style.display = 'block';
+        if (avatarImg) avatarImg.src = user.photoURL || 'https://www.gstatic.com/images/branding/product/2x/avatar_square_blue_512dp.png';
+        if (dropdownName) dropdownName.textContent = user.displayName || 'Google User';
+        if (dropdownEmail) dropdownEmail.textContent = user.email || '';
+      } else {
+        if (signInBtn) signInBtn.style.display = 'inline-flex';
+        if (userMenu) userMenu.style.display = 'none';
+      }
+    });
+  }
+
+  initHeaderAuth();
+  document.addEventListener('astro:page-load', initHeaderAuth);
+</script>
+
+<script is:inline>
+  // Theme handling
+  const themeToggle = document.getElementById('theme-toggle');
+  const storedTheme = localStorage.getItem('gcp-radar-theme') || 
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  
+  document.documentElement.setAttribute('data-theme', storedTheme);
+
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('gcp-radar-theme', next);
+    });
+  }
+
+  // Keyboard shortcut '/' to search
+  window.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      const searchInput = document.getElementById('global-search-input');
+      if (searchInput) {
+        searchInput.focus();
+      }
+    }
+  });
+</script>
+
+<style>
+  .gcp-header {
+    height: var(--header-height);
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    min-width: 240px;
+  }
+
+  .brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--text-primary);
+  }
+
+  .brand-logo:hover {
+    text-decoration: none;
+  }
+
+  .gcp-cloud-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .brand-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    color: var(--text-primary);
+  }
+
+  .brand-highlight {
+    color: var(--google-blue);
+  }
+
+  .canary-tag {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--google-green);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .header-center {
+    flex: 1;
+    max-width: 540px;
+  }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    padding: 6px 14px;
+    gap: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .search-box:focus-within {
+    border-color: var(--google-blue);
+    background-color: var(--bg-surface);
+    box-shadow: 0 0 0 2px var(--google-blue-subtle);
+  }
+
+  .search-icon {
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+
+  .search-box input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-size: 13px;
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    outline: none;
+  }
+
+  .search-box input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .search-kbd {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-links a:hover, .nav-links a.active {
+    color: var(--google-blue);
+    background-color: var(--google-blue-subtle);
+    text-decoration: none;
+  }
+
+  .breaking-nav {
+    color: var(--google-red) !important;
+  }
+
+  .breaking-nav:hover, .breaking-nav.active {
+    background-color: var(--google-red-subtle) !important;
+  }
+
+  .breaking-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--google-red);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .json-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .creator-badge {
+    border-left: 1px solid var(--border-subtle);
+    padding-left: 14px;
+  }
+
+  .creator-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .creator-link:hover {
+    color: var(--google-blue);
+    border-color: var(--google-blue-border);
+    text-decoration: none;
+  }
+
+  .creator-label {
+    color: var(--text-tertiary);
+  }
+
+  .creator-name {
+    font-weight: 600;
+  }
+
+  .auth-header-container {
+    position: relative;
+  }
+
+  .header-signin-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .header-signin-btn:hover {
+    background-color: var(--bg-surface-hover);
+    border-color: var(--border-strong);
+  }
+
+  .user-avatar-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border-radius: 50%;
+  }
+
+  .header-avatar-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--google-blue);
+    object-fit: cover;
+  }
+
+  .user-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    padding: 12px;
+    min-width: 200px;
+    z-index: 1000;
+  }
+
+  .user-dropdown-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-bottom: 8px;
+  }
+
+  .user-dropdown-header strong {
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+
+  .user-dropdown-header span {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  .dropdown-divider {
+    height: 1px;
+    background-color: var(--border-subtle);
+    margin: 8px 0;
+  }
+
+  .dropdown-signout-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--google-red);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.15s ease;
+  }
+
+  .dropdown-signout-btn:hover {
+    background-color: var(--google-red-subtle);
+  }
+
+  .theme-btn {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+  }
+
+  .theme-btn:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+  }
+
+  .sun-icon {
+    display: block;
+  }
+  .moon-icon {
+    display: none;
+  }
+
+  [data-theme='dark'] .sun-icon {
+    display: none;
+  }
+  [data-theme='dark'] .moon-icon {
+    display: block;
+  }
+
+  @media (max-width: 1024px) {
+    .header-center {
+      display: none;
+    }
+    .creator-badge {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .gcp-header {
+      padding: 0 12px;
+    }
+    .canary-tag {
+      display: none;
+    }
+    .nav-links a span {
+      display: none;
+    }
+  }
+</style>

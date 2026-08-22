@@ -1,11 +1,56 @@
+# OS & Editor
+.DS_Store
+._*
+Thumbs.db
 *~
-git-subrepo
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Python
 *.pyc
-mockgen/build
-mockgen/dist
-mockgen/mockgen.egg-info
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.venv/
+tests/tmp/
+
+# Node.js & Astro
+node_modules/
+web/node_modules/
+web/dist/
+web/.astro/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Firebase & Emulators
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfplan
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Legacy toolkit artifacts
+git-subrepo
 test
-.vscode
-.mypy_cache
-tests/tmp
-.venv

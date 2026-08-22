@@ -1,0 +1,361 @@
+---
+import type { FeedEntry } from '../lib/feed';
+import ShareScoopModal from './ShareScoopModal.astro';
+
+interface Props {
+  entry: FeedEntry;
+}
+
+const { entry } = Astro.props;
+
+// Date formatting
+const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<article 
+  class={`change-card ${entry.breaking ? 'is-breaking' : ''}`}
+  data-service={entry.service.toLowerCase()}
+  data-api={entry.api.toLowerCase()}
+  data-category={entry.category.toLowerCase()}
+  data-breaking={entry.breaking ? 'true' : 'false'}
+  data-impact={entry.impact}
+  data-score={entry.interesting_score}
+  data-text={`${entry.title} ${entry.summary} ${entry.api} ${entry.service} ${entry.tags.join(' ')}`.toLowerCase()}
+>
+  <div class="card-top">
+    <div class="card-meta-left">
+      <a href={`/services/${entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} class="service-pill" title={`View all ${entry.service} updates`}>
+        <span class="service-icon-dot"></span>
+        <span class="service-name">{entry.service}</span>
+      </a>
+      <span class="api-code" title="Discovery API Identifier">`{entry.api}`</span>
+      <span class="meta-separator">•</span>
+      <time datetime={entry.date} class="entry-date">{formattedDate}</time>
+    </div>
+
+    <div class="card-meta-right">
+      {entry.status === 'released' ? (
+        <span class="badge badge-released" title={`Confirmed in official release notes${entry.lead_time_days ? ` (Caught ${entry.lead_time_days} days earlier in Canary)` : ''}`}>
+          <span class="status-dot-green"></span> Released {entry.lead_time_days ? `(${entry.lead_time_days}d lead)` : ''}
+        </span>
+      ) : (
+        <span class="badge badge-canary" title="Detected in Discovery control plane; not yet in official release notes">
+          <span class="status-dot-yellow"></span> Canary
+        </span>
+      )}
+
+      {entry.breaking && (
+        <span class="badge badge-breaking" title="This update contains breaking API changes">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+          </svg>
+          Breaking
+        </span>
+      )}
+
+      <span class={`badge badge-impact-${entry.impact}`} title={`Impact level: ${entry.impact}`}>
+        Impact: {entry.impact}
+      </span>
+
+      <span class="badge badge-score" title={`Relevance score: ${entry.interesting_score}/10`}>
+        ★ {entry.interesting_score}/10
+      </span>
+    </div>
+  </div>
+
+  <h3 class="card-title">
+    <a href={`/changes/${entry.slug}`} class="title-link">
+      {entry.title}
+    </a>
+  </h3>
+
+  {entry.summary && (
+    <p class="card-summary">{entry.summary}</p>
+  )}
+
+  {entry.extractedMethods && entry.extractedMethods.length > 0 && (
+    <div class="methods-section">
+      <span class="methods-label">Methods / Resources:</span>
+      <div class="methods-list">
+        {entry.extractedMethods.map((method) => (
+          <div class="method-chip" title="Click to copy method">
+            <span class="method-rpc-tag">RPC</span>
+            <code class="method-name">{method}</code>
+            <button class="copy-method-btn" data-copy={method} aria-label="Copy method identifier" title="Copy method">
+              <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+
+  <div class="card-bottom">
+    <div class="tags-list">
+      {entry.tags.map((tag) => (
+        <span class="tag-chip">#{tag}</span>
+      ))}
+    </div>
+
+    <div class="card-actions-right">
+      <ShareScoopModal
+        slug={entry.slug}
+        title={entry.title}
+        service={entry.service}
+        api={entry.api}
+        summary={entry.summary}
+        methods={entry.extractedMethods}
+        isBreaking={entry.breaking}
+        leadTimeDays={entry.lead_time_days}
+      />
+      <a href={`/changes/${entry.slug}`} class="details-cta">
+        <span>View Diff</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</article>
+
+<style>
+  .change-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+
+  .change-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+
+  .change-card.is-breaking {
+    border-left: 4px solid var(--google-red);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .card-meta-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .service-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--google-blue-border);
+    text-decoration: none;
+  }
+
+  .service-pill:hover {
+    background-color: var(--google-blue);
+    color: #ffffff;
+    text-decoration: none;
+  }
+
+  .service-icon-dot {
+    width: 6px;
+    height: 6px;
+    background-color: currentColor;
+    border-radius: 50%;
+  }
+
+  .api-code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface-hover);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  .meta-separator {
+    color: var(--text-tertiary);
+    font-size: 10px;
+  }
+
+  .entry-date {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  .card-meta-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .title-link {
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  .title-link:hover {
+    color: var(--google-blue);
+    text-decoration: underline;
+  }
+
+  .card-summary {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+
+  .methods-section {
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .methods-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .methods-list {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .method-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 12px;
+  }
+
+  .method-rpc-tag {
+    font-size: 9px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--google-purple);
+    background-color: var(--google-purple-subtle);
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+
+  .method-name {
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+  }
+
+  .copy-method-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+  }
+
+  .copy-method-btn:hover {
+    color: var(--google-blue);
+    background-color: var(--bg-surface-hover);
+  }
+
+  .card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-subtle);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .tags-list {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tag-chip {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    background-color: var(--bg-surface-hover);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .card-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .details-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--google-blue);
+    text-decoration: none;
+    transition: gap 0.15s ease;
+  }
+
+  .details-cta:hover {
+    gap: 10px;
+    text-decoration: none;
+  }
+</style>
