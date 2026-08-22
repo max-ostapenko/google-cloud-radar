@@ -16,7 +16,7 @@ CI:
 import json
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -58,13 +58,19 @@ def _get_project_id() -> Optional[str]:
     return None
 
 
-def analyze_api_diff(diff: dict) -> Optional[dict]:
+def analyze_api_diff(
+    diff: dict,
+    existing_today_content: Optional[str] = None,
+    recent_history_content: Optional[str] = None,
+) -> Optional[dict]:
     """Send a structured API diff to Gemini and return the parsed JSON insight.
 
     Uses Vertex AI backend (ADC with standard cloud-platform scope).
 
     Args:
         diff: Structured diff dict with keys: api, added, removed, modified.
+        existing_today_content: Content of today's existing published feed item.
+        recent_history_content: Content of the most recent past feed item for context.
 
     Returns:
         Parsed insight dict, or None if credentials are unavailable or the call fails.
@@ -91,7 +97,15 @@ def analyze_api_diff(diff: dict) -> Optional[dict]:
         return None
 
     system_prompt = _load_system_prompt()
-    user_message = json.dumps(diff, indent=2)
+
+    # Wrap the payload to include history/conflict context if present
+    user_payload: dict[str, Any] = {"diff": diff}
+    if existing_today_content:
+        user_payload["existing_today_content"] = existing_today_content
+    if recent_history_content:
+        user_payload["recent_history_content"] = recent_history_content
+
+    user_message = json.dumps(user_payload, indent=2)
     api_name = diff.get("api", "unknown")
     logger.info(f"Sending diff for {api_name} to Gemini ({MODEL}, Vertex AI) ...")
 

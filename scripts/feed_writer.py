@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 FEED_DIR = Path(__file__).parent.parent / "feed"
 INDEX_PATH = FEED_DIR / "index.json"
 
-INTERESTING_SCORE_THRESHOLD = 2
+INTERESTING_SCORE_THRESHOLD = 3
 
 
 def _slugify(s: str) -> str:
@@ -116,6 +116,58 @@ def _render_markdown(insight: dict, slug: str, insight_date: str) -> str:
     return "\n".join(lines)
 
 
+def get_recent_feed_entries(
+    api: str, insight_date: str, max_entries: int = 3
+) -> tuple[Optional[str], list[dict]]:
+    """Look up index.json to find today's entry and recent past entries for the given api.
+
+    Args:
+        api: The API ID.
+        insight_date: ISO date string for today (YYYY-MM-DD).
+        max_entries: Max past entries to return.
+
+    Returns:
+        A tuple: (existing_today_content_string, list_of_past_entries)
+        Each past entry is a dict: {"date": str, "slug": str, "content": str}
+    """
+    index = _load_index()
+    api_entries = [e for e in index if e.get("api") == api]
+    if not api_entries:
+        return None, []
+
+    # Sort by date descending, then slug descending to find the newest first
+    api_entries.sort(key=lambda e: (e.get("date", ""), e.get("slug", "")), reverse=True)
+
+    existing_today_content = None
+    recent_history: list[dict] = []
+
+    for entry in api_entries:
+        entry_date = entry.get("date")
+        slug = entry.get("slug")
+        if not slug or not entry_date:
+            continue
+
+        md_path = FEED_DIR / f"{slug}.md"
+        if not md_path.exists():
+            continue
+
+        try:
+            content = md_path.read_text(encoding="utf-8")
+        except Exception as e:
+            logger.warning(f"Failed to read feed file {md_path}: {e}")
+            continue
+
+        if entry_date == insight_date:
+            existing_today_content = content
+        else:
+            if len(recent_history) < max_entries:
+                recent_history.append(
+                    {"date": entry_date, "slug": slug, "content": content}
+                )
+
+    return existing_today_content, recent_history
+
+
 def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional[str]:
     """Write a single insight to the feed.
 
@@ -141,11 +193,17 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
     FEED_DIR.mkdir(parents=True, exist_ok=True)
 
     base_slug = _make_slug(api, insight_date)
-    file_path, final_slug = _find_available_path(base_slug)
+    file_path = FEED_DIR / f"{base_slug}.md"
+    final_slug = base_slug
+
+    is_update = file_path.exists()
 
     md_content = _render_markdown(insight, final_slug, insight_date)
     file_path.write_text(md_content, encoding="utf-8")
-    logger.info(f"  Written: {_display_path(file_path)} (score={score})")
+    if is_update:
+        logger.info(f"  Updated: {_display_path(file_path)} (score={score})")
+    else:
+        logger.info(f"  Written: {_display_path(file_path)} (score={score})")
 
     # Update index
     index = _load_index()
@@ -161,7 +219,18 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
         "interesting_score": score,
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
-    index.append(index_entry)
+
+    # In case of update, replace existing entry in-place
+    replaced = False
+    for i, entry in enumerate(index):
+        if entry.get("slug") == final_slug:
+            index[i] = index_entry
+            replaced = True
+            break
+
+    if not replaced:
+        index.append(index_entry)
+
     # Keep sorted newest-first
     index.sort(key=lambda e: (e["date"], e["slug"]), reverse=True)
     _save_index(index)

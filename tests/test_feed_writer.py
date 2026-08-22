@@ -60,9 +60,8 @@ class TestFeedWriter(unittest.TestCase):
                 )
 
             self.assertEqual("2026-04-17-bigquery-v2", first)
-            self.assertEqual("2026-04-17-bigquery-v2_v2", second)
+            self.assertEqual("2026-04-17-bigquery-v2", second)
             self.assertTrue((feed_dir / "2026-04-17-bigquery-v2.md").exists())
-            self.assertTrue((feed_dir / "2026-04-17-bigquery-v2_v2.md").exists())
 
     def test_write_insight_skips_scores_below_threshold(self):
         with tempfile.TemporaryDirectory() as tmp:

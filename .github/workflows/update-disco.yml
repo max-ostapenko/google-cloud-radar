@@ -13,12 +13,11 @@ jobs:
       pull-requests: write # create/update PRs via gh
       issues: write        # add automerge label
       id-token: write      # Workload Identity Federation
-      actions: write       # allow pushing branches containing workflow changes
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # Need at least 2 commits of history so git diff HEAD~1 works
           fetch-depth: 2
@@ -30,28 +29,14 @@ jobs:
           service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
 
       - name: Install Python 3.13
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.13"
 
       - name: Install dependencies
         run: pip install google-genai google-auth
 
-      - name: Update discoveries and open PR
+      - name: Update discoveries, generate feed, and open PR
         run: |
           python scripts/update_disco.py && python scripts/open_pr.py
-
-      - name: Analyse API changes and update feed
-        # Run even if there were no discovery changes (no-op in that case)
-        run: |
-          python scripts/diff_to_feed.py
-
-      - name: Commit feed updates
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add feed/
-          # Only commit if there's something new in feed/
-          git diff --staged --quiet || git commit -m "chore: update API insights feed"
-          git push
 

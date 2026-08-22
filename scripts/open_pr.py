@@ -189,6 +189,38 @@ def ensure_git_remote(
         subprocess.run(["git", "remote", "add", REMOTE_NAME, remote_url], check=True)
 
 
+def generate_and_commit_feed() -> None:
+    """Generate feed updates and commit them to the current branch."""
+    logging.info("Generating feed updates ...")
+    result = subprocess.run(
+        [sys.executable, "scripts/diff_to_feed.py"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    logging.info(result.stdout)
+    if result.returncode != 0:
+        logging.error("diff_to_feed.py failed: %s", result.stderr)
+        sys.exit(f"diff_to_feed.py failed with return code {result.returncode}")
+
+    logging.info("Staging feed updates ...")
+    subprocess.run(["git", "add", "feed/"], check=True)
+
+    # Check if there are staged changes to commit
+    diff_result = subprocess.run(
+        ["git", "diff", "--staged", "--quiet"],
+        check=False,
+    )
+    if diff_result.returncode != 0:
+        logging.info("Feed changes detected. Committing feed updates ...")
+        subprocess.run(
+            ["git", "commit", "-m", "chore: update API insights feed"],
+            check=True,
+        )
+    else:
+        logging.info("No feed updates to commit.")
+
+
 def open_pr(github_token: Optional[str]) -> None:
     """Actually open the pull request
 
@@ -196,6 +228,7 @@ def open_pr(github_token: Optional[str]) -> None:
         github_token {Optional[str]} -- The github token, if provided
     """
     branch: str = commit_changes()
+    generate_and_commit_feed()
     push_changes(branch, github_token)
     pr_number: str = create_pr(branch)
     update_pr(pr_number, github_token)
