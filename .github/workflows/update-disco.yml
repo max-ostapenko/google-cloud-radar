@@ -6,7 +6,7 @@ on:
 
 jobs:
   update-discoveries:
-    if: ${{ github.repository == 'max-ostapenko/discovery-artifact-manager' }}
+    if: ${{ github.repository == 'max-ostapenko/google-cloud-radar' || github.repository == 'max-ostapenko/discovery-artifact-manager' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write      # push feed commits
