@@ -82,15 +82,21 @@ def main() -> None:
     insight_date = args.date or date.today().isoformat()
     for diff in structured_diffs:
         api = diff.get("api", "unknown")
-        
+
         existing_today_content = None
         recent_history_content = None
 
-        existing_today_content, recent_history = get_recent_feed_entries(api, insight_date)
+        existing_today_content, recent_history = get_recent_feed_entries(
+            api, insight_date
+        )
         if existing_today_content:
-            logger.info(f"Found existing feed entry for {api} today. Will request LLM merge.")
+            logger.info(
+                f"Found existing feed entry for {api} today. Will request LLM merge."
+            )
         if recent_history:
-            logger.info(f"Found {len(recent_history)} recent historical feed entries for {api}. Will pass as context.")
+            logger.info(
+                f"Found {len(recent_history)} recent historical feed entries for {api}. Will pass as context."
+            )
             recent_history_content = "\n\n".join(
                 f"--- Entry Date: {h['date']} (Slug: {h['slug']}) ---\n{h['content']}"
                 for h in recent_history
@@ -99,7 +105,7 @@ def main() -> None:
         insight = analyze_api_diff(
             diff,
             existing_today_content=existing_today_content,
-            recent_history_content=recent_history_content
+            recent_history_content=recent_history_content,
         )
         if insight:
             insights.append(insight)

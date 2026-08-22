@@ -16,7 +16,7 @@ CI:
 import json
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -97,11 +97,9 @@ def analyze_api_diff(
         return None
 
     system_prompt = _load_system_prompt()
-    
+
     # Wrap the payload to include history/conflict context if present
-    user_payload = {
-        "diff": diff
-    }
+    user_payload: dict[str, Any] = {"diff": diff}
     if existing_today_content:
         user_payload["existing_today_content"] = existing_today_content
     if recent_history_content:
