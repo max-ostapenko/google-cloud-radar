@@ -4,12 +4,22 @@ import matter from 'gray-matter';
 import { marked } from 'marked';
 
 export type ChangeStatus = 'canary' | 'released' | 'retracted' | 'deprecated';
+export type RadarRing = 'assess' | 'trial' | 'adopt' | 'hold';
+export type RadarQuadrant = 'ai_ml' | 'data_platforms' | 'infra_compute' | 'security_finops';
+
+export interface ReactionCounts {
+  impacts_prod: number;
+  breaking_me: number;
+  watch_ga: number;
+}
 
 export interface FeedEntryMeta {
   slug: string;
   date: string;
   api: string;
   service: string;
+  service_id?: string;
+  version?: string;
   title: string;
   impact: 'low' | 'medium' | 'high';
   breaking: boolean;
@@ -17,9 +27,14 @@ export interface FeedEntryMeta {
   interesting_score: number;
   generated_at?: string;
   status?: ChangeStatus;
+  radar_ring?: RadarRing;
+  radar_quadrant?: RadarQuadrant;
+  radar_movement?: 'new' | 'promoted' | 'demoted' | 'unchanged';
   lead_time_days?: number;
   official_release_date?: string;
   official_release_notes_url?: string;
+  reaction_counts?: ReactionCounts;
+  comments_count?: number;
   stats?: {
     upvotes?: number;
     impacted_users_count?: number;
@@ -29,6 +44,10 @@ export interface FeedEntryMeta {
 
 export interface FeedEntry extends FeedEntryMeta {
   status: ChangeStatus;
+  radar_ring: RadarRing;
+  radar_quadrant: RadarQuadrant;
+  reaction_counts: ReactionCounts;
+  comments_count: number;
   rawContent: string;
   htmlContent: string;
   summary: string;
@@ -124,8 +143,11 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       const f = doc.fields || {};
       const id = f.id?.stringValue || f.slug?.stringValue || '';
       const service = f.service_name?.stringValue || f.service?.stringValue || 'Google Cloud';
+      const service_id = f.service_id?.stringValue || id.toLowerCase();
       const api = f.api?.stringValue || '';
-      const dateStr = (f.first_detected_at?.stringValue || f.date?.stringValue || id.slice(0, 10)).slice(0, 10);
+      const version = f.version?.stringValue || (api.includes('.') ? api.split('.').pop() : 'v1');
+      const rawDate = f.first_detected_at?.timestampValue || f.first_detected_at?.stringValue || f.date?.stringValue || id.slice(0, 10);
+      const dateStr = rawDate.slice(0, 10);
       const title = f.title?.stringValue || `${service} Update`;
       const summary = f.summary?.stringValue || '';
       const detailsMarkdown = f.details_markdown?.stringValue || summary;
@@ -134,8 +156,23 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       const interesting_score = parseInt(f.interesting_score?.integerValue || '5', 10);
       const status = (f.status?.stringValue || 'canary') as ChangeStatus;
       const lead_time_days = f.lead_time_days ? parseInt(f.lead_time_days.integerValue, 10) : undefined;
-      const official_release_date = f.official_release_date?.stringValue;
+      const official_release_date = f.official_release_date?.timestampValue || f.official_release_date?.stringValue;
       const official_release_notes_url = f.official_release_notes_url?.stringValue;
+
+      const radar_ring = (f.radar_ring?.stringValue || (breaking ? 'hold' : status === 'released' ? 'adopt' : 'assess')) as RadarRing;
+      const radar_quadrant = (f.radar_quadrant?.stringValue || 'infra_compute') as RadarQuadrant;
+      const radar_movement = (f.radar_movement?.stringValue || 'new') as 'new' | 'promoted' | 'demoted' | 'unchanged';
+
+      let reaction_counts: ReactionCounts = { impacts_prod: 0, breaking_me: 0, watch_ga: 0 };
+      if (f.reaction_counts?.mapValue?.fields) {
+        const rc = f.reaction_counts.mapValue.fields;
+        reaction_counts = {
+          impacts_prod: parseInt(rc.impacts_prod?.integerValue || '0', 10),
+          breaking_me: parseInt(rc.breaking_me?.integerValue || '0', 10),
+          watch_ga: parseInt(rc.watch_ga?.integerValue || '0', 10),
+        };
+      }
+      const comments_count = parseInt(f.comments_count?.integerValue || '0', 10);
 
       let tags: string[] = [];
       if (f.tags?.arrayValue?.values) {
@@ -155,22 +192,29 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       }
 
       const htmlContent = marked.parse(detailsMarkdown, { async: false }) as string;
-      const category = getCategoryForService(service || api);
+      const category = (f.category?.stringValue as ServiceCategory) || getCategoryForService(service || api);
 
       return {
         slug: id,
         date: dateStr,
         api,
+        version,
         service,
+        service_id,
         title,
         impact,
         breaking,
         tags,
         interesting_score,
         status,
+        radar_ring,
+        radar_quadrant,
+        radar_movement,
         lead_time_days,
         official_release_date,
         official_release_notes_url,
+        reaction_counts,
+        comments_count,
         stats,
         rawContent: detailsMarkdown,
         htmlContent,
@@ -215,7 +259,9 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const { data, content } = matter(fileContent);
 
       const service = data.service || data.service_name || data.api || 'Google Cloud';
+      const service_id = slugify(service);
       const api = data.api || file.split('-').slice(3).join('-').replace(/_v\d+$/, '');
+      const version = api.split('.').pop() || 'v1';
 
       let dateStr = file.slice(0, 10);
       if (data.date instanceof Date) {
@@ -225,7 +271,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
       }
 
       const impact = (data.impact || 'medium').toLowerCase() as 'low' | 'medium' | 'high';
-      const breaking = Boolean(data.breaking);
+      const breaking = Boolean(data.breaking || data.is_breaking);
       const tags = Array.isArray(data.tags) ? data.tags : [];
       const interesting_score = Number(data.interesting_score ?? 5);
 
@@ -244,8 +290,10 @@ export function getLocalFeedEntries(): FeedEntry[] {
       }
 
       const htmlContent = marked.parse(content, { async: false }) as string;
-      const category = getCategoryForService(service || api);
+      const category = (data.category as ServiceCategory) || getCategoryForService(service || api);
       const status = (data.status || 'canary').toLowerCase() as ChangeStatus;
+      const radar_ring = (data.radar_ring || (breaking ? 'hold' : status === 'released' ? 'adopt' : 'assess')) as RadarRing;
+      const radar_quadrant: RadarQuadrant = category.includes('AI') ? 'ai_ml' : category.includes('FinOps') ? 'security_finops' : 'data_platforms';
       const lead_time_days = data.lead_time_days ? Number(data.lead_time_days) : undefined;
       const official_release_date = data.official_release_date ? String(data.official_release_date) : undefined;
       const official_release_notes_url = data.official_release_notes_url ? String(data.official_release_notes_url) : undefined;
@@ -255,16 +303,23 @@ export function getLocalFeedEntries(): FeedEntry[] {
         slug,
         date: dateStr,
         api,
+        version,
         service,
+        service_id,
         title: data.title || `${service} API Update`,
         impact,
         breaking,
         tags,
         interesting_score,
         status,
+        radar_ring,
+        radar_quadrant,
+        radar_movement: 'new',
         lead_time_days,
         official_release_date,
         official_release_notes_url,
+        reaction_counts: { impacts_prod: 0, breaking_me: 0, watch_ga: 0 },
+        comments_count: 0,
         stats,
         rawContent: content,
         htmlContent,

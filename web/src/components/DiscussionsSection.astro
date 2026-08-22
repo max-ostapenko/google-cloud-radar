@@ -76,7 +76,15 @@ const { slug } = Astro.props;
 </section>
 
 <script>
-  import { getFirebaseAuth, signInWithGoogle, onAuthChange } from '../lib/firebase';
+  import {
+    getFirebaseAuth,
+    signInWithGoogle,
+    onAuthChange,
+    listenToComments,
+    addComment as addFirestoreComment,
+    deleteComment as deleteFirestoreComment,
+    type CommentItem,
+  } from '../lib/firebase';
 
   function initDiscussions() {
     const section = document.querySelector('.discussions-section') as HTMLElement;
@@ -97,15 +105,9 @@ const { slug } = Astro.props;
     const noCommentsMsg = document.getElementById('noCommentsMsg');
 
     let currentUser: any = null;
-    const storageKey = `gcp_radar_comments_${slug}`;
+    let comments: CommentItem[] = [];
 
-    // Load comments from localStorage
-    function loadComments() {
-      let comments = [];
-      try {
-        comments = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      } catch {}
-
+    function renderComments() {
       if (commentsCount) {
         commentsCount.textContent = `${comments.length} comment${comments.length === 1 ? '' : 's'}`;
       }
@@ -114,20 +116,19 @@ const { slug } = Astro.props;
         noCommentsMsg.style.display = comments.length === 0 ? 'block' : 'none';
       }
 
-      // Render comments
-      const commentCards = comments.map((c: any) => `
+      const commentCards = comments.map((c) => `
         <div class="comment-card" id="comment-${c.id}">
           <div class="comment-top">
             <div class="comment-author-info">
               <div class="comment-avatar-circle">
-                ${c.authorPhoto ? `<img src="${c.authorPhoto}" alt="${c.authorName}" class="author-img"/>` : c.authorName.charAt(0).toUpperCase()}
+                ${c.author_photo ? `<img src="${c.author_photo}" alt="${c.author_name}" class="author-img"/>` : c.author_name.charAt(0).toUpperCase()}
               </div>
               <div class="author-details">
-                <span class="author-display-name">${c.authorName}</span>
-                <time class="comment-time">${new Date(c.createdAt).toLocaleDateString()} ${new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
+                <span class="author-display-name">${c.author_name}</span>
+                <time class="comment-time">${new Date(c.created_at).toLocaleDateString()} ${new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
               </div>
             </div>
-            ${currentUser && currentUser.uid === c.authorId ? `
+            ${currentUser && currentUser.uid === c.author_id ? `
               <button class="delete-comment-btn" data-comment-id="${c.id}" title="Delete comment">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="3 6 5 6 21 6"></polyline>
@@ -145,46 +146,21 @@ const { slug } = Astro.props;
 
         // Attach delete listeners
         commentsList.querySelectorAll('.delete-comment-btn').forEach((btn) => {
-          btn.addEventListener('click', () => {
+          btn.addEventListener('click', async () => {
             const commentId = btn.getAttribute('data-comment-id');
-            deleteComment(commentId);
+            if (commentId) {
+              await deleteFirestoreComment(slug, commentId).catch(() => {});
+            }
           });
         });
       }
     }
 
-    function addComment(text: string) {
-      if (!currentUser || !text.trim()) return;
-
-      let comments = [];
-      try {
-        comments = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      } catch {}
-
-      const newComment = {
-        id: `c_${Date.now()}`,
-        authorId: currentUser.uid,
-        authorName: currentUser.displayName || 'Google Engineer',
-        authorPhoto: currentUser.photoURL || '',
-        content: text.trim(),
-        createdAt: new Date().toISOString(),
-      };
-
-      comments.unshift(newComment);
-      localStorage.setItem(storageKey, JSON.stringify(comments));
-      loadComments();
-    }
-
-    function deleteComment(commentId: string | null) {
-      if (!commentId) return;
-      let comments = [];
-      try {
-        comments = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      } catch {}
-      comments = comments.filter((c: any) => c.id !== commentId);
-      localStorage.setItem(storageKey, JSON.stringify(comments));
-      loadComments();
-    }
+    // Subscribe to real-time Firestore comments
+    const unsubscribe = listenToComments(slug, (liveComments) => {
+      comments = liveComments;
+      renderComments();
+    });
 
     signInBtn?.addEventListener('click', async () => {
       try {
@@ -194,11 +170,14 @@ const { slug } = Astro.props;
       }
     });
 
-    commentForm?.addEventListener('submit', (e) => {
+    commentForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (commentInput.value.trim()) {
-        addComment(commentInput.value);
+      if (commentInput.value.trim() && currentUser) {
+        const text = commentInput.value.trim();
         commentInput.value = '';
+        await addFirestoreComment(slug, currentUser, text).catch((err) => {
+          console.error('Failed to save comment:', err);
+        });
       }
     });
 
@@ -213,11 +192,13 @@ const { slug } = Astro.props;
         if (authLoggedOut) authLoggedOut.style.display = 'flex';
         if (authLoggedIn) authLoggedIn.style.display = 'none';
       }
-      loadComments();
+      renderComments();
     });
-
-    loadComments();
   }
+
+  initDiscussions();
+  document.addEventListener('astro:page-load', initDiscussions);
+</script>
 
   initDiscussions();
   document.addEventListener('astro:page-load', initDiscussions);

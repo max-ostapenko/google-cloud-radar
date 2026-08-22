@@ -2,26 +2,38 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // GCP API Changes: Public read-only; writes restricted to Admin SDK / backend pipeline
+    // Google Cloud Radar Changes: Public read-only; writes restricted to Admin SDK / backend pipeline
     match /changes/{changeId} {
       allow read: if true;
-      allow write: if false; // Writes only permitted via Admin SDK
+      allow write: if false; // Pipeline writes via Admin SDK
+
+      // Subcollection: Community Discussions / Comments
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if request.auth != null && request.resource.data.author_id == request.auth.uid;
+        allow update, delete: if request.auth != null && resource.data.author_id == request.auth.uid;
+      }
+
+      // Subcollection: User Impact Reactions
+      match /reactions/{userId} {
+        allow read: if true;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
-    // Services Metadata: Public read-only
+    // Service Hubs Metadata: Public read-only
     match /services/{serviceId} {
       allow read: if true;
       allow write: if false;
     }
 
-    // Community Discussions / Comments
+    // Legacy Top-Level Collections (Backward Compatibility)
     match /discussions/{commentId} {
       allow read: if true;
       allow create: if request.auth != null;
       allow update, delete: if request.auth != null && request.auth.uid == resource.data.authorId;
     }
 
-    // Community Impact Votes
     match /votes/{voteId} {
       allow read: if true;
       allow create, update: if request.auth != null;

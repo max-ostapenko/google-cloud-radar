@@ -61,7 +61,13 @@ const defaultWatchCount = 4;
 </div>
 
 <script>
-  import { getFirebaseAuth, signInWithGoogle, onAuthChange } from '../lib/firebase';
+  import {
+    getFirebaseAuth,
+    signInWithGoogle,
+    onAuthChange,
+    toggleUserReaction,
+    type ReactionType,
+  } from '../lib/firebase';
 
   function initReactionsBar() {
     const container = document.querySelector('.reactions-bar-container') as HTMLElement;
@@ -83,41 +89,49 @@ const defaultWatchCount = 4;
 
     // Update active states from local storage
     buttons.forEach((btn) => {
-      const type = btn.getAttribute('data-type');
+      const type = btn.getAttribute('data-type') as ReactionType;
       if (type && userVotes[type]) {
         btn.classList.add('active');
       }
 
       btn.addEventListener('click', async () => {
-        const type = btn.getAttribute('data-type');
+        const type = btn.getAttribute('data-type') as ReactionType;
         if (!type) return;
 
         const auth = getFirebaseAuth();
-        if (!auth.currentUser) {
+        let user = auth.currentUser;
+        if (!user) {
           try {
-            await signInWithGoogle();
+            user = await signInWithGoogle();
           } catch (err) {
             console.log('User cancelled or sign in failed');
             return;
           }
         }
 
+        if (!user) return;
+
         const countBadge = btn.querySelector(`[data-count-type="${type}"]`);
         let currentCount = parseInt(countBadge?.textContent || '0', 10);
+        const isCurrent = Boolean(userVotes[type]);
 
-        if (userVotes[type]) {
-          // Toggle off
+        // Optimistic UI toggle
+        if (isCurrent) {
           userVotes[type] = false;
           btn.classList.remove('active');
           if (countBadge) countBadge.textContent = String(Math.max(0, currentCount - 1));
         } else {
-          // Toggle on
           userVotes[type] = true;
           btn.classList.add('active');
           if (countBadge) countBadge.textContent = String(currentCount + 1);
         }
 
         localStorage.setItem(storageKey, JSON.stringify(userVotes));
+
+        // Sync with Cloud Firestore subcollection & atomic counter
+        await toggleUserReaction(slug, user, type, isCurrent).catch((err) => {
+          console.error('Failed to sync reaction to Firestore:', err);
+        });
       });
     });
 

@@ -13,14 +13,16 @@ import {
   collection,
   doc,
   setDoc,
+  updateDoc,
+  addDoc,
   deleteDoc,
-  getDocs,
   getDoc,
+  getDocs,
   query,
-  where,
   orderBy,
   onSnapshot,
   serverTimestamp,
+  increment,
   type Firestore,
 } from 'firebase/firestore';
 
@@ -85,10 +87,10 @@ export function onAuthChange(callback: (user: User | null) => void) {
   return onAuthStateChanged(authInstance, callback);
 }
 
-export type ReactionType = 'impacts_me' | 'breaking_me' | 'watch_ga';
+export type ReactionType = 'impacts_prod' | 'breaking_me' | 'watch_ga';
 
 export interface ReactionState {
-  impacts_me: number;
+  impacts_prod: number;
   breaking_me: number;
   watch_ga: number;
   userReactions: Record<ReactionType, boolean>;
@@ -96,10 +98,144 @@ export interface ReactionState {
 
 export interface CommentItem {
   id: string;
-  changeId: string;
-  authorId: string;
-  authorName: string;
-  authorPhoto?: string;
+  change_id: string;
+  author_id: string;
+  author_name: string;
+  author_photo?: string;
   content: string;
-  createdAt: any;
+  created_at: any;
+}
+
+/**
+ * Toggle user impact reaction with atomic aggregate counter update
+ */
+export async function toggleUserReaction(
+  changeId: string,
+  user: User,
+  type: ReactionType,
+  currentValue: boolean
+): Promise<boolean> {
+  const dbInstance = getFirebaseDb();
+  const reactionDocRef = doc(dbInstance, 'changes', changeId, 'reactions', user.uid);
+  const changeDocRef = doc(dbInstance, 'changes', changeId);
+  const nextValue = !currentValue;
+  const delta = nextValue ? 1 : -1;
+
+  try {
+    // 1. Record user's vote state in subcollection
+    await setDoc(
+      reactionDocRef,
+      {
+        user_id: user.uid,
+        [type]: nextValue,
+        updated_at: serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    // 2. Increment aggregate counter on parent change doc
+    await updateDoc(changeDocRef, {
+      [`reaction_counts.${type}`]: increment(delta),
+    }).catch(() => {
+      // If doc didn't have map initialized, fallback cleanly
+    });
+
+    return nextValue;
+  } catch (err) {
+    console.error('Failed to update reaction:', err);
+    return currentValue;
+  }
+}
+
+/**
+ * Listen to live real-time comments on a change permalink
+ */
+export function listenToComments(
+  changeId: string,
+  callback: (comments: CommentItem[]) => void
+) {
+  const dbInstance = getFirebaseDb();
+  const commentsCol = collection(dbInstance, 'changes', changeId, 'comments');
+  const q = query(commentsCol, orderBy('created_at', 'desc'));
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const items: CommentItem[] = snapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          change_id: changeId,
+          author_id: data.author_id || data.authorId || '',
+          author_name: data.author_name || data.authorName || 'Google Cloud Engineer',
+          author_photo: data.author_photo || data.authorPhoto || '',
+          content: data.content || '',
+          created_at: data.created_at?.toDate ? data.created_at.toDate() : new Date(),
+        };
+      });
+      callback(items);
+    },
+    (err) => {
+      console.warn('Comments listener fallback (Firestore offline or emulator mode):', err);
+    }
+  );
+}
+
+/**
+ * Post a new discussion comment
+ */
+export async function addComment(
+  changeId: string,
+  user: User,
+  content: string
+): Promise<CommentItem | null> {
+  const dbInstance = getFirebaseDb();
+  const commentsCol = collection(dbInstance, 'changes', changeId, 'comments');
+  const changeDocRef = doc(dbInstance, 'changes', changeId);
+
+  try {
+    const docRef = await addDoc(commentsCol, {
+      change_id: changeId,
+      author_id: user.uid,
+      author_name: user.displayName || 'Google Cloud Engineer',
+      author_photo: user.photoURL || '',
+      content: content.trim(),
+      created_at: serverTimestamp(),
+    });
+
+    // Increment comments counter on parent
+    await updateDoc(changeDocRef, {
+      comments_count: increment(1),
+    }).catch(() => {});
+
+    return {
+      id: docRef.id,
+      change_id: changeId,
+      author_id: user.uid,
+      author_name: user.displayName || 'Google Cloud Engineer',
+      author_photo: user.photoURL || '',
+      content: content.trim(),
+      created_at: new Date(),
+    };
+  } catch (err) {
+    console.error('Error adding comment:', err);
+    throw err;
+  }
+}
+
+/**
+ * Delete a discussion comment
+ */
+export async function deleteComment(
+  changeId: string,
+  commentId: string
+): Promise<void> {
+  const dbInstance = getFirebaseDb();
+  const commentDocRef = doc(dbInstance, 'changes', changeId, 'comments', commentId);
+  const changeDocRef = doc(dbInstance, 'changes', changeId);
+
+  await deleteDoc(commentDocRef);
+  await updateDoc(changeDocRef, {
+    comments_count: increment(-1),
+  }).catch(() => {});
 }

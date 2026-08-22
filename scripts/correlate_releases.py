@@ -204,7 +204,45 @@ def update_markdown_frontmatter(file_path: str, release_info: dict, lead_time_da
     return True
 
 
-def run_correlation(feed_dir: str, custom_releases: dict | None = None) -> list:
+def update_firestore_release(project_id: str, database_id: str, slug: str, release_info: dict, lead_time_days: int, token: str) -> bool:
+    """Updates release correlation fields directly on the Firestore document."""
+    if not token or not project_id or not database_id:
+        return False
+
+    url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/{database_id}/documents/changes/{slug}?updateMask.fieldPaths=status&updateMask.fieldPaths=radar_ring&updateMask.fieldPaths=lead_time_days&updateMask.fieldPaths=official_release_date&updateMask.fieldPaths=official_release_notes_url&updateMask.fieldPaths=last_updated_at"
+    
+    rel_date = f"{release_info['date'][:10]}T00:00:00.000Z"
+    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+
+    fields = {
+        "status": {"stringValue": "released"},
+        "radar_ring": {"stringValue": "adopt"},
+        "lead_time_days": {"integerValue": str(lead_time_days)},
+        "official_release_date": {"timestampValue": rel_date},
+        "official_release_notes_url": {"stringValue": release_info.get("url", "")},
+        "last_updated_at": {"timestampValue": now_iso},
+    }
+
+    payload = json.dumps({"fields": fields}).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        },
+        method="PATCH"
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return resp.status in (200, 201)
+    except Exception as e:
+        print(f"⚠️ Error updating Firestore for {slug}: {e}", file=sys.stderr)
+        return False
+
+
+def run_correlation(feed_dir: str, custom_releases: dict | None = None, project_id: str = "", database_id: str = "", token: str = "") -> list:
     """Runs the correlation engine across all canary changes in feed_dir."""
     files = sorted(glob.glob(os.path.join(feed_dir, "*.md")))
     files = [f for f in files if not f.endswith("README.md")]
@@ -245,6 +283,9 @@ def run_correlation(feed_dir: str, custom_releases: dict | None = None) -> list:
         if match:
             lead_time = calculate_lead_time(first_detected, match["date"])
             update_markdown_frontmatter(file_path, match, lead_time)
+            if project_id and database_id and token:
+                update_firestore_release(project_id, database_id, slug, match, lead_time, token)
+
             matched_results.append({
                 "slug": slug,
                 "lead_time_days": lead_time,
@@ -259,10 +300,19 @@ def run_correlation(feed_dir: str, custom_releases: dict | None = None) -> list:
 def main():
     parser = argparse.ArgumentParser(description="Correlate Canary changes with official Google Cloud release notes.")
     parser.add_argument("--feed-dir", default="feed", help="Path to feed/ directory")
+    parser.add_argument("--project", default="max-ostapenko", help="GCP Project ID for Firestore sync")
+    parser.add_argument("--database", default="radar", help="Firestore database ID")
     args = parser.parse_args()
 
+    token = ""
+    try:
+        import subprocess
+        token = subprocess.check_output(["gcloud", "auth", "print-access-token", "--quiet"], text=True, stderr=subprocess.DEVNULL).strip()
+    except Exception:
+        pass
+
     print(f"📡 Starting Canary -> GA Release Correlator on '{args.feed_dir}'...")
-    results = run_correlation(args.feed_dir)
+    results = run_correlation(args.feed_dir, project_id=args.project, database_id=args.database, token=token)
     print(f"✨ Finished! Correlated {len(results)} new releases.")
 
 
