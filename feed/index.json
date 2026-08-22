@@ -740,6 +740,39 @@
     "generated_at": "2026-06-23T21:45:41.230027+00:00"
   },
   {
+    "slug": "2026-06-23-datalineage-v1",
+    "date": "2026-06-23",
+    "api": "datalineage.v1",
+    "service_name": "Data Lineage",
+    "title": "New ingestion rule integrations for BigQuery and Airflow",
+    "impact": "medium",
+    "breaking": false,
+    "tags": [
+      "datalineage",
+      "bigquery",
+      "composer",
+      "airflow"
+    ],
+    "interesting_score": 6,
+    "generated_at": "2026-06-23T12:37:31.973462+00:00"
+  },
+  {
+    "slug": "2026-06-23-bigquery-v2",
+    "date": "2026-06-23",
+    "api": "bigquery.v2",
+    "service_name": "BigQuery",
+    "title": "Python UDF concurrency documentation update",
+    "impact": "low",
+    "breaking": false,
+    "tags": [
+      "BigQuery",
+      "UDF",
+      "Python"
+    ],
+    "interesting_score": 2,
+    "generated_at": "2026-06-23T12:37:31.972817+00:00"
+  },
+  {
     "slug": "2026-06-22-bigquery-v2",
     "date": "2026-06-22",
     "api": "bigquery.v2",
