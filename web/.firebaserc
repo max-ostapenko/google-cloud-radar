@@ -1,12 +1,12 @@
 {
   "projects": {
-    "default": "max-ostapenko"
+    "default": "gcp-cloud-radar"
   },
   "targets": {
-    "max-ostapenko": {
+    "gcp-cloud-radar": {
       "hosting": {
         "radar": [
-          "gcp-discovery-radar"
+          "gcp-cloud-radar"
         ]
       }
     }

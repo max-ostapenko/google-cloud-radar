@@ -300,7 +300,7 @@ def run_correlation(feed_dir: str, custom_releases: dict | None = None, project_
 def main():
     parser = argparse.ArgumentParser(description="Correlate Canary changes with official Google Cloud release notes.")
     parser.add_argument("--feed-dir", default="feed", help="Path to feed/ directory")
-    parser.add_argument("--project", default="max-ostapenko", help="GCP Project ID for Firestore sync")
+    parser.add_argument("--project", default="gcp-cloud-radar", help="GCP Project ID for Firestore sync")
     parser.add_argument("--database", default="radar", help="Firestore database ID")
     args = parser.parse_args()
 

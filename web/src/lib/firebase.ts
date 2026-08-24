@@ -28,11 +28,11 @@ import {
 
 // Public client Firebase configuration for Google Cloud Radar
 const firebaseConfig = {
-  apiKey: 'AIzaSyCL1LjrL1EsdNR1N8yK42jZyXmi0y1LID0',
-  authDomain: 'max-ostapenko.firebaseapp.com',
-  projectId: 'max-ostapenko',
-  storageBucket: 'max-ostapenko.firebasestorage.app',
-  appId: '1:390347019852:web:14ca448a408310721f86e9',
+  apiKey: 'AIzaSyB-3ItxZ_RVn5Epqb407jvsOLTGT_dnM6I',
+  authDomain: 'gcp-cloud-radar.firebaseapp.com',
+  projectId: 'gcp-cloud-radar',
+  storageBucket: 'gcp-cloud-radar.firebasestorage.app',
+  appId: '1:751333758884:web:de973a9e1464cd58c19331',
 };
 
 let app: FirebaseApp;

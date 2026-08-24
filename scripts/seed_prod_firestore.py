@@ -274,7 +274,7 @@ def upload_to_firestore(project_id: str, database_id: str, doc: dict, token: str
 
 def main():
     parser = argparse.ArgumentParser(description="Upload and migrate feed changes to Google Cloud Firestore.")
-    parser.add_argument("--project", default="max-ostapenko", help="Google Cloud Project ID")
+    parser.add_argument("--project", default="gcp-cloud-radar", help="Google Cloud Project ID")
     parser.add_argument("--database", default="radar", help="Firestore Database ID (e.g. radar or (default))")
     parser.add_argument("--feed-dir", default="feed", help="Path to feed/ markdown directory")
     args = parser.parse_args()

@@ -1,7 +1,7 @@
 variable "project_id" {
   type        = string
   description = "The Google Cloud project ID."
-  default     = "max-ostapenko"
+  default     = "gcp-cloud-radar"
 }
 
 variable "region" {
@@ -13,5 +13,5 @@ variable "region" {
 variable "site_id" {
   type        = string
   description = "The Firebase Hosting site ID for the discovery radar."
-  default     = "gcp-discovery-radar"
+  default     = "gcp-cloud-radar"
 }

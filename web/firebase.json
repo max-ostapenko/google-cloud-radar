@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "gcp-discovery-radar",
+    "site": "gcp-cloud-radar",
     "public": "dist",
     "ignore": [
       "firebase.json",
