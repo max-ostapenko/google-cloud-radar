@@ -136,10 +136,10 @@ export const GET: APIRoute = async ({ props }) => {
   <g transform="translate(60, 575)">
     <line x1="0" y1="-20" x2="1080" y2="-20" stroke="#2d2f31" stroke-width="1" />
     <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#80868b">
-      Sourced from Google API Discovery Service • Curated by <tspan fill="#8ab4f8" font-weight="600">Max Ostapenko</tspan>
+      Sourced from Google API Discovery Service • <tspan fill="#8ab4f8" font-weight="600">Google Cloud Radar</tspan>
     </text>
     <text x="1080" y="0" text-anchor="end" font-family="'Roboto Mono', monospace" font-size="14" font-weight="600" fill="#8ab4f8">
-      https://gcp-discovery-radar.web.app
+      https://gcp-cloud-radar.web.app
     </text>
   </g>
 </svg>

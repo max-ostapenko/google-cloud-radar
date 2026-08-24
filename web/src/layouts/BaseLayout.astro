@@ -26,7 +26,7 @@ const {
   showSidebar = true,
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://gcp-discovery-radar.web.app');
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://gcp-cloud-radar.web.app');
 
 const defaultSchema = {
   '@context': 'https://schema.org',
@@ -35,9 +35,9 @@ const defaultSchema = {
   url: canonicalURL.origin,
   description: description,
   author: {
-    '@type': 'Person',
-    name: 'Max Ostapenko',
-    url: 'https://maxostapenko.com',
+    '@type': 'Organization',
+    name: 'Google Cloud Radar',
+    url: 'https://github.com/max-ostapenko/discovery-artifact-manager',
   },
 };
 
@@ -70,7 +70,6 @@ const jsonLd = schemaData ? JSON.stringify(schemaData) : JSON.stringify(defaultS
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={new URL(ogImage, canonicalURL.origin)} />
-    <meta name="twitter:creator" content="@maxostapenko" />
 
     <!-- Feeds -->
     <link rel="alternate" type="application/rss+xml" title="Google Cloud Radar Feed" href="/rss.xml" />

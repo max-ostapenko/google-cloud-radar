@@ -35,14 +35,14 @@ const schemaData = {
   description: entry.summary,
   datePublished: entry.date,
   author: {
-    '@type': 'Person',
-    name: 'Max Ostapenko',
-    url: 'https://maxostapenko.com',
+    '@type': 'Organization',
+    name: 'Google Cloud Radar',
+    url: 'https://github.com/max-ostapenko/discovery-artifact-manager',
   },
   publisher: {
     '@type': 'Organization',
     name: 'Google Cloud Radar',
-    url: 'https://gcp-discovery-radar.web.app',
+    url: 'https://gcp-cloud-radar.web.app',
   },
   keywords: [entry.service, entry.api, ...(entry.tags || []), entry.breaking ? 'Breaking Change' : ''].filter(Boolean).join(', '),
   articleSection: entry.category,

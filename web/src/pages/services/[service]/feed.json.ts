@@ -25,13 +25,13 @@ export const GET: APIRoute = async ({ props }) => {
   const responsePayload = {
     version: 'https://jsonfeed.org/version/1.1',
     title: `${serviceInfo.service} API Feed — Google Cloud Radar`,
-    home_page_url: `https://gcp-discovery-radar.web.app/services/${serviceInfo.slug}`,
-    feed_url: `https://gcp-discovery-radar.web.app/services/${serviceInfo.slug}/feed.json`,
+    home_page_url: `https://gcp-cloud-radar.web.app/services/${serviceInfo.slug}`,
+    feed_url: `https://gcp-cloud-radar.web.app/services/${serviceInfo.slug}/feed.json`,
     description: `Automated pre-release intelligence and real-time diffs for Google ${serviceInfo.service}.`,
-    user_comment: 'Curated by Max Ostapenko. Sourced from Google Discovery Service.',
+    user_comment: 'Sourced from Google Discovery Service.',
     items: entries.map((entry) => ({
       id: entry.slug,
-      url: `https://gcp-discovery-radar.web.app/changes/${entry.slug}`,
+      url: `https://gcp-cloud-radar.web.app/changes/${entry.slug}`,
       title: entry.title,
       content_text: entry.summary,
       date_published: `${entry.date}T00:00:00Z`,
