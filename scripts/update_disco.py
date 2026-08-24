@@ -159,19 +159,25 @@ def load_documents(
 def delete_unused_files(
     index_document: DocumentInfo, service_documents: list[DocumentInfo]
 ) -> None:
-    """Deletes files in the discoveries directory that are no longer used
+    """Deletes files in the discoveries directory that are no longer used.
 
-    Arguments:
-        index_document {DocumentInfo} -- The index
-        service_documents {Sequence[DocumentInfo]} -- The discoveries
+    Safeguard: only deletes a file if it is absent from active service_documents
+    AND absent from the official index.json directory items. This prevents
+    transient download failures (HTTP 5xx) from wiping out tracked discovery files.
     """
     expected_names: set[str] = set([index_document.filename])
     for doc in service_documents:
         expected_names.add(doc.filename)
+
+    index_items = index_document.json.get("items", []) if index_document.json else []
+    for item in index_items:
+        if "name" in item and "version" in item:
+            expected_names.add(f"{item['name']}.{item['version']}.json")
+
     for filename in glob.glob("*.json"):
         if filename in expected_names:
             continue
-        print(f"REMOVING file {filename}")
+        print(f"REMOVING decommissioned file {filename}")
         os.remove(filename)
 
 

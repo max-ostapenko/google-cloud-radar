@@ -119,6 +119,29 @@ class TestDiffPreprocessor(unittest.TestCase):
             result["_stats"],
         )
 
+    def test_build_structured_diff_ignores_whole_document_deletion_or_sweeps(self):
+        # Full file deletion (new is empty string or empty dict)
+        old = {
+            "name": "libraryagent",
+            "version": "v1",
+            "resources": {
+                f"res_{i}": {"methods": {"get": {"httpMethod": "GET"}}}
+                for i in range(50)
+            },
+        }
+        res_deleted = diff_preprocessor.build_structured_diff(
+            "libraryagent.v1.json", json.dumps(old), ""
+        )
+        self.assertIsNone(res_deleted)
+
+        # Gutted/swept document (only 1-2 keys left, dozens removed)
+        new_gutted = {"name": "libraryagent"}
+        res_gutted = diff_preprocessor.build_structured_diff(
+            "libraryagent.v1.json", json.dumps(old), json.dumps(new_gutted)
+        )
+        self.assertIsNone(res_gutted)
+
 
 if __name__ == "__main__":
     unittest.main()
+

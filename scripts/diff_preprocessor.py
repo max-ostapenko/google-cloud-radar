@@ -146,6 +146,17 @@ def build_structured_diff(
     removed = _filter(removed_paths)
     modified = _filter(modified_paths)
 
+    # Safeguard against document sweeps / transient whole-file deletions:
+    # If the file was deleted (new is empty) or virtually all content was stripped without additions,
+    # skip generating an update. True GCP API deprecations occur inside active discovery docs
+    # with explicit "deprecated: true" flags.
+    if (not new_flat and old_flat) or (len(new_flat) < 5 and len(removed) > 40 and not added):
+        logger.info(
+            f"  {filename}: document wiped or deleted ({len(removed)} removals, {len(new_flat)} remaining). "
+            "Skipping feed generation to prevent transient sweep false positives."
+        )
+        return None
+
     if not added and not removed and not modified:
         logger.info(f"  {filename}: only noise changes, skipping")
         return None
