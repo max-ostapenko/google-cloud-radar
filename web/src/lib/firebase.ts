@@ -3,7 +3,7 @@ import {
   getAuth,
   initializeAuth,
   browserLocalPersistence,
-  indexedDBLocalPersistence,
+  browserPopupRedirectResolver,
   browserSessionPersistence,
   inMemoryPersistence,
   GoogleAuthProvider,
@@ -57,9 +57,10 @@ export function getFirebaseAuth(): Auth {
   if (!auth) {
     const firebaseApp = getFirebaseApp();
     try {
-      // Use browserLocalPersistence (localStorage) directly to completely avoid IndexedDB locking errors
+      // Configure browserLocalPersistence (localStorage) and browserPopupRedirectResolver for rock-solid auth
       auth = initializeAuth(firebaseApp, {
         persistence: [browserLocalPersistence, browserSessionPersistence, inMemoryPersistence],
+        popupRedirectResolver: browserPopupRedirectResolver,
       });
     } catch {
       auth = getAuth(firebaseApp);
