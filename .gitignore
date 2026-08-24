@@ -54,3 +54,4 @@ override.tf.json
 # Legacy toolkit artifacts
 git-subrepo
 test
+.agent/

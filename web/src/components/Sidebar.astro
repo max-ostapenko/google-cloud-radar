@@ -9,6 +9,8 @@ interface Props {
 const { activeServiceSlug = '', activeCategory = '' } = Astro.props;
 
 const services: ServiceInfo[] = await getServicesList();
+const totalUpdates = services.reduce((a, b) => a + b.count, 0);
+const totalBreaking = services.reduce((a, b) => a + b.breakingCount, 0);
 
 // Top-Level Ecosystems configuration
 interface EcosystemGroup {
@@ -16,10 +18,12 @@ interface EcosystemGroup {
   label: string;
   icon: string;
   totalCount: number;
+  breakingCount: number;
   subgroups?: {
     category: ServiceCategory;
     items: ServiceInfo[];
     totalCount: number;
+    breakingCount: number;
   }[];
   directItems?: ServiceInfo[];
 }
@@ -38,6 +42,7 @@ const cloudSubgroups = cloudSubcategories.map((category) => {
     category,
     items,
     totalCount: items.reduce((acc, curr) => acc + curr.count, 0),
+    breakingCount: items.reduce((acc, curr) => acc + curr.breakingCount, 0),
   };
 }).filter((g) => g.items.length > 0);
 
@@ -47,6 +52,7 @@ const ecosystemList: EcosystemGroup[] = [
     label: 'Google Cloud',
     icon: 'cloud',
     totalCount: cloudServices.reduce((acc, curr) => acc + curr.count, 0),
+    breakingCount: cloudServices.reduce((acc, curr) => acc + curr.breakingCount, 0),
     subgroups: cloudSubgroups,
   },
   {
@@ -54,6 +60,7 @@ const ecosystemList: EcosystemGroup[] = [
     label: 'Workspace',
     icon: 'briefcase',
     totalCount: services.filter((s) => s.ecosystem === 'Workspace').reduce((acc, curr) => acc + curr.count, 0),
+    breakingCount: services.filter((s) => s.ecosystem === 'Workspace').reduce((acc, curr) => acc + curr.breakingCount, 0),
     directItems: services.filter((s) => s.ecosystem === 'Workspace'),
   },
   {
@@ -61,6 +68,7 @@ const ecosystemList: EcosystemGroup[] = [
     label: 'Marketing Platform',
     icon: 'trending-up',
     totalCount: services.filter((s) => s.ecosystem === 'Marketing Platform').reduce((acc, curr) => acc + curr.count, 0),
+    breakingCount: services.filter((s) => s.ecosystem === 'Marketing Platform').reduce((acc, curr) => acc + curr.breakingCount, 0),
     directItems: services.filter((s) => s.ecosystem === 'Marketing Platform'),
   },
   {
@@ -68,6 +76,7 @@ const ecosystemList: EcosystemGroup[] = [
     label: 'Chrome & Web',
     icon: 'globe',
     totalCount: services.filter((s) => s.ecosystem === 'Chrome').reduce((acc, curr) => acc + curr.count, 0),
+    breakingCount: services.filter((s) => s.ecosystem === 'Chrome').reduce((acc, curr) => acc + curr.breakingCount, 0),
     directItems: services.filter((s) => s.ecosystem === 'Chrome'),
   },
   {
@@ -75,6 +84,7 @@ const ecosystemList: EcosystemGroup[] = [
     label: 'Personal',
     icon: 'user',
     totalCount: services.filter((s) => s.ecosystem === 'Personal').reduce((acc, curr) => acc + curr.count, 0),
+    breakingCount: 0,
     directItems: services.filter((s) => s.ecosystem === 'Personal'),
   },
   {
@@ -82,6 +92,7 @@ const ecosystemList: EcosystemGroup[] = [
     label: 'Android & Play',
     icon: 'smartphone',
     totalCount: services.filter((s) => s.ecosystem === 'Android').reduce((acc, curr) => acc + curr.count, 0),
+    breakingCount: 0,
     directItems: services.filter((s) => s.ecosystem === 'Android'),
   },
   {
@@ -89,6 +100,7 @@ const ecosystemList: EcosystemGroup[] = [
     label: 'More / Core',
     icon: 'grid',
     totalCount: services.filter((s) => s.ecosystem === 'More').reduce((acc, curr) => acc + curr.count, 0),
+    breakingCount: services.filter((s) => s.ecosystem === 'More').reduce((acc, curr) => acc + curr.breakingCount, 0),
     directItems: services.filter((s) => s.ecosystem === 'More'),
   },
 ];
@@ -108,12 +120,17 @@ const ecosystemList: EcosystemGroup[] = [
   <div class="sidebar-menu">
     <a href="/" class={`sidebar-item all-item ${!activeServiceSlug && !activeCategory ? 'active' : ''}`}>
       <span class="item-name">All Updates</span>
-      <span class="item-count">{services.reduce((a, b) => a + b.count, 0)}</span>
+      <span class="item-count-group">
+        <span class="item-count">{totalUpdates}</span>
+        {totalBreaking > 0 && (
+          <span class="item-breaking-pill" title={`${totalBreaking} breaking changes`}>⚠️ {totalBreaking}</span>
+        )}
+      </span>
     </a>
 
     <a href="/breaking" class={`sidebar-item breaking-item ${activeCategory === 'breaking' ? 'active' : ''}`}>
       <span class="item-name">⚠️ Breaking Changes</span>
-      <span class="item-badge-breaking">Alerts</span>
+      <span class="item-badge-breaking">{totalBreaking} Alerts</span>
     </a>
 
     <div class="sidebar-divider"></div>
@@ -170,9 +187,14 @@ const ecosystemList: EcosystemGroup[] = [
               )}
               <span>{eco.label}</span>
             </div>
-            <span class={`ecosystem-badge ${eco.totalCount === 0 ? 'empty-badge' : ''}`}>
-              {eco.totalCount}
-            </span>
+            <div class="ecosystem-badge-group">
+              {eco.breakingCount > 0 && (
+                <span class="badge-breaking-micro" title={`${eco.breakingCount} breaking`}>⚠️{eco.breakingCount}</span>
+              )}
+              <span class={`ecosystem-badge ${eco.totalCount === 0 ? 'empty-badge' : ''}`}>
+                {eco.totalCount}
+              </span>
+            </div>
           </div>
 
           <!-- Second Level: Google Cloud Subcategories (Visible by Default) -->
@@ -182,7 +204,12 @@ const ecosystemList: EcosystemGroup[] = [
                 <div class="category-group">
                   <div class="category-title">
                     <span>{sub.category}</span>
-                    <span class="category-count">{sub.totalCount}</span>
+                    <div class="category-counts-group">
+                      {sub.breakingCount > 0 && (
+                        <span class="category-breaking" title={`${sub.breakingCount} breaking`}>⚠️{sub.breakingCount}</span>
+                      )}
+                      <span class="category-count">{sub.totalCount}</span>
+                    </div>
                   </div>
                   <ul class="service-list">
                     {sub.items.map((item) => (
@@ -190,10 +217,15 @@ const ecosystemList: EcosystemGroup[] = [
                         <a
                           href={`/services/${item.slug}`}
                           class={`service-link ${activeServiceSlug === item.slug ? 'active' : ''}`}
-                          title={`${item.service} (${item.count} updates)`}
+                          title={`${item.service} (${item.count} updates${item.breakingCount > 0 ? `, ${item.breakingCount} breaking` : ''})`}
                         >
                           <span class="service-name">{item.service}</span>
-                          <span class="service-count">{item.count}</span>
+                          <span class="service-counts-group">
+                            {item.breakingCount > 0 && (
+                              <span class="service-breaking-inline" title={`${item.breakingCount} breaking changes`}>⚠️ {item.breakingCount}</span>
+                            )}
+                            <span class="service-count">{item.count}</span>
+                          </span>
                         </a>
                       </li>
                     ))}
@@ -211,10 +243,15 @@ const ecosystemList: EcosystemGroup[] = [
                   <a
                     href={`/services/${item.slug}`}
                     class={`service-link ${activeServiceSlug === item.slug ? 'active' : ''}`}
-                    title={`${item.service} (${item.count} updates)`}
+                    title={`${item.service} (${item.count} updates${item.breakingCount > 0 ? `, ${item.breakingCount} breaking` : ''})`}
                   >
                     <span class="service-name">{item.service}</span>
-                    <span class="service-count">{item.count}</span>
+                    <span class="service-counts-group">
+                      {item.breakingCount > 0 && (
+                        <span class="service-breaking-inline" title={`${item.breakingCount} breaking changes`}>⚠️ {item.breakingCount}</span>
+                      )}
+                      <span class="service-count">{item.count}</span>
+                    </span>
                   </a>
                 </li>
               ))}
@@ -235,7 +272,10 @@ const ecosystemList: EcosystemGroup[] = [
         <span class="status-pulse"></span>
         <span class="status-text">Discovery Ingestion Active</span>
       </div>
-      <p class="status-desc">Scanning Google Discovery Service every 5 hours via CI.</p>
+      <p class="status-desc">Tracking Google Discovery Service in real-time.</p>
+    </div>
+    <div class="sidebar-creator-credit">
+      By <a href="https://maxostapenko.com" target="_blank" rel="noopener noreferrer">Max Ostapenko</a>
     </div>
   </div>
 </aside>
@@ -312,10 +352,25 @@ const ecosystemList: EcosystemGroup[] = [
     font-weight: 600;
   }
 
+  .item-count-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   .item-count {
     font-size: 11px;
     color: var(--text-tertiary);
     font-family: var(--font-mono);
+  }
+
+  .item-breaking-pill {
+    font-size: 10px;
+    font-weight: 700;
+    background-color: var(--google-red-subtle);
+    color: var(--google-red);
+    padding: 1px 5px;
+    border-radius: 4px;
   }
 
   .breaking-item {
@@ -375,6 +430,22 @@ const ecosystemList: EcosystemGroup[] = [
     color: var(--text-primary);
   }
 
+  .ecosystem-badge-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .badge-breaking-micro {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--google-red);
+    background-color: var(--google-red-subtle);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+  }
+
   .ecosystem-badge {
     font-family: var(--font-mono);
     font-size: 10px;
@@ -410,6 +481,19 @@ const ecosystemList: EcosystemGroup[] = [
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--text-tertiary);
+  }
+
+  .category-counts-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .category-breaking {
+    font-size: 9px;
+    color: var(--google-red);
+    font-weight: 700;
+    font-family: var(--font-mono);
   }
 
   .category-count {
@@ -460,12 +544,28 @@ const ecosystemList: EcosystemGroup[] = [
     text-overflow: ellipsis;
   }
 
+  .service-counts-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 8px;
+    flex-shrink: 0;
+  }
+
+  .service-breaking-inline {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--google-red);
+    background-color: var(--google-red-subtle);
+    padding: 0 4px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+  }
+
   .service-count {
     font-size: 10.5px;
     color: var(--text-tertiary);
     font-family: var(--font-mono);
-    margin-left: 8px;
-    flex-shrink: 0;
   }
 
   .empty-ecosystem-msg {
@@ -477,23 +577,26 @@ const ecosystemList: EcosystemGroup[] = [
   }
 
   .sidebar-footer {
-    padding: 16px;
+    padding: 14px 16px;
     border-top: 1px solid var(--border-subtle);
     background-color: var(--bg-surface);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 
   .radar-status-card {
     background-color: var(--bg-primary);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    padding: 12px;
+    padding: 10px 12px;
   }
 
   .status-indicator {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   .status-pulse {
@@ -516,6 +619,23 @@ const ecosystemList: EcosystemGroup[] = [
     color: var(--text-tertiary);
     line-height: 1.4;
     margin: 0;
+  }
+
+  .sidebar-creator-credit {
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+    text-align: center;
+  }
+
+  .sidebar-creator-credit a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .sidebar-creator-credit a:hover {
+    color: var(--google-blue);
+    text-decoration: underline;
   }
 
   @keyframes pulse {

@@ -79,12 +79,13 @@ const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
 
       <div class="service-stats-grid">
         <div class="stat-card">
-          <span class="stat-val">{entries.length}</span>
+          <div class="stat-val-group">
+            <span class="stat-val">{entries.length}</span>
+            {breakingCount > 0 && (
+              <span class="stat-breaking-pill" title={`${breakingCount} breaking changes`}>⚠️ {breakingCount}</span>
+            )}
+          </div>
           <span class="stat-lbl">Detected Changes</span>
-        </div>
-        <div class="stat-card breaking-stat">
-          <span class="stat-val">{breakingCount}</span>
-          <span class="stat-lbl">Breaking Changes</span>
         </div>
         <div class="stat-card">
           <span class="stat-val">{highImpactCount}</span>
@@ -103,7 +104,7 @@ const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
 
     <!-- Timeline of Changes -->
     <div class="timeline-header">
-      <h2>Change History ({entries.length})</h2>
+      <h2>Change History ({entries.length}{breakingCount > 0 ? ` · ⚠️ ${breakingCount} breaking` : ''})</h2>
       <a href="/" class="back-home-link">← All Services</a>
     </div>
 
@@ -203,7 +204,7 @@ const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
 
   .service-stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 120px) 1fr;
+    grid-template-columns: repeat(2, 140px) 1fr;
     gap: 16px;
   }
 
@@ -217,17 +218,29 @@ const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
     justify-content: center;
   }
 
+  .stat-val-group {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+
   .stat-val {
     font-size: 22px;
     font-weight: 700;
     font-family: var(--font-mono);
     color: var(--google-blue);
     line-height: 1;
-    margin-bottom: 4px;
   }
 
-  .breaking-stat .stat-val {
+  .stat-breaking-pill {
+    font-size: 10px;
+    font-weight: 700;
     color: var(--google-red);
+    background-color: var(--google-red-subtle);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
   }
 
   .stat-lbl {

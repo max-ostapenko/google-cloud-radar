@@ -9,7 +9,7 @@ export const GET: APIRoute = async () => {
     '> Pre-release intelligence and real-time API specifications for Google APIs and Cloud services.',
     '',
     '## About',
-    'Google Cloud Radar monitors and diffs Google Discovery Service documents every 5 hours via GitHub Actions and Gemini.',
+    'Google Cloud Radar continuously monitors and diffs Google Discovery Service documents via GitHub Actions and Gemini.',
     'It captures breaking changes, parameter deprecations, and newly deployed control plane methods before they reach official release notes.',
     '',
     '## Curated By',
@@ -27,7 +27,7 @@ export const GET: APIRoute = async () => {
     if (entry.extractedMethods.length > 0) {
       lines.push(`- **Methods:** ${entry.extractedMethods.join(', ')}`);
     }
-    lines.push(`- **Permalink:** https://gcp-discovery-radar.web.app/changes/${entry.slug}`);
+    lines.push(`- **Permalink:** https://gcp-cloud-radar.web.app/changes/${entry.slug}`);
     lines.push('');
   }
 

@@ -433,29 +433,35 @@ export interface ServiceInfo {
   service: string;
   slug: string;
   count: number;
+  breakingCount: number;
   ecosystem: Ecosystem;
   category: ServiceCategory;
 }
 
 export async function getServicesList(): Promise<ServiceInfo[]> {
   const entries = await getAllFeedEntries();
-  const map = new Map<string, { count: number; ecosystem: Ecosystem; category: ServiceCategory }>();
+  const map = new Map<string, { count: number; breakingCount: number; ecosystem: Ecosystem; category: ServiceCategory }>();
 
   for (const entry of entries) {
     const existing = map.get(entry.service) || {
       count: 0,
+      breakingCount: 0,
       ecosystem: entry.ecosystem || getEcosystemForService(entry.service),
       category: entry.category || getCategoryForService(entry.service),
     };
     existing.count += 1;
+    if (entry.breaking) {
+      existing.breakingCount += 1;
+    }
     map.set(entry.service, existing);
   }
 
   return Array.from(map.entries())
-    .map(([service, { count, ecosystem, category }]) => ({
+    .map(([service, { count, breakingCount, ecosystem, category }]) => ({
       service,
       slug: slugify(service),
       count,
+      breakingCount,
       ecosystem,
       category,
     }))
