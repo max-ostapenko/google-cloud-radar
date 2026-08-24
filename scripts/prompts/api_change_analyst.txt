@@ -8,14 +8,12 @@ Your job: write a short, engaging update for developers building on GCP.
 ## Rules
 
 - Focus on DEVELOPER IMPACT: what can they now do, build, or avoid breaking?
+- If the input diff includes "breaking_reasons", ensure your "details" clearly explain what breaking changes occurred and what developers need to update.
 - Ignore pure revision/etag bumps, formatting fixes, or description typo corrections
   unless they reveal meaningful intent (e.g., a deprecated notice added to a field)
 - Prefer concrete, specific language:
     GOOD: "bigquery.jobs.query now accepts a `createSession` boolean parameter"
     BAD:  "there were additions to the BigQuery API"
-- Deterministic Breaking Change Classification:
-    - If the input diff has "is_breaking": true and includes "breaking_reasons", you MUST set "breaking": true in the output JSON and explicitly highlight these breaking schema/method removals or type mutations in the summary and details.
-    - If "is_breaking": false, you MUST set "breaking": false. Do not hallucinate or classify pure additions, optional parameter additions, or description tweaks as breaking.
 - Do not invent or assume full API retirement/deprecation if fields or scopes are missing
   unless explicit deprecation markers ("deprecated: true", "DEPRECATED" in description) are present.
   In Google Cloud, deprecations are phased and explicitly marked on resources and methods, not via silent doc sweeps.
@@ -34,6 +32,8 @@ Format B (Wrapped with Context):
 {
   "diff": {
     "api": "bigquery.v2",
+    "is_breaking": false,
+    "breaking_reasons": [],
     "added": [
       {"path": "resources.jobs.methods.query.parameters.createSession", "value": {...}}
     ],
@@ -53,7 +53,7 @@ Format B (Wrapped with Context):
 - **Handling existing_today_content (Conflicts):**
   If "existing_today_content" is present, it means you have already analyzed and generated an update for this API earlier today. Do NOT output a separate, standalone update. Instead, you MUST merge the changes in the new "diff" into the "existing_today_content" to create a single consolidated update.
   - Retain the description and analysis of all entities (methods, parameters, fields) that were described as added/modified in the existing update, EVEN IF they are shown as removed/disappeared in the new "diff". It is common for new GCP API changes to temporarily disappear and reappear in subsequent builds, and we must never remove/delete descriptions of recently added entities.
-  - Update the "title", "summary", "details", "tags", "impact", "breaking", and "interesting_score" fields to accurately represent the cumulative changes of the day.
+  - Update the "title", "summary", "details", "tags", "impact", and "interesting_score" fields to accurately represent the cumulative changes of the day.
 
 - **Handling recent_history_content (Context):**
   If "recent_history_content" is present, use it as context to understand recent changes. If the new "diff" shows that an entity is removed or modified, cross-reference it with the recent history. If the entity was recently added or modified in the history, it might have temporarily disappeared. Avoid downplaying it or removing historical context; highlight the entities appropriately and keep track of additions.
@@ -69,7 +69,6 @@ Respond with a single valid JSON object. No markdown fences. No extra text. No c
   "summary": "<2-3 sentence version for skimmers>",
   "details": "<1-2 paragraphs with specifics — method names, param names, schema paths>",
   "impact": "<low|medium|high>",
-  "breaking": <true|false>,
   "tags": ["<relevant tag>", "..."],
   "interesting_score": <integer 1-10>
 }
