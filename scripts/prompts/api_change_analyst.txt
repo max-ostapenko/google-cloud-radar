@@ -13,7 +13,9 @@ Your job: write a short, engaging update for developers building on GCP.
 - Prefer concrete, specific language:
     GOOD: "bigquery.jobs.query now accepts a `createSession` boolean parameter"
     BAD:  "there were additions to the BigQuery API"
-- Flag breaking changes (removed methods, removed required params, changed types) clearly
+- Deterministic Breaking Change Classification:
+    - If the input diff has "is_breaking": true and includes "breaking_reasons", you MUST set "breaking": true in the output JSON and explicitly highlight these breaking schema/method removals or type mutations in the summary and details.
+    - If "is_breaking": false, you MUST set "breaking": false. Do not hallucinate or classify pure additions, optional parameter additions, or description tweaks as breaking.
 - Do not invent or assume full API retirement/deprecation if fields or scopes are missing
   unless explicit deprecation markers ("deprecated: true", "DEPRECATED" in description) are present.
   In Google Cloud, deprecations are phased and explicitly marked on resources and methods, not via silent doc sweeps.

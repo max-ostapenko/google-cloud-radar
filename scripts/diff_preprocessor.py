@@ -114,6 +114,138 @@ def _is_description_only(path: str) -> bool:
     return leaf in DESCRIPTION_ONLY_KEYS
 
 
+def detect_breaking_changes(
+    old_flat: dict[str, object],
+    new_flat: dict[str, object],
+    added_paths: list[str],
+    removed_paths: list[str],
+    modified_paths: list[str],
+) -> tuple[bool, list[str]]:
+    """Deterministically evaluates whether changes constitute backward-incompatible API changes.
+
+    Follows Google AIP-180 rules:
+    - Removal of an active method / RPC
+    - Removal of a parameter from an active method
+    - Changing an optional parameter to required (required: true)
+    - Removal of an existing schema property
+    - Changing property data type (type or $ref)
+    - Making a mutable schema property read-only / immutable
+    - Changing HTTP verb or URI path template of an existing method
+
+    Returns:
+        (is_breaking: bool, reasons: list[str])
+    """
+    reasons: list[str] = []
+
+    # 1. Inspect Added Paths (New required parameters or readOnly constraints on existing resources)
+    for p in added_paths:
+        parts = p.split(".")
+        new_val = new_flat.get(p)
+        if parts[-1] == "required" and "parameters" in parts and new_val in (True, "true"):
+            param_name = parts[-2] if len(parts) >= 2 else "parameter"
+            reason = f"Parameter '{param_name}' was changed to strictly required"
+            if reason not in reasons:
+                reasons.append(reason)
+        elif parts[-1] == "readOnly" and "schemas" in parts and "properties" in parts and new_val in (True, "true"):
+            s_idx = parts.index("schemas")
+            p_idx = parts.index("properties")
+            schema_name = parts[s_idx + 1] if len(parts) > s_idx + 1 else "Schema"
+            prop_name = parts[p_idx + 1] if len(parts) > p_idx + 1 else "property"
+            reason = f"Property '{prop_name}' in schema '{schema_name}' was made read-only / immutable"
+            if reason not in reasons:
+                reasons.append(reason)
+
+    # 2. Inspect Removed Paths
+    for p in removed_paths:
+        parts = p.split(".")
+
+        # Removed API method
+        if "methods" in parts:
+            idx = parts.index("methods")
+            if len(parts) > idx + 1:
+                method_name = parts[idx + 1]
+                if len(parts) == idx + 2 or (len(parts) == idx + 3 and parts[idx + 2] in ("httpMethod", "id", "path")):
+                    reason = f"Removed API method '{method_name}'"
+                    if reason not in reasons:
+                        reasons.append(reason)
+
+        # Removed parameter from method
+        if "parameters" in parts and "methods" in parts:
+            idx = parts.index("parameters")
+            if len(parts) > idx + 1:
+                param_name = parts[idx + 1]
+                if len(parts) == idx + 2 or (len(parts) == idx + 3 and parts[idx + 2] in ("type", "location", "format")):
+                    reason = f"Removed parameter '{param_name}' from method"
+                    if reason not in reasons:
+                        reasons.append(reason)
+
+        # Removed schema property
+        if "schemas" in parts and "properties" in parts:
+            s_idx = parts.index("schemas")
+            p_idx = parts.index("properties")
+            if s_idx < p_idx and len(parts) > p_idx + 1:
+                schema_name = parts[s_idx + 1]
+                prop_name = parts[p_idx + 1]
+                if len(parts) == p_idx + 2 or (len(parts) == p_idx + 3 and parts[p_idx + 2] in ("type", "$ref", "format")):
+                    reason = f"Removed property '{prop_name}' from schema '{schema_name}'"
+                    if reason not in reasons:
+                        reasons.append(reason)
+
+    # 3. Inspect Modified Paths
+    for p in modified_paths:
+        parts = p.split(".")
+        old_val = old_flat.get(p)
+        new_val = new_flat.get(p)
+
+        # Parameter made required
+        if parts[-1] == "required" and "parameters" in parts:
+            if old_val in (False, None, "false") and new_val in (True, "true"):
+                param_name = parts[-2] if len(parts) >= 2 else "parameter"
+                reason = f"Parameter '{param_name}' was changed to strictly required"
+                if reason not in reasons:
+                    reasons.append(reason)
+
+        # Schema property type, $ref, or readOnly changes
+        if "schemas" in parts and "properties" in parts:
+            s_idx = parts.index("schemas")
+            p_idx = parts.index("properties")
+            if s_idx < p_idx and len(parts) > p_idx + 2:
+                schema_name = parts[s_idx + 1]
+                prop_name = parts[p_idx + 1]
+                attr = parts[p_idx + 2]
+
+                if attr == "type" and old_val != new_val:
+                    reason = f"Property '{prop_name}' in schema '{schema_name}' changed type from '{old_val}' to '{new_val}'"
+                    if reason not in reasons:
+                        reasons.append(reason)
+                elif attr == "$ref" and old_val != new_val:
+                    reason = f"Property '{prop_name}' in schema '{schema_name}' changed referenced type from '{old_val}' to '{new_val}'"
+                    if reason not in reasons:
+                        reasons.append(reason)
+                elif attr == "readOnly" and (old_val in (False, None)) and (new_val is True):
+                    reason = f"Property '{prop_name}' in schema '{schema_name}' was made read-only / immutable"
+                    if reason not in reasons:
+                        reasons.append(reason)
+
+        # Method HTTP verb or URI path template change
+        if "methods" in parts:
+            m_idx = parts.index("methods")
+            if len(parts) > m_idx + 2:
+                method_name = parts[m_idx + 1]
+                attr = parts[m_idx + 2]
+                if attr == "httpMethod" and old_val != new_val:
+                    reason = f"Method '{method_name}' changed HTTP verb from '{old_val}' to '{new_val}'"
+                    if reason not in reasons:
+                        reasons.append(reason)
+                elif attr == "path" and old_val != new_val:
+                    reason = f"Method '{method_name}' URI path template changed from '{old_val}' to '{new_val}'"
+                    if reason not in reasons:
+                        reasons.append(reason)
+
+    is_breaking = len(reasons) > 0
+    return is_breaking, reasons
+
+
 def build_structured_diff(
     filename: str, old_json_str: str, new_json_str: str
 ) -> Optional[dict]:
@@ -161,6 +293,11 @@ def build_structured_diff(
         logger.info(f"  {filename}: only noise changes, skipping")
         return None
 
+    # Compute deterministic breaking change analysis
+    is_breaking, breaking_reasons = detect_breaking_changes(
+        old_flat, new_flat, added, removed, modified
+    )
+
     # Build structured entries (cap size to stay within token budget)
     def _added_entries(paths):
         out = []
@@ -191,6 +328,8 @@ def build_structured_diff(
     api_name = filename.replace(".json", "")  # e.g. bigquery.v2
     return {
         "api": api_name,
+        "is_breaking": is_breaking,
+        "breaking_reasons": breaking_reasons,
         "added": _added_entries(added),
         "removed": _removed_entries(removed),
         "modified": _modified_entries(modified),
@@ -202,6 +341,8 @@ def build_structured_diff(
             "description_only_modified": sum(
                 1 for p in modified if _is_description_only(p)
             ),
+            "is_breaking": is_breaking,
+            "breaking_reasons": breaking_reasons,
         },
     }
 

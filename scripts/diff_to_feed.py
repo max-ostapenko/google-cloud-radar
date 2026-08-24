@@ -108,6 +108,9 @@ def main() -> None:
             recent_history_content=recent_history_content,
         )
         if insight:
+            # Deterministic ground truth override: ensure breaking flag always reflects AST schema analysis
+            if diff.get("is_breaking") is not None:
+                insight["breaking"] = bool(diff.get("is_breaking"))
             insights.append(insight)
         else:
             logger.warning(
