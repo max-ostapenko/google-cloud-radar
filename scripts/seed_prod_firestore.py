@@ -18,74 +18,26 @@ import urllib.request
 import urllib.error
 
 
-SERVICE_CATEGORY_MAP = {
-    "aiplatform": "AI & Machine Learning",
-    "vertex": "AI & Machine Learning",
-    "bigquery": "Data Platform",
-    "biglake": "Data Platform",
-    "bigqueryconnection": "Data Platform",
-    "bigquerydatapolicy": "Data Platform",
-    "bigquerydatatransfer": "Data Platform",
-    "bigqueryreservation": "Data Platform",
-    "datacatalog": "Data Platform",
-    "dataform": "Data Platform",
-    "datalineage": "Data Platform",
-    "dataplex": "Data Platform",
-    "datapipelines": "Data Platform",
-    "analyticshub": "Data Platform",
-    "discovery": "DevOps & Discovery",
-    "billingbudgets": "FinOps & Billing",
-    "cloudbilling": "FinOps & Billing",
-    "appoptimize": "FinOps & Billing",
-    "chromeuxreport": "Analytics & Web",
-    "pagespeedonline": "Analytics & Web",
-    "searchconsole": "Analytics & Web",
-    "tagmanager": "Analytics & Web",
-    "safebrowsing": "Core & Other",
-    "webrisk": "Core & Other",
-}
-
-QUADRANT_MAP = {
-    "AI & Machine Learning": "ai_ml",
-    "Data Platform": "data_platforms",
-    "DevOps & Discovery": "infra_compute",
-    "FinOps & Billing": "security_finops",
-    "Analytics & Web": "data_platforms",
-    "Core & Other": "infra_compute",
-}
+try:
+    from scripts.taxonomy import (
+        get_category_for_service,
+        get_quadrant_for_service,
+        determine_radar_ring,
+        WATCHED_SERVICES,
+    )
+except ImportError:
+    from taxonomy import (
+        get_category_for_service,
+        get_quadrant_for_service,
+        determine_radar_ring,
+        WATCHED_SERVICES,
+    )
 
 
 def slugify(text: str) -> str:
     """Converts a service name or string to a lowercase URL-friendly slug."""
     text = re.sub(r"[^a-zA-Z0-9\s-]", "", text.strip())
     return re.sub(r"[\s_-]+", "-", text).lower()
-
-
-def get_category_for_service(service_or_api: str) -> str:
-    """Classifies a service or API into a standardized category."""
-    lower = service_or_api.lower()
-    for key, category in SERVICE_CATEGORY_MAP.items():
-        if key in lower:
-            return category
-    return "Core & Other"
-
-
-def determine_radar_ring(status: str, is_breaking: bool, version: str) -> str:
-    """
-    Maps API change attributes to Thoughtworks Tech Radar rings:
-    - hold: deprecated / heavy breaking risk
-    - assess: early canary pre-release signal
-    - trial: public beta / preview / v1beta1
-    - adopt: stable GA / released
-    """
-    status_lower = status.lower()
-    if status_lower in ("deprecated", "retracted") or is_breaking:
-        return "hold"
-    if status_lower == "released":
-        return "adopt"
-    if "beta" in version.lower() or "alpha" in version.lower() or "preview" in version.lower():
-        return "trial"
-    return "assess"
 
 
 def get_access_token() -> str:
@@ -160,7 +112,7 @@ def parse_markdown_file(file_path: str) -> dict:
     status = str(meta.get("status", "canary")).lower()
     category = meta.get("category") or get_category_for_service(service_name)
     radar_ring = determine_radar_ring(status, breaking, version)
-    radar_quadrant = QUADRANT_MAP.get(category, "infra_compute")
+    radar_quadrant = meta.get("radar_quadrant") or get_quadrant_for_service(service_name)
 
     # Extract methods
     method_matches = list(set(re.findall(r"`([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+){2,})`", body)))[:6]

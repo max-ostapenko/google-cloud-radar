@@ -21,6 +21,11 @@ import sys
 import urllib.request
 from typing import Any, Optional
 
+try:
+    from scripts.taxonomy import is_watched_api
+except ImportError:
+    from taxonomy import is_watched_api
+
 
 def main() -> None:
     """The entrypoint for updating discovery documents
@@ -124,48 +129,8 @@ def load_documents(
         discovery_rest_url: str = item["discoveryRestUrl"]
         filename: str = f"{name}.{version}.json"
 
-        # Whitelist of watched APIs
-        if whitelist_check and name not in [
-            # data platform
-            "analyticshub",
-            "aiplatform",
-            "biglake",
-            "bigquery",
-            "bigqueryconnection",
-            "bigquerydatapolicy",
-            "bigquerydatatransfer",
-            "bigqueryreservation",
-            "connectors",
-            "datacatalog",
-            "dataform",
-            "datalineage",
-            "datapipelines",
-            "dataplex",
-            "integrations",
-            "looker",
-        ] + [
-            # finops
-            "appoptimize",
-            "billingbudgets",
-            "cloudbilling",
-        ] + [
-            # devops
-            "discovery",
-        ] + [
-            # datasets
-            "abusiveexperiencereport",
-            "adexperiencereport",
-            # "civicinfo",
-            "safebrowsing",
-            "versionhistory",
-            "webrisk",
-        ] + [
-            # analytics
-            "chromeuxreport",
-            "pagespeedonline",
-            "searchconsole",
-            "tagmanager",
-        ]:
+        # Filter by watched APIs watchlist
+        if whitelist_check and not is_watched_api(name):
             continue
 
         # Sometimes the index lists services that don't exist. So log any
