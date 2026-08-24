@@ -28,11 +28,11 @@ import {
 
 // Public client Firebase configuration for Google Cloud Radar
 const firebaseConfig = {
-  apiKey: 'AIzaSyDemoRadarKeyForGoogleAuth', // Standard public client config
-  authDomain: 'gcp-discovery-radar.firebaseapp.com',
+  apiKey: 'AIzaSyCL1LjrL1EsdNR1N8yK42jZyXmi0y1LID0',
+  authDomain: 'max-ostapenko.firebaseapp.com',
   projectId: 'max-ostapenko',
-  storageBucket: 'max-ostapenko.appspot.com',
-  appId: '1:390347019852:web:radar',
+  storageBucket: 'max-ostapenko.firebasestorage.app',
+  appId: '1:390347019852:web:14ca448a408310721f86e9',
 };
 
 let app: FirebaseApp;
