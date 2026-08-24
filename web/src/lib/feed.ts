@@ -438,12 +438,84 @@ export interface ServiceInfo {
   category: ServiceCategory;
 }
 
+export const MONITORED_SERVICES_LIST: { name: string; ecosystem: Ecosystem; category: ServiceCategory }[] = [
+  // Google Cloud - AI & ML
+  { name: 'Vertex AI', ecosystem: 'Google Cloud', category: 'AI & ML' },
+
+  // Google Cloud - Data Analytics
+  { name: 'BigQuery', ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  { name: 'BigLake', ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  { name: 'BigQuery Connection API', ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  { name: 'BigQuery Data Policy', ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  { name: 'BigQuery Data Transfer Service', ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  { name: 'BigQuery Reservation', ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  { name: 'Data Catalog', ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  { name: 'Dataform', ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  { name: 'Data Lineage', ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  { name: 'Dataplex', ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  { name: 'Data Pipelines', ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  { name: 'Analytics Hub', ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  { name: 'Looker Core', ecosystem: 'Google Cloud', category: 'Data Analytics' },
+
+  // Google Cloud - Application Development
+  { name: 'Integration Connectors', ecosystem: 'Google Cloud', category: 'Application Development' },
+  { name: 'Application Integration', ecosystem: 'Google Cloud', category: 'Application Development' },
+
+  // Google Cloud - FinOps & Billing
+  { name: 'Cloud Billing', ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
+  { name: 'Cloud Billing Budgets', ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
+  { name: 'App Optimize', ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
+
+  // Workspace
+  { name: 'Apps Script', ecosystem: 'Workspace', category: 'Workspace' },
+  { name: 'Gmail API', ecosystem: 'Workspace', category: 'Workspace' },
+  { name: 'Google Drive API', ecosystem: 'Workspace', category: 'Workspace' },
+
+  // Marketing Platform
+  { name: 'Tag Manager', ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
+  { name: 'Search Console', ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
+  { name: 'PageSpeed Insights', ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
+  { name: 'Chrome UX Report', ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
+
+  // Chrome
+  { name: 'Abusive Experience Report', ecosystem: 'Chrome', category: 'Chrome & Web' },
+  { name: 'Ad Experience Report', ecosystem: 'Chrome', category: 'Chrome & Web' },
+  { name: 'Version History', ecosystem: 'Chrome', category: 'Chrome & Web' },
+
+  // Personal
+  { name: 'Photos Library', ecosystem: 'Personal', category: 'Personal' },
+  { name: 'YouTube Data API', ecosystem: 'Personal', category: 'Personal' },
+
+  // Android
+  { name: 'Google Play Developer API', ecosystem: 'Android', category: 'Android' },
+
+  // More
+  { name: 'Discovery Service', ecosystem: 'More', category: 'More' },
+  { name: 'Safe Browsing', ecosystem: 'More', category: 'Security' },
+  { name: 'Web Risk', ecosystem: 'More', category: 'Security' },
+];
+
 export async function getServicesList(): Promise<ServiceInfo[]> {
   const entries = await getAllFeedEntries();
-  const map = new Map<string, { count: number; breakingCount: number; ecosystem: Ecosystem; category: ServiceCategory }>();
+  const map = new Map<string, { service: string; count: number; breakingCount: number; ecosystem: Ecosystem; category: ServiceCategory }>();
 
+  // 1. Seed with all monitored services from taxonomy
+  for (const item of MONITORED_SERVICES_LIST) {
+    const slug = slugify(item.name);
+    map.set(slug, {
+      service: item.name,
+      count: 0,
+      breakingCount: 0,
+      ecosystem: item.ecosystem,
+      category: item.category,
+    });
+  }
+
+  // 2. Tally updates from actual feed entries
   for (const entry of entries) {
-    const existing = map.get(entry.service) || {
+    const slug = slugify(entry.service);
+    const existing = map.get(slug) || {
+      service: entry.service,
       count: 0,
       breakingCount: 0,
       ecosystem: entry.ecosystem || getEcosystemForService(entry.service),
@@ -453,19 +525,22 @@ export async function getServicesList(): Promise<ServiceInfo[]> {
     if (entry.breaking) {
       existing.breakingCount += 1;
     }
-    map.set(entry.service, existing);
+    map.set(slug, existing);
   }
 
   return Array.from(map.entries())
-    .map(([service, { count, breakingCount, ecosystem, category }]) => ({
-      service,
-      slug: slugify(service),
-      count,
-      breakingCount,
-      ecosystem,
-      category,
+    .map(([slug, data]) => ({
+      service: data.service,
+      slug,
+      count: data.count,
+      breakingCount: data.breakingCount,
+      ecosystem: data.ecosystem,
+      category: data.category,
     }))
-    .sort((a, b) => b.count - a.count);
+    .sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count;
+      return a.service.localeCompare(b.service);
+    });
 }
 
 export function slugify(str: string): string {
