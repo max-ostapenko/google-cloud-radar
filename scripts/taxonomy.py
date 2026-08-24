@@ -28,6 +28,7 @@ class ServiceMeta(TypedDict, total=False):
     category: str
     quadrant: str
     name: str
+    release_feed_url: str
 
 
 ECOSYSTEMS = [
@@ -81,12 +82,14 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "category": "AI & ML",
         "quadrant": "ai_ml",
         "name": "Vertex AI",
+        "release_feed_url": "https://cloud.google.com/feeds/vertex-ai-release-notes.xml",
     },
     "vertex": {
         "ecosystem": "Google Cloud",
         "category": "AI & ML",
         "quadrant": "ai_ml",
         "name": "Vertex AI",
+        "release_feed_url": "https://cloud.google.com/feeds/vertex-ai-release-notes.xml",
     },
 
     # --- Data Analytics ---
@@ -95,78 +98,91 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "BigQuery",
+        "release_feed_url": "https://cloud.google.com/feeds/bigquery-release-notes.xml",
     },
     "biglake": {
         "ecosystem": "Google Cloud",
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "BigLake",
+        "release_feed_url": "https://cloud.google.com/feeds/bigquery-release-notes.xml",
     },
     "bigqueryconnection": {
         "ecosystem": "Google Cloud",
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "BigQuery Connection API",
+        "release_feed_url": "https://cloud.google.com/feeds/bigquery-release-notes.xml",
     },
     "bigquerydatapolicy": {
         "ecosystem": "Google Cloud",
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "BigQuery Data Policy",
+        "release_feed_url": "https://cloud.google.com/feeds/bigquery-release-notes.xml",
     },
     "bigquerydatatransfer": {
         "ecosystem": "Google Cloud",
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "BigQuery Data Transfer Service",
+        "release_feed_url": "https://cloud.google.com/feeds/bigquery-release-notes.xml",
     },
     "bigqueryreservation": {
         "ecosystem": "Google Cloud",
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "BigQuery Reservation",
+        "release_feed_url": "https://cloud.google.com/feeds/bigquery-release-notes.xml",
     },
     "datacatalog": {
         "ecosystem": "Google Cloud",
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Data Catalog",
+        "release_feed_url": "https://cloud.google.com/feeds/dataplex-release-notes.xml",
     },
     "dataform": {
         "ecosystem": "Google Cloud",
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Dataform",
+        "release_feed_url": "https://cloud.google.com/feeds/dataform-release-notes.xml",
     },
     "datalineage": {
         "ecosystem": "Google Cloud",
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Data Lineage",
+        "release_feed_url": "https://cloud.google.com/feeds/dataplex-release-notes.xml",
     },
     "datapipelines": {
         "ecosystem": "Google Cloud",
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Data Pipelines",
+        "release_feed_url": "https://cloud.google.com/feeds/dataplex-release-notes.xml",
     },
     "dataplex": {
         "ecosystem": "Google Cloud",
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Dataplex",
+        "release_feed_url": "https://cloud.google.com/feeds/dataplex-release-notes.xml",
     },
     "analyticshub": {
         "ecosystem": "Google Cloud",
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Analytics Hub",
+        "release_feed_url": "https://cloud.google.com/feeds/analytics-hub-release-notes.xml",
     },
     "looker": {
         "ecosystem": "Google Cloud",
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Looker Core",
+        "release_feed_url": "https://cloud.google.com/feeds/looker-release-notes.xml",
     },
 
     # --- Application Development & Integration ---
@@ -195,12 +211,14 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "category": "FinOps & Billing",
         "quadrant": "security_finops",
         "name": "Cloud Billing Budgets",
+        "release_feed_url": "https://cloud.google.com/feeds/cloud-billing-release-notes.xml",
     },
     "cloudbilling": {
         "ecosystem": "Google Cloud",
         "category": "FinOps & Billing",
         "quadrant": "security_finops",
         "name": "Cloud Billing",
+        "release_feed_url": "https://cloud.google.com/feeds/cloud-billing-release-notes.xml",
     },
 
     # =========================================================================
@@ -402,3 +420,24 @@ def determine_radar_ring(status: str, is_breaking: bool, version: str) -> str:
     if "beta" in version_lower or "preview" in status_lower or "trial" in status_lower:
         return "trial"
     return "assess"
+
+
+def get_release_feed_url(service_or_api: str) -> Optional[str]:
+    """Returns official Google release RSS/Atom feed URL for a service if configured."""
+    lower = service_or_api.lower()
+    if lower in WATCHED_SERVICES:
+        return WATCHED_SERVICES[lower].get("release_feed_url")
+    for key, meta in WATCHED_SERVICES.items():
+        if key in lower:
+            return meta.get("release_feed_url")
+    return None
+
+
+def get_official_release_feeds() -> dict[str, str]:
+    """Returns a mapping of service identifier to official release notes RSS feed URL."""
+    feeds = {}
+    for key, meta in WATCHED_SERVICES.items():
+        if "release_feed_url" in meta:
+            feeds[key] = meta["release_feed_url"]
+    return feeds
+

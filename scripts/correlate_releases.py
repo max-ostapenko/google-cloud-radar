@@ -17,16 +17,13 @@ import sys
 import urllib.request
 import xml.etree.ElementTree as ET
 
+try:
+    from scripts.taxonomy import get_release_feed_url, get_official_release_feeds
+except ImportError:
+    from taxonomy import get_release_feed_url, get_official_release_feeds
 
-OFFICIAL_RELEASE_FEEDS = {
-    "vertex-ai": "https://cloud.google.com/feeds/vertex-ai-release-notes.xml",
-    "bigquery": "https://cloud.google.com/feeds/bigquery-release-notes.xml",
-    "dataform": "https://cloud.google.com/feeds/dataform-release-notes.xml",
-    "dataplex": "https://cloud.google.com/feeds/dataplex-release-notes.xml",
-    "looker": "https://cloud.google.com/feeds/looker-release-notes.xml",
-    "analytics-hub": "https://cloud.google.com/feeds/analytics-hub-release-notes.xml",
-    "cloud-billing": "https://cloud.google.com/feeds/cloud-billing-release-notes.xml",
-}
+OFFICIAL_RELEASE_FEEDS = get_official_release_feeds()
+
 
 
 def fetch_feed_entries(feed_url: str) -> list:
@@ -273,11 +270,11 @@ def run_correlation(feed_dir: str, custom_releases: dict | None = None, project_
 
         # Match against release feeds
         service_key = slug.split("-")[3] if len(slug.split("-")) > 3 else ""
-        release_entries = []
+        feed_url = get_release_feed_url(service_key) or OFFICIAL_RELEASE_FEEDS.get(service_key)
         if custom_releases and service_key in custom_releases:
             release_entries = custom_releases[service_key]
-        elif service_key in OFFICIAL_RELEASE_FEEDS:
-            release_entries = fetch_feed_entries(OFFICIAL_RELEASE_FEEDS[service_key])
+        elif feed_url:
+            release_entries = fetch_feed_entries(feed_url)
 
         match = match_change_against_releases(change_meta, release_entries)
         if match:

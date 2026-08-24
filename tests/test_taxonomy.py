@@ -56,6 +56,21 @@ class TestTaxonomy(unittest.TestCase):
         self.assertIn("aiplatform", names)
         self.assertEqual(names, sorted(names))
 
+    def test_release_feeds(self):
+        self.assertEqual(
+            taxonomy.get_release_feed_url("bigquery"),
+            "https://cloud.google.com/feeds/bigquery-release-notes.xml"
+        )
+        self.assertEqual(
+            taxonomy.get_release_feed_url("vertex"),
+            "https://cloud.google.com/feeds/vertex-ai-release-notes.xml"
+        )
+        self.assertIsNone(taxonomy.get_release_feed_url("unknown_service"))
+        feeds = taxonomy.get_official_release_feeds()
+        self.assertIn("bigquery", feeds)
+        self.assertIn("dataform", feeds)
+
+
 
 if __name__ == "__main__":
     unittest.main()
