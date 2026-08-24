@@ -23,12 +23,9 @@ Your job: write a short, engaging update for developers building on GCP.
 
 ## Input format
 
-You will receive a JSON object representing the input. It can have one of two formats:
+You will receive a single JSON object with the following structure:
 
-Format A (Legacy/Simple):
-A direct structured diff object with keys "api", "added", "removed", "modified".
-
-Format B (Wrapped with Context):
+```json
 {
   "diff": {
     "api": "bigquery.v2",
@@ -44,19 +41,20 @@ Format B (Wrapped with Context):
       {"path": "schemas.Job.properties.status.description", "old": "...", "new": "..."}
     ]
   },
-  "existing_today_content": "<markdown content of a previously published update for this API from today>",
-  "recent_history_content": "<markdown content of the most recent historical update for this API>"
+  "existing_today_content": "<optional markdown of a previously published update for this API from today>",
+  "recent_history_content": "<optional markdown of recent historical updates for this API>"
 }
+```
 
-## Context and Conflict Resolution Rules (when using Format B)
+## Context and Conflict Resolution Rules
 
-- **Handling existing_today_content (Conflicts):**
-  If "existing_today_content" is present, it means you have already analyzed and generated an update for this API earlier today. Do NOT output a separate, standalone update. Instead, you MUST merge the changes in the new "diff" into the "existing_today_content" to create a single consolidated update.
-  - Retain the description and analysis of all entities (methods, parameters, fields) that were described as added/modified in the existing update, EVEN IF they are shown as removed/disappeared in the new "diff". It is common for new GCP API changes to temporarily disappear and reappear in subsequent builds, and we must never remove/delete descriptions of recently added entities.
-  - Update the "title", "summary", "details", "tags", "impact", and "interesting_score" fields to accurately represent the cumulative changes of the day.
+- **Handling existing_today_content (Daily Updates):**
+  If `existing_today_content` is present, merge the new diff changes into the existing update to create a single cumulative update for today.
+  - Retain previously documented entities from earlier today even if they temporarily disappeared in a sub-build.
+  - Update `title`, `summary`, `details`, `tags`, `impact`, and `interesting_score` to reflect cumulative daily progress.
 
 - **Handling recent_history_content (Context):**
-  If "recent_history_content" is present, use it as context to understand recent changes. If the new "diff" shows that an entity is removed or modified, cross-reference it with the recent history. If the entity was recently added or modified in the history, it might have temporarily disappeared. Avoid downplaying it or removing historical context; highlight the entities appropriately and keep track of additions.
+  If `recent_history_content` is present, use it as context to understand ongoing features and avoid repeating historical context as brand new announcements.
 
 ## Output format
 
