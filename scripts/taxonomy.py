@@ -2,191 +2,337 @@
 """
 Taxonomy and Watchlist Configuration for Google Cloud Radar.
 
-Single source of truth for:
-- Monitored Google APIs (discovery watchlist)
-- Standardized service categories
-- Thoughtworks Tech Radar quadrants and ring evaluation logic
+Defines a two-level hierarchy:
+1. Top-Level Ecosystem:
+   - Google Cloud (includes Firebase)
+   - Google Workspace
+   - Google Marketing Platform
+   - Personal
+   - Chrome
+   - Android
+   - More (Discovery, Core, Security)
+
+2. Subcategory:
+   - For Google Cloud: AI & ML, Data Analytics, Application Development, FinOps & Billing, Security, Observability.
+   - For other ecosystems: Product-specific category.
+
+3. Thoughtworks Tech Radar Quadrant Mapping:
+   - ai_ml, data_platforms, infra_compute, security_finops
 """
 
 from typing import TypedDict, Optional
 
 
 class ServiceMeta(TypedDict, total=False):
+    ecosystem: str
     category: str
     quadrant: str
     name: str
 
 
+ECOSYSTEMS = [
+    "Google Cloud",
+    "Workspace",
+    "Marketing Platform",
+    "Personal",
+    "Chrome",
+    "Android",
+    "More",
+]
+
 QUADRANT_MAP = {
+    # AI
+    "AI & ML": "ai_ml",
     "AI & Machine Learning": "ai_ml",
+    # Data Platforms
+    "Data Analytics": "data_platforms",
     "Data Platform": "data_platforms",
-    "DevOps & Discovery": "infra_compute",
-    "FinOps & Billing": "security_finops",
+    "Marketing Platform": "data_platforms",
     "Analytics & Web": "data_platforms",
+    "Tag Manager": "data_platforms",
+    "Search Console": "data_platforms",
+    "PageSpeed Insights": "data_platforms",
+    "Chrome UX Report": "data_platforms",
+    # Security & FinOps
+    "FinOps & Billing": "security_finops",
+    "Security": "security_finops",
+    "Safe Browsing": "security_finops",
+    "Web Risk": "security_finops",
+    # Infrastructure & DevOps
+    "Application Development": "infra_compute",
+    "Compute": "infra_compute",
+    "Storage": "infra_compute",
+    "Workspace": "infra_compute",
+    "Chrome": "infra_compute",
+    "Android": "infra_compute",
+    "Personal": "infra_compute",
+    "More": "infra_compute",
+    "DevOps & Discovery": "infra_compute",
     "Core & Other": "infra_compute",
 }
 
 WATCHED_SERVICES: dict[str, ServiceMeta] = {
-    # --- AI & Machine Learning ---
+    # =========================================================================
+    # 1. GOOGLE CLOUD (includes Firebase)
+    # =========================================================================
+    # --- AI & ML ---
     "aiplatform": {
-        "category": "AI & Machine Learning",
+        "ecosystem": "Google Cloud",
+        "category": "AI & ML",
         "quadrant": "ai_ml",
         "name": "Vertex AI",
     },
     "vertex": {
-        "category": "AI & Machine Learning",
+        "ecosystem": "Google Cloud",
+        "category": "AI & ML",
         "quadrant": "ai_ml",
         "name": "Vertex AI",
     },
 
-    # --- Data Platform ---
-    "analyticshub": {
-        "category": "Data Platform",
-        "quadrant": "data_platforms",
-        "name": "Analytics Hub",
-    },
-    "biglake": {
-        "category": "Data Platform",
-        "quadrant": "data_platforms",
-        "name": "BigLake",
-    },
+    # --- Data Analytics ---
     "bigquery": {
-        "category": "Data Platform",
+        "ecosystem": "Google Cloud",
+        "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "BigQuery",
     },
+    "biglake": {
+        "ecosystem": "Google Cloud",
+        "category": "Data Analytics",
+        "quadrant": "data_platforms",
+        "name": "BigLake",
+    },
     "bigqueryconnection": {
-        "category": "Data Platform",
+        "ecosystem": "Google Cloud",
+        "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "BigQuery Connection API",
     },
     "bigquerydatapolicy": {
-        "category": "Data Platform",
+        "ecosystem": "Google Cloud",
+        "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "BigQuery Data Policy",
     },
     "bigquerydatatransfer": {
-        "category": "Data Platform",
+        "ecosystem": "Google Cloud",
+        "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "BigQuery Data Transfer Service",
     },
     "bigqueryreservation": {
-        "category": "Data Platform",
+        "ecosystem": "Google Cloud",
+        "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "BigQuery Reservation",
     },
-    "connectors": {
-        "category": "Data Platform",
-        "quadrant": "data_platforms",
-        "name": "Integration Connectors",
-    },
     "datacatalog": {
-        "category": "Data Platform",
+        "ecosystem": "Google Cloud",
+        "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Data Catalog",
     },
     "dataform": {
-        "category": "Data Platform",
+        "ecosystem": "Google Cloud",
+        "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Dataform",
     },
     "datalineage": {
-        "category": "Data Platform",
+        "ecosystem": "Google Cloud",
+        "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Data Lineage",
     },
     "datapipelines": {
-        "category": "Data Platform",
+        "ecosystem": "Google Cloud",
+        "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Data Pipelines",
     },
     "dataplex": {
-        "category": "Data Platform",
+        "ecosystem": "Google Cloud",
+        "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Dataplex",
     },
-    "integrations": {
-        "category": "Data Platform",
+    "analyticshub": {
+        "ecosystem": "Google Cloud",
+        "category": "Data Analytics",
         "quadrant": "data_platforms",
-        "name": "Application Integration",
+        "name": "Analytics Hub",
     },
     "looker": {
-        "category": "Data Platform",
+        "ecosystem": "Google Cloud",
+        "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Looker Core",
     },
 
+    # --- Application Development & Integration ---
+    "connectors": {
+        "ecosystem": "Google Cloud",
+        "category": "Application Development",
+        "quadrant": "infra_compute",
+        "name": "Integration Connectors",
+    },
+    "integrations": {
+        "ecosystem": "Google Cloud",
+        "category": "Application Development",
+        "quadrant": "infra_compute",
+        "name": "Application Integration",
+    },
+
     # --- FinOps & Billing ---
     "appoptimize": {
+        "ecosystem": "Google Cloud",
         "category": "FinOps & Billing",
         "quadrant": "security_finops",
         "name": "App Optimize",
     },
     "billingbudgets": {
+        "ecosystem": "Google Cloud",
         "category": "FinOps & Billing",
         "quadrant": "security_finops",
         "name": "Cloud Billing Budgets",
     },
     "cloudbilling": {
+        "ecosystem": "Google Cloud",
         "category": "FinOps & Billing",
         "quadrant": "security_finops",
         "name": "Cloud Billing",
     },
 
-    # --- DevOps & Discovery ---
-    "discovery": {
-        "category": "DevOps & Discovery",
+    # =========================================================================
+    # 2. GOOGLE WORKSPACE
+    # =========================================================================
+    "script": {
+        "ecosystem": "Workspace",
+        "category": "Apps Script",
         "quadrant": "infra_compute",
-        "name": "Discovery Engine",
+        "name": "Apps Script",
+    },
+    "admin": {
+        "ecosystem": "Workspace",
+        "category": "Admin SDK",
+        "quadrant": "infra_compute",
+        "name": "Admin SDK",
+    },
+    "gmail": {
+        "ecosystem": "Workspace",
+        "category": "Gmail API",
+        "quadrant": "infra_compute",
+        "name": "Gmail API",
+    },
+    "drive": {
+        "ecosystem": "Workspace",
+        "category": "Drive API",
+        "quadrant": "infra_compute",
+        "name": "Drive API",
     },
 
-    # --- Analytics & Web ---
-    "chromeuxreport": {
-        "category": "Analytics & Web",
-        "quadrant": "data_platforms",
-        "name": "Chrome UX Report",
-    },
-    "pagespeedonline": {
-        "category": "Analytics & Web",
-        "quadrant": "data_platforms",
-        "name": "PageSpeed Insights",
-    },
-    "searchconsole": {
-        "category": "Analytics & Web",
-        "quadrant": "data_platforms",
-        "name": "Search Console",
-    },
+    # =========================================================================
+    # 3. GOOGLE MARKETING PLATFORM
+    # =========================================================================
     "tagmanager": {
-        "category": "Analytics & Web",
+        "ecosystem": "Marketing Platform",
+        "category": "Tag Manager",
         "quadrant": "data_platforms",
         "name": "Tag Manager",
     },
+    "searchconsole": {
+        "ecosystem": "Marketing Platform",
+        "category": "Search Console",
+        "quadrant": "data_platforms",
+        "name": "Search Console",
+    },
+    "pagespeedonline": {
+        "ecosystem": "Marketing Platform",
+        "category": "PageSpeed Insights",
+        "quadrant": "data_platforms",
+        "name": "PageSpeed Insights",
+    },
+    "chromeuxreport": {
+        "ecosystem": "Marketing Platform",
+        "category": "Chrome UX Report",
+        "quadrant": "data_platforms",
+        "name": "Chrome UX Report",
+    },
 
-    # --- Core & Datasets ---
+    # =========================================================================
+    # 4. PERSONAL / CONSUMER
+    # =========================================================================
+    "photoslibrary": {
+        "ecosystem": "Personal",
+        "category": "Photos Library",
+        "quadrant": "infra_compute",
+        "name": "Photos Library API",
+    },
+    "youtube": {
+        "ecosystem": "Personal",
+        "category": "YouTube Data API",
+        "quadrant": "infra_compute",
+        "name": "YouTube Data API",
+    },
+
+    # =========================================================================
+    # 5. CHROME & WEB
+    # =========================================================================
     "abusiveexperiencereport": {
-        "category": "Core & Other",
+        "ecosystem": "Chrome",
+        "category": "Abusive Experience",
         "quadrant": "infra_compute",
         "name": "Abusive Experience Report",
     },
     "adexperiencereport": {
-        "category": "Core & Other",
+        "ecosystem": "Chrome",
+        "category": "Ad Experience",
         "quadrant": "infra_compute",
         "name": "Ad Experience Report",
     },
-    "safebrowsing": {
-        "category": "Core & Other",
-        "quadrant": "security_finops",
-        "name": "Safe Browsing",
-    },
     "versionhistory": {
-        "category": "Core & Other",
+        "ecosystem": "Chrome",
+        "category": "Version History",
         "quadrant": "infra_compute",
         "name": "Version History",
     },
+
+    # =========================================================================
+    # 6. ANDROID & PLAY
+    # =========================================================================
+    "androidpublisher": {
+        "ecosystem": "Android",
+        "category": "Google Play",
+        "quadrant": "infra_compute",
+        "name": "Google Play Developer API",
+    },
+
+    # =========================================================================
+    # 7. MORE / CORE & SECURITY
+    # =========================================================================
+    "discovery": {
+        "ecosystem": "More",
+        "category": "Discovery Engine",
+        "quadrant": "infra_compute",
+        "name": "Discovery Engine",
+    },
+    "safebrowsing": {
+        "ecosystem": "More",
+        "category": "Safe Browsing",
+        "quadrant": "security_finops",
+        "name": "Safe Browsing",
+    },
     "webrisk": {
-        "category": "Core & Other",
+        "ecosystem": "More",
+        "category": "Web Risk",
         "quadrant": "security_finops",
         "name": "Web Risk",
+    },
+    "libraryagent": {
+        "ecosystem": "More",
+        "category": "Sample APIs",
+        "quadrant": "infra_compute",
+        "name": "Library Agent",
     },
 }
 
@@ -201,6 +347,17 @@ def get_watched_api_names() -> list[str]:
     return sorted(WATCHED_SERVICES.keys())
 
 
+def get_ecosystem_for_service(service_or_api: str) -> str:
+    """Returns top-level ecosystem (e.g. Google Cloud, Workspace, Marketing Platform, etc.)."""
+    lower = service_or_api.lower()
+    if lower in WATCHED_SERVICES:
+        return WATCHED_SERVICES[lower].get("ecosystem", "Google Cloud")
+    for key, meta in WATCHED_SERVICES.items():
+        if key in lower:
+            return meta.get("ecosystem", "Google Cloud")
+    return "More"
+
+
 def get_category_for_service(service_or_api: str) -> str:
     """
     Classifies a service or API name into a standardized category.
@@ -208,19 +365,23 @@ def get_category_for_service(service_or_api: str) -> str:
     """
     lower = service_or_api.lower()
     if lower in WATCHED_SERVICES:
-        return WATCHED_SERVICES[lower].get("category", "Core & Other")
+        return WATCHED_SERVICES[lower].get("category", "Data Analytics")
 
     for key, meta in WATCHED_SERVICES.items():
         if key in lower:
-            return meta.get("category", "Core & Other")
+            return meta.get("category", "Data Analytics")
 
-    return "Core & Other"
+    return "Data Analytics"
 
 
 def get_quadrant_for_service(service_or_api: str) -> str:
     """Returns the Thoughtworks Tech Radar quadrant for a given service."""
+    lower = service_or_api.lower()
+    if lower in WATCHED_SERVICES:
+        return WATCHED_SERVICES[lower].get("quadrant", "data_platforms")
+
     category = get_category_for_service(service_or_api)
-    return QUADRANT_MAP.get(category, "infra_compute")
+    return QUADRANT_MAP.get(category, "data_platforms")
 
 
 def determine_radar_ring(status: str, is_breaking: bool, version: str) -> str:

@@ -1,5 +1,5 @@
 ---
-import { getServicesList, type ServiceCategory } from '../lib/feed';
+import { getServicesList, type Ecosystem, type ServiceCategory, type ServiceInfo } from '../lib/feed';
 
 interface Props {
   activeServiceSlug?: string;
@@ -8,26 +8,90 @@ interface Props {
 
 const { activeServiceSlug = '', activeCategory = '' } = Astro.props;
 
-const services = await getServicesList();
+const services: ServiceInfo[] = await getServicesList();
 
-// Group services by Category
-const categories: ServiceCategory[] = [
-  'AI & Machine Learning',
-  'Data Platform',
+// Top-Level Ecosystems configuration
+interface EcosystemGroup {
+  id: Ecosystem;
+  label: string;
+  icon: string;
+  totalCount: number;
+  subgroups?: {
+    category: ServiceCategory;
+    items: ServiceInfo[];
+    totalCount: number;
+  }[];
+  directItems?: ServiceInfo[];
+}
+
+const cloudSubcategories: ServiceCategory[] = [
+  'AI & ML',
+  'Data Analytics',
+  'Application Development',
   'FinOps & Billing',
-  'Analytics & Web',
-  'DevOps & Discovery',
-  'Core & Other',
 ];
 
-const grouped = categories.map((category) => {
-  const items = services.filter((s) => s.category === category);
+const cloudServices = services.filter((s) => s.ecosystem === 'Google Cloud');
+const cloudSubgroups = cloudSubcategories.map((category) => {
+  const items = cloudServices.filter((s) => s.category === category);
   return {
     category,
     items,
     totalCount: items.reduce((acc, curr) => acc + curr.count, 0),
   };
 }).filter((g) => g.items.length > 0);
+
+const ecosystemList: EcosystemGroup[] = [
+  {
+    id: 'Google Cloud',
+    label: 'Google Cloud',
+    icon: 'cloud',
+    totalCount: cloudServices.reduce((acc, curr) => acc + curr.count, 0),
+    subgroups: cloudSubgroups,
+  },
+  {
+    id: 'Workspace',
+    label: 'Workspace',
+    icon: 'briefcase',
+    totalCount: services.filter((s) => s.ecosystem === 'Workspace').reduce((acc, curr) => acc + curr.count, 0),
+    directItems: services.filter((s) => s.ecosystem === 'Workspace'),
+  },
+  {
+    id: 'Marketing Platform',
+    label: 'Marketing Platform',
+    icon: 'trending-up',
+    totalCount: services.filter((s) => s.ecosystem === 'Marketing Platform').reduce((acc, curr) => acc + curr.count, 0),
+    directItems: services.filter((s) => s.ecosystem === 'Marketing Platform'),
+  },
+  {
+    id: 'Chrome',
+    label: 'Chrome & Web',
+    icon: 'globe',
+    totalCount: services.filter((s) => s.ecosystem === 'Chrome').reduce((acc, curr) => acc + curr.count, 0),
+    directItems: services.filter((s) => s.ecosystem === 'Chrome'),
+  },
+  {
+    id: 'Personal',
+    label: 'Personal',
+    icon: 'user',
+    totalCount: services.filter((s) => s.ecosystem === 'Personal').reduce((acc, curr) => acc + curr.count, 0),
+    directItems: services.filter((s) => s.ecosystem === 'Personal'),
+  },
+  {
+    id: 'Android',
+    label: 'Android & Play',
+    icon: 'smartphone',
+    totalCount: services.filter((s) => s.ecosystem === 'Android').reduce((acc, curr) => acc + curr.count, 0),
+    directItems: services.filter((s) => s.ecosystem === 'Android'),
+  },
+  {
+    id: 'More',
+    label: 'More / Core',
+    icon: 'grid',
+    totalCount: services.filter((s) => s.ecosystem === 'More').reduce((acc, curr) => acc + curr.count, 0),
+    directItems: services.filter((s) => s.ecosystem === 'More'),
+  },
+];
 ---
 
 <aside class="gcp-sidebar">
@@ -54,28 +118,115 @@ const grouped = categories.map((category) => {
 
     <div class="sidebar-divider"></div>
 
-    {grouped.map((group) => (
-      <div class="category-group">
-        <div class="category-title">
-          <span>{group.category}</span>
-          <span class="category-count">{group.totalCount}</span>
+    <!-- Hierarchy: Top Level Ecosystems -->
+    <div class="ecosystem-container">
+      {ecosystemList.map((eco) => (
+        <div class="ecosystem-section">
+          <div class="ecosystem-header">
+            <div class="ecosystem-label">
+              {eco.icon === 'cloud' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                </svg>
+              )}
+              {eco.icon === 'briefcase' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                </svg>
+              )}
+              {eco.icon === 'trending-up' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                  <polyline points="17 6 23 6 23 12"/>
+                </svg>
+              )}
+              {eco.icon === 'globe' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+              )}
+              {eco.icon === 'user' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              )}
+              {eco.icon === 'smartphone' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                  <line x1="12" y1="18" x2="12.01" y2="18"/>
+                </svg>
+              )}
+              {eco.icon === 'grid' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"/>
+                  <rect x="14" y="3" width="7" height="7"/>
+                  <rect x="14" y="14" width="7" height="7"/>
+                  <rect x="3" y="14" width="7" height="7"/>
+                </svg>
+              )}
+              <span>{eco.label}</span>
+            </div>
+            <span class={`ecosystem-badge ${eco.totalCount === 0 ? 'empty-badge' : ''}`}>
+              {eco.totalCount}
+            </span>
+          </div>
+
+          <!-- Second Level: Google Cloud Subcategories (Visible by Default) -->
+          {eco.subgroups && (
+            <div class="subgroup-container">
+              {eco.subgroups.map((sub) => (
+                <div class="category-group">
+                  <div class="category-title">
+                    <span>{sub.category}</span>
+                    <span class="category-count">{sub.totalCount}</span>
+                  </div>
+                  <ul class="service-list">
+                    {sub.items.map((item) => (
+                      <li>
+                        <a
+                          href={`/services/${item.slug}`}
+                          class={`service-link ${activeServiceSlug === item.slug ? 'active' : ''}`}
+                          title={`${item.service} (${item.count} updates)`}
+                        >
+                          <span class="service-name">{item.service}</span>
+                          <span class="service-count">{item.count}</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <!-- Direct Items for other ecosystems -->
+          {eco.directItems && eco.directItems.length > 0 && (
+            <ul class="service-list direct-list">
+              {eco.directItems.map((item) => (
+                <li>
+                  <a
+                    href={`/services/${item.slug}`}
+                    class={`service-link ${activeServiceSlug === item.slug ? 'active' : ''}`}
+                    title={`${item.service} (${item.count} updates)`}
+                  >
+                    <span class="service-name">{item.service}</span>
+                    <span class="service-count">{item.count}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {eco.totalCount === 0 && (
+            <div class="empty-ecosystem-msg">No monitored APIs</div>
+          )}
         </div>
-        <ul class="service-list">
-          {group.items.map((item) => (
-            <li>
-              <a
-                href={`/services/${item.slug}`}
-                class={`service-link ${activeServiceSlug === item.slug ? 'active' : ''}`}
-                title={`${item.service} (${item.count} updates)`}
-              >
-                <span class="service-name">{item.service}</span>
-                <span class="service-count">{item.count}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    ))}
+      ))}
+    </div>
   </div>
 
   <div class="sidebar-footer">
@@ -192,25 +343,78 @@ const grouped = categories.map((category) => {
     margin: 12px 4px;
   }
 
+  /* Ecosystem Containers */
+  .ecosystem-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ecosystem-section {
+    border-radius: var(--radius-sm);
+  }
+
+  .ecosystem-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background-color: var(--bg-surface-hover);
+    border-radius: var(--radius-sm);
+    margin-bottom: 6px;
+  }
+
+  .ecosystem-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-primary);
+  }
+
+  .ecosystem-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    background-color: var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .ecosystem-badge.empty-badge {
+    opacity: 0.5;
+    font-weight: 400;
+  }
+
+  .subgroup-container {
+    padding-left: 6px;
+    border-left: 1px dashed var(--border-subtle);
+    margin-left: 6px;
+  }
+
   .category-group {
-    margin-bottom: 16px;
+    margin-bottom: 10px;
   }
 
   .category-title {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 6px 12px;
-    font-size: 11px;
+    padding: 4px 10px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.5px;
     color: var(--text-tertiary);
   }
 
   .category-count {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .service-list {
@@ -219,13 +423,19 @@ const grouped = categories.map((category) => {
     padding: 0;
   }
 
+  .direct-list {
+    padding-left: 6px;
+    border-left: 1px dashed var(--border-subtle);
+    margin-left: 6px;
+  }
+
   .service-link {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 6px 12px 6px 16px;
+    padding: 5px 10px;
     border-radius: var(--radius-sm);
-    font-size: 13px;
+    font-size: 12.5px;
     color: var(--text-secondary);
     text-decoration: none;
     transition: all 0.15s ease;
@@ -241,7 +451,7 @@ const grouped = categories.map((category) => {
     background-color: var(--google-blue-subtle);
     color: var(--google-blue);
     font-weight: 600;
-    border-left: 3px solid var(--google-blue);
+    border-left: 2.5px solid var(--google-blue);
   }
 
   .service-name {
@@ -251,71 +461,66 @@ const grouped = categories.map((category) => {
   }
 
   .service-count {
-    font-size: 11px;
-    font-family: var(--font-mono);
+    font-size: 10.5px;
     color: var(--text-tertiary);
+    font-family: var(--font-mono);
+    margin-left: 8px;
+    flex-shrink: 0;
+  }
+
+  .empty-ecosystem-msg {
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-style: italic;
+    margin-left: 8px;
   }
 
   .sidebar-footer {
-    padding: 12px;
+    padding: 16px;
     border-top: 1px solid var(--border-subtle);
+    background-color: var(--bg-surface);
   }
 
   .radar-status-card {
-    background-color: var(--bg-surface-hover);
+    background-color: var(--bg-primary);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    padding: 10px 12px;
+    padding: 12px;
   }
 
   .status-indicator {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--google-green);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
 
   .status-pulse {
     width: 8px;
     height: 8px;
-    background-color: var(--google-green);
     border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(24, 128, 56, 0.7);
-    animation: status-pulse 2s infinite;
+    background-color: var(--google-green);
+    box-shadow: 0 0 0 2px var(--google-green-subtle);
+    animation: pulse 2s infinite;
   }
 
-  @keyframes status-pulse {
-    0% {
-      transform: scale(0.95);
-      box-shadow: 0 0 0 0 rgba(24, 128, 56, 0.7);
-    }
-    70% {
-      transform: scale(1);
-      box-shadow: 0 0 0 6px rgba(24, 128, 56, 0);
-    }
-    100% {
-      transform: scale(0.95);
-      box-shadow: 0 0 0 0 rgba(24, 128, 56, 0);
-    }
+  .status-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--google-green);
   }
 
   .status-desc {
     font-size: 11px;
     color: var(--text-tertiary);
-    line-height: 1.3;
+    line-height: 1.4;
+    margin: 0;
   }
 
-  @media (max-width: 900px) {
-    .gcp-sidebar {
-      width: 100%;
-      height: auto;
-      position: static;
-      border-right: none;
-      border-bottom: 1px solid var(--border-subtle);
-      max-height: 300px;
-    }
+  @keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 168, 83, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(52, 168, 83, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 168, 83, 0); }
   }
 </style>

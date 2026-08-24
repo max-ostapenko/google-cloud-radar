@@ -42,6 +42,125 @@ export interface FeedEntryMeta {
   };
 }
 
+export type Ecosystem =
+  | 'Google Cloud'
+  | 'Workspace'
+  | 'Marketing Platform'
+  | 'Personal'
+  | 'Chrome'
+  | 'Android'
+  | 'More';
+
+export type ServiceCategory =
+  | 'AI & ML'
+  | 'Data Analytics'
+  | 'Application Development'
+  | 'FinOps & Billing'
+  | 'Security'
+  | 'Workspace'
+  | 'Marketing Platform'
+  | 'Chrome & Web'
+  | 'Personal'
+  | 'Android'
+  | 'More';
+
+const SERVICE_META_MAP: Record<string, { ecosystem: Ecosystem; category: ServiceCategory }> = {
+  // Google Cloud
+  aiplatform: { ecosystem: 'Google Cloud', category: 'AI & ML' },
+  'Vertex AI': { ecosystem: 'Google Cloud', category: 'AI & ML' },
+  bigquery: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  'BigQuery': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  biglake: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  'BigLake': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  bigqueryconnection: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  'BigQuery Connection': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  bigquerydatapolicy: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  'BigQuery Data Policy': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  bigquerydatatransfer: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  'BigQuery Data Transfer': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  bigqueryreservation: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  'BigQuery Reservation': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  datacatalog: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  'Data Catalog': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  dataform: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  'Dataform': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  datalineage: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  'Data Lineage': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  dataplex: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  'Dataplex': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  datapipelines: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  'Data Pipelines': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  analyticshub: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  'Analytics Hub': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  looker: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  'Looker Core': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
+  connectors: { ecosystem: 'Google Cloud', category: 'Application Development' },
+  'Integration Connectors': { ecosystem: 'Google Cloud', category: 'Application Development' },
+  integrations: { ecosystem: 'Google Cloud', category: 'Application Development' },
+  'Application Integration': { ecosystem: 'Google Cloud', category: 'Application Development' },
+  cloudbilling: { ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
+  'Cloud Billing': { ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
+  billingbudgets: { ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
+  'Cloud Billing Budgets': { ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
+  appoptimize: { ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
+  'App Optimize': { ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
+
+  // Workspace
+  script: { ecosystem: 'Workspace', category: 'Workspace' },
+  'Apps Script': { ecosystem: 'Workspace', category: 'Workspace' },
+  admin: { ecosystem: 'Workspace', category: 'Workspace' },
+  gmail: { ecosystem: 'Workspace', category: 'Workspace' },
+  drive: { ecosystem: 'Workspace', category: 'Workspace' },
+
+  // Marketing Platform
+  tagmanager: { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
+  'Tag Manager': { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
+  searchconsole: { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
+  'Search Console': { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
+  pagespeedonline: { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
+  'PageSpeed Insights': { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
+  chromeuxreport: { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
+  'Chrome UX Report': { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
+
+  // Personal
+  photoslibrary: { ecosystem: 'Personal', category: 'Personal' },
+  youtube: { ecosystem: 'Personal', category: 'Personal' },
+
+  // Chrome
+  abusiveexperiencereport: { ecosystem: 'Chrome', category: 'Chrome & Web' },
+  adexperiencereport: { ecosystem: 'Chrome', category: 'Chrome & Web' },
+  versionhistory: { ecosystem: 'Chrome', category: 'Chrome & Web' },
+
+  // Android
+  androidpublisher: { ecosystem: 'Android', category: 'Android' },
+
+  // More
+  discovery: { ecosystem: 'More', category: 'More' },
+  'Discovery Service': { ecosystem: 'More', category: 'More' },
+  safebrowsing: { ecosystem: 'More', category: 'Security' },
+  webrisk: { ecosystem: 'More', category: 'Security' },
+  libraryagent: { ecosystem: 'More', category: 'More' },
+  'Library Agent': { ecosystem: 'More', category: 'More' },
+};
+
+export function getEcosystemForService(serviceOrApi: string): Ecosystem {
+  for (const [key, meta] of Object.entries(SERVICE_META_MAP)) {
+    if (serviceOrApi.toLowerCase().includes(key.toLowerCase())) {
+      return meta.ecosystem;
+    }
+  }
+  return 'Google Cloud';
+}
+
+export function getCategoryForService(serviceOrApi: string): ServiceCategory {
+  for (const [key, meta] of Object.entries(SERVICE_META_MAP)) {
+    if (serviceOrApi.toLowerCase().includes(key.toLowerCase())) {
+      return meta.category;
+    }
+  }
+  return 'Data Analytics';
+}
+
 export interface FeedEntry extends FeedEntryMeta {
   status: ChangeStatus;
   radar_ring: RadarRing;
@@ -53,70 +172,8 @@ export interface FeedEntry extends FeedEntryMeta {
   summary: string;
   detailsHtml: string;
   extractedMethods: string[];
+  ecosystem: Ecosystem;
   category: ServiceCategory;
-}
-
-export type ServiceCategory =
-  | 'AI & Machine Learning'
-  | 'Data Platform'
-  | 'DevOps & Discovery'
-  | 'FinOps & Billing'
-  | 'Analytics & Web'
-  | 'Core & Other';
-
-const SERVICE_CATEGORY_MAP: Record<string, ServiceCategory> = {
-  aiplatform: 'AI & Machine Learning',
-  'Vertex AI': 'AI & Machine Learning',
-  bigquery: 'Data Platform',
-  'BigQuery': 'Data Platform',
-  biglake: 'Data Platform',
-  'BigLake': 'Data Platform',
-  bigqueryconnection: 'Data Platform',
-  'BigQuery Connection': 'Data Platform',
-  bigquerydatapolicy: 'Data Platform',
-  'BigQuery Data Policy': 'Data Platform',
-  bigquerydatatransfer: 'Data Platform',
-  'BigQuery Data Transfer': 'Data Platform',
-  bigqueryreservation: 'Data Platform',
-  'BigQuery Reservation': 'Data Platform',
-  datacatalog: 'Data Platform',
-  'Data Catalog': 'Data Platform',
-  dataform: 'Data Platform',
-  'Dataform': 'Data Platform',
-  datalineage: 'Data Platform',
-  'Data Lineage': 'Data Platform',
-  dataplex: 'Data Platform',
-  'Dataplex': 'Data Platform',
-  datapipelines: 'Data Platform',
-  'Data Pipelines': 'Data Platform',
-  analyticshub: 'Data Platform',
-  'Analytics Hub': 'Data Platform',
-  discovery: 'DevOps & Discovery',
-  'Discovery Service': 'DevOps & Discovery',
-  billingbudgets: 'FinOps & Billing',
-  'Cloud Billing Budgets': 'FinOps & Billing',
-  cloudbilling: 'FinOps & Billing',
-  'Cloud Billing': 'FinOps & Billing',
-  appoptimize: 'FinOps & Billing',
-  chromeuxreport: 'Analytics & Web',
-  'Chrome UX Report': 'Analytics & Web',
-  pagespeedonline: 'Analytics & Web',
-  'PageSpeed Insights': 'Analytics & Web',
-  searchconsole: 'Analytics & Web',
-  'Search Console': 'Analytics & Web',
-  tagmanager: 'Analytics & Web',
-  'Tag Manager': 'Analytics & Web',
-  safebrowsing: 'Core & Other',
-  webrisk: 'Core & Other',
-};
-
-export function getCategoryForService(serviceOrApi: string): ServiceCategory {
-  for (const [key, category] of Object.entries(SERVICE_CATEGORY_MAP)) {
-    if (serviceOrApi.toLowerCase().includes(key.toLowerCase())) {
-      return category;
-    }
-  }
-  return 'Core & Other';
 }
 
 const DB_HOST = process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080';
@@ -192,6 +249,7 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       }
 
       const htmlContent = marked.parse(detailsMarkdown, { async: false }) as string;
+      const ecosystem = (f.ecosystem?.stringValue as Ecosystem) || getEcosystemForService(service || api);
       const category = (f.category?.stringValue as ServiceCategory) || getCategoryForService(service || api);
 
       return {
@@ -221,6 +279,7 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         summary,
         detailsHtml: htmlContent,
         extractedMethods,
+        ecosystem,
         category,
       };
     });
@@ -290,6 +349,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
       }
 
       const htmlContent = marked.parse(content, { async: false }) as string;
+      const ecosystem = (data.ecosystem as Ecosystem) || getEcosystemForService(service || api);
       const category = (data.category as ServiceCategory) || getCategoryForService(service || api);
       const status = (data.status || 'canary').toLowerCase() as ChangeStatus;
       const radar_ring = (data.radar_ring || (breaking ? 'hold' : status === 'released' ? 'adopt' : 'assess')) as RadarRing;
@@ -326,6 +386,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
         summary,
         detailsHtml: htmlContent,
         extractedMethods,
+        ecosystem,
         category,
       });
     } catch (err) {
@@ -368,21 +429,34 @@ export async function getFeedEntryBySlug(slug: string): Promise<FeedEntry | unde
   return entries.find((e) => e.slug === slug);
 }
 
-export async function getServicesList(): Promise<{ service: string; count: number; category: ServiceCategory; slug: string }[]> {
+export interface ServiceInfo {
+  service: string;
+  slug: string;
+  count: number;
+  ecosystem: Ecosystem;
+  category: ServiceCategory;
+}
+
+export async function getServicesList(): Promise<ServiceInfo[]> {
   const entries = await getAllFeedEntries();
-  const map = new Map<string, { count: number; category: ServiceCategory }>();
+  const map = new Map<string, { count: number; ecosystem: Ecosystem; category: ServiceCategory }>();
 
   for (const entry of entries) {
-    const existing = map.get(entry.service) || { count: 0, category: entry.category };
+    const existing = map.get(entry.service) || {
+      count: 0,
+      ecosystem: entry.ecosystem || getEcosystemForService(entry.service),
+      category: entry.category || getCategoryForService(entry.service),
+    };
     existing.count += 1;
     map.set(entry.service, existing);
   }
 
   return Array.from(map.entries())
-    .map(([service, { count, category }]) => ({
+    .map(([service, { count, ecosystem, category }]) => ({
       service,
       slug: slugify(service),
       count,
+      ecosystem,
       category,
     }))
     .sort((a, b) => b.count - a.count);

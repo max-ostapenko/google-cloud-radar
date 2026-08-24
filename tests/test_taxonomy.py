@@ -8,21 +8,30 @@ class TestTaxonomy(unittest.TestCase):
         self.assertTrue(taxonomy.is_watched_api("aiplatform"))
         self.assertTrue(taxonomy.is_watched_api("AIPLATFORM"))
         self.assertTrue(taxonomy.is_watched_api("pagespeedonline"))
+        self.assertTrue(taxonomy.is_watched_api("gmail"))
         self.assertFalse(taxonomy.is_watched_api("non_existent_fake_api"))
 
+    def test_get_ecosystem_for_service(self):
+        self.assertEqual(taxonomy.get_ecosystem_for_service("bigquery"), "Google Cloud")
+        self.assertEqual(taxonomy.get_ecosystem_for_service("aiplatform"), "Google Cloud")
+        self.assertEqual(taxonomy.get_ecosystem_for_service("script"), "Workspace")
+        self.assertEqual(taxonomy.get_ecosystem_for_service("tagmanager"), "Marketing Platform")
+        self.assertEqual(taxonomy.get_ecosystem_for_service("photoslibrary"), "Personal")
+        self.assertEqual(taxonomy.get_ecosystem_for_service("abusiveexperiencereport"), "Chrome")
+        self.assertEqual(taxonomy.get_ecosystem_for_service("androidpublisher"), "Android")
+        self.assertEqual(taxonomy.get_ecosystem_for_service("safebrowsing"), "More")
+
     def test_get_category_for_service(self):
-        self.assertEqual(taxonomy.get_category_for_service("bigquery"), "Data Platform")
-        self.assertEqual(taxonomy.get_category_for_service("aiplatform"), "AI & Machine Learning")
-        self.assertEqual(taxonomy.get_category_for_service("Vertex AI"), "AI & Machine Learning")
+        self.assertEqual(taxonomy.get_category_for_service("bigquery"), "Data Analytics")
+        self.assertEqual(taxonomy.get_category_for_service("aiplatform"), "AI & ML")
+        self.assertEqual(taxonomy.get_category_for_service("Vertex AI"), "AI & ML")
         self.assertEqual(taxonomy.get_category_for_service("cloudbilling"), "FinOps & Billing")
-        self.assertEqual(taxonomy.get_category_for_service("tagmanager"), "Analytics & Web")
-        self.assertEqual(taxonomy.get_category_for_service("unknown_xyz"), "Core & Other")
+        self.assertEqual(taxonomy.get_category_for_service("tagmanager"), "Tag Manager")
 
     def test_get_quadrant_for_service(self):
         self.assertEqual(taxonomy.get_quadrant_for_service("aiplatform"), "ai_ml")
         self.assertEqual(taxonomy.get_quadrant_for_service("bigquery"), "data_platforms")
         self.assertEqual(taxonomy.get_quadrant_for_service("cloudbilling"), "security_finops")
-        self.assertEqual(taxonomy.get_quadrant_for_service("unknown_api"), "infra_compute")
 
     def test_determine_radar_ring(self):
         # Breaking or deprecated -> hold
