@@ -138,19 +138,38 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
             isBreaking={entry.breaking}
             leadTimeDays={entry.lead_time_days}
           />
-          <a 
-            href={`https://discovery.googleapis.com/discovery/v1/apis/${entry.api.split('.')[0]}/${entry.api.split('.')[1] || 'v1'}/rest`} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            class="action-btn"
-          >
-            <span>Raw Discovery JSON</span>
-            <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-              <polyline points="15 3 21 3 21 9"/>
-              <line x1="10" y1="14" x2="21" y2="3"/>
-            </svg>
-          </a>
+          {entry.discoveryRestUrl && (
+            <a 
+              href={entry.discoveryRestUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="action-btn"
+              title={`View official Discovery REST specification for ${entry.api}`}
+            >
+              <span>Raw Discovery JSON</span>
+              <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          )}
+          {entry.documentationLink && (
+            <a 
+              href={entry.documentationLink} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="action-btn"
+              title={`Official documentation for ${entry.service}`}
+            >
+              <span>Official Docs</span>
+              <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          )}
         </div>
       </div>
 

@@ -35,6 +35,8 @@ export interface FeedEntryMeta {
   official_release_notes_url?: string;
   reaction_counts?: ReactionCounts;
   comments_count?: number;
+  discoveryRestUrl?: string;
+  documentationLink?: string;
   stats?: {
     upvotes?: number;
     impacted_users_count?: number;
@@ -161,6 +163,100 @@ export function getCategoryForService(serviceOrApi: string): ServiceCategory {
   return 'Data Analytics';
 }
 
+export interface DiscoveryDirectoryItem {
+  id: string;
+  name: string;
+  version: string;
+  title?: string;
+  description?: string;
+  discoveryRestUrl: string;
+  documentationLink?: string;
+  preferred?: boolean;
+}
+
+let discoveryDirectoryMap: Map<string, DiscoveryDirectoryItem> | null = null;
+
+export function getDiscoveryDirectoryMap(): Map<string, DiscoveryDirectoryItem> {
+  if (discoveryDirectoryMap) {
+    return discoveryDirectoryMap;
+  }
+
+  discoveryDirectoryMap = new Map<string, DiscoveryDirectoryItem>();
+
+  const candidates = [
+    path.resolve(process.cwd(), '../discoveries/index.json'),
+    path.resolve(process.cwd(), 'discoveries/index.json'),
+    path.resolve(process.cwd(), '../../discoveries/index.json'),
+  ];
+
+  for (const p of candidates) {
+    if (fs.existsSync(p)) {
+      try {
+        const fileContent = fs.readFileSync(p, 'utf-8');
+        const json = JSON.parse(fileContent);
+        if (json && Array.isArray(json.items)) {
+          for (const item of json.items) {
+            const rawId = (item.id || '').toLowerCase(); // e.g. "dataplex:v1"
+            const name = (item.name || '').toLowerCase();
+            const version = (item.version || '').toLowerCase();
+            const dotId = `${name}.${version}`; // e.g. "dataplex.v1"
+
+            if (rawId) discoveryDirectoryMap.set(rawId, item);
+            if (dotId) discoveryDirectoryMap.set(dotId, item);
+
+            // Name fallback if preferred or not yet set
+            if (item.preferred || !discoveryDirectoryMap.has(name)) {
+              discoveryDirectoryMap.set(name, item);
+            }
+          }
+        }
+        break;
+      } catch (e) {
+        console.error('Error loading discoveries/index.json:', e);
+      }
+    }
+  }
+
+  return discoveryDirectoryMap;
+}
+
+export function getDiscoveryMetaForApi(apiOrService: string): { discoveryRestUrl?: string; documentationLink?: string } {
+  const map = getDiscoveryDirectoryMap();
+  const normalized = (apiOrService || '').trim().toLowerCase();
+
+  // Try direct key ("dataplex.v1", "dataplex:v1", "dataplex")
+  let item = map.get(normalized);
+  if (!item && normalized.includes('.')) {
+    item = map.get(normalized.replace('.', ':'));
+  }
+  if (!item && normalized.includes(':')) {
+    item = map.get(normalized.replace(':', '.'));
+  }
+  if (!item && normalized.includes('.')) {
+    item = map.get(normalized.split('.')[0]);
+  }
+  if (!item && normalized.includes('-')) {
+    item = map.get(normalized.replace(/-/g, ''));
+  }
+
+  if (item) {
+    return {
+      discoveryRestUrl: item.discoveryRestUrl,
+      documentationLink: item.documentationLink,
+    };
+  }
+
+  // Fallback to standard Google discovery pattern
+  if (normalized.includes('.')) {
+    const [name, ver] = normalized.split('.');
+    return {
+      discoveryRestUrl: `https://${name}.googleapis.com/$discovery/rest?version=${ver || 'v1'}`,
+    };
+  }
+
+  return {};
+}
+
 export interface FeedEntry extends FeedEntryMeta {
   status: ChangeStatus;
   radar_ring: RadarRing;
@@ -177,7 +273,7 @@ export interface FeedEntry extends FeedEntryMeta {
 }
 
 const DB_HOST = process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080';
-const PROJECT_ID = process.env.GCP_PROJECT || 'max-ostapenko';
+const PROJECT_ID = process.env.GCP_PROJECT || 'gcp-cloud-radar';
 
 /**
  * Attempt to fetch changes live from Firestore / Mock REST Server
@@ -252,6 +348,10 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       const ecosystem = (f.ecosystem?.stringValue as Ecosystem) || getEcosystemForService(service || api);
       const category = (f.category?.stringValue as ServiceCategory) || getCategoryForService(service || api);
 
+      const discoMeta = getDiscoveryMetaForApi(api || service);
+      const discoveryRestUrl = f.discovery_rest_url?.stringValue || discoMeta.discoveryRestUrl;
+      const documentationLink = f.documentation_link?.stringValue || discoMeta.documentationLink;
+
       return {
         slug: id,
         date: dateStr,
@@ -274,6 +374,8 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         reaction_counts,
         comments_count,
         stats,
+        discoveryRestUrl,
+        documentationLink,
         rawContent: detailsMarkdown,
         htmlContent,
         summary,
@@ -359,6 +461,10 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const official_release_notes_url = data.official_release_notes_url ? String(data.official_release_notes_url) : undefined;
       const stats = data.stats || undefined;
 
+      const discoMeta = getDiscoveryMetaForApi(api || service);
+      const discoveryRestUrl = data.discovery_rest_url || discoMeta.discoveryRestUrl;
+      const documentationLink = data.documentation_link || discoMeta.documentationLink;
+
       entries.push({
         slug,
         date: dateStr,
@@ -381,6 +487,8 @@ export function getLocalFeedEntries(): FeedEntry[] {
         reaction_counts: { impacts_prod: 0, breaking_me: 0, watch_ga: 0 },
         comments_count: 0,
         stats,
+        discoveryRestUrl,
+        documentationLink,
         rawContent: content,
         htmlContent,
         summary,
