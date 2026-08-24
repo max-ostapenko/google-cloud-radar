@@ -130,16 +130,33 @@ const { currentPath = '/' } = Astro.props;
     const dropdownEmail = document.getElementById('dropdownUserEmail');
     const signOutBtn = document.getElementById('headerSignOutBtn');
 
+    function updateUI(user: any) {
+      if (user) {
+        if (signInBtn) signInBtn.style.display = 'none';
+        if (userMenu) userMenu.style.display = 'block';
+        if (avatarImg) avatarImg.src = user.photoURL || 'https://www.gstatic.com/images/branding/product/2x/avatar_square_blue_512dp.png';
+        if (dropdownName) dropdownName.textContent = user.displayName || 'Google User';
+        if (dropdownEmail) dropdownEmail.textContent = user.email || '';
+      } else {
+        if (signInBtn) signInBtn.style.display = 'inline-flex';
+        if (userMenu) userMenu.style.display = 'none';
+      }
+    }
+
     signInBtn?.addEventListener('click', async () => {
       try {
-        await signInWithGoogle();
+        const user = await signInWithGoogle();
+        if (user) {
+          updateUI(user);
+        }
       } catch (err) {
-        console.log('Sign in closed');
+        console.error('Sign in error:', err);
       }
     });
 
     signOutBtn?.addEventListener('click', async () => {
       await signOutUser();
+      updateUI(null);
       if (dropdown) dropdown.style.display = 'none';
     });
 
@@ -155,16 +172,7 @@ const { currentPath = '/' } = Astro.props;
     });
 
     onAuthChange((user) => {
-      if (user) {
-        if (signInBtn) signInBtn.style.display = 'none';
-        if (userMenu) userMenu.style.display = 'block';
-        if (avatarImg) avatarImg.src = user.photoURL || 'https://www.gstatic.com/images/branding/product/2x/avatar_square_blue_512dp.png';
-        if (dropdownName) dropdownName.textContent = user.displayName || 'Google User';
-        if (dropdownEmail) dropdownEmail.textContent = user.email || '';
-      } else {
-        if (signInBtn) signInBtn.style.display = 'inline-flex';
-        if (userMenu) userMenu.style.display = 'none';
-      }
+      updateUI(user);
     });
   }
 

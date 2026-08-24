@@ -57,9 +57,9 @@ export function getFirebaseAuth(): Auth {
   if (!auth) {
     const firebaseApp = getFirebaseApp();
     try {
-      // Configure robust fallback persistence to prevent "Database is closing/hidden" IndexedDB errors
+      // Use browserLocalPersistence (localStorage) directly to completely avoid IndexedDB locking errors
       auth = initializeAuth(firebaseApp, {
-        persistence: [indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence],
+        persistence: [browserLocalPersistence, browserSessionPersistence, inMemoryPersistence],
       });
     } catch {
       auth = getAuth(firebaseApp);
