@@ -72,7 +72,16 @@ export async function signInWithGoogle(): Promise<User | null> {
     const result = await signInWithPopup(authInstance, googleProvider);
     return result.user;
   } catch (error: any) {
-    console.error('Google Sign-In Error:', error);
+    if (error.code === 'auth/popup-closed-by-user') {
+      console.log('Sign-in popup closed by user.');
+      return null;
+    }
+    console.error('Google Sign-In Error:', error.code, error.message);
+    if (error.code === 'auth/configuration-not-found' || error.code === 'auth/operation-not-allowed') {
+      console.warn(
+        'Google Sign-in Provider is not yet enabled in Firebase Console. Enable it at: https://console.firebase.google.com/project/gcp-cloud-radar/authentication/providers'
+      );
+    }
     throw error;
   }
 }
