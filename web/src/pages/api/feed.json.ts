@@ -7,13 +7,13 @@ export const GET: APIRoute = async () => {
   const responsePayload = {
     version: 'https://jsonfeed.org/version/1.1',
     title: 'Google Cloud Radar JSON Feed',
-    home_page_url: 'https://gcp-cloud-radar.web.app',
-    feed_url: 'https://gcp-cloud-radar.web.app/api/feed.json',
+    home_page_url: 'https://google-cloud-radar.com',
+    feed_url: 'https://google-cloud-radar.com/api/feed.json',
     description: 'Automated pre-release intelligence and real-time diffs for Google APIs and Cloud services.',
     user_comment: 'Sourced from Google Discovery Service.',
     items: entries.map((entry) => ({
       id: entry.slug,
-      url: `https://gcp-cloud-radar.web.app/changes/${entry.slug}`,
+      url: `https://google-cloud-radar.com/changes/${entry.slug}`,
       title: entry.title,
       content_text: entry.summary,
       date_published: `${entry.date}T00:00:00Z`,

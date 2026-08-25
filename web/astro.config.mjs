@@ -3,7 +3,7 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://gcp-discovery-radar.web.app',
+  site: 'https://google-cloud-radar.com',
   output: 'static',
   integrations: [sitemap()],
 });

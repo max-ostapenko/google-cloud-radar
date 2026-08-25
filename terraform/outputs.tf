@@ -12,3 +12,8 @@ output "firestore_database_name" {
   description = "The Firestore database resource"
   value       = "projects/${var.project_id}/databases/radar"
 }
+
+output "custom_domain_dns_updates" {
+  description = "Required DNS updates for custom domain verification and routing"
+  value       = google_firebase_hosting_custom_domain.apex.required_dns_updates
+}

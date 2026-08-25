@@ -139,7 +139,7 @@ export const GET: APIRoute = async ({ props }) => {
       Sourced from Google API Discovery Service • <tspan fill="#8ab4f8" font-weight="600">Google Cloud Radar</tspan>
     </text>
     <text x="1080" y="0" text-anchor="end" font-family="'Roboto Mono', monospace" font-size="14" font-weight="600" fill="#8ab4f8">
-      https://gcp-cloud-radar.web.app
+      https://google-cloud-radar.com
     </text>
   </g>
 </svg>

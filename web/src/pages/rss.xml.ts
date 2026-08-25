@@ -8,7 +8,7 @@ export async function GET(context: APIContext) {
   return rss({
     title: 'Google Cloud Radar — Real-Time Google API & Cloud Feed',
     description: 'Automated pre-release intelligence for Google APIs and Cloud services. Live API changes and breaking changes tracked from the Google Discovery Service.',
-    site: context.site || 'https://gcp-discovery-radar.web.app',
+    site: context.site || 'https://google-cloud-radar.com',
     items: entries.map((entry) => ({
       title: `${entry.breaking ? '⚠️ [BREAKING] ' : ''}${entry.title}`,
       pubDate: new Date(entry.date),

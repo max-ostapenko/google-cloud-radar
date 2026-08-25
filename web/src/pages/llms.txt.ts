@@ -27,7 +27,7 @@ export const GET: APIRoute = async () => {
     if (entry.extractedMethods.length > 0) {
       lines.push(`- **Methods:** ${entry.extractedMethods.join(', ')}`);
     }
-    lines.push(`- **Permalink:** https://gcp-cloud-radar.web.app/changes/${entry.slug}`);
+    lines.push(`- **Permalink:** https://google-cloud-radar.com/changes/${entry.slug}`);
     lines.push('');
   }
 
