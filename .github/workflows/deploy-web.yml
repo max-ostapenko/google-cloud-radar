@@ -43,4 +43,4 @@ jobs:
 
       - name: Deploy to Firebase Hosting
         working-directory: web
-        run: npx -y firebase-tools deploy --only hosting --project max-ostapenko
+        run: npx -y firebase-tools deploy --only hosting --project gcp-cloud-radar

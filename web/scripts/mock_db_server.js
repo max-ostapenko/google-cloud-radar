@@ -2,10 +2,10 @@
 
 /**
  * Pure Node.js Mock Firestore REST Server (Zero Java required).
- * 
+ *
  * Emulates the Firestore REST API on port 8080.
  * Automatically loads all 51+ change records from feed/*.md and merges seed fixtures.
- * 
+ *
  * Usage:
  *   node scripts/mock_db_server.js
  */
@@ -196,7 +196,7 @@ const server = http.createServer(async (req, res) => {
     // GET /collection (list documents)
     if (req.method === 'GET' && !docId) {
       const documents = Array.from(collection.values()).map((doc) => ({
-        name: `projects/max-ostapenko/databases/(default)/documents/${collectionName}/${doc.id || doc.slug}`,
+        name: `projects/gcp-cloud-radar/databases/(default)/documents/${collectionName}/${doc.id || doc.slug}`,
         fields: toFirestoreFields(doc),
         createTime: doc.first_detected_at || new Date().toISOString(),
         updateTime: doc.last_updated_at || new Date().toISOString(),
@@ -215,7 +215,7 @@ const server = http.createServer(async (req, res) => {
         console.log(`📥 [MOCK FIRESTORE] GET /${collectionName}/${docId} -> 200 OK`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
-          name: `projects/max-ostapenko/databases/(default)/documents/${collectionName}/${docId}`,
+          name: `projects/gcp-cloud-radar/databases/(default)/documents/${collectionName}/${docId}`,
           fields: toFirestoreFields(doc),
         }, null, 2));
       } else {
@@ -241,7 +241,7 @@ const server = http.createServer(async (req, res) => {
           console.log(`  [MOCK DB] Upserted ${collectionName}/${docId}`);
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({
-            name: `projects/max-ostapenko/databases/(default)/documents/${collectionName}/${docId}`,
+            name: `projects/gcp-cloud-radar/databases/(default)/documents/${collectionName}/${docId}`,
             fields: toFirestoreFields(merged),
           }, null, 2));
         } catch (err) {
@@ -262,5 +262,5 @@ initStore();
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`\n🚀 Mock Firestore Server running at http://127.0.0.1:${PORT}`);
   console.log(`👉 Health endpoint: http://127.0.0.1:${PORT}/health`);
-  console.log(`👉 Changes collection: http://127.0.0.1:${PORT}/v1/projects/max-ostapenko/databases/(default)/documents/changes\n`);
+  console.log(`👉 Changes collection: http://127.0.0.1:${PORT}/v1/projects/gcp-cloud-radar/databases/(default)/documents/changes\n`);
 });

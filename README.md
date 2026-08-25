@@ -98,7 +98,7 @@ Manual deployment:
 ```bash
 cd web
 npm run build
-npx firebase-tools deploy --only hosting --project max-ostapenko
+npx firebase-tools deploy --only hosting --project gcp-cloud-radar
 ```
 
 ---

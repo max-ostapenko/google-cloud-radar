@@ -2,7 +2,7 @@
 
 /**
  * Seeds local Firestore Emulator with test fixtures from src/data/seed_data.json.
- * 
+ *
  * Usage:
  *   node scripts/seed_firestore.js
  */
@@ -15,7 +15,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SEED_FILE = path.resolve(__dirname, '../src/data/seed_data.json');
 
 const EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080';
-const PROJECT_ID = process.env.GCP_PROJECT || 'max-ostapenko';
+const PROJECT_ID = process.env.GCP_PROJECT || 'gcp-cloud-radar';
 
 async function seed() {
   console.log(`\n🌱 Seeding Firestore Emulator (${EMULATOR_HOST}) for project: ${PROJECT_ID}...`);
