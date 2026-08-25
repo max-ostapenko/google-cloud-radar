@@ -1,91 +1,63 @@
-# Google Cloud Radar Web Frontend
+# Google Cloud Radar — Web Application
 
-The static frontend and developer intelligence platform for **Google Cloud Radar**, built with **Astro** and **Firebase**.
-
-Modeled closely after Google Developers and the Google APIs Explorer design system.
+The frontend and developer intelligence platform for **Google Cloud Radar**, built with **Astro 5** and **Firebase**. Styled with curated vanilla CSS tokens matching Google Cloud design standards.
 
 ---
 
-## 🚀 Quick Start (Local Development)
+## 🚀 Local Development
 
-### 1. Standard Web Development (Markdown Feed Mode)
+### 1. Offline Mode (Static Feed Only)
+Reads all feed entries and service catalogs directly from `feed/*.md` and `feed/index.json`:
 ```bash
-cd web
 npm install
 npm run dev
 ```
-Open [http://localhost:4321](http://localhost:4321) to view the live radar feed.
+Open [http://localhost:4321](http://localhost:4321).
 
----
-
-## 🗄️ Local Database & Emulator (Zero-Secret Contributor Mode)
-
-To develop and test database-driven features (status lifecycles, user voting, comments, notifications) without cloud credentials:
-
-### 1. Start Firebase Emulators with Seed Data
+### 2. Full Local Development (With Mock Firestore Server)
+Runs Astro alongside a lightweight, zero-Java Node.js mock Firestore REST server on port `8080` for local comment/reaction testing:
 ```bash
-# Starts local Firestore (port 8080) & Auth (port 9099) with test seed data
-npm run emulators:seed
+npm run dev:all
 ```
 
-### 2. Emulator Endpoints & Web Studio
-* **Astro Web UI**: [http://localhost:4321](http://localhost:4321)
-* **Firebase Emulator Suite UI**: [http://localhost:4000](http://localhost:4000) (Inspect local Firestore records & Auth users)
-* **Local Firestore Host**: `localhost:8080`
-* **Local Auth Host**: `localhost:9099`
+---
+
+## 🧭 Page Routes & Syndication
+
+| Route | Purpose |
+|---|---|
+| `/` | Live Radar feed with interactive category filters, impact pills, and instant search (`/`). |
+| `/stats` | Trailing 90-day rolling benchmark with velocity rankings, lead times, and breaking change rates. |
+| `/breaking` | Dedicated triage radar for backwards-incompatible API changes. |
+| `/services/[service]` | Service hub with historical change timeline, official docs, and raw Discovery REST endpoints. |
+| `/changes/[slug]` | Deep permalinks with visual AST diffs, copyable RPC chips, social sharing, and discussions. |
+| `/rss.xml` | Global RSS 2.0 feed for feed readers. |
+| `/api/feed.json` | JSON Feed 1.1 REST API for programmatic consumption. |
+| `/llms.txt` | Context-optimized feed for AI agents and LLMs. |
 
 ---
 
-## 📊 Change Lifecycle & Status Model
-
-Changes transition through four lifecycle states:
-
-| Status | Meaning | UI Badge |
-|---|---|---|
-| `canary` | Detected in Google Discovery APIs; not yet in official release notes. | 🟡 `CANARY` |
-| `released` | Confirmed published in official Google Cloud release notes. | 🟢 `RELEASED (X days lead time)` |
-| `retracted` | Method appeared in Discovery and was removed before release. | ⚪ `RETRACTED` |
-| `deprecated` | Existing API method or enum marked for shutdown. | 🔴 `DEPRECATED` |
-
----
-
-## 🛠️ Project Structure
+## 🛠️ Directory Structure
 
 ```
 web/
 ├── src/
-│   ├── components/       # Google APIs Explorer UI components
-│   │   ├── ChangeCard.astro     # Feed card with status badges & RPC chips
-│   │   ├── Header.astro         # GCP search, navigation & theme toggle
-│   │   ├── Sidebar.astro        # Categorized Google services navigation
-│   │   └── Footer.astro         # Machine feeds & creator attribution
-│   ├── data/
-│   │   └── seed_data.json       # Mock database fixtures for emulator
-│   ├── layouts/
-│   │   └── BaseLayout.astro     # SEO meta tags, JSON-LD, and responsive shell
-│   ├── lib/
-│   │   └── feed.ts              # Data parser with tolerant schema reader
-│   ├── pages/
-│   │   ├── index.astro          # Live Radar Feed & interactive filter pills
-│   │   ├── breaking.astro       # Breaking changes watchdog
-│   │   ├── changes/[slug].astro # Deep permalinks with RPC method chips
-│   │   ├── services/[service].astro # Service hubs (Vertex AI, BigQuery, etc.)
-│   │   ├── rss.xml.ts           # Global RSS 2.0 feed
-│   │   ├── api/feed.json.ts     # JSON Feed 1.1 REST API
-│   │   └── llms.txt.ts          # AI Agent / LLM discovery endpoint
-│   └── styles/
-│       └── global.css           # Google Cloud design system tokens & themes
+│   ├── components/       # UI components (ChangeCard, Header, Sidebar, Footer, ShareModal, etc.)
+│   ├── layouts/          # BaseLayout (SEO meta, theme toggling, responsive grid shell)
+│   ├── lib/              # Feed parser, stats aggregator, and Firebase client SDK
+│   ├── pages/            # Astro static routes & machine-readable syndication endpoints
+│   └── styles/           # Global design system tokens and Google Cloud theme variables
 ├── scripts/
-│   └── seed_firestore.js        # Script to populate Firestore emulator via REST
-├── firebase.json                # Firebase Hosting & Emulator configuration
-└── firestore.rules              # Database security rules
+│   ├── mock_db_server.js # Pure Node.js mock Firestore REST server (Zero Java)
+│   └── seed_firestore.js # Seed script for local Firestore emulator
+├── firebase.json         # Firebase Hosting & emulator configuration
+└── firestore.rules       # Security rules for Cloud Firestore
 ```
 
 ---
 
-## 🚢 Production Deployment
+## 🚢 Deployment
 
-To build and deploy to Firebase Hosting:
 ```bash
 npm run build
 npx firebase-tools deploy --only hosting --project gcp-cloud-radar

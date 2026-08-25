@@ -9,6 +9,6 @@ output "hosting_default_url" {
 }
 
 output "firestore_database_name" {
-  description = "The default Firestore database resource"
-  value       = "projects/${var.project_id}/databases/(default)"
+  description = "The Firestore database resource"
+  value       = "projects/${var.project_id}/databases/radar"
 }

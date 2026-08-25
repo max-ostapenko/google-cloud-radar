@@ -1,108 +1,93 @@
-# 📡 Google Cloud Radar
+# Google Cloud Radar
 
 > **Real-time pre-release intelligence for Google APIs and Cloud services.**
-> Tracking unreleased control-plane method additions, schema changes, and breaking changes directly from the Google API Discovery Service before they appear in official release notes.
+> Tracking unreleased method additions, schema changes, and breaking changes directly from the Google API Discovery Service before they appear in official release notes.
+
+[![CI](https://github.com/max-ostapenko/google-cloud-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/max-ostapenko/google-cloud-radar/actions/workflows/ci.yml)
+[![Live Site](https://img.shields.io/badge/Live-gcp--cloud--radar.web.app-4285F4)](https://gcp-cloud-radar.web.app)
 
 ---
 
-## 🏗️ System Architecture
+## Architecture
 
 ```mermaid
 graph TD
-    A[Google Discovery API] -->|Cron (every 5h)| B(scripts/update_disco.py)
-    B -->|Check Whitelist| C{Is Monitored API?}
-    C -->|Yes| D[Normalized JSON in discoveries/]
-
-    D --> E(scripts/diff_to_feed.py)
-    E -->|AST Diffing & Noise Filtering| F(scripts/diff_preprocessor.py)
-    F --> G[Structured API Diff]
-
-    G --> H(scripts/llm_client.py)
-    H -->|Gemini 2.5/3 Pro Inference| I{Interesting Score >= 3?}
-    I -->|Yes| J[Write to feed/*.md & feed/index.json]
-
-    J --> K[Astro 5 SSG Web App / web/]
-    K --> L[Firebase Hosting Global CDN]
-    K --> M[Public Machine Feeds: /rss.xml, /api/feed.json, /llms.txt]
+    A[Google Discovery API] -->|Cron 5x Daily| B[scripts/update_disco.py]
+    B --> C[discoveries/ Normalized ASTs]
+    C --> D[scripts/diff_to_feed.py]
+    D --> E[scripts/diff_preprocessor.py - AIP-180 Breaking Checks]
+    E --> F[scripts/llm_client.py - Vertex AI Gemini]
+    F --> G[feed/ YYYY-MM-DD-service.md + index.json]
+    G --> H[scripts/correlate_releases.py - Lead Time Delta]
+    H --> I[scripts/seed_prod_firestore.py - Cloud Firestore]
+    G --> J[web/ - Astro 5 Web Application]
+    J --> K[Firebase Hosting: gcp-cloud-radar.web.app]
 ```
 
 ---
 
-## 📁 Repository Layout
+## Quick Start
 
-```
-.
-├── .github/workflows/
-│   ├── update-disco.yml     # Cron (every 5h) pipeline: fetches Discovery JSON, analyzes with Gemini, commits to feed/
-│   └── deploy-web.yml       # Push-to-main CI: builds Astro static site and deploys to Firebase Hosting
-├── discoveries/             # Normalized Google Discovery JSON schemas (BigQuery, Vertex AI, Dataform, etc.)
-├── feed/                    # Generated Markdown insights + index.json manifest
-├── scripts/                 # Core Python Ingestion & Analysis Engine
-│   ├── update_disco.py      # Pulls discovery docs from Google Discovery Service
-│   ├── diff_preprocessor.py # Dot-notation AST flattener & noise-filter engine
-│   ├── llm_client.py        # Gemini analysis client with retry & history context
-│   ├── diff_to_feed.py      # Pipeline orchestrator
-│   ├── feed_writer.py       # Writes frontmatter & markdown insights
-│   └── prompts/             # System prompts for API change analyst
-├── tests/                   # Pytest unit test suite (100% passing)
-└── web/                     # Astro 5 + Firebase Web Application & Mock Database
-    ├── src/                 # Google Developers / APIs Explorer styled UI
-    ├── scripts/             # Lightweight Node.js Mock Firestore Server (Zero Java)
-    ├── firebase.json        # Firebase Hosting & Emulator configuration
-    └── README.md            # Web app & emulator documentation
-```
-
----
-
-## 🚀 Quick Start
-
-### 1. Web Application & Live Radar Feed
+### 1. Web Application (`web/`)
 ```bash
 cd web
 npm install
-npm run dev
+npm run dev        # Astro local dev server at http://localhost:4321
+npm run dev:all    # Astro + Local Zero-Java Mock Firestore server
 ```
-Open [http://localhost:4321](http://localhost:4321) to view the live changelog and radar feed.
+*See [`web/README.md`](file:///Users/maxostapenko/GitHub/google-cloud-radar/web/README.md) for frontend architecture and mock database details.*
 
-### 2. Local Database & Mock Firestore Mode (Zero Java)
+### 2. Python Pipeline & Analysis (`scripts/`)
 ```bash
-cd web
-# Starts both Mock Firestore (port 8080) and Astro dev server (port 4321)
-npm run dev:all
+pip install -r requirements.txt
+pytest tests/
+
+# Preview AST diffs without calling Gemini
+python scripts/diff_to_feed.py --dry-run
 ```
+*See [`scripts/README.md`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/README.md) for CLI options, prompt tuning, and correlation engine usage.*
 
-### 3. Running Python Pipeline Tests
-```bash
-pip install -r requirements.txt pytest
-PYTHONPATH=. pytest
+---
+
+## Repository Structure
+
+```
+.
+├── discoveries/          # Normalized Discovery JSON ASTs (38+ monitored GCP services)
+├── feed/                 # Curated Markdown insights & central index.json manifest
+├── scripts/              # Python ingestion, AST diffing, Gemini analysis & release correlation
+│   └── README.md         # Pipeline CLI usage & script documentation
+├── terraform/            # Terraform IaC: Hosting, Firestore rules, Identity Platform & IAM
+├── tests/                # Pytest unit tests for AST diffing and feed generation
+├── web/                  # Astro 5 static web application & client components
+│   └── README.md         # Web app architecture & emulator setup
+└── AGENTS.md             # AI coding agent context and architectural invariants
 ```
 
 ---
 
-## 🤖 The Analysis Engine & Prompt Tuning
+## Documentation & Architecture
 
-The Gemini-powered analysis prompt lives in [`scripts/prompts/api_change_analyst.txt`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/prompts/api_change_analyst.txt).
-
-You can tune:
-* **Tone & Persona**: Staff Cloud Infrastructure Architect
-* **Scoring Threshold**: Insights scoring `< 3/10` are dropped
-* **Breaking Change Heuristics**: Enum index modifications, required parameter additions, field renames
-
----
-
-## 🚢 Deployment
-
-The web app deploys automatically to Firebase Hosting on push to `main` via [.github/workflows/deploy-web.yml](file:///Users/maxostapenko/GitHub/google-cloud-radar/.github/workflows/deploy-web.yml).
-
-Manual deployment:
-```bash
-cd web
-npm run build
-npx firebase-tools deploy --only hosting --project gcp-cloud-radar
-```
+| Guide | Description |
+|---|---|
+| [**Web Frontend Guide**](web/README.md) | Astro 5 architecture, page routes, mock Firestore dev server (`dev:all`), and styling tokens. |
+| [**Data Pipeline Guide**](scripts/README.md) | CLI commands, AST diffing engine, Gemini prompt tuning, and release note correlation. |
+| [**AI Agent Context**](AGENTS.md) | Architectural mental model, core engineering invariants (AIP-180 rules, 90-day benchmark scope), and subsystems map. |
 
 ---
 
-## 📄 License
+## Deployment
 
-Apache 2.0. Curated and engineered by [Max Ostapenko](https://maxostapenko.com).
+* **Automated**: Pushes to `main` trigger [`.github/workflows/deploy-web.yml`](.github/workflows/deploy-web.yml) to build and deploy to Firebase Hosting.
+* **Manual**:
+  ```bash
+  cd web
+  npm run build
+  npx firebase-tools deploy --only hosting --project gcp-cloud-radar
+  ```
+
+---
+
+## License
+
+Apache 2.0 · See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community participation guidelines.

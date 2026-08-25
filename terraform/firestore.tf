@@ -10,9 +10,9 @@ resource "google_firebaserules_ruleset" "firestore_rules" {
   }
 }
 
-resource "google_firebaserules_release" "firestore_release" {
+resource "google_firebaserules_release" "firestore_radar_release" {
   provider     = google-beta
   project      = var.project_id
-  name         = "cloud.firestore"
+  name         = "cloud.firestore/radar"
   ruleset_name = google_firebaserules_ruleset.firestore_rules.name
 }

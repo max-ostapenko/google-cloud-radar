@@ -1,90 +1,40 @@
-# Agentic Workflows & System Architecture
+# Google Cloud Radar — AI Agent Context
 
-This repository is configured with automated agentic workflows to track, analyze, and publish insights about changes to Google Cloud Platform (GCP) APIs.
-
-By analyzing raw Google Discovery JSON schemas using LLM-based reasoning, this repository acts as a developer-facing changelog, highlighting new features, deprecations, and breaking changes.
+Google Cloud Radar tracks, analyzes, and benchmarks pre-release Google Discovery API changes before they appear in official Google Cloud release notes.
 
 ---
 
-## 🎯 Repository Goal
-
-1. **Watch & Sync**: Regularly pull API definitions from the official Google API Discovery Service.
-2. **Normalize**: Filter out noise (e.g., revision numbers, etags, dynamic endpoint URLs) and store normalized JSON documents under the [discoveries/](file:///Users/maxostapenko/GitHub/google-cloud-radar/discoveries) directory.
-3. **Analyze**: Run a specialized **API Analyst Agent** (using Gemini) over the semantic differences to assess developer impact.
-4. **Publish**: Generate and append developer-friendly Markdown updates to the [feed/](file:///Users/maxostapenko/GitHub/google-cloud-radar/feed) directory alongside a queryable [feed/index.json](file:///Users/maxostapenko/GitHub/google-cloud-radar/feed/index.json) manifest.
-
----
-
-## 💡 Value Proposition & Future Vision
-
-* **Early-Warning System (The "Sneak Peek")**: GCP API updates typically appear in the Google API Discovery Service metadata **weeks or even months** before they are officially documented in Google Cloud's release notes. This repository exposes changes before they are formally announced, giving developers a head start.
-* **Promotional & Professional Integration**: The generated feed will serve as promotional content linked to my professional website to demonstrate real-time expertise and monitoring of GCP infrastructure.
-* **Subscribable Feed**: Future efforts will make this feed subscribable (e.g., RSS, newsletter, or notifications) for developers and DevOps engineers who want direct, automated updates on Google's platform developments.
-
----
-
-## ⚙️ Architecture & Workflow
+## 🧭 Architecture & Subsystems
 
 ```mermaid
 graph TD
-    A[Google Discovery API] -->|Scheduled Sync| B(update_disco.py)
-    B -->|Check Whitelist| C{Is Monitored API?}
-    C -->|Yes| D[Update JSON under discoveries/]
-
-    E[Git Commit / PR] --> F(diff_to_feed.py)
-    F -->|Git Diff| G(diff_preprocessor.py)
-    G -->|Flatten & Filter Noise| H[Structured API Diff]
-
-    H --> I(llm_client.py)
-    J[api_change_analyst.txt Prompt] --> I
-    K[Recent History Context] --> I
-    L[Today's Existing Updates] --> I
-
-    I -->|Gemini Inference| M{Interesting Score >= 2?}
-    M -->|Yes| N(feed_writer.py)
-    M -->|No| O[Silently Dropped]
-
-    N --> P[feed/YYYY-MM-DD-api.md]
-    N --> Q[feed/index.json Manifest]
+    A[Google Discovery API] --> B[scripts/update_disco.py]
+    B --> C[discoveries/ Normalized ASTs]
+    C --> D[scripts/diff_to_feed.py]
+    D --> E[scripts/diff_preprocessor.py - AIP-180 AST Diffing]
+    E --> F[scripts/llm_client.py - Vertex AI Gemini]
+    F --> G[feed/ YYYY-MM-DD-service.md + index.json]
+    G --> H[scripts/correlate_releases.py - Lead Time Delta]
+    H --> I[scripts/seed_prod_firestore.py - Firestore DB 'radar']
+    G --> J[web/ - Astro 5 Static Site & Syndication]
 ```
 
----
-
-## 🤖 The API Analyst Agent
-
-The core intelligence of this repository lies in the Gemini-powered agent configured in [scripts/](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts).
-
-### 1. Diff Preprocessing & Noise Reduction
-* **Source file**: [diff_preprocessor.py](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/diff_preprocessor.py)
-* **How it works**: Before sending data to the LLM, the JSON structures are flattened into dot-notation paths (e.g., `resources.jobs.methods.query.parameters.createSession`).
-* **Noise Filtering**: Structural elements like `revision`, `etag`, `rootUrl`, and ephemeral infrastructure changes (e.g., `endpoints`) are removed to avoid wasting LLM context window/tokens on non-semantic changes.
-
-### 2. Context-Aware LLM Client
-* **Source file**: [llm_client.py](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/llm_client.py)
-* **Model**: `gemini-3-flash-preview` (Vertex AI platform endpoint).
-* **Conflict Resolution**:
-  * **Today's Updates**: If an API was already modified earlier today, the agent receives the current daily update (`existing_today_content`) and merges the new diff into it, preventing duplicate entries and maintaining a single consolidated daily update.
-  * **Historical Context**: The agent reads the most recent entries for the API (`recent_history_content`) to prevent downplaying or ignoring flapping changes (APIs appearing, disappearing, and reappearing).
-
-### 3. Agent Instructions
-* **Source file**: [prompts/api_change_analyst.txt](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/prompts/api_change_analyst.txt)
-* **Guiding Principles**:
-  * Focus strictly on **developer impact** (what they can now build, or what might break).
-  * Use precise, technical terms (exact parameter and method names) instead of generic statements.
-  * Flag breaking changes explicitly.
-  * Assign a realistic `interesting_score` (1-10) to categorize change significance.
-
-### 4. Feed & Manifest Generation
-* **Source file**: [feed_writer.py](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/feed_writer.py)
-* **Filtering**: Updates with an `interesting_score` below 2 (e.g., description typos, minor etag adjustments) are ignored.
-* **Outputs**:
-  * Markdown entries in [feed/](file:///Users/maxostapenko/GitHub/google-cloud-radar/feed) containing YAML frontmatter metadata (API name, impact category, breaking flags, and relevant tags).
-  * An updated central catalog [feed/index.json](file:///Users/maxostapenko/GitHub/google-cloud-radar/feed/index.json) to enable static site generation, API dashboards, or programmatic consumption.
+### Core Components
+| Area | Directory / Files | Responsibility |
+|---|---|---|
+| **Pipeline & Discovery** | [`scripts/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts) | Polls Discovery API, cleans AST noise, extracts diffs, runs deterministic breaking checks (Google AIP-180), and calls Vertex AI Gemini for developer impact summarization. |
+| **Release Correlation** | [`scripts/correlate_releases.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/correlate_releases.py) | Scrapes public release notes to compute empirical canary lead-time deltas. |
+| **Feed Data** | [`feed/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/feed) | Curated Markdown updates with YAML frontmatter + central `index.json` catalog. |
+| **Frontend Application** | [`web/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/web) | Astro 5 SSG web app: feed (`/`), 90-day rolling benchmark (`/stats`), breaking radar (`/breaking`), service hubs (`/services/[service]`), and detail pages (`/changes/[slug]`). |
+| **Distribution Feeds** | [`web/src/pages/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/web/src/pages) | Global RSS (`/rss.xml`), REST API (`/api/feed.json`), and AI context (`/llms.txt`). |
+| **Infrastructure** | [`terraform/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/terraform) | Firebase Hosting, Firestore security rules (`radar` database), Auth config, and CI/CD IAM. |
+| **Workflows** | [`.github/workflows/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/.github/workflows) | Scheduled 5x daily discovery sync, PR creation, tests, and Firebase Hosting deployment. |
 
 ---
 
-## 🛠️ Configuration & Customization
+## 🛡️ Guiding Principles & Invariants
 
-* **Change Monitored APIs**: Update the whitelist inside `load_documents()` in [update_disco.py](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/update_disco.py).
-* **Refine Agent Behavior**: Modify instructions, adjust tone, or fine-tune rules in [prompts/api_change_analyst.txt](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/prompts/api_change_analyst.txt).
-* **Change Scoring Thresholds**: Tweak `INTERESTING_SCORE_THRESHOLD` in [feed_writer.py](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/feed_writer.py).
+1. **Deterministic Breaking Rules First**: Always enforce AIP-180 AST rules (removed parameters/methods, added required fields, type mutations) deterministically in Python before LLM analysis.
+2. **Dynamic 90-Day Stats**: The benchmark aggregator in `web/src/lib/stats.ts` defaults to a rolling trailing 90-day window.
+3. **Single Source of Truth for Database**: The application uses the named Firestore database **`radar`** across scripts, frontend client, and Terraform security rules.
+4. **Clean Code & CLI-First**: Prefer native CLI tooling (`gcloud`, `gh`, `firebase`, `bq`) over heavy dependencies. Keep frontend styles in vanilla CSS matching Google Cloud design tokens without external CSS frameworks.
