@@ -7,7 +7,12 @@ impact: medium
 breaking: false
 tags: ["bigquery", "reservations", "cel", "governance"]
 interesting_score: 7
+status: released
+lead_time_days: 0
+official_release_date: "2026-08-18"
+official_release_notes_url: "https://docs.cloud.google.com/bigquery/docs/release-notes#August_18_2026"
 ---
+
 
 # CEL Conditions and Precedence for Reservation Assignments
 

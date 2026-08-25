@@ -7,7 +7,12 @@ impact: medium
 breaking: false
 tags: ["datalineage", "bigquery", "composer", "airflow"]
 interesting_score: 6
+status: released
+lead_time_days: 24
+official_release_date: "2026-07-17"
+official_release_notes_url: "https://docs.cloud.google.com/dataplex/docs/release-notes#July_17_2026"
 ---
+
 
 # New ingestion rule integrations for BigQuery and Airflow
 

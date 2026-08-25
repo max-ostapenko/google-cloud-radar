@@ -7,7 +7,12 @@ impact: medium
 breaking: true
 tags: ["AI", "Vertex AI", "Agents", "Generative AI", "Speech"]
 interesting_score: 8
+status: released
+lead_time_days: 0
+official_release_date: "2025-09-10"
+official_release_notes_url: "https://docs.cloud.google.com/vertex-ai/docs/release-notes#September_10_2025"
 ---
+
 
 # Vertex AI: Session Compaction and Transcription Refactor
 

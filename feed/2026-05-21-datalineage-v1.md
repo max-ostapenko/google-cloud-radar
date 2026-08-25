@@ -7,7 +7,12 @@ impact: low
 breaking: false
 tags: ["security", "iam", "datalineage"]
 interesting_score: 4
+status: released
+lead_time_days: 57
+official_release_date: "2026-07-17"
+official_release_notes_url: "https://docs.cloud.google.com/dataplex/docs/release-notes#July_17_2026"
 ---
+
 
 # Granular OAuth Scopes for Data Lineage Streaming
 

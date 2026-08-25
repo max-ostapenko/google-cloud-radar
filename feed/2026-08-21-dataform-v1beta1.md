@@ -7,7 +7,12 @@ impact: medium
 breaking: false
 tags: ["dataform", "git", "workspaces", "automation"]
 interesting_score: 7
+status: released
+lead_time_days: 0
+official_release_date: "2026-04-16"
+official_release_notes_url: "https://docs.cloud.google.com/dataform/docs/release-notes#April_16_2026"
 ---
+
 
 # Git branch management arrives for Dataform Workspaces
 

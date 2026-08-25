@@ -7,7 +7,12 @@ impact: medium
 breaking: false
 tags: ["AI", "Vertex AI", "Generative Video", "Audio", "Agents"]
 interesting_score: 7
+status: released
+lead_time_days: 0
+official_release_date: "2026-03-05"
+official_release_notes_url: "https://docs.cloud.google.com/vertex-ai/docs/release-notes#March_05_2026"
 ---
+
 
 # Vertex AI adds Video Outpainting and Advanced Audio Control
 

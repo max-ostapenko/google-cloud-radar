@@ -7,7 +7,12 @@ impact: high
 breaking: false
 tags: ["data-pipelines", "automation", "git", "bigquery"]
 interesting_score: 8
+status: released
+lead_time_days: 0
+official_release_date: "2026-04-02"
+official_release_notes_url: "https://docs.cloud.google.com/dataform/docs/release-notes#April_02_2026"
 ---
+
 
 # Dataform introduces event-driven triggers and Git links
 

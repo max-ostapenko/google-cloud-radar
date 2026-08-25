@@ -7,7 +7,12 @@ impact: medium
 breaking: false
 tags: ["bigquery", "dataplex", "governance", "metadata"]
 interesting_score: 7
+status: released
+lead_time_days: 53
+official_release_date: "2026-08-13"
+official_release_notes_url: "https://docs.cloud.google.com/bigquery/docs/release-notes#August_13_2026"
 ---
+
 
 # Dataplex Universal Catalog integration for Data Transfers
 
