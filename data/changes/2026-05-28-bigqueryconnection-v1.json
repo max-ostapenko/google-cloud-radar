@@ -1,0 +1,26 @@
+{
+  "id": "2026-05-28-bigqueryconnection-v1",
+  "slug": "2026-05-28-bigqueryconnection-v1",
+  "date": "2026-05-28",
+  "api": "bigqueryconnection.v1",
+  "service": "BigQuery Connection API",
+  "service_name": "BigQuery Connection API",
+  "title": "Flexible Connector Parameters and Authentication",
+  "summary": "BigQuery connections now support arbitrary, connector-specific configuration and authentication parameters via a new map-based schema.",
+  "details": "The API has added a `parameters` field to both `ConnectorConfiguration` and `ConnectorConfigurationAuthentication`. This field allows for a map of name-value pairs using the new `ConnectorConfigurationParameterValue` schema, which supports multiple data types including `boolValue`, `doubleValue`, `int32Value`, `stringValue`, and `secretValue`. This change enables developers to pass non-standardized configuration options to connectors and perform granular updates using an `update_mask` (e.g., `configuration.parameters.parameter_id`).",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "bigquery",
+    "connectors",
+    "configuration"
+  ],
+  "extracted_methods": [
+    "configuration.parameters.parameter_id"
+  ],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-05-28T03:00:00Z"
+}

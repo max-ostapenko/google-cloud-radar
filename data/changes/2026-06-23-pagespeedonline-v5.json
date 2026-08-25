@@ -1,0 +1,25 @@
+{
+  "id": "2026-06-23-pagespeedonline-v5",
+  "slug": "2026-06-23-pagespeedonline-v5",
+  "date": "2026-06-23",
+  "api": "pagespeedonline.v5",
+  "service": "PageSpeed Insights",
+  "service_name": "PageSpeed Insights",
+  "title": "New Agentic Browsing category added to PageSpeed API",
+  "summary": "The PageSpeed Insights API now supports a new audit category called AGENTIC_BROWSING to evaluate site compatibility with AI agents.",
+  "details": "A new enum value `AGENTIC_BROWSING` has been added to the `category` parameter of the `pagespeedapi.runpagespeed` method. This category is designed to measure a website's ability to be rendered and navigated by agentic browsing systems, signaling a shift toward optimizing web content for AI-driven consumers rather than just human users.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "PageSpeed Insights",
+    "AI",
+    "SEO",
+    "Web Performance"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-06-23T03:00:00Z"
+}

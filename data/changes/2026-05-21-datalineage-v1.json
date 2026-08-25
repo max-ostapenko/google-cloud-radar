@@ -1,0 +1,24 @@
+{
+  "id": "2026-05-21-datalineage-v1",
+  "slug": "2026-05-21-datalineage-v1",
+  "date": "2026-05-21",
+  "api": "datalineage.v1",
+  "service": "Data Lineage",
+  "service_name": "Data Lineage",
+  "title": "Granular OAuth Scopes for Data Lineage Streaming",
+  "summary": "The Data Lineage API now supports specific read-only and read-write OAuth scopes for the searchLineageStreaming method, enabling better security posture.",
+  "details": "The searchLineageStreaming method under projects.locations has been updated to explicitly support the https://www.googleapis.com/auth/datalineage.read-write and https://www.googleapis.com/auth/datalineage.readonly scopes. This allows developers to follow the principle of least privilege by using lineage-specific scopes rather than broader cloud-platform permissions.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 4,
+  "tags": [
+    "security",
+    "iam",
+    "datalineage"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-05-21T03:00:00Z"
+}

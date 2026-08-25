@@ -13,10 +13,10 @@ graph TD
     C --> D[scripts/diff_to_feed.py]
     D --> E[scripts/diff_preprocessor.py - AIP-180 AST Diffing]
     E --> F[scripts/llm_client.py - Vertex AI Gemini]
-    F --> G[feed/ YYYY-MM-DD-service.md + index.json]
+    F --> G[data/changes/*.json + data/index.json]
     G --> H[scripts/correlate_releases.py - Lead Time Delta]
     H --> I[scripts/seed_prod_firestore.py - Firestore DB 'radar']
-    G --> J[web/ - Astro 5 Static Site & Syndication]
+    G --> J[web/ - Astro 5 Static Site & MiniSearch]
 ```
 
 ### Core Components
@@ -24,8 +24,8 @@ graph TD
 |---|---|---|
 | **Pipeline & Discovery** | [`scripts/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts) | Polls Discovery API, cleans AST noise, extracts diffs, runs deterministic breaking checks (Google AIP-180), and calls Vertex AI Gemini for developer impact summarization. |
 | **Release Correlation** | [`scripts/correlate_releases.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/correlate_releases.py) | Scrapes public release notes to compute empirical canary lead-time deltas. |
-| **Feed Data** | [`feed/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/feed) | Curated Markdown updates with YAML frontmatter + central `index.json` catalog. |
-| **Frontend Application** | [`web/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/web) | Astro 5 SSG web app: feed (`/`), 90-day rolling benchmark (`/stats`), breaking radar (`/breaking`), service hubs (`/services/[service]`), and detail pages (`/changes/[slug]`). |
+| **Structured Changes** | [`data/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/data) | Structured JSON changes (`data/changes/*.json`) and central manifest catalog (`data/index.json`). |
+| **Frontend Application** | [`web/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/web) | Astro 5 SSG web app with client-side MiniSearch: feed (`/`), 90-day rolling benchmark (`/stats`), breaking radar (`/breaking`), service hubs (`/services/[service]`), and detail pages (`/changes/[slug]`). |
 | **Distribution Feeds** | [`web/src/pages/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/web/src/pages) | Global RSS (`/rss.xml`), REST API (`/api/feed.json`), and AI context (`/llms.txt`). |
 | **Infrastructure** | [`terraform/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/terraform) | Firebase Hosting, Firestore security rules (`radar` database), Auth config, and CI/CD IAM. |
 | **Workflows** | [`.github/workflows/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/.github/workflows) | Scheduled 5x daily discovery sync, PR creation, tests, and Firebase Hosting deployment. |

@@ -1,0 +1,22 @@
+{
+  "id": "2026-06-24-dataform-v1beta1",
+  "slug": "2026-06-24-dataform-v1beta1",
+  "date": "2026-06-24",
+  "api": "dataform.v1beta1",
+  "service": "Dataform",
+  "service_name": "Dataform",
+  "title": "Documentation cleanup and internal lint removal",
+  "summary": "Minor updates to parameter and field descriptions, primarily removing internal linting instructions and improving formatting.",
+  "details": "Descriptions across several resources, including repositories, compilationResults, and releaseConfigs, have been updated to remove internal 'LINT.ThenChange' references. Minor formatting improvements were made to field descriptions for TeamFolders and GitRemoteSettings to include backticks for resource types.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 2,
+  "tags": [
+    "documentation"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-06-24T03:00:00Z"
+}

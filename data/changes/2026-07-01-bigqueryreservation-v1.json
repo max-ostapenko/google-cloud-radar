@@ -1,0 +1,26 @@
+{
+  "id": "2026-07-01-bigqueryreservation-v1",
+  "slug": "2026-07-01-bigqueryreservation-v1",
+  "date": "2026-07-01",
+  "api": "bigqueryreservation.v1",
+  "service": "BigQuery Reservation",
+  "service_name": "BigQuery Reservation",
+  "title": "Hierarchical Reservation Groups and Flex Plan Deprecation",
+  "summary": "BigQuery Reservation API adds support for updating reservation groups and hierarchical structures while deprecating Flex capacity commitments.",
+  "details": "A new `patch` method is now available for `reservationGroups`, allowing for updates to existing resources via `projects.locations.reservationGroups.patch`. The `ReservationGroup` schema has been extended with a `parentGroup` field, enabling the creation of hierarchical reservation structures. Concurrently, the `FLEX` commitment plan has been marked as deprecated in both the `plan` and `renewalPlan` fields of the `CapacityCommitment` schema, with guidance to transition to Edition-based capacity commitments.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "bigquery",
+    "reservations",
+    "deprecation"
+  ],
+  "extracted_methods": [
+    "projects.locations.reservationGroups.patch"
+  ],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-07-01T03:00:00Z"
+}

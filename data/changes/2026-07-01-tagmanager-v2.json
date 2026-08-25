@@ -1,0 +1,24 @@
+{
+  "id": "2026-07-01-tagmanager-v2",
+  "slug": "2026-07-01-tagmanager-v2",
+  "date": "2026-07-01",
+  "api": "tagmanager.v2",
+  "service": "Tag Manager",
+  "service_name": "Tag Manager",
+  "title": "New Automatic Number Conversion and Error Schema Cleanup",
+  "summary": "Added automatic decimal separator detection for variable formatting and significantly reduced the surface area of the CompilerErrorLite schema.",
+  "details": "The VariableFormatValue schema now includes an 'automatic' option for the convertToNumber property, which enables automatic decimal separator detection when formatting variables. On the reporting side, the CompilerErrorLite schema has undergone a major reduction, with the removal of the errorMessage field and nearly 50 specific errorType enum values (such as invalidRegex, macroCycle, and jsCompilerError). Developers relying on these granular error codes for automated container validation or debugging tools should review their implementations.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 7,
+  "tags": [
+    "Tag Manager",
+    "Variables",
+    "Schema Change"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-07-01T03:00:00Z"
+}

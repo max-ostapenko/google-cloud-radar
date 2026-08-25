@@ -1,0 +1,26 @@
+{
+  "id": "2026-08-07-aiplatform-v1",
+  "slug": "2026-08-07-aiplatform-v1",
+  "date": "2026-08-07",
+  "api": "aiplatform.v1",
+  "service": "Vertex AI",
+  "service_name": "Vertex AI",
+  "title": "Vertex AI adds Session Compaction and Audio API updates",
+  "summary": "Reasoning Engines now support session history compaction to manage context windows via summarization. Audio transcription APIs are being streamlined with new language code fields, and evaluation runs gain CMEK support.",
+  "details": "A new `compact` method for Reasoning Engine sessions allows for storage-side rewrites of event history. This includes LLM-based summarization and deterministic event editing, such as truncating oversized tool responses or stripping model 'thoughts' to stay within context limits. In the Audio API, `languageAuto` and `languageHints` are now deprecated in favor of a unified `languageCodes` array. Additionally, `EvaluationRun` resources now support `encryptionSpec` for Customer-Managed Encryption Keys (CMEK). Note a breaking change in usage metadata: the `trafficType` enum value `PROVISIONED_THROUGHPUT` has been replaced by `ON_DEMAND_OFFPEAK`.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 7,
+  "tags": [
+    "AI",
+    "Vertex AI",
+    "Reasoning Engines",
+    "Audio",
+    "Evaluation"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-07T03:00:00Z"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "2026-05-22-dataplex-v1",
+  "slug": "2026-05-22-dataplex-v1",
+  "date": "2026-05-22",
+  "api": "dataplex.v1",
+  "service": "Dataplex",
+  "service_name": "Dataplex",
+  "title": "Dataplex adds Change Requests for governed resource updates",
+  "summary": "Dataplex introduces a formal Change Request workflow, allowing developers to propose, list, and approve changes to data resources.",
+  "details": "A new resource hierarchy `projects.locations.changeRequests` has been added. It includes methods for `approve`, `get`, `list`, and `delete`. Notably, the `delete` method implements state-based permissions: standard users can only delete requests in the `NEW` state, whereas admins have full deletion rights. Additionally, the deprecated `entityInferenceEnabled` field was removed from the `DataDiscoverySpec` for unstructured data, finalizing its transition to semantic inference.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 7,
+  "tags": [
+    "governance",
+    "dataplex",
+    "iam"
+  ],
+  "extracted_methods": [
+    "projects.locations.changeRequests"
+  ],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-05-22T03:00:00Z"
+}

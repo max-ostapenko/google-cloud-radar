@@ -1,0 +1,23 @@
+{
+  "id": "2026-07-06-bigquerydatatransfer-v1",
+  "slug": "2026-07-06-bigquerydatatransfer-v1",
+  "date": "2026-07-06",
+  "api": "bigquerydatatransfer.v1",
+  "service": "BigQuery Data Transfer Service",
+  "service_name": "BigQuery Data Transfer Service",
+  "title": "Removal of metadataDestination from TransferRun",
+  "summary": "The output-only metadataDestination field has been removed from the TransferRun resource schema.",
+  "details": "The TransferRun schema has been modified to remove the metadataDestination property. This field was previously used to provide output-only information about the destination of transfer run metadata. While it was a read-only field, its removal may break client-side parsers or logic that explicitly expects this field in API responses.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 5,
+  "tags": [
+    "bigquery",
+    "breaking-change"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-07-06T03:00:00Z"
+}

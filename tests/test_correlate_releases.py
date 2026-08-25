@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 import pytest
@@ -31,7 +32,7 @@ def test_parse_feed_xml_atom():
     assert len(entries) == 1
     assert entries[0]["title"] == "Reasoning Engine session compaction is now GA"
     assert entries[0]["date"] == "2026-08-15"
-    assert "compact" in entries[0]["text"]
+    assert "compact" in entries[0]["content"]
 
 
 def test_match_change_against_releases_by_rpc():
@@ -46,13 +47,13 @@ def test_match_change_against_releases_by_rpc():
             "title": "Unrelated BigQuery update",
             "url": "https://cloud.google.com/release-notes/1",
             "date": "2026-08-10",
-            "text": "bigquery adds new streaming options"
+            "content": "bigquery adds new streaming options"
         },
         {
             "title": "Vertex AI adds session compact",
             "url": "https://cloud.google.com/release-notes/2",
             "date": "2026-08-15",
-            "text": "developers can now compact sessions in reasoning engines"
+            "content": "developers can now compact sessions in reasoning engines"
         }
     ]
 
@@ -62,30 +63,31 @@ def test_match_change_against_releases_by_rpc():
     assert match["url"] == "https://cloud.google.com/release-notes/2"
 
 
-def test_update_markdown_frontmatter():
-    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".md") as tmp:
-        tmp.write("""---
-service: "Vertex AI"
-api: "aiplatform.v1beta1"
-title: "Session Compaction"
----
-
-## Summary
-Details here.
-""")
+def test_update_json_file():
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as tmp:
+        doc = {
+            "id": "2026-08-01-aiplatform-v1beta1",
+            "service": "Vertex AI",
+            "api": "aiplatform.v1beta1",
+            "title": "Session Compaction",
+            "status": "canary",
+            "radar_ring": "assess"
+        }
+        json.dump(doc, tmp)
         tmp_path = tmp.name
 
     try:
         rel_info = {"date": "2026-08-20", "url": "https://cloud.google.com/release-notes#1"}
-        ok = correlate_releases.update_markdown_frontmatter(tmp_path, rel_info, lead_time_days=19)
+        ok = correlate_releases.update_json_file(tmp_path, rel_info, lead_time_days=19)
         assert ok is True
 
         with open(tmp_path, "r") as f:
-            updated = f.read()
+            updated = json.load(f)
 
-        assert "status: released" in updated
-        assert "lead_time_days: 19" in updated
-        assert 'official_release_date: "2026-08-20"' in updated
-        assert 'official_release_notes_url: "https://cloud.google.com/release-notes#1"' in updated
+        assert updated["status"] == "released"
+        assert updated["radar_ring"] == "adopt"
+        assert updated["lead_time_days"] == 19
+        assert updated["official_release_date"] == "2026-08-20"
+        assert updated["official_release_notes_url"] == "https://cloud.google.com/release-notes#1"
     finally:
         os.unlink(tmp_path)

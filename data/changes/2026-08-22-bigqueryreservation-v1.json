@@ -1,0 +1,25 @@
+{
+  "id": "2026-08-22-bigqueryreservation-v1",
+  "slug": "2026-08-22-bigqueryreservation-v1",
+  "date": "2026-08-22",
+  "api": "bigqueryreservation.v1",
+  "service": "BigQuery Reservation",
+  "service_name": "BigQuery Reservation",
+  "title": "CEL Conditions and Precedence for Reservation Assignments",
+  "summary": "BigQuery is introducing logic-based reservation assignments using Common Expression Language (CEL) and a new precedence system to resolve matching conflicts.",
+  "details": "The Assignment resource now includes a 'condition' field, which accepts a Common Expression Language (CEL) expression to define matching criteria for jobs. To handle scenarios where multiple assignments might match a single job, a new 'precedence' field (int64) has been added; higher values take priority. Additionally, the ReservationGroup schema now includes 'creationTime' and 'updateTime' output-only fields for better resource auditing.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "bigquery",
+    "reservations",
+    "cel",
+    "governance"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-22T03:00:00Z"
+}

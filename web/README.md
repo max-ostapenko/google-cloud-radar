@@ -1,13 +1,13 @@
 # Google Cloud Radar — Web Application
 
-The frontend and developer intelligence platform for **Google Cloud Radar**, built with **Astro 5** and **Firebase**. Styled with curated vanilla CSS tokens matching Google Cloud design standards.
+The frontend and developer intelligence platform for **Google Cloud Radar**, built with **Astro 5**, **MiniSearch**, and **Firebase**. Styled with curated vanilla CSS tokens matching Google Cloud design standards.
 
 ---
 
 ## 🚀 Local Development
 
 ### 1. Offline Mode (Static Feed Only)
-Reads all feed entries and service catalogs directly from `feed/*.md` and `feed/index.json`:
+Reads all feed entries and service catalogs directly from `data/changes/*.json` and `data/index.json`:
 ```bash
 npm install
 npm run dev
@@ -22,11 +22,20 @@ npm run dev:all
 
 ---
 
+## 🔍 Instant Client-Side Search Engine
+
+The web app includes an in-browser **MiniSearch** engine running locally on the user's device with 0 cloud server calls:
+* **Fuzzy typo tolerance**: Matches misspellings (e.g. `vertx` $\to$ `Vertex AI`).
+* **Prefix matching**: Live as-you-type autocomplete.
+* **Field boosting**: RPC methods (3.0x), title (2.5x), service (2.0x), tags (1.5x), summary (1.0x).
+
+---
+
 ## 🧭 Page Routes & Syndication
 
 | Route | Purpose |
 |---|---|
-| `/` | Live Radar feed with interactive category filters, impact pills, and instant search (`/`). |
+| `/` | Live Radar feed with interactive category filters, impact pills, and instant MiniSearch (`/`). |
 | `/stats` | Trailing 90-day rolling benchmark with velocity rankings, lead times, and breaking change rates. |
 | `/breaking` | Dedicated triage radar for backwards-incompatible API changes. |
 | `/services/[service]` | Service hub with historical change timeline, official docs, and raw Discovery REST endpoints. |

@@ -1,0 +1,23 @@
+{
+  "id": "2026-07-30-analyticshub-v1",
+  "slug": "2026-07-30-analyticshub-v1",
+  "date": "2026-07-30",
+  "api": "analyticshub.v1",
+  "service": "Analytics Hub",
+  "service_name": "Analytics Hub",
+  "title": "Deprecation of proposer field in QueryTemplate",
+  "summary": "The proposer field in the QueryTemplate schema is now formally deprecated in favor of primary_contact.",
+  "details": "The analyticshub.v1 API has officially marked the proposer field within the QueryTemplate resource as deprecated. The API metadata now explicitly flags this field as deprecated and directs developers to use the primary_contact field instead for specifying the email or URL of the primary point of contact.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 4,
+  "tags": [
+    "deprecation",
+    "analyticshub"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-07-30T03:00:00Z"
+}

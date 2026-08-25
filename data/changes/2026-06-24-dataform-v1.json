@@ -1,0 +1,22 @@
+{
+  "id": "2026-06-24-dataform-v1",
+  "slug": "2026-06-24-dataform-v1",
+  "date": "2026-06-24",
+  "api": "dataform.v1",
+  "service": "Dataform",
+  "service_name": "Dataform",
+  "title": "Minor documentation cleanup and formatting",
+  "summary": "This update consists of minor documentation refinements, including the removal of internal linting comments and improved formatting for resource names in descriptions.",
+  "details": "The changes are limited to description updates across several resources, including CompilationResults, ReleaseConfigs, and GitRemoteSettings. Specifically, internal 'LINT.ThenChange' markers were removed from multiple parameter and schema descriptions, and backticks were added to resource names like 'TeamFolders' and 'GitRepositoryLink' for better readability in the documentation. No functional changes or schema modifications were introduced.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 2,
+  "tags": [
+    "documentation"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-06-24T03:00:00Z"
+}

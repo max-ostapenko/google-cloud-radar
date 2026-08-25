@@ -1,0 +1,25 @@
+{
+  "id": "2026-08-25-admin-reports-v1",
+  "slug": "2026-08-25-admin-reports-v1",
+  "date": "2026-08-25",
+  "api": "admin.reports_v1",
+  "service": "Admin SDK Reports",
+  "service_name": "Admin SDK Reports",
+  "title": "Breaking Changes and Workspace Studio Support",
+  "summary": "The Reports API has introduced breaking changes regarding required parameters and read-only fields, while also expanding support for Workspace Studio applications in audit logs.",
+  "details": "This update enforces strict requirements for parameters like 'entityType', 'applicationName', and 'date', while marking several 'UsageReport' fields as read-only. Additionally, the 'includeSensitiveData' parameter in activity listing now supports Workspace Studio applications, allowing sensitive user-generated content in those audit logs. The 'userDeviceInfo' field in Activity schemas is now explicitly scoped to specific applications including Gemini in Workspace, Drive, and Chat, providing better clarity on when device metadata is available. The API also now supports mTLS via a new root URL (admin.mtls.googleapis.com).",
+  "impact": "high",
+  "breaking": false,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "security",
+    "workspace",
+    "audit-logs"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-25T03:00:00Z"
+}

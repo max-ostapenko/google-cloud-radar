@@ -1,0 +1,25 @@
+{
+  "id": "2026-05-28-bigquery-v2",
+  "slug": "2026-05-28-bigquery-v2",
+  "date": "2026-05-28",
+  "api": "bigquery.v2",
+  "service": "BigQuery",
+  "service_name": "BigQuery",
+  "title": "Iceberg timestamp autodetection and UDF clarifications",
+  "summary": "BigQuery has expanded timestamp precision autodetection to Iceberg External Tables and clarified concurrency settings for Python UDFs.",
+  "details": "The `timestampTargetPrecision` field within `ExternalDataConfiguration` and `JobConfigurationLoad` now explicitly supports Iceberg External Tables, joining CSV, Parquet, and Avro. This allows developers to control how timestamp precision (e.g., 6 or 12 digits) is handled during autodetection for Iceberg sources. Additionally, the description for `containerRequestConcurrency` in `ExternalRuntimeOptions` has been updated to clarify that it specifically governs Python UDF container instances.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 4,
+  "tags": [
+    "BigQuery",
+    "Iceberg",
+    "UDF",
+    "Data Loading"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-05-28T03:00:00Z"
+}

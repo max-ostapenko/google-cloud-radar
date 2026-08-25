@@ -1,0 +1,24 @@
+{
+  "id": "2026-07-15-dataplex-v1",
+  "slug": "2026-07-15-dataplex-v1",
+  "date": "2026-07-15",
+  "api": "dataplex.v1",
+  "service": "Dataplex",
+  "service_name": "Dataplex",
+  "title": "Breaking: context field removed from LookupContextRequest",
+  "summary": "The optional context string has been removed from the LookupContextRequest schema, affecting metadata lookup workflows.",
+  "details": "The GoogleCloudDataplexV1LookupContextRequest schema has been modified to remove the context property. This field was previously used to provide optional textual contextual information for metadata context requests. Developers using this specific lookup functionality should update their request payloads to remove this field, as it is no longer recognized by the API schema.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 6,
+  "tags": [
+    "dataplex",
+    "metadata",
+    "breaking-change"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-07-15T03:00:00Z"
+}

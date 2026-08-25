@@ -1,0 +1,24 @@
+{
+  "id": "2026-08-25-drive-v2",
+  "slug": "2026-08-25-drive-v2",
+  "date": "2026-08-25",
+  "api": "drive.v2",
+  "service": "Google Drive",
+  "service_name": "Google Drive",
+  "title": "Drive v2 API: Major Validation Tightening & Breaking Changes",
+  "summary": "The Drive v2 API discovery document has been updated to enforce strict requirements on resource identifiers and mark several metadata fields as read-only.",
+  "details": "This update introduces significant breaking changes by making nearly all resource-identifying parameters strictly required across the API. Developers must now ensure that parameters such as `fileId`, `revisionId`, `commentId`, `permissionId`, `driveId`, `teamDriveId`, `folderId`, `parentId`, and `childId` are explicitly provided in requests. Additionally, several properties in the `User`, `File`, and `Permission` schemas—including `User.emailAddress`, `User.displayName`, `File.capabilities`, and `Permission.permissionDetails`—have been officially marked as read-only/immutable. While these changes likely reflect existing backend behavior, the discovery document now strictly enforces them, which may break client libraries or tools that rely on the discovery doc for request validation.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "validation",
+    "security"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-25T03:00:00Z"
+}

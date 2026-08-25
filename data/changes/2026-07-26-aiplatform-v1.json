@@ -1,0 +1,26 @@
+{
+  "id": "2026-07-26-aiplatform-v1",
+  "slug": "2026-07-26-aiplatform-v1",
+  "date": "2026-07-26",
+  "api": "aiplatform.v1",
+  "service": "Vertex AI",
+  "service_name": "Vertex AI",
+  "title": "Vertex AI adds Audio Transcription and Memory Event Ingestion",
+  "summary": "Vertex AI introduces native audio transcription schemas and expands agent memory capabilities with event ingestion. New controls for video generation rewriters and granular index endpoint updates are also now available.",
+  "details": "A new set of schemas for Audio Transcription has been added, supporting speaker diarization, word-level timestamps, and language auto-detection. The Memory Bank resource now includes an 'ingestEvents' method, further maturing the agentic memory framework. For video generation, the 'omniRewriter' configuration allows tuning chunk durations and input FPS. Additionally, 'mutateDeployedIndex' now supports an 'updateMask', enabling partial updates for resources like 'dedicated_resources' and 'access_logging'.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "AI",
+    "Vertex AI",
+    "Audio",
+    "Memory",
+    "Video Generation"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-07-26T03:00:00Z"
+}

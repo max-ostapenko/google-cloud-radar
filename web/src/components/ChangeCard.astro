@@ -24,6 +24,7 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
 
 <article 
   class={`change-card ${entry.breaking ? 'is-breaking' : ''}`}
+  data-slug={entry.slug}
   data-service={entry.service.toLowerCase()}
   data-api={entry.api.toLowerCase()}
   data-category={entry.category.toLowerCase()}

@@ -1,0 +1,25 @@
+{
+  "id": "2026-08-25-youtube-v3",
+  "slug": "2026-08-25-youtube-v3",
+  "date": "2026-08-25",
+  "api": "youtube.v3",
+  "service": "YouTube",
+  "service_name": "YouTube",
+  "title": "YouTube Data API v3: Major Breaking Changes & Strict Validation",
+  "summary": "A significant update to the YouTube Data API v3 enforces strict requirements for core parameters and marks several video statistic fields as read-only. Developers must update their requests to include mandatory fields like part, id, and channelId.",
+  "details": "The API has transitioned to a stricter schema. Key parameters across various methods—including channelId, id, part, liveChatId, type, videoId, and rating—are now marked as strictly required. If your application was omitting these, expect 400 errors. Additionally, the VideoStat schema and its sub-components (VideoStatsSnippet, VideoStatsStatistics) now treat fields like viewCount, likeCount, duration, and publishTime as read-only/immutable. On the feature side, new OAuth2 scopes for channel memberships and partner audits have been added, along with support for mTLS via youtube.mtls.googleapis.com.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "youtube",
+    "api-validation",
+    "security"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-25T03:00:00Z"
+}

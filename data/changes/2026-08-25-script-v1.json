@@ -1,0 +1,25 @@
+{
+  "id": "2026-08-25-script-v1",
+  "slug": "2026-08-25-script-v1",
+  "date": "2026-08-25",
+  "api": "script.v1",
+  "service": "Apps Script",
+  "service_name": "Apps Script",
+  "title": "Apps Script API enforces required IDs and expands scopes",
+  "summary": "The Apps Script API now strictly requires scriptId, deploymentId, and versionNumber in relevant methods, while significantly expanding its list of supported OAuth2 scopes.",
+  "details": "This update introduces breaking changes by enforcing the presence of key identifiers. Specifically, 'scriptId', 'deploymentId', and 'versionNumber' have been changed from optional to strictly required in their respective method parameters. Developers must update their implementation to ensure these fields are always provided. Additionally, the API discovery document has been updated with a massive list of explicit OAuth2 scopes covering Gmail, Calendar, Drive, Sheets, and Google Workspace Admin Directory, providing better visibility into the permissions required for script execution and management.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "apps-script",
+    "oauth",
+    "workspace"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-25T03:00:00Z"
+}

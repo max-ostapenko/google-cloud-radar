@@ -1,0 +1,25 @@
+{
+  "id": "2026-07-02-dataplex-v1",
+  "slug": "2026-07-02-dataplex-v1",
+  "date": "2026-07-02",
+  "api": "dataplex.v1",
+  "service": "Dataplex",
+  "service_name": "Dataplex",
+  "title": "Dataplex Data Domains add IAM policy member metadata",
+  "summary": "The recently introduced DataDomain resource now includes output-only IAM policy member strings, supporting both name-based and UID-based identity principals.",
+  "details": "The GoogleCloudDataplexV1DataDomain schema now includes a policyMember field. This field maps to a new GoogleIamV1ResourcePolicyMember object containing iamPolicyNamePrincipal (AIP-122 compliant name-based principal) and iamPolicyUidPrincipal (AIP-148 compliant system-assigned unique identifier). These fields allow developers to programmatically identify the specific IAM identities associated with a Data Domain, facilitating more robust security auditing and access management.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 5,
+  "tags": [
+    "iam",
+    "security",
+    "dataplex",
+    "governance"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-07-02T03:00:00Z"
+}

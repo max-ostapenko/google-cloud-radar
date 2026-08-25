@@ -17,10 +17,10 @@ graph TD
     C --> D[scripts/diff_to_feed.py]
     D --> E[scripts/diff_preprocessor.py - AIP-180 Breaking Checks]
     E --> F[scripts/llm_client.py - Vertex AI Gemini]
-    F --> G[feed/ YYYY-MM-DD-service.md + index.json]
+    F --> G[data/ Structured JSON Changes + Index]
     G --> H[scripts/correlate_releases.py - Lead Time Delta]
     H --> I[scripts/seed_prod_firestore.py - Cloud Firestore]
-    G --> J[web/ - Astro 5 Web Application]
+    G --> J[web/ - Astro 5 Web Application & MiniSearch]
     J --> K[Firebase Hosting: gcp-cloud-radar.web.app]
 ```
 
@@ -35,7 +35,7 @@ npm install
 npm run dev        # Astro local dev server at http://localhost:4321
 npm run dev:all    # Astro + Local Zero-Java Mock Firestore server
 ```
-*See [`web/README.md`](file:///Users/maxostapenko/GitHub/google-cloud-radar/web/README.md) for frontend architecture and mock database details.*
+*See [`web/README.md`](web/README.md) for frontend architecture and mock database details.*
 
 ### 2. Python Pipeline & Analysis (`scripts/`)
 ```bash
@@ -45,7 +45,7 @@ pytest tests/
 # Preview AST diffs without calling Gemini
 python scripts/diff_to_feed.py --dry-run
 ```
-*See [`scripts/README.md`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/README.md) for CLI options, prompt tuning, and correlation engine usage.*
+*See [`scripts/README.md`](scripts/README.md) for CLI options, prompt tuning, and correlation engine usage.*
 
 ---
 
@@ -54,7 +54,7 @@ python scripts/diff_to_feed.py --dry-run
 ```
 .
 ├── discoveries/          # Normalized Discovery JSON ASTs (38+ monitored GCP services)
-├── feed/                 # Curated Markdown insights & central index.json manifest
+├── data/                 # Structured JSON change documents (changes/*.json) & index.json
 ├── scripts/              # Python ingestion, AST diffing, Gemini analysis & release correlation
 │   └── README.md         # Pipeline CLI usage & script documentation
 ├── terraform/            # Terraform IaC: Hosting, Firestore rules, Identity Platform & IAM

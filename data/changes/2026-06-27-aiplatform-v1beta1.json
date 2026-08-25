@@ -1,0 +1,25 @@
+{
+  "id": "2026-06-27-aiplatform-v1beta1",
+  "slug": "2026-06-27-aiplatform-v1beta1",
+  "date": "2026-06-27",
+  "api": "aiplatform.v1beta1",
+  "service": "Vertex AI",
+  "service_name": "Vertex AI",
+  "title": "Vertex AI Beta: Computer Use Safety & Breaking Agent Changes",
+  "summary": "Vertex AI adds prompt injection detection for computer-use tasks and Zero Data Retention for Parallel AI Search, alongside significant removals of Agent-related methods.",
+  "details": "This update introduces `enablePromptInjectionDetection` and new environment enums (`MOBILE`, `DESKTOP`) to the `GenaiVertexV1beta1ComputerUse` schema. Grounding capabilities are expanded with `enableDataRetention` in `GoogleCloudAiplatformV1beta1ToolParallelAiSearch`, allowing users to opt into Parallel's Zero Data Retention Marketplace product. Additionally, `AgentAnomalyDetectionScope` now includes a `state` field to track lifecycle status (e.g., CREATING, ACTIVE, FAILED).\n\nHowever, there are several breaking changes: the `patch` method for `agentAnomalyDetectionScopes` and the `create`/`delete` methods for `monitoredAgents` have been removed. Furthermore, the `CodeMender` agent configuration and its associated schemas have been entirely excised from the API surface.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "AI",
+    "Vertex AI",
+    "Generative AI",
+    "Breaking Change"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-06-27T03:00:00Z"
+}

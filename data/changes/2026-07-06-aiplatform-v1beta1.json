@@ -1,0 +1,26 @@
+{
+  "id": "2026-07-06-aiplatform-v1beta1",
+  "slug": "2026-07-06-aiplatform-v1beta1",
+  "date": "2026-07-06",
+  "api": "aiplatform.v1beta1",
+  "service": "Vertex AI",
+  "service_name": "Vertex AI",
+  "title": "Vertex AI adds Claude-specific feature controls",
+  "summary": "Developers using Anthropic's Claude models on Vertex AI now have a dedicated configuration for advanced AI features and data retention opt-ins.",
+  "details": "The `PublisherModelConfig` schema now includes a `claudeFeatureConfig` object. This object introduces `advancedAiEnabled`, a boolean field used to enable advanced AI features and opt-in to data retention. Simultaneously, the `cyberVerificationProgramEnabled` field has been deprecated in favor of this new, more broadly named parameter. This change indicates a shift in how Vertex AI handles the 'Cyber Verification Program' (CVP) and data retention policies specifically for the Claude model family.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "AI",
+    "Vertex AI",
+    "Anthropic",
+    "Claude",
+    "Data Retention"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-07-06T03:00:00Z"
+}

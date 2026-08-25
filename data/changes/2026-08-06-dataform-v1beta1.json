@@ -1,0 +1,25 @@
+{
+  "id": "2026-08-06-dataform-v1beta1",
+  "slug": "2026-08-06-dataform-v1beta1",
+  "date": "2026-08-06",
+  "api": "dataform.v1beta1",
+  "service": "Dataform",
+  "service_name": "Dataform",
+  "title": "Support for Notebooks, SQL assets, and GCS snapshots",
+  "summary": "Dataform is expanding beyond standard projects to support single-file SQL and Notebook assets, alongside GCS-based repository snapshots for scheduled executions.",
+  "details": "A new `PipelineConfig` schema has been introduced and integrated into `CodeCompilationConfig`, `WorkflowInvocation`, and `InstallNpmPackagesRequest`. This allows developers to explicitly define a `pipelineType` (DATAFORM, SQL, or NOTEBOOK) and a relative `path` within the Git repository. Furthermore, the API now supports repository snapshots in Google Cloud Storage for scheduled notebooks, evidenced by new `gcsRepositorySnapshotDestination` settings in `NotebookRuntimeOptions` and corresponding metadata in `CompilationResult`.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "dataform",
+    "notebooks",
+    "sql",
+    "gcs"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-06T03:00:00Z"
+}

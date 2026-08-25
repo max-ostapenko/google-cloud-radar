@@ -1,0 +1,24 @@
+{
+  "id": "2026-08-25-androidpublisher-v3",
+  "slug": "2026-08-25-androidpublisher-v3",
+  "date": "2026-08-25",
+  "api": "androidpublisher.v3",
+  "service": "Android Publisher",
+  "service_name": "Android Publisher",
+  "title": "Massive Schema Tightening and New Data Safety Method",
+  "summary": "Dozens of parameters are now strictly required and many schema fields have become read-only, alongside a new method for Safety Labels.",
+  "details": "The Android Publisher API is undergoing a major validation cleanup. A vast array of parameters—including 'packageName', 'editId', 'subscriptionId', 'productId', and 'token'—are now strictly required across most methods. Additionally, numerous fields in schemas like 'ExternalTransaction', 'Subscription', 'AppEdit', and 'User' have been marked as read-only or immutable. Developers should audit their integrations to ensure all required parameters are supplied and that they are not attempting to write to now-immutable fields. On the feature side, a new 'applications.dataSafety' method has been added to allow developers to programmatically write Safety Labels declarations. Minor documentation clarifications were also added to the PolicyResponse schema.",
+  "impact": "high",
+  "breaking": false,
+  "interesting_score": 9,
+  "tags": [
+    "breaking change",
+    "google play",
+    "android"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-25T03:00:00Z"
+}

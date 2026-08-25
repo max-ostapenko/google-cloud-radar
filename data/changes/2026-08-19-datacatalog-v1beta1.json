@@ -1,0 +1,24 @@
+{
+  "id": "2026-08-19-datacatalog-v1beta1",
+  "slug": "2026-08-19-datacatalog-v1beta1",
+  "date": "2026-08-19",
+  "api": "datacatalog.v1beta1",
+  "service": "Data Catalog",
+  "service_name": "Data Catalog",
+  "title": "Data Catalog adds support for Graph Nodes and Edges",
+  "summary": "Data Catalog now supports NODE and EDGE entry types, enabling metadata management for graph-based data structures.",
+  "details": "The GoogleCloudDatacatalogV1Entry schema has been updated to include two new enum values for the 'type' field: NODE and EDGE. These additions allow developers to categorize and discover graph nodes and edges within the Data Catalog, expanding the service's utility for graph database integrations and complex relationship mapping.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 5,
+  "tags": [
+    "Data Catalog",
+    "Metadata",
+    "Graph Databases"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-19T03:00:00Z"
+}

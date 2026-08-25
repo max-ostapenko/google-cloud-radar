@@ -1,0 +1,24 @@
+{
+  "id": "2026-08-13-looker-v1",
+  "slug": "2026-08-13-looker-v1",
+  "date": "2026-08-13",
+  "api": "looker.v1",
+  "service": "Looker",
+  "service_name": "Looker",
+  "title": "Looker adds ESA migration support to ExportMetadata",
+  "summary": "Looker's ExportMetadata schema now includes a field for specifying source BigQuery datasets during Elite System Activity (ESA) migrations.",
+  "details": "A new field `esaSourceDatasetId` has been added to the `ExportMetadata` schema. This field accepts a string formatted as `project_id:dataset_id` and is specifically intended for O2C Elite System Activity (ESA) direct dataset migrations. This allows for more granular control over the source data during specific migration workflows.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 4,
+  "tags": [
+    "looker",
+    "bigquery",
+    "migration"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-13T03:00:00Z"
+}

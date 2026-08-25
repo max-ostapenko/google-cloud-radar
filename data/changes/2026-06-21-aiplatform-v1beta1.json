@@ -1,0 +1,25 @@
+{
+  "id": "2026-06-21-aiplatform-v1beta1",
+  "slug": "2026-06-21-aiplatform-v1beta1",
+  "date": "2026-06-21",
+  "api": "aiplatform.v1beta1",
+  "service": "Vertex AI",
+  "service_name": "Vertex AI",
+  "title": "Vertex AI Beta: New Governance Engines and Breaking Agent Changes",
+  "summary": "This update introduces Semantic Governance Policy Engines and Agent Anomaly Detection while introducing several breaking changes to the Agents and Interactions APIs.",
+  "details": "Vertex AI has added a singleton `SemanticGovernancePolicyEngine` resource for location-level policy management and a new `AgentAnomalyDetectionScope` resource. Significant breaking changes include the removal of the `interactions.delete` method and making `skillId` a required parameter in `skills.create`. Additionally, the `agents.list` method now uses `created` and `updated` for its `orderBy` parameter instead of `create_time` and `update_time`. Developers using Model Context Protocol (MCP) should note that the `AgentTool` type `mcp` has been renamed to `mcp_server`.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "AI",
+    "Agents",
+    "Governance",
+    "Breaking Change"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-06-21T03:00:00Z"
+}

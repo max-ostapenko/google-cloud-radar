@@ -1,0 +1,25 @@
+{
+  "id": "2026-06-21-aiplatform-v1",
+  "slug": "2026-06-21-aiplatform-v1",
+  "date": "2026-06-21",
+  "api": "aiplatform.v1",
+  "service": "Vertex AI",
+  "service_name": "Vertex AI",
+  "title": "Online Evaluator Operations and GenerationConfig Deprecations",
+  "summary": "Vertex AI adds full operation management for Online Evaluators and marks several core GenerationConfig fields as deprecated in favor of a unified response format.",
+  "details": "The API introduces a new `onlineEvaluators.operations` resource, enabling standard LRO management (get, list, cancel, delete) for evaluation tasks. Significant deprecations hit `GenerationConfig`: the fields `response_schema`, `response_mime_type`, `response_json_schema`, and `image_config` are now deprecated, with developers directed to use the new `response_format` field. Additionally, `PersistentDiskSpec` has been expanded to support Hyperdisk types (including `hyperdisk-ml` and `hyperdisk-balanced`), and Google Maps grounding widgets are being phased out. Note the documentation shift where 'Vertex AI' is being rebranded as 'Agent Platform' in several resource descriptions.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "AI",
+    "Generative AI",
+    "Deprecation",
+    "Infrastructure"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-06-21T03:00:00Z"
+}

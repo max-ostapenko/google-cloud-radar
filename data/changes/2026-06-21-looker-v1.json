@@ -1,0 +1,25 @@
+{
+  "id": "2026-06-21-looker-v1",
+  "slug": "2026-06-21-looker-v1",
+  "date": "2026-06-21",
+  "api": "looker.v1",
+  "service": "Looker Core",
+  "service_name": "Looker Core",
+  "title": "Looker v1 adds Instance Undelete and Release Channels",
+  "summary": "Looker Core instances now support soft-deletion recovery and configurable update release channels (Rapid, Regular, Stable).",
+  "details": "This update introduces a significant lifecycle management feature: the `undelete` method for Looker instances. To support this, the `list` method now accepts a `showDeleted` parameter, and the `Instance` schema includes new fields like `softDeleteReason` and `suspendedTime`. Additionally, developers can now manage update cadences via the `releaseChannel` field and opt-in to `acceleratedSecurityPatchEnabled` for faster security updates.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "looker",
+    "lifecycle",
+    "security",
+    "ops"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-06-21T03:00:00Z"
+}

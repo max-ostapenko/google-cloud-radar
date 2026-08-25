@@ -1,0 +1,24 @@
+{
+  "id": "2026-06-21-bigquery-v2",
+  "slug": "2026-06-21-bigquery-v2",
+  "date": "2026-06-21",
+  "api": "bigquery.v2",
+  "service": "BigQuery",
+  "service_name": "BigQuery",
+  "title": "BigQuery API clarifies IAM requirements across all methods",
+  "summary": "The BigQuery v2 discovery document has been updated to explicitly document the IAM permissions required for nearly every API method, simplifying least-privilege configuration.",
+  "details": "Descriptions for resources including datasets, jobs, tables, models, routines, and rowAccessPolicies now contain a dedicated '# IAM Permissions' section. This update provides specific mapping between API calls and IAM roles, such as clarifying that tabledata.insertAll requires permissions on the table and the parent dataset, and detailing the specific permissions needed for job creators versus administrative users in jobs.get and jobs.cancel.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 5,
+  "tags": [
+    "IAM",
+    "Security",
+    "Documentation"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-06-21T03:00:00Z"
+}

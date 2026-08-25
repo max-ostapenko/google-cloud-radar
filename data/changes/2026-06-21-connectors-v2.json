@@ -1,0 +1,24 @@
+{
+  "id": "2026-06-21-connectors-v2",
+  "slug": "2026-06-21-connectors-v2",
+  "date": "2026-06-21",
+  "api": "connectors.v2",
+  "service": "Application Integration Connectors",
+  "service_name": "Application Integration Connectors",
+  "title": "Generic HTTP request execution added to Connectors",
+  "summary": "Integration Connectors now supports a raw executeHttpRequest method, allowing developers to send arbitrary HTTP requests through existing connections.",
+  "details": "A new method `executeHttpRequest` has been added to the `connections` resource. This allows for sending raw byte payloads (via `rawBody`) and custom headers, supporting REST, GraphQL, XML, and SOAP directly through the connector's auth context. Additionally, the `tools.list` method now includes a `toolNames` query parameter for selective tool fetching.",
+  "impact": "high",
+  "breaking": false,
+  "interesting_score": 8,
+  "tags": [
+    "integrations",
+    "http",
+    "extensibility"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-06-21T03:00:00Z"
+}

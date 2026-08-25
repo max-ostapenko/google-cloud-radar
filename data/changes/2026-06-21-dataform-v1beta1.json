@@ -1,0 +1,25 @@
+{
+  "id": "2026-06-21-dataform-v1beta1",
+  "slug": "2026-06-21-dataform-v1beta1",
+  "date": "2026-06-21",
+  "api": "dataform.v1beta1",
+  "service": "Dataform",
+  "service_name": "Dataform",
+  "title": "Dataform introduces event-driven triggers and Git links",
+  "summary": "Dataform workflows can now be triggered automatically by table updates, and Git remote settings now support direct repository links for machine credentials.",
+  "details": "This update introduces a robust triggering system for Dataform workflows. The new `WorkflowTriggerConfig` allows developers to define `TableUpdateTrigger` conditions, enabling workflows to execute automatically when a specific target table is modified. The configuration supports logical conditions (ALL/ANY), rate limiting via `minExecutionDuration`, and observability through `recentTriggerEvaluationRecords`. Additionally, `GitRemoteSettings` now includes a `gitRepositoryLink` field, allowing integration with standard GCP Git repository connections for machine-based authentication.",
+  "impact": "high",
+  "breaking": false,
+  "interesting_score": 8,
+  "tags": [
+    "data-pipelines",
+    "automation",
+    "git",
+    "bigquery"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-06-21T03:00:00Z"
+}

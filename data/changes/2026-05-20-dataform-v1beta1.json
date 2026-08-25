@@ -1,0 +1,24 @@
+{
+  "id": "2026-05-20-dataform-v1beta1",
+  "slug": "2026-05-20-dataform-v1beta1",
+  "date": "2026-05-20",
+  "api": "dataform.v1beta1",
+  "service": "Dataform",
+  "service_name": "Dataform",
+  "title": "Asynchronous repository deletion and Git branch improvements",
+  "summary": "Dataform introduces long-running repository deletion and clarifies Git default branch behavior.",
+  "details": "A new method `repositories.deleteLongRunning` has been added, allowing developers to delete repositories asynchronously. This includes a `force` parameter in the `DeleteRepositoryLongRunningRequest` to automatically clean up child resources like compilation results and workflow invocations, though it notably fails if workspaces or configs still exist. Additionally, `GitRemoteSettings.defaultBranch` is now optional (defaulting to 'main'), and a new output-only `effectiveDefaultBranch` field helps identify the active branch being used by the service.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "dataform",
+    "git",
+    "ops"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-05-20T03:00:00Z"
+}

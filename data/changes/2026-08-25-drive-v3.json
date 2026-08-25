@@ -1,0 +1,26 @@
+{
+  "id": "2026-08-25-drive-v3",
+  "slug": "2026-08-25-drive-v3",
+  "date": "2026-08-25",
+  "api": "drive.v3",
+  "service": "Google Drive",
+  "service_name": "Google Drive",
+  "title": "Drive API v3: Major Schema Hardening and Breaking Changes",
+  "summary": "Google Drive API v3 has introduced significant breaking changes by making numerous ID parameters strictly required and marking several schema properties as read-only.",
+  "details": "This update represents a major hardening of the Drive API surface. A wide array of parameters that were previously optional or implicitly handled are now strictly required, including `fileId`, `revisionId`, `commentId`, `permissionId`, `driveId`, `teamDriveId`, and `pageToken`. Developers must ensure these IDs are explicitly provided in all relevant method calls. \n\nAdditionally, many schema properties have been transitioned to read-only/immutable status. This includes sensitive or system-generated fields such as `User.emailAddress`, `File.exportLinks`, `Permission.permissionDetails`, and `Comment.mentionedEmailAddresses`. On the feature side, new OAuth2 scopes have been added, including a specific scope for Google Meet files (`drive.meet.readonly`).",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "security",
+    "scopes"
+  ],
+  "extracted_methods": [
+    "drive.meet.readonly"
+  ],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-25T03:00:00Z"
+}

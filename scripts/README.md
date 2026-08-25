@@ -26,7 +26,7 @@ python scripts/correlate_releases.py --project gcp-cloud-radar --database radar
 
 ### 3. Firestore Production Sync
 ```bash
-# Sync feed/ markdown entries into Cloud Firestore
+# Sync data/changes/*.json entries into Cloud Firestore
 python scripts/seed_prod_firestore.py --project gcp-cloud-radar --database radar
 ```
 
@@ -40,20 +40,20 @@ python scripts/seed_prod_firestore.py --project gcp-cloud-radar --database radar
 | [`diff_preprocessor.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/diff_preprocessor.py) | Flattens JSON schemas, strips metadata noise, and deterministically evaluates AIP-180 breaking rules. |
 | [`diff_to_feed.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/diff_to_feed.py) | Pipeline orchestrator: extracts diffs, queries Vertex AI Gemini, and formats feed updates. |
 | [`llm_client.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/llm_client.py) | Calls Vertex AI Gemini (`google-genai` SDK) using ADC / WIF credentials. |
-| [`feed_writer.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/feed_writer.py) | Writes daily Markdown updates to `feed/` and updates `feed/index.json`. |
+| [`feed_writer.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/feed_writer.py) | Writes structured JSON change records to `data/changes/` and updates `data/index.json`. |
 | [`correlate_releases.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/correlate_releases.py) | Scrapes public GCP release notes and computes empirical canary lead-time deltas. |
-| [`seed_prod_firestore.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/seed_prod_firestore.py) | Upserts change entries and radar quadrant data into Firestore. |
+| [`seed_prod_firestore.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/seed_prod_firestore.py) | Upserts JSON change documents into Cloud Firestore. |
 | [`taxonomy.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/taxonomy.py) | Curated GCP service categories, taxonomy groupings, and official documentation links. |
 | [`open_pr.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/open_pr.py) | Automated pull request creation via GitHub CLI (`gh`). |
 
 ---
 
-## 📄 Feed Output Artifacts (`feed/`)
+## 📄 Output Artifacts (`data/`)
 
-`feed_writer.py` generates structured Markdown entries and a central manifest in [`feed/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/feed):
+`feed_writer.py` generates structured JSON documents in [`data/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/data):
 
-- `YYYY-MM-DD-{service-api}.md`: Markdown report with YAML frontmatter (`title`, `service`, `category`, `impact`, `breaking`, `extractedMethods`, `lead_time_days`).
-- `index.json`: Chronological, newest-first catalog consumed by the Astro web build, RSS generation, and API endpoints.
+- `data/changes/YYYY-MM-DD-{service-api}.json`: Type-safe JSON record (`title`, `service`, `category`, `impact`, `breaking`, `extracted_methods`, `lead_time_days`, `summary`, `details`).
+- `data/index.json`: Chronological, newest-first catalog consumed by the Astro web build, RSS generation, and API endpoints.
 
 ---
 

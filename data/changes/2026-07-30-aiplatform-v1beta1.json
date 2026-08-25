@@ -1,0 +1,28 @@
+{
+  "id": "2026-07-30-aiplatform-v1beta1",
+  "slug": "2026-07-30-aiplatform-v1beta1",
+  "date": "2026-07-30",
+  "api": "aiplatform.v1beta1",
+  "service": "Vertex AI",
+  "service_name": "Vertex AI",
+  "title": "Vertex AI: Task Stores, Speech Transcription, and Model Proxies",
+  "summary": "Vertex AI expands agentic capabilities with Task Stores for decoupled task management and integrated speech-to-text transcription for generative models.",
+  "details": "The Reasoning Engine's A2A (Agent-to-Agent) task framework has been significantly updated; tasks can now be managed via a new `taskStores` resource path, decoupling task persistence from the execution engine. For Generative AI workflows, a new `transcriptionConfig` in `GenaiVertexV1beta1GenerationConfig` enables integrated speech recognition (ASR). Additionally, the API introduces `publishers.v1.responses.compact`, a method for forwarding arbitrary HTTP requests to deployed models, supporting both streaming and non-streaming use cases. Agent monitoring has also been broadened, with `AgentResource` now supporting runtimes on Cloud Run, GKE, and GCE. Finally, a new `QUEUED` status has been added to interactions to represent tasks waiting for off-peak capacity.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "AI",
+    "Vertex AI",
+    "Agents",
+    "Generative AI",
+    "Speech"
+  ],
+  "extracted_methods": [
+    "publishers.v1.responses.compact"
+  ],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-07-30T03:00:00Z"
+}

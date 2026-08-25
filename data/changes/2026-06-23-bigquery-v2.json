@@ -1,0 +1,24 @@
+{
+  "id": "2026-06-23-bigquery-v2",
+  "slug": "2026-06-23-bigquery-v2",
+  "date": "2026-06-23",
+  "api": "bigquery.v2",
+  "service": "BigQuery",
+  "service_name": "BigQuery",
+  "title": "Python UDF concurrency documentation update",
+  "summary": "Updated documentation for Python UDF concurrency settings in ExternalRuntimeOptions, adding links to configuration guides.",
+  "details": "The description for `containerRequestConcurrency` within `ExternalRuntimeOptions` has been updated to provide a direct link to the official documentation for configuring container limits for Python UDFs. The wording was also slightly refined to refer to 'Python UDF instances' rather than 'container instances'.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 2,
+  "tags": [
+    "BigQuery",
+    "UDF",
+    "Python"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-06-23T03:00:00Z"
+}

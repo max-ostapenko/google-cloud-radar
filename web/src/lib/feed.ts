@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import matter from 'gray-matter';
 import { marked } from 'marked';
 
 export type ChangeStatus = 'canary' | 'released' | 'retracted' | 'deprecated';
@@ -196,15 +195,14 @@ export function getDiscoveryDirectoryMap(): Map<string, DiscoveryDirectoryItem> 
         const json = JSON.parse(fileContent);
         if (json && Array.isArray(json.items)) {
           for (const item of json.items) {
-            const rawId = (item.id || '').toLowerCase(); // e.g. "dataplex:v1"
+            const rawId = (item.id || '').toLowerCase();
             const name = (item.name || '').toLowerCase();
             const version = (item.version || '').toLowerCase();
-            const dotId = `${name}.${version}`; // e.g. "dataplex.v1"
+            const dotId = `${name}.${version}`;
 
             if (rawId) discoveryDirectoryMap.set(rawId, item);
             if (dotId) discoveryDirectoryMap.set(dotId, item);
 
-            // Name fallback if preferred or not yet set
             if (item.preferred || !discoveryDirectoryMap.has(name)) {
               discoveryDirectoryMap.set(name, item);
             }
@@ -224,7 +222,6 @@ export function getDiscoveryMetaForApi(apiOrService: string): { discoveryRestUrl
   const map = getDiscoveryDirectoryMap();
   const normalized = (apiOrService || '').trim().toLowerCase();
 
-  // Try direct key ("dataplex.v1", "dataplex:v1", "dataplex")
   let item = map.get(normalized);
   if (!item && normalized.includes('.')) {
     item = map.get(normalized.replace('.', ':'));
@@ -246,7 +243,6 @@ export function getDiscoveryMetaForApi(apiOrService: string): { discoveryRestUrl
     };
   }
 
-  // Fallback to standard Google discovery pattern
   if (normalized.includes('.')) {
     const [name, ver] = normalized.split('.');
     return {
@@ -276,7 +272,7 @@ const DB_HOST = process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080';
 const PROJECT_ID = process.env.GCP_PROJECT || 'gcp-cloud-radar';
 
 /**
- * Attempt to fetch changes live from Firestore / Mock REST Server
+ * Live Mock Firestore / Emulator REST Fetch
  */
 export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
   try {
@@ -344,13 +340,7 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         } catch {}
       }
 
-      const cleanDetailsMarkdown = detailsMarkdown
-        .replace(/^#\s+[^\n]+\n*/, '')
-        .replace(/\*\*Date:\*\*[\s\S]*?(?=##|$)/i, '')
-        .replace(/\*\*Tags:\*\*[\s\S]*$/m, '')
-        .trim();
-
-      const htmlContent = marked.parse(cleanDetailsMarkdown || detailsMarkdown || summary, { async: false }) as string;
+      const htmlContent = marked.parse(detailsMarkdown || summary, { async: false }) as string;
       const ecosystem = (f.ecosystem?.stringValue as Ecosystem) || getEcosystemForService(service || api);
       const category = (f.category?.stringValue as ServiceCategory) || getCategoryForService(service || api);
 
@@ -396,86 +386,61 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
   }
 }
 
-export function getFeedDir(): string {
-  const rootFeed = path.resolve(process.cwd(), '../feed');
-  if (fs.existsSync(rootFeed)) {
-    return rootFeed;
+export function getDataChangesDir(): string {
+  const candidates = [
+    path.resolve(process.cwd(), '../data/changes'),
+    path.resolve(process.cwd(), 'data/changes'),
+    path.resolve(process.cwd(), '../../data/changes'),
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return p;
   }
-  const localFeed = path.resolve(process.cwd(), 'feed');
-  if (fs.existsSync(localFeed)) {
-    return localFeed;
-  }
-  return rootFeed;
+  return candidates[0];
 }
 
 export function getLocalFeedEntries(): FeedEntry[] {
-  const feedDir = getFeedDir();
-  if (!fs.existsSync(feedDir)) {
+  const changesDir = getDataChangesDir();
+  if (!fs.existsSync(changesDir)) {
     return [];
   }
 
-  const files = fs.readdirSync(feedDir).filter((file) => file.endsWith('.md') && file !== 'README.md');
+  const files = fs.readdirSync(changesDir).filter((file) => file.endsWith('.json'));
   const entries: FeedEntry[] = [];
 
   for (const file of files) {
-    const filePath = path.join(feedDir, file);
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    const slug = file.replace(/\.md$/, '');
-
+    const filePath = path.join(changesDir, file);
     try {
-      const { data, content } = matter(fileContent);
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
+      const doc = JSON.parse(fileContent);
 
-      const service = data.service || data.service_name || data.api || 'Google Cloud';
+      const slug = doc.slug || doc.id || file.replace(/\.json$/, '');
+      const service = doc.service || doc.service_name || doc.api || 'Google Cloud';
       const service_id = slugify(service);
-      const api = data.api || file.split('-').slice(3).join('-').replace(/_v\d+$/, '');
+      const api = doc.api || slug.split('-').slice(3).join('-').replace(/_v\d+$/, '');
       const version = api.split('.').pop() || 'v1';
+      const dateStr = String(doc.date || slug.slice(0, 10)).slice(0, 10);
+      const impact = (doc.impact || 'medium').toLowerCase() as 'low' | 'medium' | 'high';
+      const breaking = Boolean(doc.breaking || doc.is_breaking);
+      const tags = Array.isArray(doc.tags) ? doc.tags : [];
+      const interesting_score = Number(doc.interesting_score ?? 5);
+      const summary = doc.summary || '';
+      const details = doc.details || summary;
+      const extractedMethods = Array.isArray(doc.extracted_methods) ? doc.extracted_methods : [];
 
-      let dateStr = file.slice(0, 10);
-      if (data.date instanceof Date) {
-        dateStr = data.date.toISOString().slice(0, 10);
-      } else if (typeof data.date === 'string') {
-        dateStr = data.date.slice(0, 10);
-      }
-
-      const impact = (data.impact || 'medium').toLowerCase() as 'low' | 'medium' | 'high';
-      const breaking = Boolean(data.breaking || data.is_breaking);
-      const tags = Array.isArray(data.tags) ? data.tags : [];
-      const interesting_score = Number(data.interesting_score ?? 5);
-
-      const methodMatches = content.match(/`([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+){2,})`/g) || [];
-      const extractedMethods = Array.from(
-        new Set(methodMatches.map((m) => m.replace(/`/g, '')))
-      ).slice(0, 6);
-
-      let summary = '';
-      const summaryMatch = content.match(/## Summary\s*\n\n([\s\S]*?)(?=\n##|$)/);
-      if (summaryMatch) {
-        summary = summaryMatch[1].trim();
-      } else {
-        const paragraphs = content.split('\n\n').filter((p) => !p.startsWith('#') && !p.startsWith('**') && p.trim());
-        summary = paragraphs[0] || '';
-      }
-
-      const cleanContent = content
-        .replace(/^#\s+[^\n]+\n*/, '')
-        .replace(/\*\*Date:\*\*[\s\S]*?(?=##|$)/i, '')
-        .replace(/\*\*Tags:\*\*[\s\S]*$/m, '')
-        .trim();
-
-      const htmlContent = marked.parse(cleanContent || summary || content, { async: false }) as string;
-      const ecosystem = (data.ecosystem as Ecosystem) || getEcosystemForService(service || api);
-      const category = (data.category as ServiceCategory) || getCategoryForService(service || api);
-      const status = (data.status || 'canary').toLowerCase() as ChangeStatus;
-      const radar_ring = (data.radar_ring || (breaking ? 'hold' : status === 'released' ? 'adopt' : 'assess')) as RadarRing;
+      const htmlContent = marked.parse(details || summary, { async: false }) as string;
+      const ecosystem = (doc.ecosystem as Ecosystem) || getEcosystemForService(service || api);
+      const category = (doc.category as ServiceCategory) || getCategoryForService(service || api);
+      const status = (doc.status || 'canary').toLowerCase() as ChangeStatus;
+      const radar_ring = (doc.radar_ring || (breaking ? 'hold' : status === 'released' ? 'adopt' : 'assess')) as RadarRing;
       const radar_quadrant: RadarQuadrant = category.includes('AI') ? 'ai_ml' : category.includes('FinOps') ? 'security_finops' : 'data_platforms';
-      const lead_time_days = data.lead_time_days ? Number(data.lead_time_days) : undefined;
-      const official_release_date = data.official_release_date ? String(data.official_release_date) : undefined;
-      const official_release_notes_url = data.official_release_notes_url ? String(data.official_release_notes_url) : undefined;
-      const stats = data.stats || undefined;
+      const lead_time_days = doc.lead_time_days ? Number(doc.lead_time_days) : undefined;
+      const official_release_date = doc.official_release_date ? String(doc.official_release_date) : undefined;
+      const official_release_notes_url = doc.official_release_notes_url ? String(doc.official_release_notes_url) : undefined;
+      const stats = doc.stats || undefined;
 
       const discoMeta = getDiscoveryMetaForApi(api || service);
-      const discoveryRestUrl = data.discovery_rest_url || discoMeta.discoveryRestUrl;
-      const documentationLink = data.documentation_link || discoMeta.documentationLink;
+      const discoveryRestUrl = doc.discovery_rest_url || discoMeta.discoveryRestUrl;
+      const documentationLink = doc.documentation_link || discoMeta.documentationLink;
 
       entries.push({
         slug,
@@ -484,7 +449,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
         version,
         service,
         service_id,
-        title: data.title || `${service} API Update`,
+        title: doc.title || `${service} API Update`,
         impact,
         breaking,
         tags,
@@ -501,7 +466,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
         stats,
         discoveryRestUrl,
         documentationLink,
-        rawContent: content,
+        rawContent: details,
         htmlContent,
         summary,
         detailsHtml: htmlContent,
@@ -510,7 +475,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
         category,
       });
     } catch (err) {
-      console.error(`Error parsing feed entry ${file}:`, err);
+      console.error(`Error parsing change JSON ${file}:`, err);
     }
   }
 
@@ -522,10 +487,11 @@ export function getLocalFeedEntries(): FeedEntry[] {
   });
 }
 
-/**
- * Universal getter: Fetches from live Firestore/Mock server if active, otherwise falls back to Markdown files
- */
 export async function getAllFeedEntries(): Promise<FeedEntry[]> {
+  const localEntries = getLocalFeedEntries();
+  if (localEntries && localEntries.length > 0) {
+    return localEntries;
+  }
   const dbEntries = await fetchFromFirestore();
   if (dbEntries && dbEntries.length > 0) {
     return dbEntries.sort((a, b) => {
@@ -533,7 +499,7 @@ export async function getAllFeedEntries(): Promise<FeedEntry[]> {
       return b.slug.localeCompare(a.slug);
     });
   }
-  return getLocalFeedEntries();
+  return [];
 }
 
 export async function getActiveDataSource(): Promise<{ type: 'database' | 'filesystem'; label: string }> {
@@ -541,7 +507,7 @@ export async function getActiveDataSource(): Promise<{ type: 'database' | 'files
   if (dbEntries && dbEntries.length > 0) {
     return { type: 'database', label: `Connected to Mock Firestore (localhost:${DB_HOST.split(':')[1] || '8080'})` };
   }
-  return { type: 'filesystem', label: 'Local Filesystem (feed/*.md)' };
+  return { type: 'filesystem', label: 'Local Filesystem (data/changes/*.json)' };
 }
 
 export async function getFeedEntryBySlug(slug: string): Promise<FeedEntry | undefined> {
@@ -597,14 +563,14 @@ export const MONITORED_SERVICES_LIST: { name: string; ecosystem: Ecosystem; cate
   { name: 'PageSpeed Insights', ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
   { name: 'Chrome UX Report', ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
 
+  // Personal
+  { name: 'Photos Library', ecosystem: 'Personal', category: 'Personal' },
+  { name: 'YouTube Data API', ecosystem: 'Personal', category: 'Personal' },
+
   // Chrome
   { name: 'Abusive Experience Report', ecosystem: 'Chrome', category: 'Chrome & Web' },
   { name: 'Ad Experience Report', ecosystem: 'Chrome', category: 'Chrome & Web' },
   { name: 'Version History', ecosystem: 'Chrome', category: 'Chrome & Web' },
-
-  // Personal
-  { name: 'Photos Library', ecosystem: 'Personal', category: 'Personal' },
-  { name: 'YouTube Data API', ecosystem: 'Personal', category: 'Personal' },
 
   // Android
   { name: 'Google Play Developer API', ecosystem: 'Android', category: 'Android' },
@@ -613,13 +579,13 @@ export const MONITORED_SERVICES_LIST: { name: string; ecosystem: Ecosystem; cate
   { name: 'Discovery Service', ecosystem: 'More', category: 'More' },
   { name: 'Safe Browsing', ecosystem: 'More', category: 'Security' },
   { name: 'Web Risk', ecosystem: 'More', category: 'Security' },
+  { name: 'Library Agent', ecosystem: 'More', category: 'More' },
 ];
 
 export async function getServicesList(): Promise<ServiceInfo[]> {
   const entries = await getAllFeedEntries();
   const map = new Map<string, { service: string; count: number; breakingCount: number; ecosystem: Ecosystem; category: ServiceCategory }>();
 
-  // 1. Seed with all monitored services from taxonomy
   for (const item of MONITORED_SERVICES_LIST) {
     const slug = slugify(item.name);
     map.set(slug, {
@@ -631,7 +597,6 @@ export async function getServicesList(): Promise<ServiceInfo[]> {
     });
   }
 
-  // 2. Tally updates from actual feed entries
   for (const entry of entries) {
     const slug = slugify(entry.service);
     const existing = map.get(slug) || {

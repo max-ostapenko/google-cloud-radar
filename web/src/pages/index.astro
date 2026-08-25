@@ -100,11 +100,13 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
   </div>
 </BaseLayout>
 
-<script is:inline>
-  // Client-side instant filtering & search logic
-  const searchInput = document.getElementById('global-search-input');
+<script>
+  import MiniSearch from 'minisearch';
+
+  // Client-side instant filtering & search logic with MiniSearch
+  const searchInput = document.getElementById('global-search-input') as HTMLInputElement;
   const pillButtons = document.querySelectorAll('.pill-btn');
-  const cards = document.querySelectorAll('.change-card');
+  const cards = document.querySelectorAll('.change-card') as NodeListOf<HTMLElement>;
   const resultsCountText = document.getElementById('results-count-text');
   const noResults = document.getElementById('no-results');
   const clearBtn = document.getElementById('clear-search-btn');
@@ -112,14 +114,67 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
   let activeFilter = 'all';
   let searchQuery = '';
 
+  // Initialize MiniSearch Index with all rendered cards
+  const documents: any[] = [];
+  cards.forEach((card) => {
+    const slug = card.getAttribute('data-slug') || '';
+    const title = card.querySelector('.change-title')?.textContent || '';
+    const service = card.querySelector('.service-name')?.textContent || '';
+    const summary = card.querySelector('.change-summary')?.textContent || '';
+    const category = card.getAttribute('data-category') || '';
+    const text = card.getAttribute('data-text') || '';
+    const breaking = card.getAttribute('data-breaking') === 'true';
+    const impact = card.getAttribute('data-impact') || 'medium';
+
+    documents.push({
+      id: slug,
+      slug,
+      title,
+      service,
+      summary,
+      category,
+      text,
+      breaking,
+      impact,
+    });
+  });
+
+  const miniSearch = new MiniSearch({
+    fields: ['text', 'title', 'service', 'summary', 'category', 'slug'],
+    storeFields: ['id'],
+    searchOptions: {
+      boost: {
+        service: 3.0,
+        title: 2.5,
+        text: 1.8,
+        summary: 1.0,
+      },
+      fuzzy: 0.25,
+      prefix: true,
+      combineWith: 'AND',
+    },
+  });
+
+  miniSearch.addAll(documents);
+
   function applyFilters() {
+    let matchedIds: Set<string> | null = null;
+
+    if (searchQuery.trim()) {
+      const searchResults = miniSearch.search(searchQuery.trim(), {
+        fuzzy: 0.25,
+        prefix: true,
+      });
+      matchedIds = new Set(searchResults.map((r) => r.id));
+    }
+
     let visibleCount = 0;
 
     cards.forEach((card) => {
+      const slug = card.getAttribute('data-slug') || '';
       const cardBreaking = card.getAttribute('data-breaking') === 'true';
       const cardImpact = card.getAttribute('data-impact');
       const cardCategory = (card.getAttribute('data-category') || '').toLowerCase();
-      const cardText = card.getAttribute('data-text') || '';
 
       // Check Pill Filter
       let matchesPill = true;
@@ -133,10 +188,10 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
         matchesPill = cardCategory.includes('data') || cardCategory.includes('platform') || cardCategory.includes('analytics');
       }
 
-      // Check Search Query
+      // Check MiniSearch Match
       let matchesSearch = true;
-      if (searchQuery.trim()) {
-        matchesSearch = cardText.includes(searchQuery.trim().toLowerCase());
+      if (matchedIds !== null) {
+        matchesSearch = matchedIds.has(slug);
       }
 
       if (matchesPill && matchesSearch) {
@@ -168,8 +223,8 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
 
   // Search input handler
   if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      searchQuery = e.target.value;
+    searchInput.addEventListener('input', (e: Event) => {
+      searchQuery = (e.target as HTMLInputElement).value;
       applyFilters();
     });
   }

@@ -1,0 +1,24 @@
+{
+  "id": "2026-06-21-pagespeedonline-v5",
+  "slug": "2026-06-21-pagespeedonline-v5",
+  "date": "2026-06-21",
+  "api": "pagespeedonline.v5",
+  "service": "PageSpeed Insights",
+  "service_name": "PageSpeed Insights",
+  "title": "New Agentic Browsing Lighthouse Category",
+  "summary": "PageSpeed Insights has introduced a new 'agentic-browsing' category to its Lighthouse audit results.",
+  "details": "The schema for Categories now includes an `agentic-browsing` property (type LighthouseCategoryV5). This addition indicates that Lighthouse is beginning to track and group audits specifically related to how autonomous agents or AI-driven browsers interact with web content, expanding the API's scope beyond traditional human-centric performance and accessibility metrics.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 5,
+  "tags": [
+    "lighthouse",
+    "performance",
+    "ai-agents"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-06-21T03:00:00Z"
+}

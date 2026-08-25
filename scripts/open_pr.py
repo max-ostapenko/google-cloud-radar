@@ -29,7 +29,7 @@ PULL_REQUEST_BODY = "Automatically created by the update_disco script."
 APPROVAL_MESSAGE = "Rubber-stamped automated update of discovery documents!"
 MAIN_TOKEN_ENV = "GITHUB_TOKEN"
 APPROVAL_TOKEN_ENV = "APPROVAL_GITHUB_TOKEN"
-CHANGE_SCOPE_PATHS = ["discoveries"]
+CHANGE_SCOPE_PATHS = ["discoveries", "data"]
 
 
 def main() -> None:

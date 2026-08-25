@@ -1,0 +1,24 @@
+{
+  "id": "2026-06-21-tagmanager-v2",
+  "slug": "2026-06-21-tagmanager-v2",
+  "date": "2026-06-21",
+  "api": "tagmanager.v2",
+  "service": "Tag Manager",
+  "service_name": "Tag Manager",
+  "title": "Deprecation of Destination methods in Tag Manager",
+  "summary": "Google Tag Manager has officially marked the 'get' and 'link' methods for the destinations resource as deprecated.",
+  "details": "The Tag Manager API has flagged two methods within the destinations resource as deprecated: accounts.containers.destinations.get and accounts.containers.destinations.link. While these methods are still currently available, the deprecation status indicates that developers should begin looking for alternative ways to manage container destinations as these endpoints may be removed in a future revision.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 5,
+  "tags": [
+    "deprecation",
+    "tag-manager",
+    "api-lifecycle"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-06-21T03:00:00Z"
+}
