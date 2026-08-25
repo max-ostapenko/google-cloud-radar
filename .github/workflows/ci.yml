@@ -9,7 +9,8 @@ on:
       - "tests/**"
       - ".github/workflows/ci.yml"
       - "requirements.txt"
-      - "setup.py"
+permissions:
+  contents: read
 
 jobs:
   CI:
