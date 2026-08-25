@@ -104,14 +104,14 @@
     "service_name": "Android Publisher",
     "title": "Massive Schema Tightening and New Data Safety Method",
     "impact": "high",
-    "breaking": true,
+    "breaking": false,
     "tags": [
       "breaking change",
       "google play",
       "android"
     ],
     "interesting_score": 9,
-    "generated_at": "2026-08-25T10:38:48.540214+00:00"
+    "generated_at": "2026-08-25T15:46:56.594971+00:00"
   },
   {
     "slug": "2026-08-25-admin-reports-v1",
