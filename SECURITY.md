@@ -20,15 +20,13 @@ The following active components are in scope for security updates:
 
 If you discover a potential security vulnerability in Google Cloud Radar, please report it responsibly so we can investigate and address it before public disclosure.
 
-### Preferred Method: GitHub Private Vulnerability Reporting
+### Reporting via GitHub Private Vulnerability Reporting
 Please use GitHub's private vulnerability reporting feature:
-1. Navigate to the repository's **Security** tab.
+1. Navigate to the repository's **[Security](../../security)** tab.
 2. Click **Report a vulnerability** under **Advisories**.
 3. Fill out the report details with a description and proof of concept (PoC).
 
-### Alternative Method: Email
-If you are unable to use GitHub Security Advisories, email **`max@google-cloud-radar.com`** (or open a confidential inquiry) with the subject:
-`[SECURITY] Vulnerability Report: <Brief Description>`
+This opens a confidential, private advisory workspace with the maintainers without exposing any personal contact information.
 
 ### What to Include
 To help us triage and resolve the issue quickly, please include:
