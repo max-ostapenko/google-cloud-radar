@@ -42,7 +42,7 @@ Changes transition through four lifecycle states:
 
 | Status | Meaning | UI Badge |
 |---|---|---|
-| `canary` | Detected in Google Discovery control plane; not yet in official release notes. | 🟡 `CANARY` |
+| `canary` | Detected in Google Discovery APIs; not yet in official release notes. | 🟡 `CANARY` |
 | `released` | Confirmed published in official Google Cloud release notes. | 🟢 `RELEASED (X days lead time)` |
 | `retracted` | Method appeared in Discovery and was removed before release. | ⚪ `RETRACTED` |
 | `deprecated` | Existing API method or enum marked for shutdown. | 🔴 `DEPRECATED` |

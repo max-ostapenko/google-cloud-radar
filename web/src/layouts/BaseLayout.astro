@@ -90,10 +90,10 @@ const jsonLd = schemaData ? JSON.stringify(schemaData) : JSON.stringify(defaultS
       )}
       <main class="main-container">
         <slot />
+        <Footer />
       </main>
     </div>
 
-    <Footer />
 
     <script is:inline>
       // Global copy-to-clipboard handler for method buttons

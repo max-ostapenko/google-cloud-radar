@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ChangeCard from '../../components/ChangeCard.astro';
-import { getAllFeedEntries, getServicesList, slugify, type FeedEntry } from '../../lib/feed';
+import { getAllFeedEntries, getServicesList, slugify, getDiscoveryMetaForApi, type FeedEntry } from '../../lib/feed';
 
 export async function getStaticPaths() {
   const services = await getServicesList();
@@ -36,6 +36,20 @@ const { serviceInfo, entries } = Astro.props;
 const breakingCount = entries.filter((e) => e.breaking).length;
 const highImpactCount = entries.filter((e) => e.impact === 'high').length;
 const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
+
+// Resolve official docs and discovery URLs
+const primaryDocLink = entries.find((e) => e.documentationLink)?.documentationLink || 
+  getDiscoveryMetaForApi(serviceInfo.service).documentationLink || 
+  getDiscoveryMetaForApi(apisUsed[0] || '').documentationLink;
+
+const apisWithMeta = apisUsed.map((api) => {
+  const meta = getDiscoveryMetaForApi(api);
+  return {
+    api,
+    discoveryRestUrl: meta.discoveryRestUrl || `https://${api.split('.')[0]}.googleapis.com/$discovery/rest?version=${api.split('.')[1] || 'v1'}`,
+    documentationLink: meta.documentationLink,
+  };
+});
 ---
 
 <BaseLayout
@@ -52,18 +66,35 @@ const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
           <span class="category-badge">{serviceInfo.category}</span>
           <h1 class="service-title">{serviceInfo.service}</h1>
           <p class="service-desc">
-            Discovery control plane monitoring and real-time diff analysis for <strong>{serviceInfo.service}</strong>.
+            Discovery API monitoring and real-time diff analysis for <strong>{serviceInfo.service}</strong>.
           </p>
         </div>
 
         <div class="service-actions">
+          {primaryDocLink && (
+            <a 
+              href={primaryDocLink} 
+              class="service-action-btn primary-doc-btn" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              title={`Official documentation for ${serviceInfo.service}`}
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              <span>Official Docs</span>
+            </a>
+          )}
+
           <a href={`/services/${serviceInfo.slug}/rss.xml`} class="service-rss-btn" target="_blank" title={`Subscribe to ${serviceInfo.service} RSS Feed`}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 11a9 9 0 0 1 9 9"></path>
               <path d="M4 4a16 16 0 0 1 16 16"></path>
               <circle cx="5" cy="19" r="1"></circle>
             </svg>
-            <span>{serviceInfo.service} RSS</span>
+            <span>RSS</span>
           </a>
           <a href={`/services/${serviceInfo.slug}/feed.json`} class="service-json-btn" target="_blank" title={`View ${serviceInfo.service} JSON API`}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
@@ -92,10 +123,19 @@ const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
           <span class="stat-lbl">High Impact</span>
         </div>
         <div class="stat-card apis-stat">
-          <span class="stat-apis-title">Tracked API Revisions:</span>
+          <span class="stat-apis-title">Tracked Discovery APIs (Raw JSON):</span>
           <div class="apis-pills">
-            {apisUsed.map((api) => (
-              <code class="api-pill">{api}</code>
+            {apisWithMeta.map((item) => (
+              <a 
+                href={item.discoveryRestUrl} 
+                class="api-pill-link" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                title={`View Raw Google Discovery REST specification for ${item.api}`}
+              >
+                <code class="api-pill-name">{item.api}</code>
+                <span class="api-pill-ext">JSON ↗</span>
+              </a>
             ))}
           </div>
         </div>
@@ -121,7 +161,7 @@ const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
             No method additions or breaking changes have been detected for <strong>{serviceInfo.service}</strong> yet.
           </p>
           <p class="no-changes-sub">
-            Google Cloud Radar tracks the Google Discovery Service continuously. Any control plane changes will automatically appear here.
+            Google Cloud Radar tracks the Google Discovery Service continuously. Any API changes will automatically appear here.
           </p>
         </div>
       )}
@@ -186,6 +226,7 @@ const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
     flex-wrap: wrap;
   }
 
+  .service-action-btn,
   .service-rss-btn,
   .service-json-btn {
     display: inline-flex;
@@ -193,7 +234,7 @@ const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
     gap: 6px;
     font-size: 12px;
     font-weight: 600;
-    color: var(--google-blue);
+    color: var(--text-primary);
     background-color: var(--bg-surface);
     border: 1px solid var(--border-subtle);
     padding: 6px 12px;
@@ -202,17 +243,24 @@ const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
     transition: all 0.15s ease;
   }
 
+  .service-action-btn:hover,
   .service-rss-btn:hover,
   .service-json-btn:hover {
     background-color: var(--google-blue-subtle);
     border-color: var(--google-blue);
+    color: var(--google-blue);
     text-decoration: none;
   }
 
-  .service-rss-btn:hover {
-    background-color: var(--google-blue-subtle);
+  .primary-doc-btn {
+    color: var(--google-blue);
     border-color: var(--google-blue-border);
-    text-decoration: none;
+    background-color: var(--google-blue-subtle);
+  }
+
+  .primary-doc-btn:hover {
+    background-color: #d2e3fc;
+    border-color: var(--google-blue);
   }
 
   .service-stats-grid {
@@ -282,14 +330,42 @@ const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
     flex-wrap: wrap;
   }
 
-  .api-pill {
-    font-family: var(--font-mono);
-    font-size: 11px;
+  .api-pill-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     background-color: var(--bg-surface-hover);
-    padding: 2px 6px;
+    padding: 3px 8px;
     border-radius: 4px;
     border: 1px solid var(--border-subtle);
-    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .api-pill-link:hover {
+    background-color: var(--google-blue-subtle);
+    border-color: var(--google-blue);
+    text-decoration: none;
+  }
+
+  .api-pill-name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-primary);
+  }
+
+  .api-pill-link:hover .api-pill-name {
+    color: var(--google-blue);
+  }
+
+  .api-pill-ext {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--google-blue);
+    background: var(--google-blue-subtle);
+    padding: 1px 4px;
+    border-radius: 2px;
   }
 
   .timeline-header {

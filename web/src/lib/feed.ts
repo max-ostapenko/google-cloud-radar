@@ -344,7 +344,13 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         } catch {}
       }
 
-      const htmlContent = marked.parse(detailsMarkdown, { async: false }) as string;
+      const cleanDetailsMarkdown = detailsMarkdown
+        .replace(/^#\s+[^\n]+\n*/, '')
+        .replace(/\*\*Date:\*\*[\s\S]*?(?=##|$)/i, '')
+        .replace(/\*\*Tags:\*\*[\s\S]*$/m, '')
+        .trim();
+
+      const htmlContent = marked.parse(cleanDetailsMarkdown || detailsMarkdown || summary, { async: false }) as string;
       const ecosystem = (f.ecosystem?.stringValue as Ecosystem) || getEcosystemForService(service || api);
       const category = (f.category?.stringValue as ServiceCategory) || getCategoryForService(service || api);
 
@@ -450,7 +456,13 @@ export function getLocalFeedEntries(): FeedEntry[] {
         summary = paragraphs[0] || '';
       }
 
-      const htmlContent = marked.parse(content, { async: false }) as string;
+      const cleanContent = content
+        .replace(/^#\s+[^\n]+\n*/, '')
+        .replace(/\*\*Date:\*\*[\s\S]*?(?=##|$)/i, '')
+        .replace(/\*\*Tags:\*\*[\s\S]*$/m, '')
+        .trim();
+
+      const htmlContent = marked.parse(cleanContent || summary || content, { async: false }) as string;
       const ecosystem = (data.ecosystem as Ecosystem) || getEcosystemForService(service || api);
       const category = (data.category as ServiceCategory) || getCategoryForService(service || api);
       const status = (data.status || 'canary').toLowerCase() as ChangeStatus;

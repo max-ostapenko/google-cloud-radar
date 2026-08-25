@@ -10,7 +10,7 @@ export const GET: APIRoute = async () => {
     '',
     '## About',
     'Google Cloud Radar continuously monitors and diffs Google Discovery Service documents via GitHub Actions and Gemini.',
-    'It captures breaking changes, parameter deprecations, and newly deployed control plane methods before they reach official release notes.',
+    'It captures breaking changes, parameter deprecations, and newly deployed API methods before they reach official release notes.',
     '',
     '## Repository',
     'https://github.com/max-ostapenko/discovery-artifact-manager',

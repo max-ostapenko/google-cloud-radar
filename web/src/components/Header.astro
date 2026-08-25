@@ -17,7 +17,6 @@ const { currentPath = '/' } = Astro.props;
       </div>
       <div class="brand-text">
         <span class="brand-title">Google Cloud <span class="brand-highlight">Radar</span></span>
-        <span class="canary-tag">Pre-Release Canary</span>
       </div>
     </a>
   </div>
@@ -45,17 +44,6 @@ const { currentPath = '/' } = Astro.props;
         <span class="breaking-dot"></span> Breaking
       </a>
       <a href="/stats" class={currentPath === '/stats' ? 'active' : ''}>Stats</a>
-      <a href="/rss.xml" class="icon-link" title="Global RSS Feed" target="_blank">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 11a9 9 0 0 1 9 9"></path>
-          <path d="M4 4a16 16 0 0 1 16 16"></path>
-          <circle cx="5" cy="19" r="1"></circle>
-        </svg>
-        <span>RSS</span>
-      </a>
-      <a href="/api/feed.json" class="icon-link" title="Public JSON Feed API" target="_blank">
-        <span class="json-tag">&#123; JSON &#125;</span>
-      </a>
     </nav>
 
     <div class="auth-header-container" id="headerAuthContainer">
@@ -71,7 +59,7 @@ const { currentPath = '/' } = Astro.props;
 
       <div id="headerUserMenu" class="user-menu" style="display: none;">
         <button id="userAvatarBtn" class="user-avatar-btn" aria-label="Open user menu" type="button">
-          <img id="headerUserAvatar" src="" alt="User avatar" class="header-avatar-img" />
+          <img id="headerUserAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%235f6368'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" alt="User avatar" class="header-avatar-img" />
         </button>
         <div id="userDropdown" class="user-dropdown" style="display: none;">
           <div class="user-dropdown-header">
@@ -90,23 +78,6 @@ const { currentPath = '/' } = Astro.props;
         </div>
       </div>
     </div>
-
-    <button id="theme-toggle" class="theme-btn" aria-label="Toggle dark mode" title="Toggle Theme">
-      <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-        <circle cx="12" cy="12" r="5"/>
-        <line x1="12" y1="1" x2="12" y2="3"/>
-        <line x1="12" y1="21" x2="12" y2="23"/>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-        <line x1="1" y1="12" x2="3" y2="12"/>
-        <line x1="21" y1="12" x2="23" y2="12"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-      </svg>
-      <svg class="moon-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>
-    </button>
   </div>
 </header>
 

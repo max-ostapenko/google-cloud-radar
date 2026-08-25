@@ -9,30 +9,34 @@ const { slug } = Astro.props;
 <section class="discussions-section" data-slug={slug} id="comments">
   <div class="discussions-header">
     <div class="discussions-title-group">
-      <h2 class="discussions-title">
+      <div class="discussions-icon-wrap">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
-        <span>Developer Discussion</span>
-      </h2>
-      <span class="comments-count" id="commentsCount">0 comments</span>
+      </div>
+      <div>
+        <h2 class="discussions-title">
+          <span>Developer Discussion</span>
+          <span class="comments-count" id="commentsCount">0 comments</span>
+        </h2>
+        <p class="discussions-desc">Share implementation notes, workarounds, or migration advice regarding this API change.</p>
+      </div>
     </div>
-    <span class="discussions-desc">Share feedback, workarounds, or implementation notes regarding this API change.</span>
   </div>
 
   <!-- Sign In Prompt / Comment Box -->
-  <div class="comment-box-card">
+  <div class="comment-composer-card">
     <div class="logged-out-state" id="authLoggedOut">
       <div class="auth-prompt-content">
         <div class="auth-icon-circle">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
         </div>
         <div class="auth-prompt-text">
           <strong>Join the Discussion</strong>
-          <span>Sign in with your Google account to post comments and coordinate with GCP engineers.</span>
+          <span>Sign in with Google to post comments and collaborate with other GCP engineers.</span>
         </div>
       </div>
       <button class="google-signin-btn" id="discussionSignInBtn" type="button">
@@ -47,30 +51,56 @@ const { slug } = Astro.props;
     </div>
 
     <div class="logged-in-state" id="authLoggedIn" style="display: none;">
-      <div class="comment-author-bar">
-        <img class="user-avatar" id="currentUserAvatar" src="" alt="User avatar" />
-        <span class="user-name" id="currentUserName">Google User</span>
+      <div class="composer-header">
+        <div class="comment-author-bar">
+          <img class="user-avatar" id="currentUserAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%235f6368'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" alt="User avatar" />
+          <div class="author-identity">
+            <span class="user-name" id="currentUserName">GCP Engineer</span>
+            <span class="author-role-badge">Verified Engineer</span>
+          </div>
+        </div>
       </div>
+
       <form id="commentForm" class="comment-form">
         <textarea
           id="commentInput"
           class="comment-textarea"
-          placeholder="Add a comment or share how your team is handling this change..."
+          placeholder="Share your migration strategy, breaking impact, or notes for this API change... (Markdown & `code` supported)"
           rows="3"
           required
         ></textarea>
         <div class="form-bottom">
-          <span class="form-hint">Markdown supported • Be respectful and constructive</span>
-          <button type="submit" class="submit-comment-btn" id="submitCommentBtn">Post Comment</button>
+          <div class="form-hints">
+            <span class="form-hint">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+              Use `code` or ```blocks```
+            </span>
+          </div>
+          <button type="submit" class="submit-comment-btn" id="submitCommentBtn">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            <span>Post Comment</span>
+          </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Comments List -->
+  <!-- Comments Stream -->
   <div class="comments-list" id="commentsList">
     <div class="no-comments-state" id="noCommentsMsg">
-      <span>No discussions yet. Be the first GCP engineer to leave a comment!</span>
+      <div class="empty-icon-wrap">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+        </svg>
+      </div>
+      <strong>No discussions yet</strong>
+      <p>Be the first GCP developer to leave an engineering note or verification status for this change!</p>
     </div>
   </div>
 </section>
@@ -85,6 +115,51 @@ const { slug } = Astro.props;
     deleteComment as deleteFirestoreComment,
     type CommentItem,
   } from '../lib/firebase';
+
+  function formatRelativeTime(dateInput: any): string {
+    const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+    if (isNaN(date.getTime())) return 'just now';
+    const now = new Date();
+    const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (diffSec < 45) return 'just now';
+    if (diffSec < 3600) return `${Math.max(1, Math.floor(diffSec / 60))}m ago`;
+    if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+    if (diffSec < 604800) return `${Math.floor(diffSec / 86400)}d ago`;
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+    });
+  }
+
+  function formatCommentBody(text: string): string {
+    if (!text) return '';
+    // Sanitize HTML
+    let sanitized = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // Format multiline code blocks ```code```
+    sanitized = sanitized.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_m, _lang, code) => {
+      return `<pre class="comment-code-block"><code>${code.trim()}</code></pre>`;
+    });
+
+    // Format inline `code`
+    sanitized = sanitized.replace(/`([^`]+)`/g, '<code class="comment-inline-code">$1</code>');
+
+    // Format bold **text**
+    sanitized = sanitized.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+    // Format italic *text*
+    sanitized = sanitized.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+    // Format URLs
+    sanitized = sanitized.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="comment-link">$1</a>');
+
+    // Line breaks
+    return sanitized.replace(/\n/g, '<br/>');
+  }
 
   function initDiscussions() {
     const section = document.querySelector('.discussions-section') as HTMLElement;
@@ -103,6 +178,7 @@ const { slug } = Astro.props;
     const commentsList = document.getElementById('commentsList');
     const commentsCount = document.getElementById('commentsCount');
     const noCommentsMsg = document.getElementById('noCommentsMsg');
+    const submitBtn = document.getElementById('submitCommentBtn') as HTMLButtonElement;
 
     let currentUser: any = null;
     let comments: CommentItem[] = [];
@@ -113,51 +189,81 @@ const { slug } = Astro.props;
       }
 
       if (noCommentsMsg) {
-        noCommentsMsg.style.display = comments.length === 0 ? 'block' : 'none';
+        noCommentsMsg.style.display = comments.length === 0 ? 'flex' : 'none';
       }
 
-      const commentCards = comments.map((c) => `
-        <div class="comment-card" id="comment-${c.id}">
-          <div class="comment-top">
-            <div class="comment-author-info">
-              <div class="comment-avatar-circle">
-                ${c.author_photo ? `<img src="${c.author_photo}" alt="${c.author_name}" class="author-img"/>` : c.author_name.charAt(0).toUpperCase()}
+      if (!commentsList) return;
+
+      if (comments.length === 0) {
+        commentsList.innerHTML = `
+          <div class="no-comments-state">
+            <div class="empty-icon-wrap">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+              </svg>
+            </div>
+            <strong>No discussions yet</strong>
+            <p>Be the first GCP developer to leave an engineering note or verification status for this change!</p>
+          </div>
+        `;
+        return;
+      }
+
+      const commentCards = comments.map((c) => {
+        const isAuthor = currentUser && (currentUser.uid === c.author_id);
+        const relTime = formatRelativeTime(c.created_at);
+        const fullTime = new Date(c.created_at).toLocaleString();
+        const formattedBody = formatCommentBody(c.content);
+
+        return `
+          <div class="comment-card" id="comment-${c.id}">
+            <div class="comment-card-header">
+              <div class="comment-author-info">
+                <div class="comment-avatar-circle">
+                  ${c.author_photo ? `<img src="${c.author_photo}" alt="${c.author_name}" class="author-img"/>` : c.author_name.charAt(0).toUpperCase()}
+                </div>
+                <div class="author-details">
+                  <div class="author-name-row">
+                    <span class="author-display-name">${c.author_name}</span>
+                    <span class="author-badge">GCP Dev</span>
+                  </div>
+                  <time class="comment-time" title="${fullTime}">${relTime}</time>
+                </div>
               </div>
-              <div class="author-details">
-                <span class="author-display-name">${c.author_name}</span>
-                <time class="comment-time">${new Date(c.created_at).toLocaleDateString()} ${new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
+              <div class="comment-header-actions">
+                ${isAuthor ? `
+                  <button class="delete-comment-btn" data-comment-id="${c.id}" title="Delete your comment" aria-label="Delete comment">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    <span>Delete</span>
+                  </button>
+                ` : ''}
               </div>
             </div>
-            ${currentUser && currentUser.uid === c.author_id ? `
-              <button class="delete-comment-btn" data-comment-id="${c.id}" title="Delete comment">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-              </button>
-            ` : ''}
+            <div class="comment-body">${formattedBody}</div>
           </div>
-          <div class="comment-body">${c.content.replace(/\n/g, '<br/>')}</div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
-      if (commentsList) {
-        commentsList.innerHTML = comments.length > 0 ? commentCards : '<div class="no-comments-state">No discussions yet. Be the first GCP engineer to leave a comment!</div>';
+      commentsList.innerHTML = commentCards;
 
-        // Attach delete listeners
-        commentsList.querySelectorAll('.delete-comment-btn').forEach((btn) => {
-          btn.addEventListener('click', async () => {
-            const commentId = btn.getAttribute('data-comment-id');
-            if (commentId) {
-              await deleteFirestoreComment(slug, commentId).catch(() => {});
-            }
-          });
+      // Attach delete listeners
+      commentsList.querySelectorAll('.delete-comment-btn').forEach((btn) => {
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const commentId = btn.getAttribute('data-comment-id');
+          if (commentId && confirm('Delete this comment?')) {
+            btn.setAttribute('disabled', 'true');
+            await deleteFirestoreComment(slug, commentId).catch(() => {});
+          }
         });
-      }
+      });
     }
 
-    // Subscribe to real-time Firestore comments
-    const unsubscribe = listenToComments(slug, (liveComments) => {
+    // Subscribe to comments
+    listenToComments(slug, (liveComments) => {
       comments = liveComments;
       renderComments();
     });
@@ -172,12 +278,20 @@ const { slug } = Astro.props;
 
     commentForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (commentInput.value.trim() && currentUser) {
-        const text = commentInput.value.trim();
-        commentInput.value = '';
-        await addFirestoreComment(slug, currentUser, text).catch((err) => {
+      const text = commentInput.value.trim();
+      if (text && currentUser) {
+        commentInput.disabled = true;
+        if (submitBtn) submitBtn.disabled = true;
+        try {
+          await addFirestoreComment(slug, currentUser, text);
+          commentInput.value = '';
+        } catch (err) {
           console.error('Failed to save comment:', err);
-        });
+        } finally {
+          commentInput.disabled = false;
+          if (submitBtn) submitBtn.disabled = false;
+          commentInput.focus();
+        }
       }
     });
 
@@ -187,7 +301,7 @@ const { slug } = Astro.props;
         if (authLoggedOut) authLoggedOut.style.display = 'none';
         if (authLoggedIn) authLoggedIn.style.display = 'block';
         if (userAvatar) userAvatar.src = user.photoURL || 'https://www.gstatic.com/images/branding/product/2x/avatar_square_blue_512dp.png';
-        if (userName) userName.textContent = user.displayName || user.email || 'Google User';
+        if (userName) userName.textContent = user.displayName || user.email || 'GCP Engineer';
       } else {
         if (authLoggedOut) authLoggedOut.style.display = 'flex';
         if (authLoggedIn) authLoggedIn.style.display = 'none';
@@ -202,9 +316,10 @@ const { slug } = Astro.props;
 
 <style>
   .discussions-section {
-    margin-top: 40px;
-    padding-top: 32px;
+    margin-top: 36px;
+    padding-top: 28px;
     border-top: 1px solid var(--border-subtle);
+    scroll-margin-top: 80px;
   }
 
   .discussions-header {
@@ -213,19 +328,31 @@ const { slug } = Astro.props;
 
   .discussions-title-group {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
-    margin-bottom: 4px;
+  }
+
+  .discussions-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
   }
 
   .discussions-title {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 18px;
+    gap: 10px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--text-primary);
-    margin: 0;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.2px;
   }
 
   .comments-count {
@@ -233,6 +360,7 @@ const { slug } = Astro.props;
     font-family: var(--font-mono);
     color: var(--google-blue);
     background-color: var(--google-blue-subtle);
+    border: 1px solid var(--google-blue-border);
     padding: 2px 8px;
     border-radius: var(--radius-full);
     font-weight: 600;
@@ -241,14 +369,17 @@ const { slug } = Astro.props;
   .discussions-desc {
     font-size: 13px;
     color: var(--text-secondary);
+    margin: 0;
   }
 
-  .comment-box-card {
+  /* Composer Card */
+  .comment-composer-card {
     background-color: var(--bg-surface);
     border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     padding: 20px;
     margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
   }
 
   .logged-out-state {
@@ -262,12 +393,12 @@ const { slug } = Astro.props;
   .auth-prompt-content {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
   }
 
   .auth-icon-circle {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     background-color: var(--google-blue-subtle);
     color: var(--google-blue);
@@ -292,7 +423,7 @@ const { slug } = Astro.props;
   .google-signin-btn {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     background-color: #ffffff;
     color: #3c4043;
     border: 1px solid #dadce0;
@@ -309,26 +440,53 @@ const { slug } = Astro.props;
     background-color: #f8f9fa;
     border-color: #bdc1c6;
     box-shadow: 0 1px 3px rgba(60,64,67,0.2);
+    transform: translateY(-1px);
+  }
+
+  .composer-header {
+    margin-bottom: 12px;
   }
 
   .comment-author-bar {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 12px;
   }
 
   .user-avatar {
-    width: 28px;
-    height: 28px;
+    display: block;
+    width: 32px;
+    min-width: 32px;
+    max-width: 32px;
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
     border-radius: 50%;
     object-fit: cover;
+    border: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+  }
+
+  .author-identity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .user-name {
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-primary);
+  }
+
+  .author-role-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--google-blue);
+    background-color: var(--google-blue-subtle);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--google-blue-border);
   }
 
   .comment-textarea {
@@ -336,36 +494,51 @@ const { slug } = Astro.props;
     background-color: var(--bg-page);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
-    padding: 12px;
+    padding: 12px 14px;
     font-family: inherit;
     font-size: 14px;
     color: var(--text-primary);
     resize: vertical;
     outline: none;
-    transition: border-color 0.15s ease;
+    transition: all 0.15s ease;
     box-sizing: border-box;
+    min-height: 80px;
+    line-height: 1.5;
   }
 
   .comment-textarea:focus {
     border-color: var(--google-blue);
     background-color: var(--bg-surface);
+    box-shadow: 0 0 0 3px var(--google-blue-subtle);
   }
 
   .form-bottom {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 8px;
+    margin-top: 10px;
     flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .form-hints {
+    display: flex;
+    align-items: center;
     gap: 8px;
   }
 
   .form-hint {
-    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
     color: var(--text-tertiary);
   }
 
   .submit-comment-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     background-color: var(--google-blue);
     color: #ffffff;
     border: none;
@@ -374,102 +547,231 @@ const { slug } = Astro.props;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.15s ease;
+    transition: all 0.15s ease;
   }
 
-  .submit-comment-btn:hover {
+  .submit-comment-btn:hover:not(:disabled) {
     background-color: var(--google-blue-hover);
+    transform: translateY(-1px);
   }
 
+  .submit-comment-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Comments Stream — static container */
   .comments-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
 
-  .no-comments-state {
+  /*
+   * ⚠ Astro scopes styles via data-astro-cid-* attributes injected at SSR.
+   * Elements inserted via JS innerHTML do NOT receive those attributes,
+   * so plain .classname selectors won't match them.
+   * Fix: anchor with the static parent (.comments-list has the scope attr)
+   * and use :global() for the dynamic child, producing:
+   *   .comments-list[data-astro-cid-xxx] .comment-card  { ... }
+   * That CSS descendant combinator DOES match dynamic children.
+   */
+
+  /* Empty state */
+  .comments-list :global(.no-comments-state) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
-    padding: 32px 16px;
-    color: var(--text-tertiary);
-    font-size: 13px;
+    padding: 48px 24px 40px;
+    color: var(--text-secondary);
     background-color: var(--bg-surface);
-    border: 1px dashed var(--border-subtle);
-    border-radius: var(--radius-md);
+    border: 1px dashed rgba(138, 180, 248, 0.3);
+    border-radius: var(--radius-lg);
+    gap: 6px;
   }
 
-  .comment-card {
+  .comments-list :global(.empty-icon-wrap) {
+    color: rgba(138, 180, 248, 0.5);
+    margin-bottom: 4px;
+  }
+
+  .comments-list :global(.no-comments-state strong) {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .comments-list :global(.no-comments-state p) {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin: 0;
+    max-width: 340px;
+    line-height: 1.5;
+  }
+
+  /* Comment Card */
+  .comments-list :global(.comment-card) {
     background-color: var(--bg-surface);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    padding: 16px;
+    padding: 16px 18px 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 0 0 0 transparent;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
 
-  .comment-top {
+  .comments-list :global(.comment-card:hover) {
+    border-color: rgba(138, 180, 248, 0.4);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  }
+
+  .comments-list :global(.comment-card-header) {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 10px;
   }
 
-  .comment-author-info {
+  .comments-list :global(.comment-author-info) {
     display: flex;
     align-items: center;
     gap: 10px;
   }
 
-  .comment-avatar-circle {
-    width: 32px;
-    height: 32px;
+  /* CRITICAL: explicit fixed size prevents unconstrained avatar image from
+   rendering at full 512px when Astro scope attr is absent on dynamic nodes */
+  .comments-list :global(.comment-avatar-circle) {
+    width: 34px;
+    min-width: 34px;
+    max-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    max-height: 34px;
     border-radius: 50%;
-    background-color: var(--google-blue-subtle);
-    color: var(--google-blue);
+    background-color: rgba(138, 180, 248, 0.15);
+    color: #8ab4f8;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13px;
     overflow: hidden;
+    flex-shrink: 0;
   }
 
-  .author-img {
-    width: 100%;
-    height: 100%;
+  .comments-list :global(.author-img) {
+    display: block;
+    width: 34px;
+    height: 34px;
+    max-width: 34px;
+    max-height: 34px;
     object-fit: cover;
+    border-radius: 50%;
   }
 
-  .author-details {
+  .comments-list :global(.author-details) {
     display: flex;
     flex-direction: column;
+    gap: 1px;
   }
 
-  .author-display-name {
+  .comments-list :global(.author-name-row) {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .comments-list :global(.author-display-name) {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text-primary);
   }
 
-  .comment-time {
+  .comments-list :global(.author-badge) {
+    font-size: 10px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+    background-color: var(--bg-surface-hover);
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1px solid var(--border-subtle);
+    letter-spacing: 0.2px;
+  }
+
+  .comments-list :global(.comment-time) {
     font-size: 11px;
     color: var(--text-tertiary);
+    letter-spacing: 0.1px;
   }
 
-  .delete-comment-btn {
-    background: none;
-    border: none;
+  .comments-list :global(.comment-header-actions) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .comments-list :global(.delete-comment-btn) {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: 1px solid transparent;
     color: var(--text-tertiary);
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 500;
     cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
-    transition: color 0.15s ease;
+    transition: all 0.15s ease;
   }
 
-  .delete-comment-btn:hover {
-    color: var(--google-red);
+  .comments-list :global(.delete-comment-btn:hover) {
+    color: #f28b82;
+    background-color: rgba(242, 139, 130, 0.1);
+    border-color: rgba(242, 139, 130, 0.3);
   }
 
-  .comment-body {
+  .comments-list :global(.comment-body) {
     font-size: 14px;
+    line-height: 1.65;
     color: var(--text-primary);
-    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  .comments-list :global(.comment-inline-code) {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background-color: var(--bg-surface-hover);
+    color: #8ab4f8;
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  .comments-list :global(.comment-code-block) {
+    background-color: #1a1b1e;
+    color: #e8eaed;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    line-height: 1.45;
+    overflow-x: auto;
+    margin: 10px 0;
+    border: 1px solid #3c4043;
+  }
+
+  .comments-list :global(.comment-link) {
+    color: #8ab4f8;
+    text-decoration: none;
+  }
+
+  .comments-list :global(.comment-link:hover) {
+    text-decoration: underline;
+  }
+
+  .comments-list :global(.comment-body strong) {
+    font-weight: 600;
+    color: var(--text-primary);
   }
 </style>

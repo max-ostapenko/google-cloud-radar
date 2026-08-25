@@ -27,6 +27,7 @@ export interface LeadTimeBucket {
 }
 
 export interface RadarStatsReport {
+  windowDays: number;
   totalSignals: number;
   totalBreaking: number;
   overallBreakingRate: number;
@@ -39,11 +40,27 @@ export interface RadarStatsReport {
   fastestServices: ServiceVelocityStat[];
 }
 
-export async function computeRadarStats(): Promise<RadarStatsReport> {
-  const allEntries = await getAllFeedEntries();
-  const totalSignals = allEntries.length;
+function normalizeCategory(rawCat: string): ServiceCategory {
+  if (rawCat === 'AI & Machine Learning') return 'AI & ML';
+  if (rawCat === 'Data Platform') return 'Data Analytics';
+  return (rawCat || 'Data Analytics') as ServiceCategory;
+}
 
-  const breakingEntries = allEntries.filter((e) => e.breaking);
+export async function computeRadarStats(daysWindow: number = 90): Promise<RadarStatsReport> {
+  const allEntries = await getAllFeedEntries();
+  
+  // Filter for dynamic trailing window (e.g. 90 days / 3 months)
+  let filteredEntries = allEntries;
+  if (daysWindow > 0) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - daysWindow);
+    const cutoffStr = cutoff.toISOString().split('T')[0];
+    filteredEntries = allEntries.filter((e) => e.date >= cutoffStr);
+  }
+
+  const totalSignals = filteredEntries.length;
+
+  const breakingEntries = filteredEntries.filter((e) => e.breaking);
   const totalBreaking = breakingEntries.length;
   const overallBreakingRate = totalSignals > 0 ? Math.round((totalBreaking / totalSignals) * 100) : 0;
 
@@ -54,7 +71,7 @@ export async function computeRadarStats(): Promise<RadarStatsReport> {
   // Group by service
   const serviceMap = new Map<string, FeedEntry[]>();
 
-  for (const entry of allEntries) {
+  for (const entry of filteredEntries) {
     totalMethods += (entry.extractedMethods || []).length;
 
     if (entry.lead_time_days !== undefined && entry.lead_time_days > 0) {
@@ -103,7 +120,7 @@ export async function computeRadarStats(): Promise<RadarStatsReport> {
     serviceVelocities.push({
       service,
       slug: slugify(service),
-      category: entries[0].category,
+      category: normalizeCategory(entries[0].category),
       count,
       breakingCount: bCount,
       breakingRate: bRate,
@@ -119,8 +136,8 @@ export async function computeRadarStats(): Promise<RadarStatsReport> {
 
   // Group by category
   const catMap = new Map<ServiceCategory, { count: number; breakingCount: number }>();
-  for (const entry of allEntries) {
-    const cat = entry.category;
+  for (const entry of filteredEntries) {
+    const cat = normalizeCategory(entry.category);
     if (!catMap.has(cat)) {
       catMap.set(cat, { count: 0, breakingCount: 0 });
     }
@@ -146,7 +163,7 @@ export async function computeRadarStats(): Promise<RadarStatsReport> {
     { label: '30+ Days', count: 0, percentage: 0 },
   ];
 
-  for (const entry of allEntries) {
+  for (const entry of filteredEntries) {
     const days = entry.lead_time_days || (entry.interesting_score >= 8 ? 16 : 10);
     if (days < 7) buckets[0].count += 1;
     else if (days <= 14) buckets[1].count += 1;
@@ -159,6 +176,7 @@ export async function computeRadarStats(): Promise<RadarStatsReport> {
   }
 
   return {
+    windowDays: daysWindow,
     totalSignals,
     totalBreaking,
     overallBreakingRate,

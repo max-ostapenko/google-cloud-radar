@@ -61,10 +61,10 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   schemaData={schemaData}
 >
   <div class="change-detail-container">
-    <!-- APIs Explorer Breadcrumb Navigation -->
+    <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb-nav" aria-label="Breadcrumb">
       <ol class="breadcrumb-list">
-        <li><a href="/">Radar</a></li>
+        <li><a href="/">Radar Feed</a></li>
         <li class="separator">/</li>
         <li><a href={`/services/${serviceSlug}`}>{entry.service}</a></li>
         <li class="separator">/</li>
@@ -72,62 +72,41 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       </ol>
     </nav>
 
-    <!-- Main Detail Header -->
-    <header class="detail-header">
-      <div class="header-badges">
-        <a href={`/services/${serviceSlug}`} class="badge badge-service">
-          {entry.service}
-        </a>
+    <!-- Change Hero Banner (matching Service Page Hero quality) -->
+    <header class="change-hero">
+      <div class="change-hero-top">
+        <div class="change-badge-group">
+          <span class="category-badge">{entry.category}</span>
+          <a href={`/services/${serviceSlug}`} class="service-pill" title={`View all ${entry.service} updates`}>
+            <span class="service-icon-dot"></span>
+            <span class="service-name">{entry.service}</span>
+          </a>
 
-        {entry.breaking && (
-          <span class="badge badge-breaking">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
-            </svg>
-            ⚠️ Breaking Change
-          </span>
-        )}
+          {entry.status === 'released' && (
+            <span class="badge badge-released" title={`Confirmed in official release notes${entry.lead_time_days ? ` (Caught ${entry.lead_time_days} days earlier in Canary)` : ''}`}>
+              <span class="status-dot-green"></span> Released {entry.lead_time_days ? `(${entry.lead_time_days}d lead)` : ''}
+            </span>
+          )}
 
-        <span class={`badge badge-impact-${entry.impact}`}>
-          Impact: {entry.impact.toUpperCase()}
-        </span>
-
-        <span class="badge badge-score">
-          Analysis Score: {entry.interesting_score}/10
-        </span>
-      </div>
-
-      <h1 class="detail-title">{entry.title}</h1>
-
-      <div class="meta-row">
-        <div class="meta-item">
-          <span class="meta-label">Detection Date:</span>
-          <time datetime={entry.date} class="meta-value">{formattedDate}</time>
+          {entry.breaking ? (
+            <span class="badge badge-breaking" title="Breaking API change">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+              </svg>
+              Breaking Change
+            </span>
+          ) : entry.impact === 'high' ? (
+            <span class="badge badge-impact-high">
+              High Impact
+            </span>
+          ) : entry.impact === 'medium' ? (
+            <span class="badge badge-impact-medium">
+              Medium Impact
+            </span>
+          ) : null}
         </div>
-        <div class="meta-separator">•</div>
-        <div class="meta-item">
-          <span class="meta-label">Discovery API:</span>
-          <code class="meta-code">{entry.api}</code>
-        </div>
-        <div class="meta-separator">•</div>
-        <div class="meta-item">
-          <span class="meta-label">Category:</span>
-          <span class="meta-value">{entry.category}</span>
-        </div>
-      </div>
-    </header>
 
-    <!-- APIs Explorer Action Box -->
-    <div class="apis-explorer-box">
-      <div class="box-header">
-        <div class="box-title">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#4285F4" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <polygon points="10 8 16 12 10 16 10 8" fill="#4285F4"/>
-          </svg>
-          <span>Discovery Control Plane Metadata</span>
-        </div>
-        <div class="box-actions">
+        <div class="change-hero-actions">
           <ShareScoopModal
             slug={entry.slug}
             title={entry.title}
@@ -138,51 +117,86 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
             isBreaking={entry.breaking}
             leadTimeDays={entry.lead_time_days}
           />
-          {entry.discoveryRestUrl && (
-            <a 
-              href={entry.discoveryRestUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              class="action-btn"
-              title={`View official Discovery REST specification for ${entry.api}`}
-            >
-              <span>Raw Discovery JSON</span>
-              <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/>
-                <line x1="10" y1="14" x2="21" y2="3"/>
-              </svg>
-            </a>
-          )}
+
           {entry.documentationLink && (
             <a 
               href={entry.documentationLink} 
+              class="hero-action-btn doc-btn" 
               target="_blank" 
               rel="noopener noreferrer" 
-              class="action-btn"
               title={`Official documentation for ${entry.service}`}
             >
-              <span>Official Docs</span>
-              <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none">
+              <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
                 <polyline points="15 3 21 3 21 9"/>
                 <line x1="10" y1="14" x2="21" y2="3"/>
               </svg>
+              <span>Docs</span>
             </a>
           )}
+
+          <a href={`/services/${serviceSlug}`} class="hero-action-btn service-btn" title={`View all ${entry.service} updates`}>
+            <span>{entry.service} feed →</span>
+          </a>
         </div>
       </div>
 
+      <h1 class="change-title">{entry.title}</h1>
+
+      <div class="change-meta-row">
+        <div class="meta-item">
+          <svg class="meta-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <time datetime={entry.date} class="meta-value">{formattedDate}</time>
+        </div>
+
+        <span class="meta-dot">•</span>
+
+        <div class="meta-item">
+          <span class="meta-label">Discovery API:</span>
+          {entry.discoveryRestUrl ? (
+            <a href={entry.discoveryRestUrl} target="_blank" rel="noopener noreferrer" class="meta-api-link" title="View Raw Google Discovery JSON">
+              <code>{entry.api}</code>
+              <span class="api-ext">↗</span>
+            </a>
+          ) : (
+            <code class="meta-code">{entry.api}</code>
+          )}
+        </div>
+
+        {entry.lead_time_days && (
+          <>
+            <span class="meta-dot">•</span>
+            <div class="meta-item lead-time-highlight">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              <span>Caught <strong>{entry.lead_time_days} days</strong> ahead of release</span>
+            </div>
+          </>
+        )}
+      </div>
+
       {entry.extractedMethods && entry.extractedMethods.length > 0 && (
-        <div class="methods-panel">
-          <div class="methods-title">Targeted Endpoints / Methods:</div>
-          <div class="methods-grid">
+        <div class="methods-strip">
+          <div class="methods-strip-header">
+            <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none">
+              <polyline points="16 18 22 12 16 6"/>
+              <polyline points="8 6 2 12 8 18"/>
+            </svg>
+            <span class="methods-strip-title">Modified API Methods ({entry.extractedMethods.length}):</span>
+          </div>
+          <div class="methods-strip-list">
             {entry.extractedMethods.map((method) => (
-              <div class="method-row">
-                <span class="method-tag">RPC</span>
-                <code class="method-identifier">{method}</code>
+              <div class="method-chip">
+                <span class="method-rpc-tag">RPC</span>
+                <code class="method-name">{method}</code>
                 <button class="copy-method-btn" data-copy={method} aria-label="Copy method identifier" title="Copy method">
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                  <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                   </svg>
@@ -192,36 +206,34 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
           </div>
         </div>
       )}
-    </div>
+    </header>
 
-    <!-- Community Reactions Bar -->
-    <ReactionsBar slug={entry.slug} title={entry.title} />
+    <!-- Main Content Card -->
+    <article class="content-card">
+      <div class="markdown-body" set:html={entry.htmlContent}></div>
 
-    <!-- Rendered Markdown Content -->
-    <article class="markdown-body" set:html={entry.htmlContent}></article>
-
-    <!-- Bottom Tags & Share Section -->
-    <div class="detail-footer">
-      <div class="tags-section">
-        <span class="tags-label">Tags:</span>
-        <div class="tags-pills">
-          {entry.tags.map((tag) => (
-            <span class="tag-badge">#{tag}</span>
+      <footer class="content-footer">
+        <div class="tags-section">
+          {entry.tags && entry.tags.map((tag) => (
+            <span class="tag-chip">#{tag}</span>
           ))}
         </div>
-      </div>
 
-      <div class="share-actions">
-        <a href="/" class="back-link">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-          <span>Back to Feed</span>
-        </a>
-      </div>
-    </div>
+        <div class="footer-actions">
+          <a href="#comments" class="jump-comments-btn">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Jump to Comments</span>
+          </a>
+        </div>
+      </footer>
+    </article>
 
-    <!-- Developer Discussion & Comments -->
+    <!-- Community Signals & Impact Telemetry -->
+    <ReactionsBar slug={entry.slug} title={entry.title} />
+
+    <!-- Developer Discussion & Comments Section -->
     <DiscussionsSection slug={entry.slug} />
   </div>
 </BaseLayout>
@@ -230,10 +242,11 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   .change-detail-container {
     max-width: 920px;
     margin: 0 auto;
+    padding-bottom: 60px;
   }
 
   .breadcrumb-nav {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
   .breadcrumb-list {
@@ -250,6 +263,7 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   .breadcrumb-list a {
     color: var(--text-secondary);
     text-decoration: none;
+    transition: color 0.15s ease;
   }
 
   .breadcrumb-list a:hover {
@@ -269,7 +283,10 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     font-size: 12px;
   }
 
-  .detail-header {
+  /* ==========================================================================
+     Change Hero Banner (Aligned with Service Hero quality)
+     ========================================================================== */
+  .change-hero {
     background-color: var(--bg-surface);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
@@ -278,15 +295,102 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     box-shadow: var(--shadow-sm);
   }
 
-  .header-badges {
+  .change-hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .change-badge-group {
     display: flex;
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
-    margin-bottom: 16px;
   }
 
-  .detail-title {
+  .category-badge {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--google-blue);
+    background-color: var(--google-blue-subtle);
+    border: 1px solid var(--google-blue-border);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+  }
+
+  .service-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--google-blue);
+    background-color: var(--google-blue-subtle);
+    border: 1px solid var(--google-blue-border);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .service-pill:hover {
+    background-color: #d2e3fc;
+    text-decoration: none;
+  }
+
+  .service-icon-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--google-blue);
+    border-radius: 50%;
+  }
+
+  .change-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .hero-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: 5px 12px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .hero-action-btn:hover {
+    background-color: var(--google-blue-subtle);
+    border-color: var(--google-blue);
+    color: var(--google-blue);
+    text-decoration: none;
+  }
+
+  .doc-btn {
+    color: var(--google-blue);
+    border-color: var(--google-blue-border);
+    background-color: var(--google-blue-subtle);
+  }
+
+  .doc-btn:hover {
+    background-color: #d2e3fc;
+    border-color: var(--google-blue);
+  }
+
+  .change-title {
     font-size: 26px;
     font-weight: 700;
     line-height: 1.3;
@@ -295,7 +399,7 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     letter-spacing: -0.3px;
   }
 
-  .meta-row {
+  .change-meta-row {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -305,9 +409,13 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   }
 
   .meta-item {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
+  }
+
+  .meta-icon {
+    color: var(--text-tertiary);
   }
 
   .meta-label {
@@ -322,145 +430,152 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   .meta-code {
     font-family: var(--font-mono);
     background-color: var(--bg-surface-hover);
-    padding: 1px 6px;
+    padding: 2px 6px;
     border-radius: 4px;
     border: 1px solid var(--border-subtle);
-  }
-
-  .meta-separator {
-    color: var(--border-strong);
-  }
-
-  /* APIs Explorer Box */
-  .apis-explorer-box {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    padding: 20px;
-    margin-bottom: 32px;
-    box-shadow: var(--shadow-sm);
-  }
-
-  .box-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border-subtle);
-    margin-bottom: 14px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .box-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 700;
     color: var(--text-primary);
+  }
+
+  .meta-api-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+  }
+
+  .meta-api-link code {
+    font-family: var(--font-mono);
+    background-color: var(--bg-surface-hover);
+    color: var(--google-blue);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle);
+    font-size: 12px;
+    transition: all 0.15s ease;
+  }
+
+  .meta-api-link:hover code {
+    background-color: var(--google-blue-subtle);
+    border-color: var(--google-blue-border);
+  }
+
+  .api-ext {
+    font-size: 10px;
+    color: var(--text-tertiary);
+  }
+
+  .meta-dot {
+    color: var(--border-strong);
+    user-select: none;
+  }
+
+  .lead-time-highlight {
+    color: var(--google-yellow);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+  }
+
+  .lead-time-highlight strong {
+    color: var(--google-yellow);
+  }
+
+  /* Methods Strip inside Hero */
+  .methods-strip {
+    margin-top: 20px;
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+  }
+
+  .methods-strip-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    color: var(--text-tertiary);
+  }
+
+  .methods-strip-title {
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
-  .action-btn {
+  .methods-strip-list {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .method-chip {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: var(--radius-sm);
-    background-color: var(--bg-surface-hover);
+    background-color: var(--bg-surface);
     border: 1px solid var(--border-subtle);
-    color: var(--google-blue);
-    text-decoration: none;
-  }
-
-  .action-btn:hover {
-    background-color: var(--google-blue-subtle);
-    border-color: var(--google-blue-border);
-    text-decoration: none;
-  }
-
-  .methods-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .methods-title {
+    border-radius: 4px;
+    padding: 3px 8px;
     font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
   }
 
-  .methods-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .method-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: var(--bg-surface-hover);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
-    padding: 6px 12px;
-    gap: 10px;
-  }
-
-  .method-tag {
-    font-size: 10px;
+  .method-rpc-tag {
+    font-size: 9px;
     font-weight: 700;
     font-family: var(--font-mono);
     color: var(--google-purple);
     background-color: var(--google-purple-subtle);
-    padding: 2px 6px;
-    border-radius: 4px;
+    padding: 1px 4px;
+    border-radius: 2px;
   }
 
-  .method-identifier {
+  .method-name {
     font-family: var(--font-mono);
-    font-size: 13px;
     color: var(--text-primary);
-    flex: 1;
-    word-break: break-all;
   }
 
   .copy-method-btn {
     background: transparent;
     border: none;
-    color: var(--text-tertiary);
     cursor: pointer;
-    padding: 4px;
+    color: var(--text-tertiary);
+    padding: 2px;
     display: flex;
     align-items: center;
-    border-radius: 4px;
+    justify-content: center;
+    border-radius: 2px;
   }
 
   .copy-method-btn:hover {
     color: var(--google-blue);
-    background-color: var(--bg-surface);
+    background-color: var(--bg-surface-hover);
   }
 
-  /* Rendered Markdown Styling */
-  .markdown-body {
+  /* ==========================================================================
+     Main Content Card
+     ========================================================================== */
+  .content-card {
     background-color: var(--bg-surface);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
-    padding: 36px;
-    margin-bottom: 32px;
     box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .markdown-body {
+    padding: 32px;
     color: var(--text-primary);
     line-height: 1.7;
     font-size: 15px;
   }
 
   .markdown-body :global(h1) {
-    display: none; /* Already in header */
+    display: none;
   }
 
   .markdown-body :global(h2) {
@@ -482,6 +597,7 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     font-weight: 600;
     margin-top: 20px;
     margin-bottom: 8px;
+    color: var(--text-primary);
   }
 
   .markdown-body :global(p) {
@@ -510,8 +626,10 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     padding: 16px 20px;
     border-radius: var(--radius-md);
     overflow-x: auto;
-    margin: 16px 0;
+    margin: 18px 0;
     border: 1px solid #3c4043;
+    font-size: 13px;
+    line-height: 1.5;
   }
 
   .markdown-body :global(pre code) {
@@ -521,7 +639,8 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     border: none;
   }
 
-  .markdown-body :global(ul), .markdown-body :global(ol) {
+  .markdown-body :global(ul),
+  .markdown-body :global(ol) {
     margin-bottom: 16px;
     padding-left: 24px;
     color: var(--text-secondary);
@@ -531,11 +650,13 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     margin-bottom: 6px;
   }
 
-  .detail-footer {
+  .content-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 0;
+    padding: 16px 32px;
+    background-color: var(--bg-surface-hover);
+    border-top: 1px solid var(--border-subtle);
     flex-wrap: wrap;
     gap: 16px;
   }
@@ -543,56 +664,56 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   .tags-section {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .tags-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-tertiary);
-  }
-
-  .tags-pills {
-    display: flex;
     gap: 6px;
     flex-wrap: wrap;
   }
 
-  .tag-badge {
-    font-size: 12px;
-    background-color: var(--bg-surface-hover);
-    color: var(--text-secondary);
-    padding: 3px 8px;
-    border-radius: var(--radius-sm);
+  .tag-chip {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    background-color: var(--bg-surface);
     border: 1px solid var(--border-subtle);
+    padding: 2px 8px;
+    border-radius: 4px;
   }
 
-  .back-link {
+  .footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .jump-comments-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    font-weight: 600;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
     color: var(--google-blue);
     text-decoration: none;
-    padding: 8px 16px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: 5px 10px;
     border-radius: var(--radius-sm);
-    background-color: var(--google-blue-subtle);
+    transition: all 0.15s ease;
   }
 
-  .back-link:hover {
-    background-color: var(--google-blue);
-    color: #ffffff;
+  .jump-comments-btn:hover {
+    background-color: var(--google-blue-subtle);
+    border-color: var(--google-blue-border);
     text-decoration: none;
   }
 
   @media (max-width: 768px) {
-    .detail-header {
+    .change-hero {
       padding: 20px;
     }
     .markdown-body {
       padding: 20px;
+    }
+    .content-footer {
+      padding: 16px 20px;
     }
   }
 </style>

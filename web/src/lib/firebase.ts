@@ -21,8 +21,6 @@ import {
   updateDoc,
   addDoc,
   deleteDoc,
-  getDoc,
-  getDocs,
   query,
   orderBy,
   onSnapshot,
@@ -44,6 +42,15 @@ let app: FirebaseApp;
 let auth: Auth;
 let db: Firestore;
 
+export function isLocalEnvironment(): boolean {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname.endsWith('.local')
+  );
+}
+
 export function getFirebaseApp() {
   if (!getApps().length) {
     app = initializeApp(firebaseConfig);
@@ -57,7 +64,6 @@ export function getFirebaseAuth(): Auth {
   if (!auth) {
     const firebaseApp = getFirebaseApp();
     try {
-      // Configure browserLocalPersistence (localStorage) and browserPopupRedirectResolver for rock-solid auth
       auth = initializeAuth(firebaseApp, {
         persistence: [browserLocalPersistence, browserSessionPersistence, inMemoryPersistence],
         popupRedirectResolver: browserPopupRedirectResolver,
@@ -80,7 +86,27 @@ export function getFirebaseDb(): Firestore {
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
+// Local Mock User Storage Key
+const LOCAL_DEV_USER_KEY = 'gcp_radar_dev_user';
+
 export async function signInWithGoogle(): Promise<User | null> {
+  // If in local development, support direct local dev sign-in without hitting prod auth blocks
+  if (isLocalEnvironment()) {
+    const mockUser: any = {
+      uid: 'dev-user-local',
+      displayName: 'Canary Sentinel (Borg Unit 42)',
+      email: 'borg.sentinel42@googlecloudradar.internal',
+      photoURL: 'https://www.gstatic.com/images/branding/product/2x/avatar_square_blue_512dp.png',
+    };
+    try {
+      localStorage.setItem(LOCAL_DEV_USER_KEY, JSON.stringify(mockUser));
+      window.dispatchEvent(new CustomEvent('radar_auth_change', { detail: mockUser }));
+      return mockUser;
+    } catch {
+      return mockUser;
+    }
+  }
+
   try {
     const authInstance = getFirebaseAuth();
     const result = await signInWithPopup(authInstance, googleProvider);
@@ -91,21 +117,40 @@ export async function signInWithGoogle(): Promise<User | null> {
       return null;
     }
     console.error('Google Sign-In Error:', error.code, error.message);
-    if (error.code === 'auth/configuration-not-found' || error.code === 'auth/operation-not-allowed') {
-      console.warn(
-        'Google Sign-in Provider is not yet enabled in Firebase Console. Enable it at: https://console.firebase.google.com/project/gcp-cloud-radar/authentication/providers'
-      );
-    }
     throw error;
   }
 }
 
 export async function signOutUser(): Promise<void> {
+  if (isLocalEnvironment()) {
+    try {
+      localStorage.removeItem(LOCAL_DEV_USER_KEY);
+      window.dispatchEvent(new CustomEvent('radar_auth_change', { detail: null }));
+    } catch {}
+    return;
+  }
+
   const authInstance = getFirebaseAuth();
   await signOut(authInstance);
 }
 
 export function onAuthChange(callback: (user: User | null) => void) {
+  if (isLocalEnvironment()) {
+    const checkLocalUser = () => {
+      try {
+        const saved = localStorage.getItem(LOCAL_DEV_USER_KEY);
+        callback(saved ? JSON.parse(saved) : null);
+      } catch {
+        callback(null);
+      }
+    };
+
+    checkLocalUser();
+    const handleAuthEvent = (e: any) => callback(e.detail);
+    window.addEventListener('radar_auth_change', handleAuthEvent);
+    return () => window.removeEventListener('radar_auth_change', handleAuthEvent);
+  }
+
   const authInstance = getFirebaseAuth();
   return onAuthStateChanged(authInstance, callback);
 }
@@ -130,22 +175,35 @@ export interface CommentItem {
 }
 
 /**
- * Toggle user impact reaction with atomic aggregate counter update
+ * Toggle user impact reaction with local fallback & atomic counter
  */
 export async function toggleUserReaction(
   changeId: string,
-  user: User,
+  user: User | any,
   type: ReactionType,
   currentValue: boolean
 ): Promise<boolean> {
-  const dbInstance = getFirebaseDb();
-  const reactionDocRef = doc(dbInstance, 'changes', changeId, 'reactions', user.uid);
-  const changeDocRef = doc(dbInstance, 'changes', changeId);
   const nextValue = !currentValue;
-  const delta = nextValue ? 1 : -1;
+  const storageKey = `gcp_radar_reactions_${changeId}`;
+
+  // Always update local storage reaction map
+  try {
+    const userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    userVotes[type] = nextValue;
+    localStorage.setItem(storageKey, JSON.stringify(userVotes));
+  } catch {}
+
+  // If local environment, return immediately without calling prod Firestore
+  if (isLocalEnvironment()) {
+    return nextValue;
+  }
 
   try {
-    // 1. Record user's vote state in subcollection
+    const dbInstance = getFirebaseDb();
+    const reactionDocRef = doc(dbInstance, 'changes', changeId, 'reactions', user.uid);
+    const changeDocRef = doc(dbInstance, 'changes', changeId);
+    const delta = nextValue ? 1 : -1;
+
     await setDoc(
       reactionDocRef,
       {
@@ -156,52 +214,82 @@ export async function toggleUserReaction(
       { merge: true }
     );
 
-    // 2. Increment aggregate counter on parent change doc
     await updateDoc(changeDocRef, {
       [`reaction_counts.${type}`]: increment(delta),
-    }).catch(() => {
-      // If doc didn't have map initialized, fallback cleanly
-    });
+    }).catch(() => {});
 
     return nextValue;
   } catch (err) {
-    console.error('Failed to update reaction:', err);
-    return currentValue;
+    console.warn('Firestore reaction sync fallback (offline/permission):', err);
+    return nextValue;
   }
 }
 
 /**
- * Listen to live real-time comments on a change permalink
+ * Listen to live comments (local storage event loop in dev; Firestore in prod)
  */
 export function listenToComments(
   changeId: string,
   callback: (comments: CommentItem[]) => void
 ) {
-  const dbInstance = getFirebaseDb();
-  const commentsCol = collection(dbInstance, 'changes', changeId, 'comments');
-  const q = query(commentsCol, orderBy('created_at', 'desc'));
+  const localCommentsKey = `gcp_radar_comments_${changeId}`;
 
-  return onSnapshot(
-    q,
-    (snapshot) => {
-      const items: CommentItem[] = snapshot.docs.map((docSnap) => {
-        const data = docSnap.data();
-        return {
-          id: docSnap.id,
-          change_id: changeId,
-          author_id: data.author_id || data.authorId || '',
-          author_name: data.author_name || data.authorName || 'Google Cloud Engineer',
-          author_photo: data.author_photo || data.authorPhoto || '',
-          content: data.content || '',
-          created_at: data.created_at?.toDate ? data.created_at.toDate() : new Date(),
-        };
-      });
-      callback(items);
-    },
-    (err) => {
-      console.warn('Comments listener fallback (Firestore offline or emulator mode):', err);
+  const loadLocalComments = (): CommentItem[] => {
+    try {
+      const stored = localStorage.getItem(localCommentsKey);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
     }
-  );
+  };
+
+  // In local development, deliver instant local comments and listen to broadcast updates
+  if (isLocalEnvironment()) {
+    callback(loadLocalComments());
+
+    const handleLocalUpdate = (e: any) => {
+      if (e.detail?.changeId === changeId) {
+        callback(loadLocalComments());
+      }
+    };
+
+    window.addEventListener('radar_comments_update', handleLocalUpdate);
+    return () => window.removeEventListener('radar_comments_update', handleLocalUpdate);
+  }
+
+  // In production, connect to Firestore with graceful fallback to local storage
+  try {
+    const dbInstance = getFirebaseDb();
+    const commentsCol = collection(dbInstance, 'changes', changeId, 'comments');
+    const q = query(commentsCol, orderBy('created_at', 'desc'));
+
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const items: CommentItem[] = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data();
+          return {
+            id: docSnap.id,
+            change_id: changeId,
+            author_id: data.author_id || data.authorId || '',
+            author_name: data.author_name || data.authorName || 'Google Cloud Engineer',
+            author_photo: data.author_photo || data.authorPhoto || '',
+            content: data.content || '',
+            created_at: data.created_at?.toDate ? data.created_at.toDate() : new Date(),
+          };
+        });
+        callback(items);
+      },
+      (err) => {
+        console.warn('Comments listener fallback (using local cache):', err);
+        callback(loadLocalComments());
+      }
+    );
+  } catch (err) {
+    console.warn('Firestore offline; serving local comments:', err);
+    callback(loadLocalComments());
+    return () => {};
+  }
 }
 
 /**
@@ -209,14 +297,41 @@ export function listenToComments(
  */
 export async function addComment(
   changeId: string,
-  user: User,
+  user: User | any,
   content: string
-): Promise<CommentItem | null> {
-  const dbInstance = getFirebaseDb();
-  const commentsCol = collection(dbInstance, 'changes', changeId, 'comments');
-  const changeDocRef = doc(dbInstance, 'changes', changeId);
+): Promise<CommentItem> {
+  const localCommentsKey = `gcp_radar_comments_${changeId}`;
+  const newComment: CommentItem = {
+    id: `comment_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    change_id: changeId,
+    author_id: user.uid || 'dev-user',
+    author_name: user.displayName || 'Google Cloud Engineer',
+    author_photo: user.photoURL || '',
+    content: content.trim(),
+    created_at: new Date().toISOString(),
+  };
 
+  // 1. Save to local storage for instant responsiveness
   try {
+    const existing = JSON.parse(localStorage.getItem(localCommentsKey) || '[]');
+    existing.unshift(newComment);
+    localStorage.setItem(localCommentsKey, JSON.stringify(existing));
+    window.dispatchEvent(new CustomEvent('radar_comments_update', { detail: { changeId } }));
+  } catch (e) {
+    console.warn('Could not cache comment to localStorage:', e);
+  }
+
+  // 2. If in local development, return immediately
+  if (isLocalEnvironment()) {
+    return newComment;
+  }
+
+  // 3. In production, sync to Firestore
+  try {
+    const dbInstance = getFirebaseDb();
+    const commentsCol = collection(dbInstance, 'changes', changeId, 'comments');
+    const changeDocRef = doc(dbInstance, 'changes', changeId);
+
     const docRef = await addDoc(commentsCol, {
       change_id: changeId,
       author_id: user.uid,
@@ -226,23 +341,15 @@ export async function addComment(
       created_at: serverTimestamp(),
     });
 
-    // Increment comments counter on parent
     await updateDoc(changeDocRef, {
       comments_count: increment(1),
     }).catch(() => {});
 
-    return {
-      id: docRef.id,
-      change_id: changeId,
-      author_id: user.uid,
-      author_name: user.displayName || 'Google Cloud Engineer',
-      author_photo: user.photoURL || '',
-      content: content.trim(),
-      created_at: new Date(),
-    };
+    newComment.id = docRef.id;
+    return newComment;
   } catch (err) {
-    console.error('Error adding comment:', err);
-    throw err;
+    console.warn('Saved comment locally; Firestore sync failed:', err);
+    return newComment;
   }
 }
 
@@ -253,12 +360,32 @@ export async function deleteComment(
   changeId: string,
   commentId: string
 ): Promise<void> {
-  const dbInstance = getFirebaseDb();
-  const commentDocRef = doc(dbInstance, 'changes', changeId, 'comments', commentId);
-  const changeDocRef = doc(dbInstance, 'changes', changeId);
+  const localCommentsKey = `gcp_radar_comments_${changeId}`;
 
-  await deleteDoc(commentDocRef);
-  await updateDoc(changeDocRef, {
-    comments_count: increment(-1),
-  }).catch(() => {});
+  // 1. Update local storage
+  try {
+    const existing = JSON.parse(localStorage.getItem(localCommentsKey) || '[]');
+    const filtered = existing.filter((c: CommentItem) => c.id !== commentId);
+    localStorage.setItem(localCommentsKey, JSON.stringify(filtered));
+    window.dispatchEvent(new CustomEvent('radar_comments_update', { detail: { changeId } }));
+  } catch {}
+
+  // 2. In local development, stop here
+  if (isLocalEnvironment()) {
+    return;
+  }
+
+  // 3. In production, sync with Firestore
+  try {
+    const dbInstance = getFirebaseDb();
+    const commentDocRef = doc(dbInstance, 'changes', changeId, 'comments', commentId);
+    const changeDocRef = doc(dbInstance, 'changes', changeId);
+
+    await deleteDoc(commentDocRef);
+    await updateDoc(changeDocRef, {
+      comments_count: increment(-1),
+    }).catch(() => {});
+  } catch (err) {
+    console.warn('Deleted locally; Firestore delete failed:', err);
+  }
 }

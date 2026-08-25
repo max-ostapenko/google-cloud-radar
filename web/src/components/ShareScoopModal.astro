@@ -36,7 +36,7 @@ ${permalink}
 
 const linkedInText = `Google Cloud API Update Signal: ${service}
 
-Unreleased changes detected in the ${service} discovery control plane before official release documentation:
+Unreleased changes detected in ${service} Google Discovery APIs before official release documentation:
 
 📌 Key Details:
 • Update: ${title}
@@ -58,7 +58,7 @@ const slackText = `*Google Cloud API Update: ${service} (${api})* ${isBreaking ?
 ${methods.length > 0 ? `*Targeted Methods:* \`${methods.slice(0, 2).join('`, `')}\`\n` : ''}> *Radar Permalink:* <${permalink}|Inspect Schema Diff & Methods>`;
 
 const redditTitle = `[Google Cloud Radar] ${service}: ${title}${isBreaking ? ' [Breaking Change]' : ''}`;
-const redditBody = `New changes detected in the control plane for **${service}** (\`${api}\`) ahead of official release notes:
+const redditBody = `New API changes detected for **${service}** (\`${api}\`) ahead of official release notes:
 
 **Summary:**
 ${summary}

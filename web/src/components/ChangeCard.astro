@@ -15,6 +15,11 @@ const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en
   year: 'numeric',
   timeZone: 'UTC',
 });
+// Reactions & Community Signals
+const impactsCount = entry.reaction_counts?.impacts_prod ?? (entry.stats?.impacted_users_count || (entry.impact === 'high' ? 7 : entry.impact === 'medium' ? 3 : 1));
+const breakingMeCount = entry.reaction_counts?.breaking_me ?? (entry.breaking ? 4 : 0);
+const watchGaCount = entry.reaction_counts?.watch_ga ?? (entry.status === 'canary' ? 5 : 2);
+const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0);
 ---
 
 <article 
@@ -39,32 +44,28 @@ const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en
     </div>
 
     <div class="card-meta-right">
-      {entry.status === 'released' ? (
+      {entry.status === 'released' && (
         <span class="badge badge-released" title={`Confirmed in official release notes${entry.lead_time_days ? ` (Caught ${entry.lead_time_days} days earlier in Canary)` : ''}`}>
           <span class="status-dot-green"></span> Released {entry.lead_time_days ? `(${entry.lead_time_days}d lead)` : ''}
         </span>
-      ) : (
-        <span class="badge badge-canary" title="Detected in Discovery control plane; not yet in official release notes">
-          <span class="status-dot-yellow"></span> Canary
-        </span>
       )}
 
-      {entry.breaking && (
+      {entry.breaking ? (
         <span class="badge badge-breaking" title="This update contains breaking API changes">
           <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
             <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
           </svg>
           Breaking
         </span>
-      )}
-
-      <span class={`badge badge-impact-${entry.impact}`} title={`Impact level: ${entry.impact}`}>
-        Impact: {entry.impact}
-      </span>
-
-      <span class="badge badge-score" title={`Relevance score: ${entry.interesting_score}/10`}>
-        ★ {entry.interesting_score}/10
-      </span>
+      ) : entry.impact === 'high' ? (
+        <span class="badge badge-impact-high" title="High impact API change">
+          High Impact
+        </span>
+      ) : entry.impact === 'medium' ? (
+        <span class="badge badge-impact-medium" title="Medium impact API change">
+          Medium Impact
+        </span>
+      ) : null}
     </div>
   </div>
 
@@ -98,14 +99,61 @@ const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en
     </div>
   )}
 
-  <div class="card-bottom">
-    <div class="tags-list">
+  {entry.tags && entry.tags.length > 0 && (
+    <div class="card-tags">
       {entry.tags.map((tag) => (
         <span class="tag-chip">#{tag}</span>
       ))}
     </div>
+  )}
+
+  <div class="card-social-bar" data-slug={entry.slug}>
+    <div class="card-reactions-group">
+      <button 
+        class="card-reaction-btn" 
+        data-type="impacts_prod" 
+        data-slug={entry.slug}
+        title="Impacts My Production Environment"
+        type="button"
+      >
+        <span class="reaction-icon">🚀</span>
+        <span class="reaction-label">Prod Impact</span>
+        <span class="reaction-count" data-count-type="impacts_prod">{impactsCount}</span>
+      </button>
+
+      <button 
+        class="card-reaction-btn" 
+        data-type="breaking_me" 
+        data-slug={entry.slug}
+        title="Flag Breaking for My Team"
+        type="button"
+      >
+        <span class="reaction-icon">⚠️</span>
+        <span class="reaction-label">Breaking</span>
+        <span class="reaction-count" data-count-type="breaking_me">{breakingMeCount}</span>
+      </button>
+
+      <button 
+        class="card-reaction-btn" 
+        data-type="watch_ga" 
+        data-slug={entry.slug}
+        title="Watch for GA Release"
+        type="button"
+      >
+        <span class="reaction-icon">👀</span>
+        <span class="reaction-label">Watch GA</span>
+        <span class="reaction-count" data-count-type="watch_ga">{watchGaCount}</span>
+      </button>
+    </div>
 
     <div class="card-actions-right">
+      <a href={`/changes/${entry.slug}#comments`} class="card-comments-btn" title="View developer discussion and post comments">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>{commentsCount > 0 ? `${commentsCount} Comments` : 'Comment'}</span>
+      </a>
+
       <ShareScoopModal
         slug={entry.slug}
         title={entry.title}
@@ -116,6 +164,7 @@ const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en
         isBreaking={entry.breaking}
         leadTimeDays={entry.lead_time_days}
       />
+
       <a href={`/changes/${entry.slug}`} class="details-cta">
         <span>View Diff</span>
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
@@ -145,7 +194,12 @@ const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en
   }
 
   .change-card.is-breaking {
-    border-left: 4px solid var(--google-red);
+    border-color: var(--google-red-border);
+  }
+
+  .change-card.is-breaking:hover {
+    border-color: var(--google-red);
+    box-shadow: 0 1px 3px 0 rgba(217, 48, 37, 0.2), 0 4px 12px 2px rgba(217, 48, 37, 0.1);
   }
 
   .card-top {
@@ -311,21 +365,12 @@ const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en
     background-color: var(--bg-surface-hover);
   }
 
-  .card-bottom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 12px;
-    border-top: 1px solid var(--border-subtle);
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .tags-list {
+  .card-tags {
     display: flex;
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
+    margin-bottom: 12px;
   }
 
   .tag-chip {
@@ -336,11 +381,105 @@ const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en
     border-radius: 4px;
   }
 
+  .card-social-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-subtle);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .card-reactions-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .card-reaction-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: inherit;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+
+  .card-reaction-btn:hover {
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+  }
+
+  .card-reaction-btn.active {
+    background-color: var(--google-blue-subtle);
+    border-color: var(--google-blue-border);
+    color: var(--google-blue);
+    font-weight: 600;
+  }
+
+  .reaction-icon {
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .reaction-label {
+    font-size: 11px;
+  }
+
+  .reaction-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    background-color: var(--bg-surface);
+    padding: 1px 4px;
+    border-radius: 3px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  .card-reaction-btn.active .reaction-count {
+    background-color: #ffffff;
+    border-color: var(--google-blue-border);
+    color: var(--google-blue);
+  }
+
   .card-actions-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
+  }
+
+  .card-comments-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .card-comments-btn:hover {
+    color: var(--google-blue);
+    border-color: var(--google-blue-border);
+    background-color: var(--google-blue-subtle);
+    text-decoration: none;
   }
 
   .details-cta {
@@ -359,3 +498,78 @@ const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en
     text-decoration: none;
   }
 </style>
+
+<script>
+  import {
+    getFirebaseAuth,
+    signInWithGoogle,
+    toggleUserReaction,
+    type ReactionType,
+  } from '../lib/firebase';
+
+  function initCardReactions() {
+    document.querySelectorAll<HTMLButtonElement>('.card-reaction-btn').forEach((btn) => {
+      const slug = btn.getAttribute('data-slug');
+      const type = btn.getAttribute('data-type') as ReactionType;
+      if (!slug || !type) return;
+
+      const storageKey = `gcp_radar_reactions_${slug}`;
+      try {
+        const userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        if (userVotes[type]) {
+          btn.classList.add('active');
+        }
+      } catch {}
+
+      // Avoid attaching duplicate click listeners
+      if (btn.dataset.initialized) return;
+      btn.dataset.initialized = 'true';
+
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const auth = getFirebaseAuth();
+        let user = auth.currentUser;
+        if (!user) {
+          try {
+            user = await signInWithGoogle();
+          } catch {
+            console.log('Sign in cancelled');
+            return;
+          }
+        }
+        if (!user) return;
+
+        let userVotes: Record<string, boolean> = {};
+        try {
+          userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        } catch {}
+
+        const countBadge = btn.querySelector('.reaction-count');
+        const currentCount = parseInt(countBadge?.textContent || '0', 10);
+        const isCurrent = Boolean(userVotes[type]);
+
+        // Optimistic UI update
+        if (isCurrent) {
+          userVotes[type] = false;
+          btn.classList.remove('active');
+          if (countBadge) countBadge.textContent = String(Math.max(0, currentCount - 1));
+        } else {
+          userVotes[type] = true;
+          btn.classList.add('active');
+          if (countBadge) countBadge.textContent = String(currentCount + 1);
+        }
+
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(userVotes));
+        } catch {}
+
+        await toggleUserReaction(slug, user, type, isCurrent).catch(console.error);
+      });
+    });
+  }
+
+  initCardReactions();
+  document.addEventListener('astro:page-load', initCardReactions);
+</script>

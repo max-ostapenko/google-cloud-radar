@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-25T00:12:45.000Z",
+  "title": "Design System: Google Cloud Radar",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Google Blue",
+        "canonical": "#1a73e8",
+        "tonalRamp": ["#174ea6", "#1a73e8", "#4285f4", "#8ab4f8", "#aecbfa", "#d2e3fc", "#e8f0fe", "#f8fafd"]
+      },
+      "danger": {
+        "role": "danger",
+        "displayName": "Google Red",
+        "canonical": "#d93025",
+        "tonalRamp": ["#a50e0e", "#c5221f", "#d93025", "#ea4335", "#f28b82", "#f6aea9", "#fad2cf", "#fce8e6"]
+      },
+      "success": {
+        "role": "success",
+        "displayName": "Google Green",
+        "canonical": "#188038",
+        "tonalRamp": ["#0d652d", "#137333", "#188038", "#34a853", "#81c995", "#a8dab5", "#ceead6", "#e6f4ea"]
+      },
+      "warning": {
+        "role": "warning",
+        "displayName": "Google Yellow",
+        "canonical": "#e37400",
+        "tonalRamp": ["#b06000", "#e37400", "#f9ab00", "#fbbc04", "#fdd663", "#feefc3", "#fef7e0", "#fffbf0"]
+      },
+      "accent-purple": {
+        "role": "tertiary",
+        "displayName": "Google Purple",
+        "canonical": "#9334e6",
+        "tonalRamp": ["#681da8", "#8430ce", "#9334e6", "#a142f4", "#c58af9", "#d7aefb", "#e8d1fc", "#f3e8fd"]
+      },
+      "page-bg": {
+        "role": "neutral",
+        "displayName": "Page Canvas",
+        "canonical": "#f8f9fa",
+        "tonalRamp": ["#202124", "#3c4043", "#5f6368", "#80868b", "#bdc1c6", "#dadce0", "#f1f3f4", "#f8f9fa"]
+      },
+      "surface-bg": {
+        "role": "neutral",
+        "displayName": "Surface Background",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#17181c", "#202124", "#28292c", "#303134", "#dadce0", "#e8eaed", "#f1f3f4", "#ffffff"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headers and primary dashboard counters." },
+      "headline": { "displayName": "Headline", "purpose": "Section headings, service page headers, modal titles." },
+      "title": { "displayName": "Title", "purpose": "Changelog entry titles and card headers." },
+      "body": { "displayName": "Body", "purpose": "Entry summaries, descriptive text, discussions." },
+      "label": { "displayName": "Label", "purpose": "Badges, pills, metadata tags." }
+    },
+    "shadows": [
+      { "name": "shadow-sm", "value": "0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15)", "purpose": "Default card elevation & search input." },
+      { "name": "shadow-md", "value": "0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15)", "purpose": "Card hover elevation & dropdowns." },
+      { "name": "shadow-lg", "value": "0 2px 6px 2px rgba(60, 64, 67, 0.15), 0 8px 24px 4px rgba(60, 64, 67, 0.15)", "purpose": "Dialogs and modal overlays." }
+    ],
+    "motion": [
+      { "name": "transition-standard", "value": "all 0.15s ease", "purpose": "Standard interactive hover and active feedback." }
+    ],
+    "breakpoints": [
+      { "name": "tablet", "value": "900px" },
+      { "name": "mobile", "value": "640px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Standard call-to-action button in Google Blue.",
+      "html": "<button class=\"ds-btn-primary\">View API Docs</button>",
+      "css": ".ds-btn-primary { background-color: #1a73e8; color: #ffffff; padding: 8px 16px; font-family: 'Google Sans', 'Inter', sans-serif; font-size: 13px; font-weight: 500; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.15s ease, box-shadow 0.15s ease; display: inline-flex; align-items: center; justify-content: center; } .ds-btn-primary:hover { background-color: #1557d0; box-shadow: 0 1px 2px rgba(60,64,67,0.3); } .ds-btn-primary:focus-visible { outline: 2px solid #1a73e8; outline-offset: 2px; }"
+    },
+    {
+      "name": "Canary Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Yellow status badge indicating unannounced pre-release discovery changes.",
+      "html": "<span class=\"ds-badge ds-badge-canary\"><span class=\"ds-dot-yellow\"></span> Canary</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 5px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 8px; border-radius: 9999px; line-height: 1.4; } .ds-badge-canary { background-color: #fef7e0; color: #e37400; border: 1px solid #fdd663; } .ds-dot-yellow { width: 6px; height: 6px; background-color: #e37400; border-radius: 50%; }"
+    },
+    {
+      "name": "Breaking Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Red warning badge indicating breaking API modifications.",
+      "html": "<span class=\"ds-badge ds-badge-breaking\"><svg viewBox=\"0 0 24 24\" width=\"12\" height=\"12\" fill=\"currentColor\"><path d=\"M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z\"/></svg> Breaking</span>",
+      "css": ".ds-badge-breaking { background-color: #fce8e6; color: #d93025; border: 1px solid #f5c2c7; } .ds-badge-breaking svg { flex-shrink: 0; }"
+    },
+    {
+      "name": "Released Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Green status badge indicating confirmed release in public release notes.",
+      "html": "<span class=\"ds-badge ds-badge-released\"><span class=\"ds-dot-green\"></span> Released (14d lead)</span>",
+      "css": ".ds-badge-released { background-color: #e6f4ea; color: #188038; border: 1px solid #a8dab5; } .ds-dot-green { width: 6px; height: 6px; background-color: #188038; border-radius: 50%; }"
+    },
+    {
+      "name": "Method RPC Chip",
+      "kind": "chip",
+      "refersTo": "method-chip",
+      "description": "Interactive code chip for RPC methods and resource paths.",
+      "html": "<div class=\"ds-method-chip\"><span class=\"ds-rpc-tag\">RPC</span><code class=\"ds-method-name\">google.cloud.vertexai.v1.ModelService.UpdateModel</code></div>",
+      "css": ".ds-method-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; background-color: #f1f3f4; border: 1px solid #dadce0; border-radius: 4px; font-family: 'Roboto Mono', monospace; font-size: 12px; color: #1a73e8; } .ds-rpc-tag { font-size: 10px; font-weight: 700; color: #5f6368; background-color: #e8eaed; padding: 1px 4px; border-radius: 2px; } .ds-method-name { font-family: inherit; font-size: inherit; color: inherit; }"
+    },
+    {
+      "name": "Change Entry Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Core telemetry changelog entry container.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><span class=\"ds-service-pill\">BigQuery</span><span class=\"ds-badge ds-badge-canary\"><span class=\"ds-dot-yellow\"></span> Canary</span></div><h4 class=\"ds-card-title\">Added query session pooling support in v2 jobs API</h4><p class=\"ds-card-summary\">Enables multi-statement query sessions with zero-latency session initialization.</p></div>",
+      "css": ".ds-card { background-color: #ffffff; border: 1px solid #dadce0; border-radius: 8px; padding: 16px 20px; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.1); transition: transform 0.15s ease, box-shadow 0.15s ease; font-family: 'Inter', sans-serif; } .ds-card:hover { transform: translateY(-1px); box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15); } .ds-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; } .ds-service-pill { font-size: 12px; font-weight: 600; color: #1a73e8; background: #e8f0fe; padding: 2px 8px; border-radius: 4px; } .ds-card-title { font-family: 'Google Sans', sans-serif; font-size: 16px; font-weight: 500; color: #202124; margin: 0 0 6px 0; } .ds-card-summary { font-size: 13px; color: #5f6368; line-height: 1.45; margin: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Console Radar",
+    "overview": "Google Cloud Radar bridges the visual discipline of Google Cloud Developers Console and APIs Explorer with the scannable cadence of an early-warning telemetry terminal. It delivers high-density technical intelligence without visual clutter, prioritizing rapid skimming across services, methods, breaking indicators, and significance scores.\n\nThe interface maintains a disciplined Material / Google Developer theme palette, pairing crisp neutral surfaces with purposeful semantic accents for breaking changes (Google Red), pre-release canaries (Google Yellow), official releases (Google Green), and API identity (Google Blue).",
+    "keyCharacteristics": [
+      "High-Density Scannability: Compact cards, clear metadata pills, and inline method signatures enable instant comprehension.",
+      "Semantic Color Attribution: Color is strictly reserved for state, category, and impact; never decorative noise.",
+      "Developer-Grade Typography: Clean pairing of Google Sans headers, crisp Inter body text, and Roboto Mono code chips.",
+      "Dual-Theme Fidelity: Native light and dark theme parity tuned for extended reading and console workflows."
+    ],
+    "rules": [
+      {
+        "name": "The Signal-First Color Rule",
+        "body": "Color saturation denotes change status or impact level. Surfaces and containers remain neutral so semantic badges pop immediately upon scanning.",
+        "section": "colors"
+      },
+      {
+        "name": "The Mono Precision Rule",
+        "body": "All API method names, parameter keys, and JSON paths are strictly styled in inline mono chips (--font-mono), never raw plain text.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tonal Border Priority Rule",
+        "body": "Cards and containers at rest rely on crisp 1px borders. Elevation shadows activate upon user hover or modal focus.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do wrap every API method, parameter, and JSON property in mono code styling.",
+      "Do highlight breaking changes with prominent Google Red badges and warning icons.",
+      "Do preserve 1-to-1 visual parity across Light and Dark color modes.",
+      "Do keep spacing tight and scannable for engineering users evaluating multiple updates."
+    ],
+    "donts": [
+      "Don't use decorative non-semantic gradients or illustrative fluff.",
+      "Don't hide breaking change flags behind collapsed accordions by default.",
+      "Don't alter official Google service names or casing in titles.",
+      "Don't rely solely on color for state; always accompany badges with descriptive text (e.g. \"Canary\", \"Released\")."
+    ]
+  }
+}
