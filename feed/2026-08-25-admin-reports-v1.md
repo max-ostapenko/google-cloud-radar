@@ -2,26 +2,25 @@
 date: 2026-08-25
 api: admin.reports_v1
 service: Admin SDK Reports
-title: "Breaking Changes: Required Parameters and Read-Only Fields"
+title: "Breaking Changes and Workspace Studio Support"
 impact: high
-breaking: true
-tags: ["breaking-change", "security", "workspace"]
+breaking: false
+tags: ["breaking-change", "security", "workspace", "audit-logs"]
 interesting_score: 9
 ---
 
-# Breaking Changes: Required Parameters and Read-Only Fields
+# Breaking Changes and Workspace Studio Support
 
 **Date:** 2026-08-25  
 **API:** `admin.reports_v1`  
 **Impact:** High  
-**⚠️ Breaking change**  
 
 ## Summary
 
-The Admin SDK Reports API has updated several key parameters to be strictly required and marked multiple report fields as read-only. Developers must update their implementation to ensure mandatory fields are provided in requests.
+The Reports API has introduced breaking changes regarding required parameters and read-only fields, while also expanding support for Workspace Studio applications in audit logs.
 
 ## Details
 
-This update introduces significant breaking changes to the Reports API. Several parameters that may have previously been treated as optional are now strictly required, including 'entityType', 'applicationName', 'date', 'userKey', and 'entityKey'. Additionally, multiple properties within the 'UsageReport' and 'ActivityUserDeviceInfo' schemas—such as 'date', 'entity', 'parameters', 'deviceType', and 'deviceId'—are now marked as read-only/immutable, reflecting the historical nature of report data. The API also now supports mTLS via a new root URL (admin.mtls.googleapis.com) and includes updated descriptions for audit and usage readonly OAuth scopes.
+This update enforces strict requirements for parameters like 'entityType', 'applicationName', and 'date', while marking several 'UsageReport' fields as read-only. Additionally, the 'includeSensitiveData' parameter in activity listing now supports Workspace Studio applications, allowing sensitive user-generated content in those audit logs. The 'userDeviceInfo' field in Activity schemas is now explicitly scoped to specific applications including Gemini in Workspace, Drive, and Chat, providing better clarity on when device metadata is available. The API also now supports mTLS via a new root URL (admin.mtls.googleapis.com).
 
-**Tags:** `breaking-change` `security` `workspace`
+**Tags:** `breaking-change` `security` `workspace` `audit-logs`
