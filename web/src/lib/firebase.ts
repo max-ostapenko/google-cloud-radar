@@ -214,14 +214,132 @@ export async function toggleUserReaction(
       { merge: true }
     );
 
-    await updateDoc(changeDocRef, {
-      [`reaction_counts.${type}`]: increment(delta),
-    }).catch(() => {});
+    await setDoc(
+      changeDocRef,
+      {
+        reaction_counts: {
+          [type]: increment(delta),
+        },
+      },
+      { merge: true }
+    );
 
     return nextValue;
   } catch (err) {
     console.warn('Firestore reaction sync fallback (offline/permission):', err);
     return nextValue;
+  }
+}
+
+/**
+ * Listen to live change stats & reaction counts from Firestore (or local state)
+ */
+export function listenToChange(
+  changeId: string,
+  callback: (data: { reaction_counts?: Record<string, number>; comments_count?: number } | null) => void
+): () => void {
+  if (isLocalEnvironment()) {
+    const checkLocal = () => {
+      try {
+        const stored = localStorage.getItem(`gcp_radar_reactions_${changeId}`);
+        const userVotes = stored ? JSON.parse(stored) : {};
+        callback({
+          reaction_counts: {
+            impacts_prod: userVotes.impacts_prod ? 1 : 0,
+            breaking_me: userVotes.breaking_me ? 1 : 0,
+            watch_ga: userVotes.watch_ga ? 1 : 0,
+          },
+        });
+      } catch {
+        callback(null);
+      }
+    };
+    checkLocal();
+    const handleUpdate = () => checkLocal();
+    window.addEventListener('radar_reaction_update', handleUpdate);
+    return () => window.removeEventListener('radar_reaction_update', handleUpdate);
+  }
+
+  try {
+    const dbInstance = getFirebaseDb();
+    const changeDocRef = doc(dbInstance, 'changes', changeId);
+    return onSnapshot(
+      changeDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          callback({
+            reaction_counts: data.reaction_counts || {},
+            comments_count: data.comments_count || 0,
+          });
+        } else {
+          callback(null);
+        }
+      },
+      (err) => {
+        console.warn('Change listener fallback:', err);
+      }
+    );
+  } catch (err) {
+    console.warn('Could not initialize change listener:', err);
+    return () => {};
+  }
+}
+
+/**
+ * Listen to a specific user's reaction choices on a change
+ */
+export function listenToUserReactions(
+  changeId: string,
+  userId: string,
+  callback: (reactions: Record<string, boolean>) => void
+): () => void {
+  const storageKey = `gcp_radar_reactions_${changeId}`;
+
+  if (isLocalEnvironment() || !userId) {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      callback(stored ? JSON.parse(stored) : {});
+    } catch {
+      callback({});
+    }
+    return () => {};
+  }
+
+  try {
+    const dbInstance = getFirebaseDb();
+    const reactionDocRef = doc(dbInstance, 'changes', changeId, 'reactions', userId);
+    return onSnapshot(
+      reactionDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const votes: Record<string, boolean> = {
+            impacts_prod: Boolean(data.impacts_prod),
+            breaking_me: Boolean(data.breaking_me),
+            watch_ga: Boolean(data.watch_ga),
+          };
+          try {
+            localStorage.setItem(storageKey, JSON.stringify(votes));
+          } catch {}
+          callback(votes);
+        } else {
+          callback({});
+        }
+      },
+      (err) => {
+        console.warn('User reaction listener fallback:', err);
+        try {
+          const stored = localStorage.getItem(storageKey);
+          callback(stored ? JSON.parse(stored) : {});
+        } catch {
+          callback({});
+        }
+      }
+    );
+  } catch (err) {
+    console.warn('Could not initialize user reaction listener:', err);
+    return () => {};
   }
 }
 

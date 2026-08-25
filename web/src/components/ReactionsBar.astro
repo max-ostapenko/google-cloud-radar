@@ -66,6 +66,8 @@ const defaultWatchCount = 4;
     signInWithGoogle,
     onAuthChange,
     toggleUserReaction,
+    listenToChange,
+    listenToUserReactions,
     type ReactionType,
   } from '../lib/firebase';
 
@@ -76,10 +78,9 @@ const defaultWatchCount = 4;
     const slug = container.dataset.slug;
     if (!slug) return;
 
-    let currentUser: any = null;
     const storageKey = `gcp_radar_reactions_${slug}`;
 
-    // Load local reactions
+    // Load local cached reactions
     let userVotes: Record<string, boolean> = {};
     try {
       userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
@@ -87,17 +88,42 @@ const defaultWatchCount = 4;
 
     const buttons = container.querySelectorAll('.reaction-btn');
 
-    // Update active states from local storage
+    const updateButtonsActiveState = (votes: Record<string, boolean>) => {
+      userVotes = { ...votes };
+      buttons.forEach((btn) => {
+        const type = btn.getAttribute('data-type') as ReactionType;
+        if (type) {
+          if (userVotes[type]) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        }
+      });
+    };
+
+    updateButtonsActiveState(userVotes);
+
+    // Subscribe to live change stats / counts
+    listenToChange(slug, (changeData) => {
+      if (changeData?.reaction_counts) {
+        buttons.forEach((btn) => {
+          const type = btn.getAttribute('data-type') as ReactionType;
+          if (type && changeData.reaction_counts?.[type] !== undefined) {
+            const countBadge = btn.querySelector(`[data-count-type="${type}"]`);
+            if (countBadge) {
+              countBadge.textContent = String(Math.max(0, changeData.reaction_counts[type]));
+            }
+          }
+        });
+      }
+    });
+
     buttons.forEach((btn) => {
       const type = btn.getAttribute('data-type') as ReactionType;
-      if (type && userVotes[type]) {
-        btn.classList.add('active');
-      }
+      if (!type) return;
 
       btn.addEventListener('click', async () => {
-        const type = btn.getAttribute('data-type') as ReactionType;
-        if (!type) return;
-
         const auth = getFirebaseAuth();
         let user = auth.currentUser;
         if (!user) {
@@ -136,7 +162,13 @@ const defaultWatchCount = 4;
     });
 
     onAuthChange((user) => {
-      currentUser = user;
+      if (user) {
+        listenToUserReactions(slug, user.uid, (liveVotes) => {
+          updateButtonsActiveState(liveVotes);
+        });
+      } else {
+        updateButtonsActiveState({});
+      }
     });
   }
 

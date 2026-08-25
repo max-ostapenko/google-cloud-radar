@@ -504,69 +504,128 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
   import {
     getFirebaseAuth,
     signInWithGoogle,
+    onAuthChange,
     toggleUserReaction,
+    listenToChange,
+    listenToUserReactions,
     type ReactionType,
   } from '../lib/firebase';
 
   function initCardReactions() {
-    document.querySelectorAll<HTMLButtonElement>('.card-reaction-btn').forEach((btn) => {
-      const slug = btn.getAttribute('data-slug');
-      const type = btn.getAttribute('data-type') as ReactionType;
-      if (!slug || !type) return;
+    const cards = document.querySelectorAll<HTMLElement>('.change-card');
+
+    cards.forEach((card) => {
+      const slug = card.getAttribute('data-slug');
+      if (!slug) return;
 
       const storageKey = `gcp_radar_reactions_${slug}`;
+      let userVotes: Record<string, boolean> = {};
       try {
-        const userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
-        if (userVotes[type]) {
-          btn.classList.add('active');
-        }
+        userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
       } catch {}
 
-      // Avoid attaching duplicate click listeners
-      if (btn.dataset.initialized) return;
-      btn.dataset.initialized = 'true';
+      const buttons = card.querySelectorAll<HTMLButtonElement>('.card-reaction-btn');
 
-      btn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const auth = getFirebaseAuth();
-        let user = auth.currentUser;
-        if (!user) {
-          try {
-            user = await signInWithGoogle();
-          } catch {
-            console.log('Sign in cancelled');
-            return;
+      const updateButtonsActiveState = (votes: Record<string, boolean>) => {
+        userVotes = { ...votes };
+        buttons.forEach((btn) => {
+          const type = btn.getAttribute('data-type') as ReactionType;
+          if (type) {
+            if (userVotes[type]) {
+              btn.classList.add('active');
+            } else {
+              btn.classList.remove('active');
+            }
           }
+        });
+      };
+
+      updateButtonsActiveState(userVotes);
+
+      // Subscribe to live change stats
+      listenToChange(slug, (changeData) => {
+        if (changeData?.reaction_counts) {
+          buttons.forEach((btn) => {
+            const type = btn.getAttribute('data-type') as ReactionType;
+            if (type && changeData.reaction_counts?.[type] !== undefined) {
+              const countBadge = btn.querySelector('.reaction-count');
+              if (countBadge) {
+                countBadge.textContent = String(Math.max(0, changeData.reaction_counts[type]));
+              }
+            }
+          });
         }
-        if (!user) return;
+      });
 
-        let userVotes: Record<string, boolean> = {};
-        try {
-          userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
-        } catch {}
+      buttons.forEach((btn) => {
+        const type = btn.getAttribute('data-type') as ReactionType;
+        if (!type) return;
 
-        const countBadge = btn.querySelector('.reaction-count');
-        const currentCount = parseInt(countBadge?.textContent || '0', 10);
-        const isCurrent = Boolean(userVotes[type]);
+        if (btn.dataset.initialized) return;
+        btn.dataset.initialized = 'true';
 
-        // Optimistic UI update
-        if (isCurrent) {
-          userVotes[type] = false;
-          btn.classList.remove('active');
-          if (countBadge) countBadge.textContent = String(Math.max(0, currentCount - 1));
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const auth = getFirebaseAuth();
+          let user = auth.currentUser;
+          if (!user) {
+            try {
+              user = await signInWithGoogle();
+            } catch {
+              console.log('Sign in cancelled');
+              return;
+            }
+          }
+          if (!user) return;
+
+          const countBadge = btn.querySelector('.reaction-count');
+          const currentCount = parseInt(countBadge?.textContent || '0', 10);
+          const isCurrent = Boolean(userVotes[type]);
+
+          // Optimistic UI update
+          if (isCurrent) {
+            userVotes[type] = false;
+            btn.classList.remove('active');
+            if (countBadge) countBadge.textContent = String(Math.max(0, currentCount - 1));
+          } else {
+            userVotes[type] = true;
+            btn.classList.add('active');
+            if (countBadge) countBadge.textContent = String(currentCount + 1);
+          }
+
+          try {
+            localStorage.setItem(storageKey, JSON.stringify(userVotes));
+          } catch {}
+
+          await toggleUserReaction(slug, user, type, isCurrent).catch(console.error);
+        });
+      });
+    });
+
+    onAuthChange((user) => {
+      cards.forEach((card) => {
+        const slug = card.getAttribute('data-slug');
+        if (!slug) return;
+        const buttons = card.querySelectorAll<HTMLButtonElement>('.card-reaction-btn');
+
+        if (user) {
+          listenToUserReactions(slug, user.uid, (liveVotes) => {
+            buttons.forEach((btn) => {
+              const type = btn.getAttribute('data-type') as ReactionType;
+              if (type) {
+                if (liveVotes[type]) {
+                  btn.classList.add('active');
+                } else {
+                  btn.classList.remove('active');
+                }
+              }
+            });
+          });
         } else {
-          userVotes[type] = true;
-          btn.classList.add('active');
-          if (countBadge) countBadge.textContent = String(currentCount + 1);
+          buttons.forEach((btn) => btn.classList.remove('active'));
         }
-
-        try {
-          localStorage.setItem(storageKey, JSON.stringify(userVotes));
-        } catch {}
-
-        await toggleUserReaction(slug, user, type, isCurrent).catch(console.error);
       });
     });
   }
