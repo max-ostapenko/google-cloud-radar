@@ -72,6 +72,7 @@ python scripts/diff_to_feed.py --dry-run
 |---|---|
 | [**Web Frontend Guide**](web/README.md) | Astro 5 architecture, page routes, mock Firestore dev server (`dev:all`), and styling tokens. |
 | [**Data Pipeline Guide**](scripts/README.md) | CLI commands, AST diffing engine, Gemini prompt tuning, and release note correlation. |
+| [**Security Policy**](SECURITY.md) | Vulnerability disclosure guidelines, response commitments, and defense-in-depth architecture. |
 | [**AI Agent Context**](AGENTS.md) | Architectural mental model, core engineering invariants (AIP-180 rules, 90-day benchmark scope), and subsystems map. |
 
 ---
@@ -88,6 +89,7 @@ python scripts/diff_to_feed.py --dry-run
 
 ---
 
-## License
+## Security & License
 
-Apache 2.0 · See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community participation guidelines.
+* **Security**: See [SECURITY.md](SECURITY.md) for vulnerability reporting and security practices.
+* **License**: Apache 2.0 · See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community participation guidelines.
