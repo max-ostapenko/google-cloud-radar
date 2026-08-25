@@ -1,5 +1,168 @@
 [
   {
+    "slug": "2026-08-25-youtube-v3",
+    "date": "2026-08-25",
+    "api": "youtube.v3",
+    "service_name": "YouTube",
+    "title": "YouTube Data API v3: Major Breaking Changes & Strict Validation",
+    "impact": "high",
+    "breaking": true,
+    "tags": [
+      "breaking-change",
+      "youtube",
+      "api-validation",
+      "security"
+    ],
+    "interesting_score": 9,
+    "generated_at": "2026-08-25T10:38:48.544789+00:00"
+  },
+  {
+    "slug": "2026-08-25-script-v1",
+    "date": "2026-08-25",
+    "api": "script.v1",
+    "service_name": "Apps Script",
+    "title": "Apps Script API enforces required IDs and expands scopes",
+    "impact": "high",
+    "breaking": true,
+    "tags": [
+      "breaking-change",
+      "apps-script",
+      "oauth",
+      "workspace"
+    ],
+    "interesting_score": 9,
+    "generated_at": "2026-08-25T10:38:48.544048+00:00"
+  },
+  {
+    "slug": "2026-08-25-libraryagent-v1",
+    "date": "2026-08-25",
+    "api": "libraryagent.v1",
+    "service_name": "Library Agent",
+    "title": "Breaking: Library Agent enforces required parameters",
+    "impact": "high",
+    "breaking": true,
+    "tags": [
+      "breaking-change",
+      "library-agent",
+      "api-update"
+    ],
+    "interesting_score": 8,
+    "generated_at": "2026-08-25T10:38:48.543264+00:00"
+  },
+  {
+    "slug": "2026-08-25-gmail-v1",
+    "date": "2026-08-25",
+    "api": "gmail.v1",
+    "service_name": "Gmail",
+    "title": "Gmail API: Strict Parameter Validation & CSE Immutability",
+    "impact": "high",
+    "breaking": true,
+    "tags": [
+      "breaking-change",
+      "security",
+      "cse"
+    ],
+    "interesting_score": 9,
+    "generated_at": "2026-08-25T10:38:48.542510+00:00"
+  },
+  {
+    "slug": "2026-08-25-drive-v3",
+    "date": "2026-08-25",
+    "api": "drive.v3",
+    "service_name": "Google Drive",
+    "title": "Drive API v3: Major Schema Hardening and Breaking Changes",
+    "impact": "high",
+    "breaking": true,
+    "tags": [
+      "breaking-change",
+      "security",
+      "scopes"
+    ],
+    "interesting_score": 9,
+    "generated_at": "2026-08-25T10:38:48.541750+00:00"
+  },
+  {
+    "slug": "2026-08-25-drive-v2",
+    "date": "2026-08-25",
+    "api": "drive.v2",
+    "service_name": "Google Drive",
+    "title": "Drive v2 API: Major Validation Tightening & Breaking Changes",
+    "impact": "high",
+    "breaking": true,
+    "tags": [
+      "breaking-change",
+      "validation",
+      "security"
+    ],
+    "interesting_score": 9,
+    "generated_at": "2026-08-25T10:38:48.541010+00:00"
+  },
+  {
+    "slug": "2026-08-25-androidpublisher-v3",
+    "date": "2026-08-25",
+    "api": "androidpublisher.v3",
+    "service_name": "Android Publisher",
+    "title": "Massive Schema Tightening and New Data Safety Method",
+    "impact": "high",
+    "breaking": true,
+    "tags": [
+      "breaking change",
+      "google play",
+      "android"
+    ],
+    "interesting_score": 9,
+    "generated_at": "2026-08-25T10:38:48.540214+00:00"
+  },
+  {
+    "slug": "2026-08-25-admin-reports-v1",
+    "date": "2026-08-25",
+    "api": "admin.reports_v1",
+    "service_name": "Admin SDK Reports",
+    "title": "Breaking Changes: Required Parameters and Read-Only Fields",
+    "impact": "high",
+    "breaking": true,
+    "tags": [
+      "breaking-change",
+      "security",
+      "workspace"
+    ],
+    "interesting_score": 9,
+    "generated_at": "2026-08-25T10:38:48.539461+00:00"
+  },
+  {
+    "slug": "2026-08-25-admin-directory-v1",
+    "date": "2026-08-25",
+    "api": "admin.directory_v1",
+    "service_name": "Admin SDK Directory",
+    "title": "Major Schema Hardening and Granular OAuth Scopes",
+    "impact": "high",
+    "breaking": true,
+    "tags": [
+      "breaking-change",
+      "security",
+      "identity",
+      "iam"
+    ],
+    "interesting_score": 9,
+    "generated_at": "2026-08-25T10:38:48.538663+00:00"
+  },
+  {
+    "slug": "2026-08-25-admin-datatransfer-v1",
+    "date": "2026-08-25",
+    "api": "admin.datatransfer_v1",
+    "service_name": "Admin SDK Data Transfer",
+    "title": "Breaking changes and parameter enforcement in Data Transfer",
+    "impact": "high",
+    "breaking": true,
+    "tags": [
+      "breaking-change",
+      "admin-sdk",
+      "security"
+    ],
+    "interesting_score": 8,
+    "generated_at": "2026-08-25T10:38:48.537816+00:00"
+  },
+  {
     "slug": "2026-08-22-bigqueryreservation-v1",
     "date": "2026-08-22",
     "api": "bigqueryreservation.v1",

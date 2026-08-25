@@ -7,7 +7,12 @@ impact: medium
 breaking: false
 tags: ["bigquery", "reservations", "deprecation"]
 interesting_score: 7
+status: released
+lead_time_days: 12
+official_release_date: "2026-07-13"
+official_release_notes_url: "https://docs.cloud.google.com/bigquery/docs/release-notes#July_13_2026"
 ---
+
 
 # Hierarchical Reservation Groups and Flex Plan Deprecation
 

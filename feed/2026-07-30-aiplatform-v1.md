@@ -7,7 +7,12 @@ impact: medium
 breaking: false
 tags: ["AI", "Vertex AI", "Operations", "HTTP Proxy"]
 interesting_score: 6
+status: released
+lead_time_days: 0
+official_release_date: "2026-03-16"
+official_release_notes_url: "https://docs.cloud.google.com/vertex-ai/docs/release-notes#March_16_2026"
 ---
+
 
 # Vertex AI adds Compact HTTP Forwarding and Serving Operations
 

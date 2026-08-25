@@ -7,7 +7,12 @@ impact: medium
 breaking: false
 tags: ["bigquery", "reservations", "materialized-views"]
 interesting_score: 6
+status: released
+lead_time_days: 0
+official_release_date: "2026-07-20"
+official_release_notes_url: "https://docs.cloud.google.com/bigquery/docs/release-notes#July_20_2026"
 ---
+
 
 # New jobType for Materialized View Refresh assignments
 

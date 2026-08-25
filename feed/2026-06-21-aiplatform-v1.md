@@ -7,7 +7,12 @@ impact: medium
 breaking: false
 tags: ["AI", "Generative AI", "Deprecation", "Infrastructure"]
 interesting_score: 7
+status: released
+lead_time_days: 0
+official_release_date: "2026-02-17"
+official_release_notes_url: "https://docs.cloud.google.com/vertex-ai/docs/release-notes#February_17_2026"
 ---
+
 
 # Online Evaluator Operations and GenerationConfig Deprecations
 

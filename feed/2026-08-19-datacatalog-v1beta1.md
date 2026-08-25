@@ -7,7 +7,12 @@ impact: medium
 breaking: false
 tags: ["Data Catalog", "Metadata", "Graph Databases"]
 interesting_score: 5
+status: released
+lead_time_days: 0
+official_release_date: "2026-07-09"
+official_release_notes_url: "https://docs.cloud.google.com/dataplex/docs/release-notes#July_09_2026"
 ---
+
 
 # Data Catalog adds support for Graph Nodes and Edges
 

@@ -7,7 +7,12 @@ impact: medium
 breaking: true
 tags: ["Tag Manager", "Variables", "Schema Change"]
 interesting_score: 7
+status: released
+lead_time_days: 19
+official_release_date: "2026-07-20"
+official_release_notes_url: "https://docs.cloud.google.com/bigquery/docs/release-notes#July_20_2026"
 ---
+
 
 # New Automatic Number Conversion and Error Schema Cleanup
 

@@ -7,7 +7,12 @@ impact: low
 breaking: false
 tags: ["data-lineage", "documentation"]
 interesting_score: 2
+status: released
+lead_time_days: 1
+official_release_date: "2026-05-29"
+official_release_notes_url: "https://docs.cloud.google.com/dataplex/docs/release-notes#May_29_2026"
 ---
+
 
 # Clarified location requirements for lineage search
 
