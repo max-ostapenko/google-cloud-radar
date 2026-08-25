@@ -7,7 +7,12 @@ impact: high
 breaking: false
 tags: ["breaking change", "google play", "android"]
 interesting_score: 9
+status: released
+lead_time_days: 0
+official_release_date: "2025-09-15"
+official_release_notes_url: "https://docs.cloud.google.com/vertex-ai/docs/release-notes#September_15_2025"
 ---
+
 
 # Massive Schema Tightening and New Data Safety Method
 

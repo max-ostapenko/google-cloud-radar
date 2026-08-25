@@ -118,16 +118,17 @@
     "date": "2026-08-25",
     "api": "admin.reports_v1",
     "service_name": "Admin SDK Reports",
-    "title": "Breaking Changes: Required Parameters and Read-Only Fields",
+    "title": "Breaking Changes and Workspace Studio Support",
     "impact": "high",
-    "breaking": true,
+    "breaking": false,
     "tags": [
       "breaking-change",
       "security",
-      "workspace"
+      "workspace",
+      "audit-logs"
     ],
     "interesting_score": 9,
-    "generated_at": "2026-08-25T10:38:48.539461+00:00"
+    "generated_at": "2026-08-25T20:33:31.974014+00:00"
   },
   {
     "slug": "2026-08-25-admin-directory-v1",
