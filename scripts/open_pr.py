@@ -21,7 +21,7 @@ import uuid
 from typing import Optional
 
 REMOTE_NAME = "yoshi-fork"
-REPO_NAME = "max-ostapenko/discovery-artifact-manager"
+REPO_NAME = "max-ostapenko/google-cloud-radar"
 GIT_USER_NAME = "max-ostapenko"
 GIT_USER_EMAIL = "1611259+max-ostapenko@users.noreply.github.com"
 COMMIT_MESSAGE = "chore: Automated update of discovery documents"

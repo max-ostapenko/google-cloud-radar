@@ -13,7 +13,7 @@ export const GET: APIRoute = async () => {
     'It captures breaking changes, parameter deprecations, and newly deployed API methods before they reach official release notes.',
     '',
     '## Repository',
-    'https://github.com/max-ostapenko/discovery-artifact-manager',
+    'https://github.com/max-ostapenko/google-cloud-radar',
     '',
     '## Recent API Changes and Breaking Updates',
     '',

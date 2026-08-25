@@ -4,7 +4,7 @@ on:
 
 jobs:
   normalize-discoveries:
-    if: ${{ github.repository == 'googleapis/discovery-artifact-manager' }}
+    if: ${{ github.repository == 'googleapis/google-cloud-radar' }}
     runs-on: ubuntu-latest
     env:
       ACCESS_TOKEN: ${{ secrets.YOSHI_CODE_BOT_TOKEN }}
@@ -22,7 +22,7 @@ jobs:
         with:
           command: pr
           upstream_owner: googleapis
-          upstream_repo: discovery-artifact-manager
+          upstream_repo: google-cloud-radar
           description: 'Ran scripts/normalize_discovery.py'
           title: 'chore: normalize discovery docs'
           message: 'chore: normalize discovery docs'

@@ -5,13 +5,13 @@ on:
     branches:
       - main
     paths:
-      - 'web/**'
-      - 'feed/**'
+      - "web/**"
+      - "feed/**"
   workflow_dispatch:
 
 jobs:
   build-and-deploy:
-    if: ${{ github.repository == 'max-ostapenko/discovery-artifact-manager' }}
+    if: ${{ github.repository == 'max-ostapenko/google-cloud-radar' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -30,8 +30,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-          cache-dependency-path: 'web/package-lock.json'
+          cache: "npm"
+          cache-dependency-path: "web/package-lock.json"
 
       - name: Install dependencies
         working-directory: web

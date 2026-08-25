@@ -1,9 +1,9 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import ReactionsBar from '../../components/ReactionsBar.astro';
-import DiscussionsSection from '../../components/DiscussionsSection.astro';
-import ShareScoopModal from '../../components/ShareScoopModal.astro';
-import { getAllFeedEntries, type FeedEntry } from '../../lib/feed';
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ReactionsBar from "../../components/ReactionsBar.astro";
+import DiscussionsSection from "../../components/DiscussionsSection.astro";
+import ShareScoopModal from "../../components/ShareScoopModal.astro";
+import { getAllFeedEntries, type FeedEntry } from "../../lib/feed";
 
 export async function getStaticPaths() {
   const entries = await getAllFeedEntries();
@@ -19,36 +19,46 @@ interface Props {
 
 const { entry } = Astro.props;
 
-const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en-US', {
-  weekday: 'long',
-  month: 'long',
-  day: 'numeric',
-  year: 'numeric',
-  timeZone: 'UTC',
-});
+const formattedDate = new Date(entry.date + "T00:00:00Z").toLocaleDateString(
+  "en-US",
+  {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  },
+);
 
 // JSON-LD TechArticle schema for rich SEO
 const schemaData = {
-  '@context': 'https://schema.org',
-  '@type': 'TechArticle',
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
   headline: entry.title,
   description: entry.summary,
   datePublished: entry.date,
   author: {
-    '@type': 'Organization',
-    name: 'Google Cloud Radar',
-    url: 'https://github.com/max-ostapenko/discovery-artifact-manager',
+    "@type": "Organization",
+    name: "Google Cloud Radar",
+    url: "https://github.com/max-ostapenko/google-cloud-radar",
   },
   publisher: {
-    '@type': 'Organization',
-    name: 'Google Cloud Radar',
-    url: 'https://gcp-cloud-radar.web.app',
+    "@type": "Organization",
+    name: "Google Cloud Radar",
+    url: "https://gcp-cloud-radar.web.app",
   },
-  keywords: [entry.service, entry.api, ...(entry.tags || []), entry.breaking ? 'Breaking Change' : ''].filter(Boolean).join(', '),
+  keywords: [
+    entry.service,
+    entry.api,
+    ...(entry.tags || []),
+    entry.breaking ? "Breaking Change" : "",
+  ]
+    .filter(Boolean)
+    .join(", "),
   articleSection: entry.category,
 };
 
-const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 ---
 
 <BaseLayout
@@ -77,33 +87,46 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       <div class="change-hero-top">
         <div class="change-badge-group">
           <span class="category-badge">{entry.category}</span>
-          <a href={`/services/${serviceSlug}`} class="service-pill" title={`View all ${entry.service} updates`}>
+          <a
+            href={`/services/${serviceSlug}`}
+            class="service-pill"
+            title={`View all ${entry.service} updates`}
+          >
             <span class="service-icon-dot"></span>
             <span class="service-name">{entry.service}</span>
           </a>
 
-          {entry.status === 'released' && (
-            <span class="badge badge-released" title={`Confirmed in official release notes${entry.lead_time_days ? ` (Caught ${entry.lead_time_days} days earlier in Canary)` : ''}`}>
-              <span class="status-dot-green"></span> Released {entry.lead_time_days ? `(${entry.lead_time_days}d lead)` : ''}
-            </span>
-          )}
+          {
+            entry.status === "released" && (
+              <span
+                class="badge badge-released"
+                title={`Confirmed in official release notes${entry.lead_time_days ? ` (Caught ${entry.lead_time_days} days earlier in Canary)` : ""}`}
+              >
+                <span class="status-dot-green" /> Released{" "}
+                {entry.lead_time_days ? `(${entry.lead_time_days}d lead)` : ""}
+              </span>
+            )
+          }
 
-          {entry.breaking ? (
-            <span class="badge badge-breaking" title="Breaking API change">
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-                <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
-              </svg>
-              Breaking Change
-            </span>
-          ) : entry.impact === 'high' ? (
-            <span class="badge badge-impact-high">
-              High Impact
-            </span>
-          ) : entry.impact === 'medium' ? (
-            <span class="badge badge-impact-medium">
-              Medium Impact
-            </span>
-          ) : null}
+          {
+            entry.breaking ? (
+              <span class="badge badge-breaking" title="Breaking API change">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="12"
+                  height="12"
+                  fill="currentColor"
+                >
+                  <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                </svg>
+                Breaking Change
+              </span>
+            ) : entry.impact === "high" ? (
+              <span class="badge badge-impact-high">High Impact</span>
+            ) : entry.impact === "medium" ? (
+              <span class="badge badge-impact-medium">Medium Impact</span>
+            ) : null
+          }
         </div>
 
         <div class="change-hero-actions">
@@ -118,24 +141,37 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
             leadTimeDays={entry.lead_time_days}
           />
 
-          {entry.documentationLink && (
-            <a 
-              href={entry.documentationLink} 
-              class="hero-action-btn doc-btn" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              title={`Official documentation for ${entry.service}`}
-            >
-              <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/>
-                <line x1="10" y1="14" x2="21" y2="3"/>
-              </svg>
-              <span>Docs</span>
-            </a>
-          )}
+          {
+            entry.documentationLink && (
+              <a
+                href={entry.documentationLink}
+                class="hero-action-btn doc-btn"
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`Official documentation for ${entry.service}`}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="13"
+                  height="13"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  fill="none"
+                >
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+                <span>Docs</span>
+              </a>
+            )
+          }
 
-          <a href={`/services/${serviceSlug}`} class="hero-action-btn service-btn" title={`View all ${entry.service} updates`}>
+          <a
+            href={`/services/${serviceSlug}`}
+            class="hero-action-btn service-btn"
+            title={`View all ${entry.service} updates`}
+          >
             <span>{entry.service} feed →</span>
           </a>
         </div>
@@ -145,7 +181,15 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
       <div class="change-meta-row">
         <div class="meta-item">
-          <svg class="meta-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            class="meta-icon"
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="16" y1="2" x2="16" y2="6"></line>
             <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -158,71 +202,124 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
         <div class="meta-item">
           <span class="meta-label">Discovery API:</span>
-          {entry.discoveryRestUrl ? (
-            <a href={entry.discoveryRestUrl} target="_blank" rel="noopener noreferrer" class="meta-api-link" title="View Raw Google Discovery JSON">
-              <code>{entry.api}</code>
-              <span class="api-ext">↗</span>
-            </a>
-          ) : (
-            <code class="meta-code">{entry.api}</code>
-          )}
+          {
+            entry.discoveryRestUrl ? (
+              <a
+                href={entry.discoveryRestUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="meta-api-link"
+                title="View Raw Google Discovery JSON"
+              >
+                <code>{entry.api}</code>
+                <span class="api-ext">↗</span>
+              </a>
+            ) : (
+              <code class="meta-code">{entry.api}</code>
+            )
+          }
         </div>
 
-        {entry.lead_time_days && (
-          <>
-            <span class="meta-dot">•</span>
-            <div class="meta-item lead-time-highlight">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-              </svg>
-              <span>Caught <strong>{entry.lead_time_days} days</strong> ahead of release</span>
-            </div>
-          </>
-        )}
+        {
+          entry.lead_time_days && (
+            <>
+              <span class="meta-dot">•</span>
+              <div class="meta-item lead-time-highlight">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="14"
+                  height="14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                <span>
+                  Caught <strong>{entry.lead_time_days} days</strong> ahead of
+                  release
+                </span>
+              </div>
+            </>
+          )
+        }
       </div>
 
-      {entry.extractedMethods && entry.extractedMethods.length > 0 && (
-        <div class="methods-strip">
-          <div class="methods-strip-header">
-            <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none">
-              <polyline points="16 18 22 12 16 6"/>
-              <polyline points="8 6 2 12 8 18"/>
-            </svg>
-            <span class="methods-strip-title">Modified API Methods ({entry.extractedMethods.length}):</span>
+      {
+        entry.extractedMethods && entry.extractedMethods.length > 0 && (
+          <div class="methods-strip">
+            <div class="methods-strip-header">
+              <svg
+                viewBox="0 0 24 24"
+                width="13"
+                height="13"
+                stroke="currentColor"
+                stroke-width="2"
+                fill="none"
+              >
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg>
+              <span class="methods-strip-title">
+                Modified API Methods ({entry.extractedMethods.length}):
+              </span>
+            </div>
+            <div class="methods-strip-list">
+              {entry.extractedMethods.map((method) => (
+                <div class="method-chip">
+                  <span class="method-rpc-tag">RPC</span>
+                  <code class="method-name">{method}</code>
+                  <button
+                    class="copy-method-btn"
+                    data-copy={method}
+                    aria-label="Copy method identifier"
+                    title="Copy method"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="12"
+                      height="12"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      fill="none"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-          <div class="methods-strip-list">
-            {entry.extractedMethods.map((method) => (
-              <div class="method-chip">
-                <span class="method-rpc-tag">RPC</span>
-                <code class="method-name">{method}</code>
-                <button class="copy-method-btn" data-copy={method} aria-label="Copy method identifier" title="Copy method">
-                  <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                  </svg>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        )
+      }
     </header>
 
     <!-- Main Content Card -->
     <article class="content-card">
-      <div class="markdown-body" set:html={entry.htmlContent}></div>
+      <div class="markdown-body" set:html={entry.htmlContent} />
 
       <footer class="content-footer">
         <div class="tags-section">
-          {entry.tags && entry.tags.map((tag) => (
-            <span class="tag-chip">#{tag}</span>
-          ))}
+          {
+            entry.tags &&
+              entry.tags.map((tag) => <span class="tag-chip">#{tag}</span>)
+          }
         </div>
 
         <div class="footer-actions">
           <a href="#comments" class="jump-comments-btn">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+              ></path>
             </svg>
             <span>Jump to Comments</span>
           </a>

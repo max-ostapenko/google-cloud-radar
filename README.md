@@ -1,6 +1,6 @@
 # 📡 Google Cloud Radar
 
-> **Real-time pre-release intelligence for Google APIs and Cloud services.**  
+> **Real-time pre-release intelligence for Google APIs and Cloud services.**
 > Tracking unreleased control-plane method additions, schema changes, and breaking changes directly from the Google API Discovery Service before they appear in official release notes.
 
 ---
@@ -12,15 +12,15 @@ graph TD
     A[Google Discovery API] -->|Cron (every 5h)| B(scripts/update_disco.py)
     B -->|Check Whitelist| C{Is Monitored API?}
     C -->|Yes| D[Normalized JSON in discoveries/]
-    
+
     D --> E(scripts/diff_to_feed.py)
     E -->|AST Diffing & Noise Filtering| F(scripts/diff_preprocessor.py)
     F --> G[Structured API Diff]
-    
+
     G --> H(scripts/llm_client.py)
     H -->|Gemini 2.5/3 Pro Inference| I{Interesting Score >= 3?}
     I -->|Yes| J[Write to feed/*.md & feed/index.json]
-    
+
     J --> K[Astro 5 SSG Web App / web/]
     K --> L[Firebase Hosting Global CDN]
     K --> M[Public Machine Feeds: /rss.xml, /api/feed.json, /llms.txt]
@@ -81,7 +81,7 @@ PYTHONPATH=. pytest
 
 ## 🤖 The Analysis Engine & Prompt Tuning
 
-The Gemini-powered analysis prompt lives in [`scripts/prompts/api_change_analyst.txt`](file:///Users/maxostapenko/GitHub/discovery-artifact-manager/scripts/prompts/api_change_analyst.txt).
+The Gemini-powered analysis prompt lives in [`scripts/prompts/api_change_analyst.txt`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/prompts/api_change_analyst.txt).
 
 You can tune:
 * **Tone & Persona**: Staff Cloud Infrastructure Architect
@@ -92,7 +92,7 @@ You can tune:
 
 ## 🚢 Deployment
 
-The web app deploys automatically to Firebase Hosting on push to `main` via [.github/workflows/deploy-web.yml](file:///Users/maxostapenko/GitHub/discovery-artifact-manager/.github/workflows/deploy-web.yml).
+The web app deploys automatically to Firebase Hosting on push to `main` via [.github/workflows/deploy-web.yml](file:///Users/maxostapenko/GitHub/google-cloud-radar/.github/workflows/deploy-web.yml).
 
 Manual deployment:
 ```bash

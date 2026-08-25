@@ -1,18 +1,18 @@
 name: Update Discoveries Directory
 on:
   schedule:
-    - cron: '0 */5 * * *'
+    - cron: "0 */5 * * *"
   workflow_dispatch:
 
 jobs:
   update-discoveries:
-    if: ${{ github.repository == 'max-ostapenko/google-cloud-radar' || github.repository == 'max-ostapenko/discovery-artifact-manager' }}
+    if: ${{ github.repository == 'max-ostapenko/google-cloud-radar' || github.repository == 'max-ostapenko/google-cloud-radar' }}
     runs-on: ubuntu-latest
     permissions:
-      contents: write      # push feed commits
+      contents: write # push feed commits
       pull-requests: write # create/update PRs via gh
-      issues: write        # add automerge label
-      id-token: write      # Workload Identity Federation
+      issues: write # add automerge label
+      id-token: write # Workload Identity Federation
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -39,4 +39,3 @@ jobs:
       - name: Update discoveries, correlate releases, sync Firestore DB, and open PR
         run: |
           python scripts/update_disco.py && python scripts/correlate_releases.py --database radar && python scripts/seed_prod_firestore.py --database radar && python scripts/open_pr.py
-
