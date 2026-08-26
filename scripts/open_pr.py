@@ -204,7 +204,7 @@ def generate_and_commit_feed() -> None:
         sys.exit(f"diff_to_feed.py failed with return code {result.returncode}")
 
     logging.info("Staging feed updates ...")
-    subprocess.run(["git", "add", "feed/"], check=True)
+    subprocess.run(["git", "add", "data/"], check=True)
 
     # Check if there are staged changes to commit
     diff_result = subprocess.run(
