@@ -1,5 +1,48 @@
 [
   {
+    "id": "2026-08-27-tagmanager-v2",
+    "slug": "2026-08-27-tagmanager-v2",
+    "date": "2026-08-27",
+    "api": "tagmanager.v2",
+    "service": "Tag Manager",
+    "service_name": "Tag Manager",
+    "title": "Deprecation of Container Combine and Move Tag Methods",
+    "summary": "Google Tag Manager has deprecated the `combine` and `move_tag_id` methods within the containers resource, signaling a shift in how container migrations are handled.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "Deprecation",
+      "Containers",
+      "Automation"
+    ],
+    "extracted_methods": [
+      "accounts.containers.combine",
+      "accounts.containers.move_tag_id"
+    ],
+    "generated_at": "2026-08-27T20:39:41.844467+00:00"
+  },
+  {
+    "id": "2026-08-27-drive-v3",
+    "slug": "2026-08-27-drive-v3",
+    "date": "2026-08-27",
+    "api": "drive.v3",
+    "service": "Google Drive",
+    "service_name": "Google Drive",
+    "title": "Clarified field requirements for Drive Approvals",
+    "summary": "The Drive API documentation now explicitly notes that the approvals.list method requires the fields parameter to return detailed results.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 3,
+    "tags": [
+      "Google Drive",
+      "Approvals",
+      "Documentation"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-08-27T20:39:41.842340+00:00"
+  },
+  {
     "id": "2026-08-25-youtube-v3",
     "slug": "2026-08-25-youtube-v3",
     "date": "2026-08-25",

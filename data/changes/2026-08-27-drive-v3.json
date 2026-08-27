@@ -1,0 +1,24 @@
+{
+  "id": "2026-08-27-drive-v3",
+  "slug": "2026-08-27-drive-v3",
+  "date": "2026-08-27",
+  "api": "drive.v3",
+  "service": "Google Drive",
+  "service_name": "Google Drive",
+  "title": "Clarified field requirements for Drive Approvals",
+  "summary": "The Drive API documentation now explicitly notes that the approvals.list method requires the fields parameter to return detailed results.",
+  "details": "A documentation update for drive.approvals.list clarifies that the method returns a minimal response by default, which may exclude the items array. Developers must explicitly specify desired fields using the fields query parameter to retrieve approval details. This aligns with standard Google API partial response patterns but is now explicitly documented for this specific resource to prevent confusion when results appear empty.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 3,
+  "tags": [
+    "Google Drive",
+    "Approvals",
+    "Documentation"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-27T20:39:41.842340+00:00"
+}
