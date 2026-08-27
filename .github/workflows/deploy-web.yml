@@ -7,6 +7,12 @@ on:
     paths:
       - "web/**"
       - "data/**"
+  workflow_run:
+    workflows: ["Update Discoveries Directory"]
+    types:
+      - completed
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -14,7 +20,9 @@ permissions:
 
 jobs:
   build-and-deploy:
-    if: ${{ github.repository == 'max-ostapenko/google-cloud-radar' }}
+    if: >
+      github.repository == 'max-ostapenko/google-cloud-radar' &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     permissions:
       contents: read
