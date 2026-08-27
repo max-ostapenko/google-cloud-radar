@@ -18,8 +18,10 @@
     "ops"
   ],
   "extracted_methods": [],
-  "status": "canary",
-  "radar_ring": "assess",
-  "lead_time_days": 14,
-  "generated_at": "2026-06-21T03:00:00Z"
+  "status": "released",
+  "radar_ring": "adopt",
+  "lead_time_days": 58,
+  "generated_at": "2026-06-21T03:00:00Z",
+  "official_release_date": "2026-08-18",
+  "official_release_notes_url": "https://docs.cloud.google.com/looker/docs/release-notes#August_18_2026"
 }
