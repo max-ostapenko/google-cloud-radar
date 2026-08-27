@@ -24,9 +24,14 @@ except ImportError:
 
 OFFICIAL_RELEASE_FEEDS = get_official_release_feeds()
 
+_FEED_CACHE: dict[str, list] = {}
+
 
 def fetch_feed_entries(feed_url: str) -> list:
-    """Fetches and parses an RSS/Atom release notes feed."""
+    """Fetches and parses an RSS/Atom release notes feed, caching results per run."""
+    if feed_url in _FEED_CACHE:
+        return _FEED_CACHE[feed_url]
+
     req = urllib.request.Request(
         feed_url,
         headers={"User-Agent": "GCP-Discovery-Radar/1.0 (+https://gcp-cloud-radar.web.app)"}
@@ -34,9 +39,12 @@ def fetch_feed_entries(feed_url: str) -> list:
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
             xml_text = resp.read().decode("utf-8")
-        return parse_feed_xml(xml_text)
+        entries = parse_feed_xml(xml_text)
+        _FEED_CACHE[feed_url] = entries
+        return entries
     except Exception as e:
         print(f"⚠️ Could not fetch release feed from {feed_url}: {e}", file=sys.stderr)
+        _FEED_CACHE[feed_url] = []
         return []
 
 
