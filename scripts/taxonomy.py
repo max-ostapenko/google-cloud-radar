@@ -175,7 +175,7 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "category": "Data Analytics",
         "quadrant": "data_platforms",
         "name": "Analytics Hub",
-        "release_feed_url": "https://cloud.google.com/feeds/analytics-hub-release-notes.xml",
+        "release_feed_url": "https://cloud.google.com/feeds/bigquery-release-notes.xml",
     },
     "looker": {
         "ecosystem": "Google Cloud",
