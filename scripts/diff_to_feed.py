@@ -126,9 +126,9 @@ def main() -> None:
     written = write_insights(insights, insight_date=insight_date)
 
     if written:
-        logger.info(f"\nPublished {len(written)} insight(s) to feed/:")
+        logger.info(f"\nPublished {len(written)} insight(s) to data/:")
         for slug in written:
-            logger.info(f"  feed/{slug}.md")
+            logger.info(f"  data/changes/{slug}.json")
     else:
         logger.info(
             "All insights were below the interesting_score threshold — feed unchanged."
