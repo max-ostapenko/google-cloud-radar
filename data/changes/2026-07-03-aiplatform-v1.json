@@ -18,8 +18,10 @@
     "Memory"
   ],
   "extracted_methods": [],
-  "status": "canary",
-  "radar_ring": "assess",
-  "lead_time_days": 14,
-  "generated_at": "2026-07-03T03:00:00Z"
+  "status": "released",
+  "radar_ring": "adopt",
+  "lead_time_days": 0,
+  "generated_at": "2026-07-03T03:00:00Z",
+  "official_release_date": "2025-09-15",
+  "official_release_notes_url": "https://docs.cloud.google.com/vertex-ai/docs/release-notes#September_15_2025"
 }

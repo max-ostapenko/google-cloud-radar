@@ -17,8 +17,10 @@
     "migration"
   ],
   "extracted_methods": [],
-  "status": "canary",
-  "radar_ring": "assess",
-  "lead_time_days": 14,
-  "generated_at": "2026-08-13T03:00:00Z"
+  "status": "released",
+  "radar_ring": "adopt",
+  "lead_time_days": 0,
+  "generated_at": "2026-08-13T03:00:00Z",
+  "official_release_date": "2026-06-22",
+  "official_release_notes_url": "https://docs.cloud.google.com/looker/docs/release-notes#June_22_2026"
 }

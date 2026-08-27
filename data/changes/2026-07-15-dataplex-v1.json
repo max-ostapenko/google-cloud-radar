@@ -17,8 +17,10 @@
     "breaking-change"
   ],
   "extracted_methods": [],
-  "status": "canary",
-  "radar_ring": "hold",
-  "lead_time_days": 14,
-  "generated_at": "2026-07-15T03:00:00Z"
+  "status": "released",
+  "radar_ring": "adopt",
+  "lead_time_days": 0,
+  "generated_at": "2026-07-15T03:00:00Z",
+  "official_release_date": "2026-05-25",
+  "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#May_25_2026"
 }

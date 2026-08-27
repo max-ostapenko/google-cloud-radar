@@ -18,8 +18,10 @@
     "metastore"
   ],
   "extracted_methods": [],
-  "status": "canary",
-  "radar_ring": "assess",
-  "lead_time_days": 14,
-  "generated_at": "2026-06-22T03:00:00Z"
+  "status": "released",
+  "radar_ring": "adopt",
+  "lead_time_days": 21,
+  "generated_at": "2026-06-22T03:00:00Z",
+  "official_release_date": "2026-07-13",
+  "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#July_13_2026"
 }
