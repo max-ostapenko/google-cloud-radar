@@ -1,0 +1,25 @@
+{
+  "id": "2026-08-29-aiplatform-v1beta1",
+  "slug": "2026-08-29-aiplatform-v1beta1",
+  "date": "2026-08-29",
+  "api": "aiplatform.v1beta1",
+  "service": "Vertex AI",
+  "service_name": "Vertex AI",
+  "title": "Breaking Changes to Agents and Transcription Config",
+  "summary": "Vertex AI v1beta1 introduces several breaking changes, including mandatory resource parameters and the removal of the recently added transcription 'mode'. It also adds standard IAM policy management for Agents and new sandbox authorization methods.",
+  "details": "This update includes significant breaking changes: the 'name' and 'resource' parameters are now strictly required across multiple methods, and the 'context' field in MemoryRevision is now read-only. Notably, the 'mode' field (previously used for SMART/VERBATIM transcription) has been removed from both AudioTranscriptionConfig and GenaiVertexV1beta1TranscriptionConfig, reversing a recent addition. Additionally, the 'customerVpcNetwork' property was removed from the Sandbox Egress configuration.\n\nOn the feature side, Agents now support standard IAM policy management via getIamPolicy, setIamPolicy, and testIamPermissions. The agents.delete method adds a 'force' parameter to allow the deletion of associated Task resources, and agents.list now supports AIP-160 filtering for 'created' and 'updated' timestamps. Finally, a new authorizeAccess method has been added to sandboxEnvironments to facilitate data-plane proxy authorization.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "iam",
+    "agents",
+    "transcription"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-29T22:31:04.233823+00:00"
+}
