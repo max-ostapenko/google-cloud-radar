@@ -1,0 +1,25 @@
+{
+  "id": "2026-08-29-aiplatform-v1",
+  "slug": "2026-08-29-aiplatform-v1",
+  "date": "2026-08-29",
+  "api": "aiplatform.v1",
+  "service": "Vertex AI",
+  "service_name": "Vertex AI",
+  "title": "Vertex AI Agents get IAM controls and lifecycle updates",
+  "summary": "Vertex AI introduces IAM support and enhanced deletion controls for Agents, alongside significant breaking changes to Sandbox networking and Audio Transcription configurations.",
+  "details": "This update introduces fine-grained access control for Vertex AI Agents via new `getIamPolicy`, `setIamPolicy`, and `testIamPermissions` methods. The `agents.delete` method now includes a `force` parameter, allowing developers to purge an agent along with its associated `Task` resources. Additionally, `agents.list` now supports AIP-160 filtering for `created` and `updated` timestamps.\n\nSeveral breaking changes have been introduced: the `mode` field (previously used for 'SMART' transcription) has been removed from `AudioTranscriptionConfig`, and `customerVpcNetwork` is no longer available in `SandboxEnvironmentTemplateEgressControlConfig`. Furthermore, `name` and `resource` parameters are now strictly required across multiple methods, and the `context` field in `MemoryRevision` is now immutable.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "AI",
+    "IAM",
+    "Breaking Change",
+    "Vertex AI"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-29T22:31:04.232207+00:00"
+}

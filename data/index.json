@@ -21,6 +21,48 @@
     "generated_at": "2026-08-29T14:58:03.718475+00:00"
   },
   {
+    "id": "2026-08-29-aiplatform-v1beta1",
+    "slug": "2026-08-29-aiplatform-v1beta1",
+    "date": "2026-08-29",
+    "api": "aiplatform.v1beta1",
+    "service": "Vertex AI",
+    "service_name": "Vertex AI",
+    "title": "Breaking Changes to Agents and Transcription Config",
+    "summary": "Vertex AI v1beta1 introduces several breaking changes, including mandatory resource parameters and the removal of the recently added transcription 'mode'. It also adds standard IAM policy management for Agents and new sandbox authorization methods.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking-change",
+      "iam",
+      "agents",
+      "transcription"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-08-29T22:31:04.233823+00:00"
+  },
+  {
+    "id": "2026-08-29-aiplatform-v1",
+    "slug": "2026-08-29-aiplatform-v1",
+    "date": "2026-08-29",
+    "api": "aiplatform.v1",
+    "service": "Vertex AI",
+    "service_name": "Vertex AI",
+    "title": "Vertex AI Agents get IAM controls and lifecycle updates",
+    "summary": "Vertex AI introduces IAM support and enhanced deletion controls for Agents, alongside significant breaking changes to Sandbox networking and Audio Transcription configurations.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 8,
+    "tags": [
+      "AI",
+      "IAM",
+      "Breaking Change",
+      "Vertex AI"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-08-29T22:31:04.232207+00:00"
+  },
+  {
     "id": "2026-08-27-tagmanager-v2",
     "slug": "2026-08-27-tagmanager-v2",
     "date": "2026-08-27",
