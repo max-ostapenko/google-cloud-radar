@@ -1,5 +1,26 @@
 [
   {
+    "id": "2026-08-29-dataplex-v1",
+    "slug": "2026-08-29-dataplex-v1",
+    "date": "2026-08-29",
+    "api": "dataplex.v1",
+    "service": "Dataplex",
+    "service_name": "Dataplex",
+    "title": "Dataplex: Scoped Search and SQL Dialect Controls",
+    "summary": "Dataplex introduces scoped searching via a new contexts parameter and adds support for specifying SQL dialects in data documentation, alongside a breaking schema change.",
+    "impact": "medium",
+    "breaking": true,
+    "interesting_score": 7,
+    "tags": [
+      "dataplex",
+      "search",
+      "breaking-change",
+      "sql"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-08-29T06:44:23.928413+00:00"
+  },
+  {
     "id": "2026-08-27-tagmanager-v2",
     "slug": "2026-08-27-tagmanager-v2",
     "date": "2026-08-27",

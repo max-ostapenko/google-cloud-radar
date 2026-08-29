@@ -1,0 +1,25 @@
+{
+  "id": "2026-08-29-dataplex-v1",
+  "slug": "2026-08-29-dataplex-v1",
+  "date": "2026-08-29",
+  "api": "dataplex.v1",
+  "service": "Dataplex",
+  "service_name": "Dataplex",
+  "title": "Dataplex: Scoped Search and SQL Dialect Controls",
+  "summary": "Dataplex introduces scoped searching via a new contexts parameter and adds support for specifying SQL dialects in data documentation, alongside a breaking schema change.",
+  "details": "The searchEntries method now includes a repeated 'contexts' parameter, allowing developers to scope searches to specific resource hierarchies. This scope is also used for IAM checks, ensuring results are filtered by access rights within that context. Additionally, the Data Documentation feature now supports explicit SQL dialect selection (Google SQL or Spark SQL) via the GoogleCloudDataplexV1DataDocumentationSpec schema. \n\nNote the breaking change: the 'sqlDialect' field in the GoogleCloudDataplexV1DataDocumentationResultQuery schema has been marked as read-only (output only). Developers who were previously attempting to write to this field in result objects must now configure the dialect within the Spec schema instead.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 7,
+  "tags": [
+    "dataplex",
+    "search",
+    "breaking-change",
+    "sql"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": 14,
+  "generated_at": "2026-08-29T06:44:23.928413+00:00"
+}
