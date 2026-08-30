@@ -1,5 +1,47 @@
 [
   {
+    "id": "2026-08-30-aiplatform-v1beta1",
+    "slug": "2026-08-30-aiplatform-v1beta1",
+    "date": "2026-08-30",
+    "api": "aiplatform.v1beta1",
+    "service": "Vertex AI",
+    "service_name": "Vertex AI",
+    "title": "Vertex AI: Breaking Changes & Agent IAM Controls",
+    "summary": "Vertex AI v1beta1 introduces significant breaking changes, including mandatory resource parameters and the removal of the recently added transcription 'mode'. It also adds standard IAM policy management for Agents and new sandbox authorization methods.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking-change",
+      "iam",
+      "agents",
+      "vertex-ai"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-08-30T04:35:58.780061+00:00"
+  },
+  {
+    "id": "2026-08-30-aiplatform-v1",
+    "slug": "2026-08-30-aiplatform-v1",
+    "date": "2026-08-30",
+    "api": "aiplatform.v1",
+    "service": "Vertex AI",
+    "service_name": "Vertex AI",
+    "title": "Vertex AI Agents IAM & Breaking Transcription Changes",
+    "summary": "Vertex AI introduces IAM controls for Agents and a force delete option, while removing the recently added mode field from audio transcription and customerVpcNetwork from sandbox egress.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "AI",
+      "Vertex AI",
+      "IAM",
+      "Breaking Change"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-08-30T04:35:58.777866+00:00"
+  },
+  {
     "id": "2026-08-29-dataplex-v1",
     "slug": "2026-08-29-dataplex-v1",
     "date": "2026-08-29",

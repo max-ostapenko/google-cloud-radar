@@ -1,0 +1,27 @@
+{
+  "id": "2026-08-30-aiplatform-v1",
+  "slug": "2026-08-30-aiplatform-v1",
+  "date": "2026-08-30",
+  "api": "aiplatform.v1",
+  "service": "Vertex AI",
+  "service_name": "Vertex AI",
+  "title": "Vertex AI Agents IAM & Breaking Transcription Changes",
+  "summary": "Vertex AI introduces IAM controls for Agents and a force delete option, while removing the recently added mode field from audio transcription and customerVpcNetwork from sandbox egress.",
+  "details": "This update introduces fine-grained access control for Vertex AI Agents via new getIamPolicy, setIamPolicy, and testIamPermissions methods. The agents.delete method now includes a force parameter, allowing developers to purge an agent along with its associated Task resources. Additionally, agents.list now supports AIP-160 filtering for created and updated timestamps.\n\nSeveral breaking changes have been introduced: the mode field (previously used for 'SMART' transcription) has been removed from AudioTranscriptionConfig, and customerVpcNetwork is no longer available in SandboxEnvironmentTemplateEgressControlConfig. Furthermore, name and resource parameters are now strictly required across multiple methods, and the context field in MemoryRevision is now immutable. Developers should also note that OnlineEvaluatorCloudObservability now defaults to project-level log views and specific US-based trace buckets.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "AI",
+    "Vertex AI",
+    "IAM",
+    "Breaking Change"
+  ],
+  "extracted_methods": [],
+  "status": "released",
+  "radar_ring": "adopt",
+  "lead_time_days": 0,
+  "generated_at": "2026-08-30T04:35:58.777866+00:00",
+  "official_release_date": "2025-09-10",
+  "official_release_notes_url": "https://docs.cloud.google.com/vertex-ai/docs/release-notes#September_10_2025"
+}
