@@ -172,12 +172,12 @@ def render_breaking_email_html(change: dict) -> str:
     methods_html = ""
     if extracted_methods:
         methods_items = "".join(
-            f'<li style="margin-bottom: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12.5px; color: #d93025;"><code>{m}</code></li>'
+            f'<li style="margin-bottom: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; color: #b3261e;"><code>{m}</code></li>'
             for m in extracted_methods[:8]
         )
         methods_html = f"""
-        <div style="margin-top: 18px; margin-bottom: 18px; padding: 14px 16px; background-color: #fef7f6; border: 1px solid #fad2cf; border-radius: 8px;">
-          <strong style="display: block; margin-bottom: 8px; font-size: 13px; color: #b3261e; text-transform: uppercase; letter-spacing: 0.5px;">Impacted Methods & Schema Elements:</strong>
+        <div style="margin-top: 18px; margin-bottom: 18px; padding: 14px 16px; background-color: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid #ea4335; border-radius: 6px;">
+          <strong style="display: block; margin-bottom: 8px; font-size: 12px; color: #b3261e; text-transform: uppercase; letter-spacing: 0.5px;">Impacted Methods &amp; Schema Elements:</strong>
           <ul style="margin: 0; padding-left: 20px;">
             {methods_items}
           </ul>
@@ -185,7 +185,7 @@ def render_breaking_email_html(change: dict) -> str:
         """
 
     tags_html = "".join(
-        f'<span style="display: inline-block; background-color: #e8f0fe; color: #1a73e8; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 6px; margin-bottom: 6px; font-family: monospace;">#{t}</span>'
+        f'<span style="display: inline-block; background-color: #f1f3f4; color: #5f6368; border: 1px solid #e8eaed; padding: 2px 7px; border-radius: 4px; font-size: 11px; margin-right: 6px; margin-bottom: 6px; font-family: ui-monospace, Menlo, monospace;">#{t}</span>'
         for t in tags[:6]
     )
 

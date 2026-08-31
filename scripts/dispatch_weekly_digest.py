@@ -215,22 +215,31 @@ def render_weekly_digest_html(changes: list[dict], week_label: Optional[str] = N
     if breaking_changes:
         for c in breaking_changes[:5]:
             svc_name = html.escape(c.get("service") or c.get("service_name") or "Google Cloud")
-            title = html.escape(c.get("title") or "")
+            raw_title = c.get("title") or ""
+            title = html.escape(raw_title)
+            display_title = title if raw_title.lower().startswith(svc_name.lower()) else f"{svc_name}: {title}"
             slug = c.get("slug") or c.get("id") or ""
             summary = html.escape(c.get("summary") or "")
             reasons = c.get("breaking_reasons") or []
-            reason_text = f" · {html.escape(reasons[0])}" if reasons else ""
+            reason_text = f" · <span style='color: #b3261e;'>{html.escape(reasons[0])}</span>" if reasons else ""
 
             breaking_items_html += f"""
-            <div style="margin-bottom: 12px; padding: 12px 14px; background-color: #fef7f6; border-left: 3px solid #ea4335; border-radius: 4px;">
-              <div style="font-size: 13px; font-weight: 700; color: #b3261e; margin-bottom: 4px;">
-                {svc_name}: {title}
+            <div style="margin-bottom: 14px; padding: 14px 16px; background-color: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid #ea4335; border-radius: 6px;">
+              <div style="margin-bottom: 6px;">
+                <span style="display: inline-block; font-size: 10px; font-weight: 700; background-color: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; padding: 2px 7px; border-radius: 4px; text-transform: uppercase;">
+                  ⚠️ Breaking Change
+                </span>
               </div>
-              <p style="font-size: 12.5px; color: #3c4043; margin: 0 0 6px 0; line-height: 1.4;">
+              <h3 style="font-size: 14.5px; font-weight: 700; color: #202124; margin: 0 0 6px 0; line-height: 1.35;">
+                <a href="https://google-cloud-radar.com/changes/{slug}" target="_blank" style="color: #202124; text-decoration: none;">
+                  {display_title}
+                </a>
+              </h3>
+              <p style="font-size: 12.5px; color: #474747; margin: 0 0 8px 0; line-height: 1.45;">
                 {summary}{reason_text}
               </p>
               <a href="https://google-cloud-radar.com/changes/{slug}" target="_blank" style="font-size: 12px; font-weight: 600; color: #1a73e8; text-decoration: none;">
-                View AST Diff →
+                View AST Diff &amp; Impact Analysis →
               </a>
             </div>
             """
@@ -248,28 +257,38 @@ def render_weekly_digest_html(changes: list[dict], week_label: Optional[str] = N
         summary = html.escape(c.get("summary") or "")
         impact = (c.get("impact") or "low").upper()
         
-        impact_bg = "#f29900" if impact == "HIGH" else ("#1a73e8" if impact == "MEDIUM" else "#5f6368")
+        if impact == "HIGH":
+            badge_style = "background-color: #fef7e0; color: #b06000; border: 1px solid #fce8b2;"
+        elif impact == "MEDIUM":
+            badge_style = "background-color: #e8f0fe; color: #1967d2; border: 1px solid #d2e3fc;"
+        else:
+            badge_style = "background-color: #f1f3f4; color: #5f6368; border: 1px solid #dadce0;"
+
         badge_text = f"{impact} IMPACT"
 
         methods = c.get("extracted_methods") or []
-        methods_chip = f"<span style='font-family: monospace; font-size: 11px; background: #f1f3f4; color: #3c4043; padding: 2px 6px; border-radius: 4px; margin-left: 6px;'>+{len(methods)} methods</span>" if methods else ""
+        methods_chip = f"<span style='font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; background: #f1f3f4; color: #3c4043; padding: 2px 6px; border-radius: 4px; margin-left: 6px;'>+{len(methods)} methods</span>" if methods else ""
 
         regular_items_html += f"""
-        <div style="padding: 14px 0; border-bottom: 1px solid #eeeeee;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-            <div style="font-size: 12px; color: #5f6368;">
-              <strong style="color: #202124;">{svc_name}</strong> &nbsp;•&nbsp; <code style="font-family: monospace; font-size: 11px; color: #5f6368;">{api}</code>{methods_chip}
-            </div>
-            <span style="font-size: 10px; font-weight: 700; background-color: {impact_bg}; color: #ffffff; padding: 2px 6px; border-radius: 10px; text-transform: uppercase;">
-              {badge_text}
-            </span>
-          </div>
-          <h3 style="font-size: 14.5px; font-weight: 600; color: #202124; margin: 0 0 4px 0; line-height: 1.35;">
+        <div style="padding: 16px 0; border-bottom: 1px solid #eeeeee;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 8px;">
+            <tr>
+              <td style="font-size: 12px; color: #5f6368; vertical-align: middle;">
+                <strong style="color: #202124;">{svc_name}</strong> &nbsp;•&nbsp; <code style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; color: #5f6368; background-color: #f8f9fa; padding: 2px 5px; border-radius: 3px; border: 1px solid #e8eaed;">{api}</code>{methods_chip}
+              </td>
+              <td align="right" style="vertical-align: middle;">
+                <span style="font-size: 9.5px; font-weight: 700; {badge_style} padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.3px;">
+                  {badge_text}
+                </span>
+              </td>
+            </tr>
+          </table>
+          <h3 style="font-size: 14.5px; font-weight: 600; color: #1a73e8; margin: 0 0 6px 0; line-height: 1.4;">
             <a href="https://google-cloud-radar.com/changes/{slug}" target="_blank" style="color: #1a73e8; text-decoration: none;">
               {title}
             </a>
           </h3>
-          <p style="font-size: 12.5px; color: #5f6368; line-height: 1.45; margin: 0;">
+          <p style="font-size: 12.5px; color: #474747; line-height: 1.5; margin: 0;">
             {summary}
           </p>
         </div>
