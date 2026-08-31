@@ -38,7 +38,8 @@ CHANGES_DIR = DATA_DIR / "changes"
 DEFAULT_GCP_PROJECT = "gcp-cloud-radar"
 DEFAULT_FIRESTORE_DB = "radar"
 RESEND_API_URL = "https://api.resend.com/emails"
-DEFAULT_FROM_EMAIL = "Google Cloud Radar <onboarding@resend.dev>"
+DEFAULT_FROM_EMAIL = "Google Cloud Radar <alerts@google-cloud-radar.com>"
+FALLBACK_SANDBOX_FROM_EMAIL = "Google Cloud Radar <onboarding@resend.dev>"
 
 logger = logging.getLogger("dispatch_email_alerts")
 
@@ -125,6 +126,10 @@ def send_resend_email(
             return True
     except urllib.error.HTTPError as e:
         error_msg = e.read().decode("utf-8")
+        # If custom domain is not yet verified on Resend account, retry once with sandbox sender
+        if ("domain" in error_msg.lower() or e.code == 403) and from_email != FALLBACK_SANDBOX_FROM_EMAIL:
+            logger.warning(f"Domain in '{from_email}' is not yet verified in Resend. Retrying with '{FALLBACK_SANDBOX_FROM_EMAIL}' sandbox domain...")
+            return send_resend_email(api_key, FALLBACK_SANDBOX_FROM_EMAIL, to_email, subject, html_content, text_content)
         logger.error(f"✗ Resend API HTTP error sending to {to_email} ({e.code}): {error_msg}")
         return False
     except Exception as e:
