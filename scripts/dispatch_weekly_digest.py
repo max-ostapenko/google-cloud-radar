@@ -196,7 +196,9 @@ def render_weekly_digest_html(changes: list[dict], week_label: Optional[str] = N
 
     total_changes = len(changes)
     breaking_changes = [c for c in changes if c.get("breaking")]
+    non_breaking_changes = [c for c in changes if not c.get("breaking")]
     breaking_count = len(breaking_changes)
+    non_breaking_count = len(non_breaking_changes)
     
     unique_services = set()
     total_methods = 0
@@ -233,22 +235,21 @@ def render_weekly_digest_html(changes: list[dict], week_label: Optional[str] = N
             </div>
             """
 
-    # Render Standard Updates Section (Sorted by impact)
+    # Render Other Recent Updates Section (Sorted by impact - non-breaking only)
     impact_order = {"high": 0, "medium": 1, "low": 2}
-    sorted_changes = sorted(changes, key=lambda x: impact_order.get((x.get("impact") or "low").lower(), 3))
+    sorted_non_breaking = sorted(non_breaking_changes, key=lambda x: impact_order.get((x.get("impact") or "low").lower(), 3))
 
     regular_items_html = ""
-    for c in sorted_changes[:12]:
+    for c in sorted_non_breaking[:12]:
         svc_name = html.escape(c.get("service") or c.get("service_name") or "Google Cloud")
         api = html.escape(c.get("api") or "")
         title = html.escape(c.get("title") or "")
         slug = c.get("slug") or c.get("id") or ""
         summary = html.escape(c.get("summary") or "")
         impact = (c.get("impact") or "low").upper()
-        is_breaking = c.get("breaking")
         
-        impact_bg = "#ea4335" if is_breaking else ("#f29900" if impact == "HIGH" else "#1a73e8")
-        badge_text = "BREAKING" if is_breaking else f"{impact} IMPACT"
+        impact_bg = "#f29900" if impact == "HIGH" else ("#1a73e8" if impact == "MEDIUM" else "#5f6368")
+        badge_text = f"{impact} IMPACT"
 
         methods = c.get("extracted_methods") or []
         methods_chip = f"<span style='font-family: monospace; font-size: 11px; background: #f1f3f4; color: #3c4043; padding: 2px 6px; border-radius: 4px; margin-left: 6px;'>+{len(methods)} methods</span>" if methods else ""
@@ -334,13 +335,15 @@ def render_weekly_digest_html(changes: list[dict], week_label: Optional[str] = N
               </div>
               ''' if breaking_changes else ''}
 
-              <!-- Weekly Updates Stream -->
+              <!-- Weekly Updates Stream (Non-breaking) -->
+              {f'''
               <div>
                 <h2 style="font-size: 14px; font-weight: 700; color: #202124; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px 0;">
-                  🚀 Recent API Changes ({total_changes})
+                  🚀 New Features & Schema Updates ({non_breaking_count})
                 </h2>
                 {regular_items_html}
               </div>
+              ''' if regular_items_html else ''}
 
               <!-- CTA Hub -->
               <div style="text-align: center; margin-top: 28px; margin-bottom: 12px;">

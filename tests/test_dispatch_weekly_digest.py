@@ -41,6 +41,7 @@ class TestDispatchWeeklyDigest(unittest.TestCase):
         self.assertIn("Google Cloud", html)
         self.assertIn("Week of August 31, 2026", html)
         self.assertIn("Breaking Changes (1)", html)
+        self.assertIn("New Features & Schema Updates (1)", html)
         self.assertIn("Vertex AI", html)
         self.assertIn("BigQuery", html)
         self.assertIn("https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1", html)
