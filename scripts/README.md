@@ -39,6 +39,15 @@ python scripts/dispatch_email_alerts.py --test-email user@example.com --slug 202
 python scripts/dispatch_email_alerts.py --project gcp-cloud-radar --database radar
 ```
 
+### 5. Monday Weekly Intelligence Digest
+```bash
+# Test weekly digest dispatch for the last 7 days
+python scripts/dispatch_weekly_digest.py --test-email user@example.com
+
+# Production scheduled run
+python scripts/dispatch_weekly_digest.py --project gcp-cloud-radar --database radar
+```
+
 ---
 
 ## 📂 Script Directory Map
@@ -53,6 +62,7 @@ python scripts/dispatch_email_alerts.py --project gcp-cloud-radar --database rad
 | [`correlate_releases.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/correlate_releases.py) | Scrapes public GCP release notes and computes empirical canary lead-time deltas. |
 | [`seed_prod_firestore.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/seed_prod_firestore.py) | Upserts JSON change documents into Cloud Firestore. |
 | [`dispatch_email_alerts.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/dispatch_email_alerts.py) | Dispatches personalized transactional breaking alerts via Resend API (`alerts@google-cloud-radar.com`). |
+| [`dispatch_weekly_digest.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/dispatch_weekly_digest.py) | Dispatches weekly Monday roundup of all new APIs, methods, and schema diffs. |
 | [`taxonomy.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/taxonomy.py) | Curated GCP service categories, taxonomy groupings, and official documentation links. |
 | [`open_pr.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/open_pr.py) | Automated pull request creation via GitHub CLI (`gh`). |
 
