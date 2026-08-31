@@ -22,7 +22,7 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
       <div class="hero-content">
         <h1 class="hero-title">Google Cloud Radar</h1>
         <p class="hero-subtitle">
-          Tracking unreleased method additions, schema evolutions, and breaking changes directly from the Google Discovery Service — before they reach official release notes.
+          Real-time intelligence on unreleased Google Cloud API updates, breaking schema evolutions, and method additions caught directly from Discovery Service.
         </p>
       </div>
       <div class="hero-stats">
@@ -46,14 +46,10 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
             title="Open a GitHub issue to request a new API"
           >+ Request</a>
         </div>
-        <div class="stat-box">
-          <span class="stat-number">{highImpactCount}</span>
-          <span class="stat-label">High Impact</span>
-        </div>
       </div>
     </div>
 
-    <!-- Quick Filter Pills -->
+    <!-- Filters & Action Bar -->
     <div class="filters-bar">
       <div class="filter-pills" id="filter-pills-container">
         <button class="pill-btn active" data-filter="all">
@@ -81,24 +77,21 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
         </button>
       </div>
 
-      <div class="feed-status-summary">
-        <span id="results-count-text">Showing <strong>{monthGroups[0]?.totalCount || entries.length}</strong> updates in <strong>{monthGroups[0]?.label || 'Latest Month'}</strong></span>
-        <div class="feed-actions-group">
-          <button class="feed-alerts-cta-btn" id="feed-alerts-cta-btn" type="button" title="Email Alerts for Breaking Changes">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <span id="feed-alerts-cta-text">⚡ Get Alerts</span>
-          </button>
-          <button class="share-view-btn" id="share-view-btn" title="Copy shareable link to this view">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-            </svg>
-            <span id="share-view-btn-text">Share View</span>
-          </button>
-        </div>
+      <div class="feed-actions-group">
+        <button class="feed-alerts-cta-btn" id="feed-alerts-cta-btn" type="button" title="Email Alerts for Breaking Changes">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span id="feed-alerts-cta-text">⚡ Get Alerts</span>
+        </button>
+        <button class="share-view-btn" id="share-view-btn" title="Copy shareable link to this view">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+          <span id="share-view-btn-text">Share View</span>
+        </button>
       </div>
     </div>
 
@@ -111,7 +104,7 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
           <line x1="8" y1="2" x2="8" y2="6"></line>
           <line x1="3" y1="10" x2="21" y2="10"></line>
         </svg>
-        <span>Month</span>
+        <span>Timeline</span>
       </div>
       <div class="month-chips-list">
         {monthGroups.map((g, idx) => {
@@ -146,31 +139,6 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
         data-month={group.key}
         id={`month-${group.key}`}
       >
-        <header class="month-section-header">
-          <div class="month-header-left">
-            <div class="month-calendar-badge">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-              <h2 class="month-title">{group.label}</h2>
-            </div>
-            {index === 0 && <span class="current-month-badge">Latest Wave</span>}
-          </div>
-
-          <div class="month-header-stats">
-            <span class="month-stat-pill"><strong>{group.totalCount}</strong> Revisions</span>
-            {group.breakingCount > 0 && (
-              <span class="month-stat-pill breaking">⚠️ <strong>{group.breakingCount}</strong> Breaking</span>
-            )}
-            {group.highImpactCount > 0 && (
-              <span class="month-stat-pill high-impact">🔥 <strong>{group.highImpactCount}</strong> High Impact</span>
-            )}
-          </div>
-        </header>
-
         <div class="in-month-empty-state" style="display: none;">
           <p>No <strong>{group.label}</strong> updates match the active category filter.</p>
           <button class="in-month-reset-btn" type="button">Reset Category Filter</button>
@@ -731,34 +699,22 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
     color: #ffffff;
   }
 
-  .feed-status-summary {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--text-tertiary);
-  }
-
-  .feed-status-summary strong {
-    color: var(--text-primary);
-  }
-
   .feed-actions-group {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
   }
 
   .feed-alerts-cta-btn {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    font-size: 11.5px;
+    gap: 6px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--google-blue);
     background-color: var(--google-blue-subtle);
     border: 1px solid var(--google-blue-border);
-    padding: 3px 11px;
+    padding: 5px 12px;
     border-radius: var(--radius-full);
     cursor: pointer;
     transition: all 0.15s ease;
@@ -778,13 +734,13 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
   .share-view-btn {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    font-size: 11.5px;
+    gap: 6px;
+    font-size: 12px;
     font-weight: 500;
     color: var(--text-secondary);
-    background-color: var(--bg-surface-hover);
+    background-color: var(--bg-surface);
     border: 1px solid var(--border-subtle);
-    padding: 3px 10px;
+    padding: 5px 12px;
     border-radius: var(--radius-full);
     cursor: pointer;
     transition: all 0.15s ease;
@@ -931,90 +887,7 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
   .month-section {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-  }
-
-  .month-section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-subtle);
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .month-header-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .month-calendar-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--google-blue);
-  }
-
-  .month-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0;
-    letter-spacing: -0.2px;
-  }
-
-  .current-month-badge {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    background-color: var(--google-blue-subtle);
-    color: var(--google-blue);
-    border: 1px solid var(--google-blue-border);
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-  }
-
-  .month-header-stats {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .month-stat-pill {
-    font-size: 11.5px;
-    color: var(--text-secondary);
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-  }
-
-  .month-stat-pill strong {
-    color: var(--text-primary);
-  }
-
-  .month-stat-pill.breaking {
-    color: var(--google-red);
-    background-color: var(--google-red-subtle);
-    border-color: var(--google-red-border);
-  }
-
-  .month-stat-pill.breaking strong {
-    color: var(--google-red);
-  }
-
-  .month-stat-pill.high-impact {
-    color: var(--google-yellow);
-    background-color: var(--google-yellow-subtle);
-    border-color: var(--google-yellow-border);
-  }
-
-  .month-stat-pill.high-impact strong {
-    color: var(--google-yellow);
+    gap: 16px;
   }
 
   .month-cards-list {

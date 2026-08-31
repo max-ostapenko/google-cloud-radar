@@ -1,6 +1,5 @@
 ---
 import type { FeedEntry } from '../lib/feed';
-import ShareScoopModal from './ShareScoopModal.astro';
 
 interface Props {
   entry: FeedEntry;
@@ -15,11 +14,11 @@ const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en
   year: 'numeric',
   timeZone: 'UTC',
 });
-// Reactions & Community Signals
-const impactsCount = entry.reaction_counts?.impacts_prod ?? (entry.stats?.impacted_users_count || (entry.impact === 'high' ? 7 : entry.impact === 'medium' ? 3 : 1));
-const breakingMeCount = entry.reaction_counts?.breaking_me ?? (entry.breaking ? 4 : 0);
-const watchGaCount = entry.reaction_counts?.watch_ga ?? (entry.status === 'canary' ? 5 : 2);
-const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0);
+// Reactions & Community Signals (progressive disclosure: counts hidden when 0)
+const impactsCount = entry.reaction_counts?.impacts_prod ?? 0;
+const breakingMeCount = entry.reaction_counts?.breaking_me ?? 0;
+const watchGaCount = entry.reaction_counts?.watch_ga ?? 0;
+const commentsCount = entry.comments_count ?? 0;
 ---
 
 <article 
@@ -111,7 +110,7 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
   <div class="card-social-bar" data-slug={entry.slug}>
     <div class="card-reactions-group">
       <button 
-        class="card-reaction-btn" 
+        class={`card-reaction-btn ${impactsCount > 0 ? 'has-count' : ''}`}
         data-type="impacts_prod" 
         data-slug={entry.slug}
         title="Impacts My Production Environment"
@@ -119,11 +118,11 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
       >
         <span class="reaction-icon">🚀</span>
         <span class="reaction-label">Prod Impact</span>
-        <span class="reaction-count" data-count-type="impacts_prod">{impactsCount}</span>
+        <span class="reaction-count" data-count-type="impacts_prod" style={impactsCount > 0 ? '' : 'display: none;'}>{impactsCount}</span>
       </button>
 
       <button 
-        class="card-reaction-btn" 
+        class={`card-reaction-btn ${breakingMeCount > 0 ? 'has-count' : ''}`}
         data-type="breaking_me" 
         data-slug={entry.slug}
         title="Flag Breaking for My Team"
@@ -131,11 +130,11 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
       >
         <span class="reaction-icon">⚠️</span>
         <span class="reaction-label">Breaking</span>
-        <span class="reaction-count" data-count-type="breaking_me">{breakingMeCount}</span>
+        <span class="reaction-count" data-count-type="breaking_me" style={breakingMeCount > 0 ? '' : 'display: none;'}>{breakingMeCount}</span>
       </button>
 
       <button 
-        class="card-reaction-btn" 
+        class={`card-reaction-btn ${watchGaCount > 0 ? 'has-count' : ''}`}
         data-type="watch_ga" 
         data-slug={entry.slug}
         title="Watch for GA Release"
@@ -143,7 +142,7 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
       >
         <span class="reaction-icon">👀</span>
         <span class="reaction-label">Watch GA</span>
-        <span class="reaction-count" data-count-type="watch_ga">{watchGaCount}</span>
+        <span class="reaction-count" data-count-type="watch_ga" style={watchGaCount > 0 ? '' : 'display: none;'}>{watchGaCount}</span>
       </button>
     </div>
 
@@ -155,16 +154,28 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
         <span>{commentsCount > 0 ? `${commentsCount} Comments` : 'Comment'}</span>
       </a>
 
-      <ShareScoopModal
-        slug={entry.slug}
-        title={entry.title}
-        service={entry.service}
-        api={entry.api}
-        summary={entry.summary}
-        methods={entry.extractedMethods}
-        isBreaking={entry.breaking}
-        leadTimeDays={entry.lead_time_days}
-      />
+      <button
+        type="button"
+        class="card-share-trigger-btn"
+        data-share-slug={entry.slug}
+        data-share-title={entry.title}
+        data-share-service={entry.service}
+        data-share-api={entry.api}
+        data-share-summary={entry.summary}
+        data-share-methods={JSON.stringify(entry.extractedMethods || [])}
+        data-share-breaking={entry.breaking ? 'true' : 'false'}
+        title="Share this API update on Twitter/X, LinkedIn, Slack, or Reddit"
+        aria-label="Share API Update"
+      >
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="6" cy="12" r="3"></circle>
+          <circle cx="18" cy="19" r="3"></circle>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+        </svg>
+        <span>Share</span>
+      </button>
 
       <a href={`/changes/${entry.slug}`} class="details-cta">
         <span>View Diff</span>
@@ -402,14 +413,14 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
   .card-reaction-btn {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    font-size: 11px;
+    gap: 4px;
+    font-size: 11.5px;
     font-weight: 500;
     font-family: inherit;
-    color: var(--text-secondary);
-    background-color: var(--bg-surface-hover);
-    border: 1px solid var(--border-subtle);
-    padding: 4px 8px;
+    color: var(--text-tertiary);
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 3px 7px;
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all 0.15s ease;
@@ -417,9 +428,16 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
   }
 
   .card-reaction-btn:hover {
-    border-color: var(--border-strong);
+    background-color: var(--bg-surface-hover);
+    border-color: var(--border-subtle);
     color: var(--text-primary);
-    transform: translateY(-1px);
+  }
+
+  .card-reaction-btn.has-count,
+  .card-reaction-btn.active {
+    background-color: var(--bg-surface);
+    border-color: var(--border-subtle);
+    color: var(--text-secondary);
   }
 
   .card-reaction-btn.active {
@@ -442,8 +460,8 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
     font-family: var(--font-mono);
     font-size: 10px;
     font-weight: 700;
-    background-color: var(--bg-surface);
-    padding: 1px 4px;
+    background-color: var(--bg-surface-hover);
+    padding: 1px 5px;
     border-radius: 3px;
     border: 1px solid var(--border-subtle);
   }
@@ -481,6 +499,27 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
     border-color: var(--google-blue-border);
     background-color: var(--google-blue-subtle);
     text-decoration: none;
+  }
+
+  .card-share-trigger-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .card-share-trigger-btn:hover {
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue);
+    border-color: var(--google-blue-border);
   }
 
   .details-cta {
@@ -531,10 +570,14 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
         buttons.forEach((btn) => {
           const type = btn.getAttribute('data-type') as ReactionType;
           if (type) {
+            const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
+            const count = parseInt(countBadge?.textContent || '0', 10);
             if (userVotes[type]) {
               btn.classList.add('active');
+              if (countBadge) countBadge.style.display = 'inline-block';
             } else {
               btn.classList.remove('active');
+              if (countBadge) countBadge.style.display = count > 0 ? 'inline-block' : 'none';
             }
           }
         });
@@ -548,10 +591,14 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
           buttons.forEach((btn) => {
             const type = btn.getAttribute('data-type') as ReactionType;
             if (type && changeData.reaction_counts?.[type] !== undefined) {
-              const countBadge = btn.querySelector('.reaction-count');
+              const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
+              const val = Math.max(0, changeData.reaction_counts[type]);
               if (countBadge) {
-                countBadge.textContent = String(Math.max(0, changeData.reaction_counts[type]));
+                countBadge.textContent = String(val);
+                countBadge.style.display = (val > 0 || userVotes[type]) ? 'inline-block' : 'none';
               }
+              if (val > 0) btn.classList.add('has-count');
+              else if (!userVotes[type]) btn.classList.remove('has-count');
             }
           });
         }
@@ -580,7 +627,7 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
           }
           if (!user) return;
 
-          const countBadge = btn.querySelector('.reaction-count');
+          const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
           const currentCount = parseInt(countBadge?.textContent || '0', 10);
           const isCurrent = Boolean(userVotes[type]);
 
@@ -588,11 +635,21 @@ const commentsCount = entry.comments_count ?? (entry.stats?.comments_count || 0)
           if (isCurrent) {
             userVotes[type] = false;
             btn.classList.remove('active');
-            if (countBadge) countBadge.textContent = String(Math.max(0, currentCount - 1));
+            const newCount = Math.max(0, currentCount - 1);
+            if (countBadge) {
+              countBadge.textContent = String(newCount);
+              countBadge.style.display = newCount > 0 ? 'inline-block' : 'none';
+            }
+            if (newCount === 0) btn.classList.remove('has-count');
           } else {
             userVotes[type] = true;
             btn.classList.add('active');
-            if (countBadge) countBadge.textContent = String(currentCount + 1);
+            const newCount = currentCount + 1;
+            if (countBadge) {
+              countBadge.textContent = String(newCount);
+              countBadge.style.display = 'inline-block';
+            }
+            btn.classList.add('has-count');
           }
 
           try {

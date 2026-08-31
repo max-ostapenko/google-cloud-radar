@@ -3,6 +3,7 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import Sidebar from "../components/Sidebar.astro";
 import AlertsModal from "../components/AlertsModal.astro";
+import ShareScoopModal from "../components/ShareScoopModal.astro";
 import "../styles/global.css";
 
 interface Props {
@@ -126,6 +127,7 @@ const jsonLd = schemaData
     </div>
 
     <AlertsModal />
+    <ShareScoopModal />
 
     <style>
       .sidebar-backdrop {

@@ -2,7 +2,6 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ReactionsBar from "../../components/ReactionsBar.astro";
 import DiscussionsSection from "../../components/DiscussionsSection.astro";
-import ShareScoopModal from "../../components/ShareScoopModal.astro";
 import { getAllFeedEntries, type FeedEntry } from "../../lib/feed";
 
 export async function getStaticPaths() {
@@ -130,16 +129,37 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, "-");
         </div>
 
         <div class="change-hero-actions">
-          <ShareScoopModal
-            slug={entry.slug}
-            title={entry.title}
-            service={entry.service}
-            api={entry.api}
-            summary={entry.summary}
-            methods={entry.extractedMethods}
-            isBreaking={entry.breaking}
-            leadTimeDays={entry.lead_time_days}
-          />
+          <button
+            type="button"
+            class="card-share-trigger-btn hero-action-btn share-btn"
+            data-share-slug={entry.slug}
+            data-share-title={entry.title}
+            data-share-service={entry.service}
+            data-share-api={entry.api}
+            data-share-summary={entry.summary}
+            data-share-methods={JSON.stringify(entry.extractedMethods || [])}
+            data-share-breaking={entry.breaking ? "true" : "false"}
+            title="Share this API update on Twitter/X, LinkedIn, Slack, or Reddit"
+            aria-label="Share API Update"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="13"
+              height="13"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+            <span>Share</span>
+          </button>
 
           {
             entry.documentationLink && (
