@@ -33,7 +33,7 @@ import {
 // Public client Firebase configuration for Google Cloud Radar
 const firebaseConfig = {
   apiKey: 'AIzaSyB-3ItxZ_RVn5Epqb407jvsOLTGT_dnM6I',
-  authDomain: 'google-cloud-radar.com',
+  authDomain: 'gcp-cloud-radar.firebaseapp.com',
   projectId: 'gcp-cloud-radar',
   storageBucket: 'gcp-cloud-radar.firebasestorage.app',
   appId: '1:751333758884:web:de973a9e1464cd58c19331',
