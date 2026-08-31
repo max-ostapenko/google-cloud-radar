@@ -91,13 +91,23 @@ def get_access_token() -> str:
     return ""
 
 
+def is_dev_environment() -> bool:
+    """Returns True if running locally in development rather than production CI."""
+    if os.getenv("ENVIRONMENT", "").lower() in ("production", "prod"):
+        return False
+    if os.getenv("CI", "").lower() in ("true", "1") or os.getenv("GITHUB_ACTIONS") == "true":
+        return False
+    return True
+
+
 def send_resend_email(
     api_key: str,
     from_email: str,
     to_email: str,
     subject: str,
     html_content: str,
-    text_content: Optional[str] = None
+    text_content: Optional[str] = None,
+    allow_dev_fallback: bool = False
 ) -> bool:
     """Sends an email via Resend REST API."""
     headers = {
@@ -126,10 +136,18 @@ def send_resend_email(
             return True
     except urllib.error.HTTPError as e:
         error_msg = e.read().decode("utf-8")
-        # If custom domain is not yet verified on Resend account, retry once with sandbox sender
-        if ("domain" in error_msg.lower() or e.code == 403) and from_email != FALLBACK_SANDBOX_FROM_EMAIL:
-            logger.warning(f"Domain in '{from_email}' is not yet verified in Resend. Retrying with '{FALLBACK_SANDBOX_FROM_EMAIL}' sandbox domain...")
-            return send_resend_email(api_key, FALLBACK_SANDBOX_FROM_EMAIL, to_email, subject, html_content, text_content)
+        # Fallback to sandbox domain ONLY in development / test environment
+        if allow_dev_fallback and ("domain" in error_msg.lower() or e.code == 403) and from_email != FALLBACK_SANDBOX_FROM_EMAIL:
+            logger.warning(f"[DEV ENV] Domain in '{from_email}' is not yet verified in Resend. Retrying with '{FALLBACK_SANDBOX_FROM_EMAIL}' sandbox domain...")
+            return send_resend_email(
+                api_key=api_key,
+                from_email=FALLBACK_SANDBOX_FROM_EMAIL,
+                to_email=to_email,
+                subject=subject,
+                html_content=html_content,
+                text_content=text_content,
+                allow_dev_fallback=False
+            )
         logger.error(f"✗ Resend API HTTP error sending to {to_email} ({e.code}): {error_msg}")
         return False
     except Exception as e:
@@ -439,12 +457,14 @@ def main() -> None:
             print(html_body[:400] + "...")
             sys.exit(0)
 
+        is_dev = is_dev_environment()
         success = send_resend_email(
             api_key=api_key,
             from_email=args.from_email,
             to_email=args.test_email,
             subject=subject,
-            html_content=html_body
+            html_content=html_body,
+            allow_dev_fallback=is_dev or bool(args.test_email)
         )
         if success:
             logger.info("🎉 Test email dispatched successfully!")
@@ -460,6 +480,7 @@ def main() -> None:
 
     token = get_access_token()
     total_sent = 0
+    is_dev = is_dev_environment()
 
     for change in target_changes:
         slug = change.get("slug") or change.get("id")
@@ -487,7 +508,8 @@ def main() -> None:
                 from_email=args.from_email,
                 to_email=email,
                 subject=subject,
-                html_content=html_body
+                html_content=html_body,
+                allow_dev_fallback=is_dev
             )
             if sent:
                 total_sent += 1
