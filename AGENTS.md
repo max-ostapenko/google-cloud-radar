@@ -16,7 +16,8 @@ graph TD
     F --> G[data/changes/*.json + data/index.json]
     G --> H[scripts/correlate_releases.py - Lead Time Delta]
     H --> I[scripts/seed_prod_firestore.py - Firestore DB 'radar']
-    G --> J[web/ - Astro 5 Static Site & MiniSearch]
+    I --> J[scripts/dispatch_email_alerts.py - Resend Transactional Alerts]
+    G --> K[web/ - Astro 5 Static Site & MiniSearch]
 ```
 
 ### Core Components
@@ -24,6 +25,7 @@ graph TD
 |---|---|---|
 | **Pipeline & Discovery** | [`scripts/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts) | Polls Discovery API, cleans AST noise, extracts diffs, runs deterministic breaking checks (Google AIP-180), and calls Vertex AI Gemini for developer impact summarization. |
 | **Release Correlation** | [`scripts/correlate_releases.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/correlate_releases.py) | Scrapes public release notes to compute empirical canary lead-time deltas. |
+| **Email Alerts** | [`scripts/dispatch_email_alerts.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/dispatch_email_alerts.py) | Dispatches personalized transactional breaking alerts via Resend (`alerts@google-cloud-radar.com`). |
 | **Structured Changes** | [`data/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/data) | Structured JSON changes (`data/changes/*.json`) and central manifest catalog (`data/index.json`). |
 | **Frontend Application** | [`web/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/web) | Astro 5 SSG web app with client-side MiniSearch: feed (`/`), 90-day rolling benchmark (`/stats`), breaking radar (`/breaking`), service hubs (`/services/[service]`), and detail pages (`/changes/[slug]`). |
 | **Distribution Feeds** | [`web/src/pages/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/web/src/pages) | Global RSS (`/rss.xml`), REST API (`/api/feed.json`), and AI context (`/llms.txt`). |

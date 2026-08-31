@@ -30,6 +30,15 @@ python scripts/correlate_releases.py --project gcp-cloud-radar --database radar
 python scripts/seed_prod_firestore.py --project gcp-cloud-radar --database radar
 ```
 
+### 4. Transactional Breaking Alert Dispatcher
+```bash
+# Test alert dispatch to a specific email
+python scripts/dispatch_email_alerts.py --test-email user@example.com --slug 2026-08-30-aiplatform-v1beta1
+
+# Production run with Firestore subscriber query and deduplication
+python scripts/dispatch_email_alerts.py --project gcp-cloud-radar --database radar
+```
+
 ---
 
 ## 📂 Script Directory Map
@@ -43,6 +52,7 @@ python scripts/seed_prod_firestore.py --project gcp-cloud-radar --database radar
 | [`feed_writer.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/feed_writer.py) | Writes structured JSON change records to `data/changes/` and updates `data/index.json`. |
 | [`correlate_releases.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/correlate_releases.py) | Scrapes public GCP release notes and computes empirical canary lead-time deltas. |
 | [`seed_prod_firestore.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/seed_prod_firestore.py) | Upserts JSON change documents into Cloud Firestore. |
+| [`dispatch_email_alerts.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/dispatch_email_alerts.py) | Dispatches personalized transactional breaking alerts via Resend API (`alerts@google-cloud-radar.com`). |
 | [`taxonomy.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/taxonomy.py) | Curated GCP service categories, taxonomy groupings, and official documentation links. |
 | [`open_pr.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/open_pr.py) | Automated pull request creation via GitHub CLI (`gh`). |
 

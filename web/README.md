@@ -35,9 +35,10 @@ The web app includes an in-browser **MiniSearch** engine running locally on the 
 
 | Route | Purpose |
 |---|---|
-| `/` | Live Radar feed with interactive category filters, impact pills, and instant MiniSearch (`/`). |
+| `/` | Live Radar feed with interactive category filters, impact pills, and instant MiniSearch (`/`). Supports `?action=alerts` to open preferences modal. |
 | `/stats` | Trailing 90-day rolling benchmark with velocity rankings, lead times, and breaking change rates. |
-| `/breaking` | Dedicated triage radar for backwards-incompatible API changes. |
+| `/breaking` | Dedicated triage radar for backwards-incompatible API changes with active subscription status. |
+| `/timeline/[month]` | Month-specific timeline streams (e.g. `/timeline/2026-08/`). |
 | `/services/[service]` | Service hub with historical change timeline, official docs, and raw Discovery REST endpoints. |
 | `/changes/[slug]` | Deep permalinks with visual AST diffs, copyable RPC chips, social sharing, and discussions. |
 | `/rss.xml` | Global RSS 2.0 feed for feed readers. |
@@ -51,9 +52,9 @@ The web app includes an in-browser **MiniSearch** engine running locally on the 
 ```
 web/
 ├── src/
-│   ├── components/       # UI components (ChangeCard, Header, Sidebar, Footer, ShareModal, etc.)
-│   ├── layouts/          # BaseLayout (SEO meta, theme toggling, responsive grid shell)
-│   ├── lib/              # Feed parser, stats aggregator, and Firebase client SDK
+│   ├── components/       # UI components (ChangeCard, Header, Sidebar, Footer, AlertsModal, ShareScoopModal, etc.)
+│   ├── layouts/          # BaseLayout (SEO meta, theme toggling, responsive grid shell, singleton modals)
+│   ├── lib/              # Feed parser, stats aggregator, and Firebase client SDK (Auth, Firestore, Alerts)
 │   ├── pages/            # Astro static routes & machine-readable syndication endpoints
 │   └── styles/           # Global design system tokens and Google Cloud theme variables
 ├── scripts/

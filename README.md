@@ -4,7 +4,7 @@
 > Tracking unreleased method additions, schema changes, and breaking changes directly from the Google API Discovery Service before they appear in official release notes.
 
 [![CI](https://github.com/max-ostapenko/google-cloud-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/max-ostapenko/google-cloud-radar/actions/workflows/ci.yml)
-[![Live Site](https://img.shields.io/badge/Live-gcp--cloud--radar.web.app-4285F4)](https://gcp-cloud-radar.web.app)
+[![Live Site](https://img.shields.io/badge/Live-google--cloud--radar.com-4285F4)](https://google-cloud-radar.com)
 
 ---
 
@@ -20,8 +20,9 @@ graph TD
     F --> G[data/ Structured JSON Changes + Index]
     G --> H[scripts/correlate_releases.py - Lead Time Delta]
     H --> I[scripts/seed_prod_firestore.py - Cloud Firestore]
-    G --> J[web/ - Astro 5 Web Application & MiniSearch]
-    J --> K[Firebase Hosting: gcp-cloud-radar.web.app]
+    I --> J[scripts/dispatch_email_alerts.py - Resend Transactional Alerts]
+    G --> K[web/ - Astro 5 Web Application & MiniSearch]
+    K --> L[Firebase Hosting: google-cloud-radar.com]
 ```
 
 ---
@@ -35,17 +36,20 @@ npm install
 npm run dev        # Astro local dev server at http://localhost:4321
 npm run dev:all    # Astro + Local Zero-Java Mock Firestore server
 ```
-*See [`web/README.md`](web/README.md) for frontend architecture and mock database details.*
+*See [`web/README.md`](web/README.md) for frontend architecture, search engine, and alert modal deep-linking.*
 
-### 2. Python Pipeline & Analysis (`scripts/`)
+### 2. Python Pipeline & Email Alerts (`scripts/`)
 ```bash
 pip install -r requirements.txt
 pytest tests/
 
 # Preview AST diffs without calling Gemini
 python scripts/diff_to_feed.py --dry-run
+
+# Test email dispatch for a specific change
+python scripts/dispatch_email_alerts.py --test-email dev@example.com --slug 2026-08-30-aiplatform-v1beta1
 ```
-*See [`scripts/README.md`](scripts/README.md) for CLI options, prompt tuning, and correlation engine usage.*
+*See [`scripts/README.md`](scripts/README.md) for CLI options, prompt tuning, release correlation, and email dispatch.*
 
 ---
 
@@ -53,12 +57,12 @@ python scripts/diff_to_feed.py --dry-run
 
 ```
 .
-├── discoveries/          # Normalized Discovery JSON ASTs (38+ monitored GCP services)
+├── discoveries/          # Normalized Discovery JSON ASTs (46+ monitored GCP services)
 ├── data/                 # Structured JSON change documents (changes/*.json) & index.json
-├── scripts/              # Python ingestion, AST diffing, Gemini analysis & release correlation
+├── scripts/              # Python ingestion, AST diffing, Gemini analysis, Firestore sync & email dispatch
 │   └── README.md         # Pipeline CLI usage & script documentation
 ├── terraform/            # Terraform IaC: Hosting, Firestore rules, Identity Platform & IAM
-├── tests/                # Pytest unit tests for AST diffing and feed generation
+├── tests/                # Pytest / Unittest test suite for diffing, taxonomy & email alerts
 ├── web/                  # Astro 5 static web application & client components
 │   └── README.md         # Web app architecture & emulator setup
 └── AGENTS.md             # AI coding agent context and architectural invariants
