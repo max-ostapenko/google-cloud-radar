@@ -634,3 +634,50 @@ export function slugify(str: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '');
 }
+
+export interface MonthGroup {
+  key: string; // e.g. "2026-08"
+  label: string; // e.g. "August 2026"
+  year: number; // 2026
+  monthName: string; // "August"
+  totalCount: number;
+  breakingCount: number;
+  highImpactCount: number;
+  entries: FeedEntry[];
+}
+
+export function groupEntriesByMonth(entries: FeedEntry[]): MonthGroup[] {
+  const monthMap = new Map<string, FeedEntry[]>();
+
+  for (const entry of entries) {
+    if (!entry.date) continue;
+    const monthKey = entry.date.slice(0, 7); // "YYYY-MM"
+    if (!monthMap.has(monthKey)) {
+      monthMap.set(monthKey, []);
+    }
+    monthMap.get(monthKey)!.push(entry);
+  }
+
+  const sortedMonthKeys = Array.from(monthMap.keys()).sort().reverse();
+
+  return sortedMonthKeys.map((key) => {
+    const monthEntries = monthMap.get(key)!;
+    const [yearStr, monthStr] = key.split('-');
+    const year = parseInt(yearStr, 10);
+    const monthIndex = parseInt(monthStr, 10) - 1;
+    const dateObj = new Date(Date.UTC(year, monthIndex, 1));
+    const label = dateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+    const monthName = dateObj.toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' });
+
+    return {
+      key,
+      label,
+      year,
+      monthName,
+      totalCount: monthEntries.length,
+      breakingCount: monthEntries.filter((e) => e.breaking).length,
+      highImpactCount: monthEntries.filter((e) => e.impact === 'high').length,
+      entries: monthEntries,
+    };
+  });
+}

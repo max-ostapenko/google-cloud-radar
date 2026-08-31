@@ -15,6 +15,8 @@ jobs:
       id-token: write # Workload Identity Federation
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      RESEND_FROM_EMAIL: ${{ vars.RESEND_FROM_EMAIL }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v7
@@ -36,6 +38,6 @@ jobs:
       - name: Install dependencies
         run: pip install google-genai google-auth
 
-      - name: Update discoveries, extract diffs, correlate releases, sync Firestore DB, and open PR
+      - name: Update discoveries, extract diffs, correlate releases, sync Firestore DB, dispatch email alerts, and open PR
         run: |
-          python scripts/update_disco.py && python scripts/diff_to_feed.py && python scripts/correlate_releases.py --database radar && python scripts/seed_prod_firestore.py --database radar && python scripts/open_pr.py
+          python scripts/update_disco.py && python scripts/diff_to_feed.py && python scripts/correlate_releases.py --database radar && python scripts/seed_prod_firestore.py --database radar && python scripts/dispatch_email_alerts.py --database radar && python scripts/open_pr.py

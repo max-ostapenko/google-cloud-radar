@@ -436,9 +436,12 @@ const schemaData = {
 
 <style>
   .stats-page-container {
+    width: 100%;
     max-width: 1140px;
+    min-width: 0;
     margin: 0 auto;
     padding-bottom: 60px;
+    box-sizing: border-box;
   }
 
   /* ==========================================================================
@@ -447,8 +450,10 @@ const schemaData = {
   .stats-hero {
     text-align: center;
     padding: 32px 16px 36px;
+    width: 100%;
     max-width: 780px;
     margin: 0 auto;
+    box-sizing: border-box;
   }
 
   .hero-badge {
@@ -488,18 +493,20 @@ const schemaData = {
   }
 
   .stats-title {
-    font-size: 34px;
+    font-size: clamp(22px, 4.5vw, 34px);
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.5px;
     line-height: 1.25;
     margin-bottom: 14px;
+    word-break: break-word;
   }
 
   .stats-subtitle {
     font-size: 15px;
     color: var(--text-secondary);
     line-height: 1.6;
+    max-width: 800px;
   }
 
   .stats-subtitle strong {
@@ -632,6 +639,9 @@ const schemaData = {
     padding: 24px 28px;
     margin-bottom: 32px;
     box-shadow: var(--shadow-sm);
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
   .section-header {
@@ -671,10 +681,13 @@ const schemaData = {
 
   .table-responsive {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
   }
 
   .velocity-table {
     width: 100%;
+    min-width: 560px;
     border-collapse: collapse;
     font-size: 13px;
     text-align: left;
@@ -1056,17 +1069,26 @@ const schemaData = {
   }
 
   @media (max-width: 640px) {
+    .stats-hero {
+      margin-bottom: 24px;
+    }
+    .hero-badge {
+      max-width: 100%;
+    }
     .kpi-grid {
       grid-template-columns: 1fr;
-    }
-    .stats-title {
-      font-size: 26px;
+      gap: 12px;
+      margin-bottom: 24px;
     }
     .stats-section {
-      padding: 16px;
+      padding: 16px 14px;
+      margin-bottom: 24px;
     }
     .insights-card {
-      padding: 16px;
+      padding: 16px 14px;
+    }
+    .benchmark-card {
+      padding: 16px 14px;
     }
   }
 </style>

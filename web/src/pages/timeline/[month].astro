@@ -1,0 +1,680 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ChangeCard from '../../components/ChangeCard.astro';
+import { getAllFeedEntries, getServicesList, groupEntriesByMonth, type MonthGroup, type FeedEntry } from '../../lib/feed';
+
+export async function getStaticPaths() {
+  const entries = await getAllFeedEntries();
+  const services = await getServicesList();
+  const monthGroups = groupEntriesByMonth(entries);
+
+  return monthGroups.map((group) => ({
+    params: { month: group.key },
+    props: {
+      group,
+      monthGroups,
+      services,
+      entries,
+    },
+  }));
+}
+
+interface Props {
+  group: MonthGroup;
+  monthGroups: MonthGroup[];
+  services: any[];
+  entries: FeedEntry[];
+}
+
+const { group, monthGroups, services, entries } = Astro.props;
+
+const breakingCount = group.entries.filter((e) => e.breaking).length;
+const highImpactCount = group.entries.filter((e) => e.impact === 'high').length;
+const aiCount = group.entries.filter((e) => e.category === 'AI & ML' || e.category.toLowerCase().includes('ai')).length;
+const dataCount = group.entries.filter((e) => e.category === 'Data Analytics' || e.category.toLowerCase().includes('data')).length;
+
+const pageTitle = `Google Cloud API Changes — ${group.label} (${group.totalCount} Updates, ${breakingCount} Breaking Alerts)`;
+const pageDesc = `Detailed Google Cloud and Google API changelog for ${group.label}. Tracking ${group.totalCount} method additions, schema updates, and ${breakingCount} breaking alerts across ${services.length} monitored APIs.`;
+const canonicalUrl = `https://google-cloud-radar.com/timeline/${group.key}/`;
+---
+
+<BaseLayout 
+  title={pageTitle}
+  description={pageDesc}
+  image="https://google-cloud-radar.com/og-image.png"
+>
+  <div class="timeline-page-container">
+    <!-- Breadcrumb -->
+    <nav class="timeline-breadcrumbs" aria-label="Breadcrumb">
+      <a href="/" class="crumb-link">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        </svg>
+        Feed
+      </a>
+      <span class="crumb-separator">/</span>
+      <span class="crumb-current">Timeline: {group.label}</span>
+    </nav>
+
+    <!-- Month Hero -->
+    <div class="month-hero-banner">
+      <div class="hero-main">
+        <div class="month-hero-badge">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span>Monthly Archive</span>
+        </div>
+        <h1 class="month-hero-title">{group.label} API Changes</h1>
+        <p class="month-hero-subtitle">
+          Historical archive of all discovery document diffs, schema evolutions, and breaking change alerts recorded during <strong>{group.label}</strong>.
+        </p>
+      </div>
+
+      <div class="month-hero-stats">
+        <div class="month-stat-box">
+          <span class="stat-number">{group.totalCount}</span>
+          <span class="stat-label">Total Updates</span>
+        </div>
+        <div class="month-stat-box breaking">
+          <span class="stat-number">{breakingCount}</span>
+          <span class="stat-label">Breaking Alerts</span>
+        </div>
+        <div class="month-stat-box high">
+          <span class="stat-number">{highImpactCount}</span>
+          <span class="stat-label">High Impact</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters & Navigation -->
+    <div class="timeline-controls-bar">
+      <!-- Filter Pills -->
+      <div class="filter-pills" id="filter-pills-container">
+        <button class="pill-btn active" data-filter="all">
+          <span>All in {group.monthName}</span>
+          <span class="pill-count">{group.totalCount}</span>
+        </button>
+        <button class="pill-btn pill-breaking" data-filter="breaking">
+          <span>⚠️ Breaking Only</span>
+          <span class="pill-count">{breakingCount}</span>
+        </button>
+        <button class="pill-btn" data-filter="high-impact">
+          <span>🔥 High Impact</span>
+          <span class="pill-count">{highImpactCount}</span>
+        </button>
+        <button class="pill-btn" data-filter="category-ai">
+          <span>🧠 AI & ML</span>
+          <span class="pill-count">{aiCount}</span>
+        </button>
+        <button class="pill-btn" data-filter="category-data">
+          <span>📊 Data Analytics</span>
+          <span class="pill-count">{dataCount}</span>
+        </button>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="timeline-action-bar">
+        <div class="status-summary">
+          <span id="results-count-text">Showing <strong>{group.totalCount}</strong> updates in <strong>{group.label}</strong></span>
+        </div>
+        <button class="share-view-btn" id="share-month-btn" title="Copy shareable link to this month's view">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+          <span id="share-btn-text">Share Month</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Month Switcher Nav -->
+    <div class="month-nav-bar">
+      <div class="month-nav-label">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>Timeline</span>
+      </div>
+      <div class="month-chips-list">
+        {monthGroups.map((g) => {
+          const isCurrent = g.key === group.key;
+          return (
+            <a
+              href={`/timeline/${g.key}/`}
+              class={`month-chip ${isCurrent ? 'active' : ''}`}
+            >
+              <span>{g.monthName} '{String(g.year).slice(2)}</span>
+              <span class="month-chip-count">{g.totalCount}</span>
+              {g.breakingCount > 0 && <span class="month-chip-breaking">⚠️ {g.breakingCount}</span>}
+            </a>
+          );
+        })}
+      </div>
+    </div>
+
+    <!-- Month Cards Stream -->
+    <div class="month-cards-stream" id="cards-container">
+      <div class="in-month-empty-state" id="in-month-empty" style="display: none;">
+        <p>No <strong>{group.label}</strong> updates match the active category filter.</p>
+        <button class="in-month-reset-btn" id="reset-in-month-btn" type="button">Reset Category Filter</button>
+      </div>
+
+      <div class="cards-list">
+        {group.entries.map((entry) => (
+          <ChangeCard entry={entry} />
+        ))}
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // URL Param Synchronization & In-Month Client Filter
+  const pillButtons = document.querySelectorAll('.pill-btn');
+  const cards = document.querySelectorAll('.change-card') as NodeListOf<HTMLElement>;
+  const resultsCountText = document.getElementById('results-count-text');
+  const inMonthEmpty = document.getElementById('in-month-empty');
+  const shareBtn = document.getElementById('share-month-btn');
+  const shareBtnText = document.getElementById('share-btn-text');
+  const resetBtn = document.getElementById('reset-in-month-btn');
+
+  // Read URL query params
+  const urlParams = new URLSearchParams(window.location.search);
+  let activeFilter = urlParams.get('filter') || 'all';
+
+  const filterLabels: Record<string, string> = {
+    all: 'updates',
+    breaking: 'breaking alerts',
+    'high-impact': 'high-impact updates',
+    'category-ai': 'AI & ML updates',
+    'category-data': 'Data Analytics updates',
+  };
+
+  function updateUrlState() {
+    const params = new URLSearchParams();
+    if (activeFilter !== 'all') params.set('filter', activeFilter);
+    const queryString = params.toString();
+    const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+    history.replaceState(null, '', newUrl);
+  }
+
+  function applyFilter(filter: string) {
+    activeFilter = filter;
+    let visibleCount = 0;
+
+    pillButtons.forEach((b) => {
+      if (b.getAttribute('data-filter') === filter) {
+        b.classList.add('active');
+      } else {
+        b.classList.remove('active');
+      }
+    });
+
+    cards.forEach((card) => {
+      const cardBreaking = card.getAttribute('data-breaking') === 'true';
+      const cardImpact = card.getAttribute('data-impact');
+      const cardCategory = (card.getAttribute('data-category') || '').toLowerCase();
+
+      let matches = true;
+      if (filter === 'breaking') {
+        matches = cardBreaking;
+      } else if (filter === 'high-impact') {
+        matches = cardImpact === 'high';
+      } else if (filter === 'category-ai') {
+        matches = cardCategory.includes('ai') || cardCategory.includes('machine learning');
+      } else if (filter === 'category-data') {
+        matches = cardCategory.includes('data') || cardCategory.includes('platform') || cardCategory.includes('analytics');
+      }
+
+      if (matches) {
+        card.style.display = 'block';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    if (resultsCountText) {
+      const label = filterLabels[filter] || 'updates';
+      resultsCountText.innerHTML = `Showing <strong>${visibleCount}</strong> ${label}`;
+    }
+
+    if (inMonthEmpty) {
+      inMonthEmpty.style.display = visibleCount === 0 ? 'flex' : 'none';
+    }
+
+    updateUrlState();
+  }
+
+  // Initial run
+  applyFilter(activeFilter);
+
+  pillButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const filter = btn.getAttribute('data-filter') || 'all';
+      applyFilter(filter);
+    });
+  });
+
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      applyFilter('all');
+    });
+  }
+
+  // Share view link with clipboard copy toast
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const url = window.location.href;
+      try {
+        await navigator.clipboard.writeText(url);
+        if (shareBtnText) shareBtnText.textContent = 'Link Copied! ✓';
+        shareBtn.classList.add('copied');
+        setTimeout(() => {
+          if (shareBtnText) shareBtnText.textContent = 'Share Month';
+          shareBtn.classList.remove('copied');
+        }, 2200);
+      } catch (err) {
+        console.error('Failed to copy', err);
+      }
+    });
+  }
+</script>
+
+<style>
+  .timeline-page-container {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .timeline-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-tertiary);
+  }
+
+  .crumb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .crumb-link:hover {
+    color: var(--google-blue);
+  }
+
+  .crumb-separator {
+    color: var(--border-subtle);
+  }
+
+  .crumb-current {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .month-hero-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(26, 115, 232, 0.04) 100%);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    gap: 24px;
+  }
+
+  .month-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--google-blue);
+    margin-bottom: 8px;
+  }
+
+  .month-hero-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 6px 0;
+    letter-spacing: -0.4px;
+  }
+
+  .month-hero-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+    max-width: 580px;
+  }
+
+  .month-hero-stats {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .month-stat-box {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 12px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 95px;
+    text-align: center;
+  }
+
+  .month-stat-box.breaking {
+    border-color: var(--google-red-border);
+    background-color: var(--google-red-subtle);
+  }
+
+  .month-stat-box.breaking .stat-number {
+    color: var(--google-red);
+  }
+
+  .month-stat-box.high {
+    border-color: rgba(249, 171, 0, 0.3);
+    background-color: rgba(249, 171, 0, 0.05);
+  }
+
+  .month-stat-box.high .stat-number {
+    color: var(--google-yellow);
+  }
+
+  .stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    letter-spacing: 0.5px;
+  }
+
+  .timeline-controls-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+  }
+
+  .filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .pill-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+  }
+
+  .pill-btn.active {
+    background-color: var(--google-blue);
+    color: #ffffff;
+    border-color: var(--google-blue);
+  }
+
+  .pill-btn.active .pill-count {
+    background-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+  }
+
+  .pill-breaking.active {
+    background-color: var(--google-red);
+    border-color: var(--google-red);
+  }
+
+  .pill-count {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    background-color: var(--bg-surface);
+    padding: 1px 6px;
+    border-radius: var(--radius-full);
+    color: var(--text-tertiary);
+  }
+
+  .timeline-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 13px;
+  }
+
+  .status-summary {
+    color: var(--text-secondary);
+  }
+
+  .status-summary strong {
+    color: var(--text-primary);
+  }
+
+  .share-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--google-blue);
+    background-color: var(--google-blue-subtle);
+    border: 1px solid var(--google-blue-border);
+    padding: 5px 12px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .share-view-btn:hover {
+    background-color: rgba(26, 115, 232, 0.18);
+  }
+
+  .share-view-btn.copied {
+    background-color: rgba(52, 168, 83, 0.15);
+    border-color: rgba(52, 168, 83, 0.4);
+    color: var(--google-green);
+  }
+
+  /* Month Navigation Bar */
+  .month-nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 8px 14px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .month-nav-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+    padding-right: 8px;
+    border-right: 1px solid var(--border-subtle);
+  }
+
+  .month-chips-list {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .month-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .month-chip:hover {
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+    text-decoration: none;
+  }
+
+  .month-chip.active {
+    background-color: var(--google-blue-subtle);
+    border-color: var(--google-blue-border);
+    color: var(--google-blue);
+    font-weight: 600;
+  }
+
+  .month-chip-count {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+    background-color: var(--bg-surface);
+    padding: 1px 5px;
+    border-radius: var(--radius-full);
+  }
+
+  .month-chip-breaking {
+    font-size: 9.5px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--google-red);
+    background-color: var(--google-red-subtle);
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  .month-cards-stream {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .in-month-empty-state {
+    text-align: center;
+    padding: 36px 20px;
+    background-color: var(--bg-surface);
+    border: 1px dashed var(--border-subtle);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .in-month-empty-state p {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .in-month-reset-btn {
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    color: var(--google-blue);
+    padding: 6px 14px;
+    border-radius: var(--radius-md);
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+
+  .in-month-reset-btn:hover {
+    background-color: var(--border-subtle);
+  }
+
+  @media (max-width: 768px) {
+    .month-hero-banner {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 20px;
+    }
+    .month-hero-stats {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .month-stat-box {
+      flex: 1;
+      min-width: 0;
+    }
+    .timeline-action-bar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .share-view-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

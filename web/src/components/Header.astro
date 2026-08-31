@@ -8,6 +8,17 @@ const { currentPath = '/' } = Astro.props;
 
 <header class="gcp-header">
   <div class="header-left">
+    <button
+      id="mobileSidebarToggle"
+      class="mobile-sidebar-toggle"
+      aria-label="Open APIs & Services Drawer"
+      title="APIs & Services"
+      type="button"
+    >
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 6h16M4 12h16M4 18h7" />
+      </svg>
+    </button>
     <a href="/" class="brand-logo" title="Google Cloud Radar">
       <div class="gcp-cloud-icon">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
@@ -47,6 +58,14 @@ const { currentPath = '/' } = Astro.props;
     </nav>
 
     <div class="auth-header-container" id="headerAuthContainer">
+      <button id="headerAlertsBtn" class="header-alerts-btn" type="button" title="Email Alert Preferences">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span>Alerts</span>
+      </button>
+
       <button id="headerSignInBtn" class="header-signin-btn" type="button" title="Sign in with Google">
         <svg viewBox="0 0 24 24" width="16" height="16">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -67,6 +86,13 @@ const { currentPath = '/' } = Astro.props;
             <span id="dropdownUserEmail">user@gmail.com</span>
           </div>
           <div class="dropdown-divider"></div>
+          <button id="dropdownAlertsBtn" class="dropdown-item-btn" type="button">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span>Alert Preferences</span>
+          </button>
           <button id="headerSignOutBtn" class="dropdown-signout-btn" type="button">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -106,6 +132,18 @@ const { currentPath = '/' } = Astro.props;
         if (userMenu) userMenu.style.display = 'none';
       }
     }
+
+    const alertsBtn = document.getElementById('headerAlertsBtn');
+    const dropdownAlertsBtn = document.getElementById('dropdownAlertsBtn');
+
+    alertsBtn?.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('open_alerts_modal'));
+    });
+
+    dropdownAlertsBtn?.addEventListener('click', () => {
+      if (dropdown) dropdown.style.display = 'none';
+      window.dispatchEvent(new CustomEvent('open_alerts_modal'));
+    });
 
     signInBtn?.addEventListener('click', async () => {
       try {
@@ -379,6 +417,28 @@ const { currentPath = '/' } = Astro.props;
 
   .auth-header-container {
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header-alerts-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue);
+    border: 1px solid var(--google-blue-border);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .header-alerts-btn:hover {
+    background-color: rgba(26, 115, 232, 0.2);
   }
 
   .header-signin-btn {
@@ -455,6 +515,28 @@ const { currentPath = '/' } = Astro.props;
     margin: 8px 0;
   }
 
+  .dropdown-item-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.15s ease;
+  }
+
+  .dropdown-item-btn:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--google-blue);
+  }
+
   .dropdown-signout-btn {
     display: flex;
     align-items: center;
@@ -509,6 +591,25 @@ const { currentPath = '/' } = Astro.props;
     display: block;
   }
 
+  .mobile-sidebar-toggle {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+
+  .mobile-sidebar-toggle:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+  }
+
   @media (max-width: 1024px) {
     .header-center {
       display: none;
@@ -518,15 +619,78 @@ const { currentPath = '/' } = Astro.props;
     }
   }
 
+  @media (max-width: 900px) {
+    .mobile-sidebar-toggle {
+      display: inline-flex;
+    }
+    .header-right {
+      gap: 10px;
+    }
+    .nav-links {
+      gap: 6px;
+    }
+  }
+
   @media (max-width: 640px) {
     .gcp-header {
-      padding: 0 12px;
+      padding: 0 10px;
+      gap: 6px;
+    }
+    .brand-logo {
+      gap: 8px;
+    }
+    .brand-title {
+      font-size: 14px;
     }
     .canary-tag {
       display: none;
     }
-    .nav-links a span {
+    .nav-links {
+      gap: 4px;
+    }
+    .nav-links a {
+      padding: 5px 6px;
+      font-size: 12px;
+      gap: 4px;
+    }
+    .header-alerts-btn {
+      padding: 5px 8px;
+      font-size: 11.5px;
+      gap: 4px;
+    }
+    .header-signin-btn {
+      padding: 5px 8px;
+      font-size: 11.5px;
+      gap: 5px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-alerts-btn span {
       display: none;
+    }
+    .header-alerts-btn {
+      padding: 6px 8px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .brand-title {
+      font-size: 13px;
+    }
+    .gcp-cloud-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+    .nav-links a {
+      padding: 4px 5px;
+      font-size: 11px;
+    }
+    .header-signin-btn span {
+      display: none;
+    }
+    .header-signin-btn {
+      padding: 6px 8px;
     }
   }
 </style>

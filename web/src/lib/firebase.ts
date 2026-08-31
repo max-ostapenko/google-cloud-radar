@@ -17,6 +17,7 @@ import {
   getFirestore,
   collection,
   doc,
+  getDoc,
   setDoc,
   updateDoc,
   addDoc,
@@ -507,3 +508,113 @@ export async function deleteComment(
     console.warn('Deleted locally; Firestore delete failed:', err);
   }
 }
+
+export interface UserAlertPreferences {
+  email: string;
+  breakingAlerts: boolean;
+  weeklyDigest: boolean;
+  allServices: boolean;
+  watchedServices: string[];
+}
+
+/**
+ * Get user alert preferences from Firestore with local storage cache
+ */
+export async function getUserAlertPreferences(user: User | any): Promise<UserAlertPreferences> {
+  const defaultPrefs: UserAlertPreferences = {
+    email: user?.email || '',
+    breakingAlerts: true,
+    weeklyDigest: true,
+    allServices: true,
+    watchedServices: [],
+  };
+
+  if (!user?.uid) return defaultPrefs;
+
+  const storageKey = `gcp_radar_alert_prefs_${user.uid}`;
+  try {
+    const cached = localStorage.getItem(storageKey);
+    if (cached) return JSON.parse(cached);
+  } catch {}
+
+  if (isLocalEnvironment()) {
+    return defaultPrefs;
+  }
+
+  try {
+    const dbInstance = getFirebaseDb();
+    const docRef = doc(dbInstance, 'users', user.uid);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const data = snap.data();
+      const prefs: UserAlertPreferences = {
+        email: data.email || user.email || '',
+        breakingAlerts: data.breakingAlerts !== undefined ? data.breakingAlerts : true,
+        weeklyDigest: data.weeklyDigest !== undefined ? data.weeklyDigest : true,
+        allServices: data.allServices !== undefined ? data.allServices : true,
+        watchedServices: data.watchedServices || [],
+      };
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(prefs));
+      } catch {}
+      return prefs;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch user alert preferences:', err);
+  }
+
+  return defaultPrefs;
+}
+
+/**
+ * Save user alert preferences to Firestore with local cache
+ */
+export async function saveUserAlertPreferences(
+  user: User | any,
+  prefs: Partial<UserAlertPreferences>
+): Promise<UserAlertPreferences> {
+  const fullPrefs: UserAlertPreferences = {
+    email: user?.email || '',
+    breakingAlerts: prefs.breakingAlerts !== undefined ? prefs.breakingAlerts : true,
+    weeklyDigest: prefs.weeklyDigest !== undefined ? prefs.weeklyDigest : true,
+    allServices: prefs.allServices !== undefined ? prefs.allServices : true,
+    watchedServices: prefs.watchedServices || [],
+  };
+
+  if (!user?.uid) return fullPrefs;
+
+  const storageKey = `gcp_radar_alert_prefs_${user.uid}`;
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(fullPrefs));
+    window.dispatchEvent(new CustomEvent('radar_alert_prefs_update', { detail: fullPrefs }));
+  } catch {}
+
+  if (isLocalEnvironment()) {
+    return fullPrefs;
+  }
+
+  try {
+    const dbInstance = getFirebaseDb();
+    const docRef = doc(dbInstance, 'users', user.uid);
+    await setDoc(
+      docRef,
+      {
+        uid: user.uid,
+        email: user.email || '',
+        displayName: user.displayName || '',
+        photoURL: user.photoURL || '',
+        breakingAlerts: fullPrefs.breakingAlerts,
+        weeklyDigest: fullPrefs.weeklyDigest,
+        allServices: fullPrefs.allServices,
+        watchedServices: fullPrefs.watchedServices,
+        updated_at: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  } catch (err) {
+    console.warn('Failed to sync alert preferences to Firestore:', err);
+  }
+
+  return fullPrefs;
+}
+

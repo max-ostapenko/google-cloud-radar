@@ -106,12 +106,16 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 a {
@@ -240,6 +244,7 @@ code, pre {
 .app-layout {
   display: flex;
   min-height: calc(100vh - var(--header-height));
+  position: relative;
 }
 
 .main-container {
@@ -248,12 +253,13 @@ code, pre {
   margin: 0 auto;
   padding: 24px 20px 0;
   width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
-@media (max-width: 900px) {
-  .app-layout {
-    flex-direction: column;
+@media (max-width: 640px) {
+  .main-container {
+    padding: 16px 12px 0;
   }
 }

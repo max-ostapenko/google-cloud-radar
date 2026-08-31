@@ -1,10 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ChangeCard from '../components/ChangeCard.astro';
-import { getAllFeedEntries, getServicesList } from '../lib/feed';
+import { getAllFeedEntries, getServicesList, groupEntriesByMonth } from '../lib/feed';
 
 const entries = await getAllFeedEntries();
 const services = await getServicesList();
+const monthGroups = groupEntriesByMonth(entries);
 
 const breakingCount = entries.filter((e) => e.breaking).length;
 const highImpactCount = entries.filter((e) => e.impact === 'high').length;
@@ -81,14 +82,106 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
       </div>
 
       <div class="feed-status-summary">
-        <span id="results-count-text">Showing <strong>{entries.length}</strong> updates</span>
+        <span id="results-count-text">Showing <strong>{monthGroups[0]?.totalCount || entries.length}</strong> updates in <strong>{monthGroups[0]?.label || 'Latest Month'}</strong></span>
+        <div class="feed-actions-group">
+          <button class="feed-alerts-cta-btn" id="feed-alerts-cta-btn" type="button" title="Email Alerts for Breaking Changes">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span id="feed-alerts-cta-text">⚡ Get Alerts</span>
+          </button>
+          <button class="share-view-btn" id="share-view-btn" title="Copy shareable link to this view">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <span id="share-view-btn-text">Share View</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Month Timeline Switcher -->
+    <div class="month-nav-bar" id="monthNavBar">
+      <div class="month-nav-label">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>Month</span>
+      </div>
+      <div class="month-chips-list">
+        {monthGroups.map((g, idx) => {
+          const aiMonthCount = g.entries.filter((e) => e.category === 'AI & ML' || e.category?.toLowerCase().includes('ai')).length;
+          const dataMonthCount = g.entries.filter((e) => e.category === 'Data Analytics' || e.category?.toLowerCase().includes('data')).length;
+          return (
+            <a
+              href={`/timeline/${g.key}/`}
+              class={`month-chip ${idx === 0 ? 'active' : ''}`}
+              data-month={g.key}
+              data-month-label={g.label}
+              data-count-all={g.totalCount}
+              data-count-breaking={g.breakingCount}
+              data-count-high-impact={g.highImpactCount}
+              data-count-category-ai={aiMonthCount}
+              data-count-category-data={dataMonthCount}
+            >
+              <span>{g.monthName} '{String(g.year).slice(2)}</span>
+              <span class="month-chip-count">{g.totalCount}</span>
+            </a>
+          );
+        })}
       </div>
     </div>
   </div>
 
+  <!-- Grouped Monthly Feed Stream -->
   <div class="feed-timeline" id="cards-container">
-    {entries.map((entry) => (
-      <ChangeCard entry={entry} />
+    {monthGroups.map((group, index) => (
+      <section
+        class={`month-section ${index === 0 ? 'is-latest' : ''}`}
+        data-month={group.key}
+        id={`month-${group.key}`}
+      >
+        <header class="month-section-header">
+          <div class="month-header-left">
+            <div class="month-calendar-badge">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <h2 class="month-title">{group.label}</h2>
+            </div>
+            {index === 0 && <span class="current-month-badge">Latest Wave</span>}
+          </div>
+
+          <div class="month-header-stats">
+            <span class="month-stat-pill"><strong>{group.totalCount}</strong> Revisions</span>
+            {group.breakingCount > 0 && (
+              <span class="month-stat-pill breaking">⚠️ <strong>{group.breakingCount}</strong> Breaking</span>
+            )}
+            {group.highImpactCount > 0 && (
+              <span class="month-stat-pill high-impact">🔥 <strong>{group.highImpactCount}</strong> High Impact</span>
+            )}
+          </div>
+        </header>
+
+        <div class="in-month-empty-state" style="display: none;">
+          <p>No <strong>{group.label}</strong> updates match the active category filter.</p>
+          <button class="in-month-reset-btn" type="button">Reset Category Filter</button>
+        </div>
+
+        <div class="month-cards-list">
+          {group.entries.map((entry) => (
+            <ChangeCard entry={entry} />
+          ))}
+        </div>
+      </section>
     ))}
   </div>
 
@@ -102,17 +195,60 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
 
 <script>
   import MiniSearch from 'minisearch';
+  import { onAuthChange, getUserAlertPreferences } from '../lib/firebase';
 
   // Client-side instant filtering & search logic with MiniSearch
   const searchInput = document.getElementById('global-search-input') as HTMLInputElement;
   const pillButtons = document.querySelectorAll('.pill-btn');
+  const monthChips = document.querySelectorAll('.month-chip');
+  const monthSections = document.querySelectorAll('.month-section') as NodeListOf<HTMLElement>;
   const cards = document.querySelectorAll('.change-card') as NodeListOf<HTMLElement>;
   const resultsCountText = document.getElementById('results-count-text');
   const noResults = document.getElementById('no-results');
   const clearBtn = document.getElementById('clear-search-btn');
 
+  const defaultMonth = monthChips.length > 0 ? (monthChips[0].getAttribute('data-month') || '') : '';
   let activeFilter = 'all';
+  let activeMonth = defaultMonth;
   let searchQuery = '';
+
+  const shareViewBtn = document.getElementById('share-view-btn');
+  const shareViewText = document.getElementById('share-view-btn-text');
+
+  // Read initial state from URL search params
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialMonth = urlParams.get('month');
+  const initialFilter = urlParams.get('filter');
+  const initialQ = urlParams.get('q');
+
+  if (initialMonth && Array.from(monthChips).some((c) => c.getAttribute('data-month') === initialMonth)) {
+    activeMonth = initialMonth;
+    monthChips.forEach((c) => {
+      if (c.getAttribute('data-month') === initialMonth) c.classList.add('active');
+      else c.classList.remove('active');
+    });
+  }
+
+  if (initialFilter && ['breaking', 'high-impact', 'category-ai', 'category-data'].includes(initialFilter)) {
+    activeFilter = initialFilter;
+    pillButtons.forEach((b) => {
+      if (b.getAttribute('data-filter') === initialFilter) b.classList.add('active');
+      else b.classList.remove('active');
+    });
+  }
+
+  if (initialQ && searchInput) {
+    searchInput.value = initialQ;
+    searchQuery = initialQ;
+  }
+
+  const filterLabels: Record<string, string> = {
+    all: 'updates',
+    breaking: 'breaking alerts',
+    'high-impact': 'high-impact updates',
+    'category-ai': 'AI & ML updates',
+    'category-data': 'Data Analytics updates',
+  };
 
   // Initialize MiniSearch Index with all rendered cards
   const documents: any[] = [];
@@ -157,10 +293,21 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
 
   miniSearch.addAll(documents);
 
+  function updateUrlState() {
+    const params = new URLSearchParams();
+    if (activeMonth !== defaultMonth) params.set('month', activeMonth);
+    if (activeFilter !== 'all') params.set('filter', activeFilter);
+    if (searchQuery.trim()) params.set('q', searchQuery.trim());
+    const queryString = params.toString();
+    const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+    history.replaceState(null, '', newUrl);
+  }
+
   function applyFilters() {
     let matchedIds: Set<string> | null = null;
+    const isSearching = searchQuery.trim().length > 0;
 
-    if (searchQuery.trim()) {
+    if (isSearching) {
       const searchResults = miniSearch.search(searchQuery.trim(), {
         fuzzy: 0.25,
         prefix: true,
@@ -168,7 +315,7 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
       matchedIds = new Set(searchResults.map((r) => r.id));
     }
 
-    let visibleCount = 0;
+    let totalMatchingCount = 0;
 
     cards.forEach((card) => {
       const slug = card.getAttribute('data-slug') || '';
@@ -196,20 +343,79 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
 
       if (matchesPill && matchesSearch) {
         card.style.display = 'block';
-        visibleCount++;
+        totalMatchingCount++;
       } else {
         card.style.display = 'none';
       }
     });
 
+    // Update Month Chip Badge Counts dynamically based on active filter
+    monthChips.forEach((chip) => {
+      const countForFilter = chip.getAttribute(`data-count-${activeFilter}`) || '0';
+      const countEl = chip.querySelector('.month-chip-count');
+      if (countEl) {
+        countEl.textContent = countForFilter;
+      }
+      if (parseInt(countForFilter, 10) === 0) {
+        chip.classList.add('is-empty');
+      } else {
+        chip.classList.remove('is-empty');
+      }
+    });
+
+    let activeMonthVisibleCount = 0;
+    const activeChip = document.querySelector('.month-chip.active');
+    const activeMonthLabel = activeChip?.getAttribute('data-month-label') || 'Selected Month';
+
+    // Update Month Sections visibility
+    monthSections.forEach((section) => {
+      const sectionMonth = section.getAttribute('data-month') || '';
+      const sectionCards = section.querySelectorAll('.change-card') as NodeListOf<HTMLElement>;
+      const inMonthEmpty = section.querySelector('.in-month-empty-state') as HTMLElement;
+      let sectionVisibleCount = 0;
+      sectionCards.forEach((c) => {
+        if (c.style.display !== 'none') sectionVisibleCount++;
+      });
+
+      if (sectionMonth === activeMonth) {
+        activeMonthVisibleCount = sectionVisibleCount;
+      }
+
+      // When searching, show all months with matches.
+      // When not searching, show ONLY the active month section.
+      if (isSearching) {
+        section.style.display = sectionVisibleCount > 0 ? 'flex' : 'none';
+        if (inMonthEmpty) inMonthEmpty.style.display = 'none';
+      } else {
+        if (sectionMonth === activeMonth) {
+          section.style.display = 'flex';
+          if (inMonthEmpty) {
+            inMonthEmpty.style.display = sectionVisibleCount === 0 ? 'flex' : 'none';
+          }
+        } else {
+          section.style.display = 'none';
+        }
+      }
+    });
+
     if (resultsCountText) {
-      resultsCountText.innerHTML = `Showing <strong>${visibleCount}</strong> update${visibleCount === 1 ? '' : 's'}`;
+      const label = filterLabels[activeFilter] || 'updates';
+      if (isSearching) {
+        resultsCountText.innerHTML = `Found <strong>${totalMatchingCount}</strong> ${label} matching "<strong>${searchQuery}</strong>"`;
+      } else {
+        resultsCountText.innerHTML = `Showing <strong>${activeMonthVisibleCount}</strong> ${label} in <strong>${activeMonthLabel}</strong>`;
+      }
     }
 
     if (noResults) {
-      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+      noResults.style.display = (isSearching && totalMatchingCount === 0) ? 'block' : 'none';
     }
+
+    updateUrlState();
   }
+
+  // Initial filter run
+  applyFilters();
 
   // Pill click handlers
   pillButtons.forEach((btn) => {
@@ -217,6 +423,28 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
       pillButtons.forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       activeFilter = btn.getAttribute('data-filter') || 'all';
+      applyFilters();
+    });
+  });
+
+  // Month chip click handlers (intercept link click for client instant tab switch)
+  monthChips.forEach((chip) => {
+    chip.addEventListener('click', (e) => {
+      e.preventDefault();
+      monthChips.forEach((c) => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeMonth = chip.getAttribute('data-month') || defaultMonth;
+      applyFilters();
+    });
+  });
+
+  // In-month reset buttons
+  document.querySelectorAll('.in-month-reset-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      activeFilter = 'all';
+      pillButtons.forEach((b) => b.classList.remove('active'));
+      const allPill = document.querySelector('[data-filter="all"]');
+      if (allPill) allPill.classList.add('active');
       applyFilters();
     });
   });
@@ -235,12 +463,88 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
       if (searchInput) searchInput.value = '';
       searchQuery = '';
       activeFilter = 'all';
+      activeMonth = defaultMonth;
       pillButtons.forEach((b) => b.classList.remove('active'));
+      monthChips.forEach((c, idx) => {
+        if (idx === 0) c.classList.add('active');
+        else c.classList.remove('active');
+      });
       const allPill = document.querySelector('[data-filter="all"]');
       if (allPill) allPill.classList.add('active');
       applyFilters();
     });
   }
+
+  function getShareableUrl(): string {
+    const origin = window.location.origin;
+    const isSearching = searchQuery.trim().length > 0;
+    if (isSearching) {
+      const params = new URLSearchParams();
+      if (activeFilter !== 'all') params.set('filter', activeFilter);
+      params.set('q', searchQuery.trim());
+      return `${origin}/?${params.toString()}`;
+    }
+
+    const monthKey = activeMonth || defaultMonth;
+    const params = new URLSearchParams();
+    if (activeFilter !== 'all') params.set('filter', activeFilter);
+    const queryString = params.toString();
+    return `${origin}/timeline/${monthKey}/${queryString ? `?${queryString}` : ''}`;
+  }
+
+  // Share View Link handler
+  if (shareViewBtn) {
+    shareViewBtn.addEventListener('click', async () => {
+      try {
+        const shareUrl = getShareableUrl();
+        await navigator.clipboard.writeText(shareUrl);
+        if (shareViewText) shareViewText.textContent = 'Link Copied! ✓';
+        shareViewBtn.classList.add('copied');
+        setTimeout(() => {
+          if (shareViewText) shareViewText.textContent = 'Share View';
+          shareViewBtn.classList.remove('copied');
+        }, 2200);
+      } catch (err) {
+        console.error('Failed to copy', err);
+      }
+    });
+  }
+
+  // In-feed Alerts Button handler & Dynamic subscription status
+  const feedAlertsBtn = document.getElementById('feed-alerts-cta-btn');
+  const feedAlertsText = document.getElementById('feed-alerts-cta-text');
+
+  feedAlertsBtn?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('open_alerts_modal'));
+  });
+
+  async function updateAlertsBtnStatus(user: any) {
+    if (!feedAlertsBtn || !feedAlertsText) return;
+    if (user) {
+      const prefs = await getUserAlertPreferences(user);
+      if (prefs.breakingAlerts) {
+        feedAlertsBtn.classList.add('is-subscribed');
+        feedAlertsText.textContent = '✓ Alerts Active';
+      } else {
+        feedAlertsBtn.classList.remove('is-subscribed');
+        feedAlertsText.textContent = '⚡ Enable Alerts';
+      }
+    } else {
+      feedAlertsBtn.classList.remove('is-subscribed');
+      feedAlertsText.textContent = '⚡ Get Alerts';
+    }
+  }
+
+  onAuthChange(updateAlertsBtnStatus);
+  window.addEventListener('radar_alert_prefs_update', (e: any) => {
+    if (e.detail?.breakingAlerts) {
+      feedAlertsBtn?.classList.add('is-subscribed');
+      if (feedAlertsText) feedAlertsText.textContent = '✓ Alerts Active';
+    } else {
+      feedAlertsBtn?.classList.remove('is-subscribed');
+      if (feedAlertsText) feedAlertsText.textContent = '⚡ Enable Alerts';
+    }
+  });
 </script>
 
 <style>
@@ -428,6 +732,9 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
   }
 
   .feed-status-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: 13px;
     color: var(--text-tertiary);
   }
@@ -436,7 +743,281 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
     color: var(--text-primary);
   }
 
+  .feed-actions-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .feed-alerts-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--google-blue);
+    background-color: var(--google-blue-subtle);
+    border: 1px solid var(--google-blue-border);
+    padding: 3px 11px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .feed-alerts-cta-btn:hover {
+    background-color: rgba(26, 115, 232, 0.22);
+    border-color: var(--google-blue);
+  }
+
+  .feed-alerts-cta-btn.is-subscribed {
+    color: var(--google-green);
+    background-color: rgba(52, 168, 83, 0.1);
+    border-color: rgba(52, 168, 83, 0.35);
+  }
+
+  .share-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .share-view-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+  }
+
+  .share-view-btn.copied {
+    background-color: rgba(52, 168, 83, 0.15);
+    border-color: rgba(52, 168, 83, 0.4);
+    color: var(--google-green);
+  }
+
+  /* Month Timeline Navigation Bar */
+  .month-nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 8px 14px;
+    margin-top: 14px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .month-nav-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+    padding-right: 8px;
+    border-right: 1px solid var(--border-subtle);
+  }
+
+  .month-chips-list {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .month-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .month-chip:hover {
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+  }
+
+  .month-chip.active {
+    background-color: var(--google-blue-subtle);
+    border-color: var(--google-blue-border);
+    color: var(--google-blue);
+    font-weight: 600;
+  }
+
+  .month-chip-count {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+    background-color: var(--bg-surface);
+    padding: 1px 5px;
+    border-radius: var(--radius-full);
+  }
+
+  .month-chip.active .month-chip-count {
+    background-color: rgba(26, 115, 232, 0.15);
+    color: var(--google-blue);
+  }
+
+  .month-chip.is-empty {
+    opacity: 0.45;
+  }
+
+  .month-chip.is-empty:hover {
+    opacity: 0.8;
+  }
+
+  .in-month-empty-state {
+    text-align: center;
+    padding: 32px 20px;
+    background-color: var(--bg-surface);
+    border: 1px dashed var(--border-subtle);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .in-month-empty-state p {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .in-month-reset-btn {
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    color: var(--google-blue);
+    padding: 6px 14px;
+    border-radius: var(--radius-md);
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+
+  .in-month-reset-btn:hover {
+    background-color: var(--border-subtle);
+  }
+
+  /* Grouped Month Sections */
   .feed-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .month-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .month-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .month-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .month-calendar-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--google-blue);
+  }
+
+  .month-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: -0.2px;
+  }
+
+  .current-month-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue);
+    border: 1px solid var(--google-blue-border);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+  }
+
+  .month-header-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .month-stat-pill {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+  }
+
+  .month-stat-pill strong {
+    color: var(--text-primary);
+  }
+
+  .month-stat-pill.breaking {
+    color: var(--google-red);
+    background-color: var(--google-red-subtle);
+    border-color: var(--google-red-border);
+  }
+
+  .month-stat-pill.breaking strong {
+    color: var(--google-red);
+  }
+
+  .month-stat-pill.high-impact {
+    color: var(--google-yellow);
+    background-color: var(--google-yellow-subtle);
+    border-color: var(--google-yellow-border);
+  }
+
+  .month-stat-pill.high-impact strong {
+    color: var(--google-yellow);
+  }
+
+  .month-cards-list {
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -496,6 +1077,17 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
       width: 100%;
       justify-content: flex-start;
       flex-wrap: wrap;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .month-section-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .month-header-stats {
+      width: 100%;
     }
   }
 </style>

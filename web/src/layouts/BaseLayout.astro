@@ -2,6 +2,7 @@
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import Sidebar from "../components/Sidebar.astro";
+import AlertsModal from "../components/AlertsModal.astro";
 import "../styles/global.css";
 
 interface Props {
@@ -117,11 +118,35 @@ const jsonLd = schemaData
           />
         )
       }
+      <div id="sidebarBackdrop" class="sidebar-backdrop" aria-hidden="true"></div>
       <main class="main-container">
         <slot />
         <Footer />
       </main>
     </div>
+
+    <AlertsModal />
+
+    <style>
+      .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(2px);
+        z-index: 1150;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+      }
+
+      .sidebar-backdrop.is-active {
+        display: block;
+        opacity: 1;
+      }
+    </style>
 
     <script is:inline>
       // Global copy-to-clipboard handler for method buttons
