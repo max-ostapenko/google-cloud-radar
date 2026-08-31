@@ -1,42 +1,35 @@
 # Google Cloud Radar — AI Agent Context
 
-Google Cloud Radar tracks, analyzes, and benchmarks pre-release Google Discovery API changes before they appear in official Google Cloud release notes.
+Agent guidelines and engineering invariants for modifying Google Cloud Radar. For the overall system architecture diagram and repository layout, see [**`README.md`**](README.md).
 
 ---
 
-## 🧭 Architecture & Subsystems
+## 🛡️ Core Invariants & Data Contracts
 
-```mermaid
-graph TD
-    A[Google Discovery API] --> B[scripts/update_disco.py]
-    B --> C[discoveries/ Normalized ASTs]
-    C --> D[scripts/diff_to_feed.py]
-    D --> E[scripts/diff_preprocessor.py - AIP-180 AST Diffing]
-    E --> F[scripts/llm_client.py - Vertex AI Gemini]
-    F --> G[data/changes/*.json + data/index.json]
-    G --> H[scripts/correlate_releases.py - Lead Time Delta]
-    H --> I[scripts/seed_prod_firestore.py - Firestore DB 'radar']
-    I --> J[scripts/dispatch_email_alerts.py - Resend Transactional Alerts]
-    G --> K[web/ - Astro 5 Static Site & MiniSearch]
-```
+1. **AIP-180 Breaking Checks First**:
+   - Always enforce deterministic [Google AIP-180](https://google.aip.dev/180) compatibility checks in [`scripts/diff_preprocessor.py`](scripts/diff_preprocessor.py) before invoking Gemini LLM analysis.
+   - Breaking triggers: removed methods/resources, removed query/request parameters, newly introduced required fields, mutated parameter types or enum values.
 
-### Core Components
-| Area | Directory / Files | Responsibility |
+2. **Named Firestore Database (`radar`)**:
+   - The application strictly uses the named Firestore database **`radar`** (never `(default)`).
+   - Enforced across Python scripts (`--database radar`), client SDK ([`web/src/lib/firebase.ts`](web/src/lib/firebase.ts)), and Terraform rules ([`terraform/firestore.rules`](terraform/firestore.rules)).
+
+3. **Rolling 90-Day Benchmark Scope**:
+   - Velocity rankings and lead times in [`web/src/lib/stats.ts`](web/src/lib/stats.ts) and `/stats` default to a trailing rolling 90-day window (`ROLLING_WINDOW_DAYS = 90`).
+
+4. **Singleton Modals & Viewport Root Mounting**:
+   - Modals ([`AlertsModal.astro`](web/src/components/AlertsModal.astro), [`ShareScoopModal.astro`](web/src/components/ShareScoopModal.astro)) are singletons mounted once at the viewport root in [`BaseLayout.astro`](web/src/layouts/BaseLayout.astro). Individual cards only emit trigger events or data attributes to prevent DOM duplication and layout shifts.
+
+5. **CLI-First Philosophy**:
+   - Prefer native CLI tools (`gcloud`, `gh`, `firebase`) via shell commands for speed, auth reuse, and token efficiency.
+
+---
+
+## 📂 Subsystem References
+
+| Subsystem | Guide | Focus |
 |---|---|---|
-| **Pipeline & Discovery** | [`scripts/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts) | Polls Discovery API, cleans AST noise, extracts diffs, runs deterministic breaking checks (Google AIP-180), and calls Vertex AI Gemini for developer impact summarization. |
-| **Release Correlation** | [`scripts/correlate_releases.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/correlate_releases.py) | Scrapes public release notes to compute empirical canary lead-time deltas. |
-| **Email Alerts** | [`scripts/dispatch_email_alerts.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/dispatch_email_alerts.py) | Dispatches personalized transactional breaking alerts via Resend (`alerts@google-cloud-radar.com`). |
-| **Structured Changes** | [`data/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/data) | Structured JSON changes (`data/changes/*.json`) and central manifest catalog (`data/index.json`). |
-| **Frontend Application** | [`web/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/web) | Astro 5 SSG web app with client-side MiniSearch: feed (`/`), 90-day rolling benchmark (`/stats`), breaking radar (`/breaking`), service hubs (`/services/[service]`), and detail pages (`/changes/[slug]`). |
-| **Distribution Feeds** | [`web/src/pages/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/web/src/pages) | Global RSS (`/rss.xml`), REST API (`/api/feed.json`), and AI context (`/llms.txt`). |
-| **Infrastructure** | [`terraform/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/terraform) | Firebase Hosting, Firestore security rules (`radar` database), Auth config, and CI/CD IAM. |
-| **Workflows** | [`.github/workflows/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/.github/workflows) | Scheduled 5x daily discovery sync, PR creation, tests, and Firebase Hosting deployment. |
+| **Data Pipeline** | [`scripts/README.md`](scripts/README.md) | Discovery sync, AST diffing, Gemini analysis, release correlation, and email dispatcher. |
+| **Web Frontend** | [`web/README.md`](web/README.md) | Astro 5 static routes, MiniSearch engine, mock Firestore server (`dev:all`), and design tokens. |
+| **Security & Policy** | [`SECURITY.md`](SECURITY.md) | Vulnerability disclosure, auth posture, and security rules. |
 
----
-
-## 🛡️ Guiding Principles & Invariants
-
-1. **Deterministic Breaking Rules First**: Always enforce AIP-180 AST rules (removed parameters/methods, added required fields, type mutations) deterministically in Python before LLM analysis.
-2. **Dynamic 90-Day Stats**: The benchmark aggregator in `web/src/lib/stats.ts` defaults to a rolling trailing 90-day window.
-3. **Single Source of Truth for Database**: The application uses the named Firestore database **`radar`** across scripts, frontend client, and Terraform security rules.
-4. **Clean Code & CLI-First**: Prefer native CLI tooling (`gcloud`, `gh`, `firebase`, `bq`) over heavy dependencies. Keep frontend styles in vanilla CSS matching Google Cloud design tokens without external CSS frameworks.
