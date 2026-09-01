@@ -66,10 +66,13 @@ def get_access_token() -> str:
     try:
         import google.auth
         import google.auth.transport.requests
-        credentials, _ = google.auth.default(scopes=[
-            "https://www.googleapis.com/auth/cloud-platform",
-            "https://www.googleapis.com/auth/datastore"
-        ])
+
+        credentials, _ = google.auth.default(
+            scopes=[
+                "https://www.googleapis.com/auth/cloud-platform",
+                "https://www.googleapis.com/auth/datastore",
+            ]
+        )
         auth_req = google.auth.transport.requests.Request()
         credentials.refresh(auth_req)
         if credentials.token:
@@ -81,7 +84,7 @@ def get_access_token() -> str:
         token = subprocess.check_output(
             ["gcloud", "auth", "print-access-token", "--quiet"],
             text=True,
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
         ).strip()
         if token:
             return token
@@ -95,7 +98,10 @@ def is_dev_environment() -> bool:
     """Returns True if running locally in development rather than production CI."""
     if os.getenv("ENVIRONMENT", "").lower() in ("production", "prod"):
         return False
-    if os.getenv("CI", "").lower() in ("true", "1") or os.getenv("GITHUB_ACTIONS") == "true":
+    if (
+        os.getenv("CI", "").lower() in ("true", "1")
+        or os.getenv("GITHUB_ACTIONS") == "true"
+    ):
         return False
     return True
 
@@ -107,13 +113,13 @@ def send_resend_email(
     subject: str,
     html_content: str,
     text_content: Optional[str] = None,
-    allow_dev_fallback: bool = False
+    allow_dev_fallback: bool = False,
 ) -> bool:
     """Sends an email via Resend REST API."""
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
-        "User-Agent": "Google-Cloud-Radar-Dispatcher/1.0"
+        "User-Agent": "Google-Cloud-Radar-Dispatcher/1.0",
     }
 
     payload = {
@@ -126,19 +132,29 @@ def send_resend_email(
         payload["text"] = text_content
 
     data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(RESEND_API_URL, data=data, headers=headers, method="POST")
+    req = urllib.request.Request(
+        RESEND_API_URL, data=data, headers=headers, method="POST"
+    )
 
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             resp_body = resp.read().decode("utf-8")
             result = json.loads(resp_body)
-            logger.info(f"✓ Email successfully sent to {to_email} (Resend ID: {result.get('id', 'N/A')})")
+            logger.info(
+                f"✓ Email successfully sent to {to_email} (Resend ID: {result.get('id', 'N/A')})"
+            )
             return True
     except urllib.error.HTTPError as e:
         error_msg = e.read().decode("utf-8")
         # Fallback to sandbox domain ONLY in development / test environment
-        if allow_dev_fallback and ("domain" in error_msg.lower() or e.code == 403) and from_email != FALLBACK_SANDBOX_FROM_EMAIL:
-            logger.warning(f"[DEV ENV] Domain in '{from_email}' is not yet verified in Resend. Retrying with '{FALLBACK_SANDBOX_FROM_EMAIL}' sandbox domain...")
+        if (
+            allow_dev_fallback
+            and ("domain" in error_msg.lower() or e.code == 403)
+            and from_email != FALLBACK_SANDBOX_FROM_EMAIL
+        ):
+            logger.warning(
+                f"[DEV ENV] Domain in '{from_email}' is not yet verified in Resend. Retrying with '{FALLBACK_SANDBOX_FROM_EMAIL}' sandbox domain..."
+            )
             return send_resend_email(
                 api_key=api_key,
                 from_email=FALLBACK_SANDBOX_FROM_EMAIL,
@@ -146,9 +162,11 @@ def send_resend_email(
                 subject=subject,
                 html_content=html_content,
                 text_content=text_content,
-                allow_dev_fallback=False
+                allow_dev_fallback=False,
             )
-        logger.error(f"✗ Resend API HTTP error sending to {to_email} ({e.code}): {error_msg}")
+        logger.error(
+            f"✗ Resend API HTTP error sending to {to_email} ({e.code}): {error_msg}"
+        )
         return False
     except Exception as e:
         logger.error(f"✗ Failed to send email to {to_email}: {e}")
@@ -157,7 +175,9 @@ def send_resend_email(
 
 def render_breaking_email_html(change: dict) -> str:
     """Renders a responsive, modern HTML email template for a breaking change alert."""
-    service_name = change.get("service") or change.get("service_name") or "Google Cloud Service"
+    service_name = (
+        change.get("service") or change.get("service_name") or "Google Cloud Service"
+    )
     title = change.get("title") or f"{service_name} Breaking Change Detected"
     summary = change.get("summary") or ""
     details = change.get("details") or summary
@@ -273,13 +293,14 @@ def render_breaking_email_html(change: dict) -> str:
 
 
 def fetch_firestore_subscribers(
-    project_id: str = DEFAULT_GCP_PROJECT,
-    database_id: str = DEFAULT_FIRESTORE_DB
+    project_id: str = DEFAULT_GCP_PROJECT, database_id: str = DEFAULT_FIRESTORE_DB
 ) -> list[dict]:
     """Queries Firestore `users` collection for subscribers who enabled breaking alerts."""
     token = get_access_token()
     if not token:
-        logger.warning("No Google Cloud access token found. Cannot query Firestore subscribers.")
+        logger.warning(
+            "No Google Cloud access token found. Cannot query Firestore subscribers."
+        )
         return []
 
     url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/{database_id}/documents/users"
@@ -294,9 +315,11 @@ def fetch_firestore_subscribers(
                 fields = doc.get("fields", {})
                 email = fields.get("email", {}).get("stringValue", "")
                 uid = fields.get("uid", {}).get("stringValue", "")
-                breaking_alerts = fields.get("breakingAlerts", {}).get("booleanValue", True)
+                breaking_alerts = fields.get("breakingAlerts", {}).get(
+                    "booleanValue", True
+                )
                 all_services = fields.get("allServices", {}).get("booleanValue", True)
-                
+
                 watched_services = []
                 array_val = fields.get("watchedServices", {}).get("arrayValue", {})
                 for item in array_val.get("values", []):
@@ -304,12 +327,14 @@ def fetch_firestore_subscribers(
                         watched_services.append(item["stringValue"])
 
                 if email and breaking_alerts:
-                    subscribers.append({
-                        "uid": uid or email,
-                        "email": email,
-                        "all_services": all_services,
-                        "watched_services": watched_services,
-                    })
+                    subscribers.append(
+                        {
+                            "uid": uid or email,
+                            "email": email,
+                            "all_services": all_services,
+                            "watched_services": watched_services,
+                        }
+                    )
     except Exception as e:
         logger.warning(f"Failed to fetch Firestore subscribers: {e}")
 
@@ -325,11 +350,7 @@ def is_service_watched(subscriber: dict, service_slug: str) -> bool:
 
 
 def has_alert_been_sent(
-    project_id: str,
-    database_id: str,
-    slug: str,
-    email: str,
-    token: str
+    project_id: str, database_id: str, slug: str, email: str, token: str
 ) -> bool:
     """Checks if an alert for this slug has already been sent to this email."""
     if not token:
@@ -351,11 +372,7 @@ def has_alert_been_sent(
 
 
 def record_alert_sent(
-    project_id: str,
-    database_id: str,
-    slug: str,
-    email: str,
-    token: str
+    project_id: str, database_id: str, slug: str, email: str, token: str
 ) -> None:
     """Records that an alert was dispatched to prevent duplicate emails."""
     if not token:
@@ -363,7 +380,9 @@ def record_alert_sent(
 
     doc_id = f"{slug}_{re.sub(r'[^a-zA-Z0-9]', '_', email)}"
     url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/{database_id}/documents/sent_alerts/{doc_id}"
-    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+    now_iso = (
+        datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+    )
 
     payload = {
         "fields": {
@@ -373,7 +392,15 @@ def record_alert_sent(
         }
     }
     data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(url, data=data, headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"}, method="PATCH")
+    req = urllib.request.Request(
+        url,
+        data=data,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+        method="PATCH",
+    )
 
     try:
         with urllib.request.urlopen(req, timeout=5):
@@ -413,22 +440,55 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Dispatch email alerts to subscribers for Google Cloud Radar breaking changes."
     )
-    parser.add_argument("--resend-api-key", default=os.getenv("RESEND_API_KEY"), help="Resend API key.")
-    parser.add_argument("--from-email", default=os.getenv("RESEND_FROM_EMAIL", DEFAULT_FROM_EMAIL), help="Sender email.")
-    parser.add_argument("--test-email", default=None, help="Send a single test email directly to this address.")
-    parser.add_argument("--slug", default=None, help="Target specific change slug (e.g. 2026-08-30-aiplatform-v1beta1).")
-    parser.add_argument("--project", default=os.getenv("GCP_PROJECT", DEFAULT_GCP_PROJECT), help="GCP Project ID.")
-    parser.add_argument("--database", default=DEFAULT_FIRESTORE_DB, help="Firestore database name.")
-    parser.add_argument("--dry-run", action="store_true", help="Print recipients and preview HTML without sending.")
-    parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"])
+    parser.add_argument(
+        "--resend-api-key", default=os.getenv("RESEND_API_KEY"), help="Resend API key."
+    )
+    parser.add_argument(
+        "--from-email",
+        default=os.getenv("RESEND_FROM_EMAIL", DEFAULT_FROM_EMAIL),
+        help="Sender email.",
+    )
+    parser.add_argument(
+        "--test-email",
+        default=None,
+        help="Send a single test email directly to this address.",
+    )
+    parser.add_argument(
+        "--slug",
+        default=None,
+        help="Target specific change slug (e.g. 2026-08-30-aiplatform-v1beta1).",
+    )
+    parser.add_argument(
+        "--project",
+        default=os.getenv("GCP_PROJECT", DEFAULT_GCP_PROJECT),
+        help="GCP Project ID.",
+    )
+    parser.add_argument(
+        "--database", default=DEFAULT_FIRESTORE_DB, help="Firestore database name."
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print recipients and preview HTML without sending.",
+    )
+    parser.add_argument(
+        "--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"]
+    )
     args = parser.parse_args()
 
-    logging.basicConfig(level=getattr(logging, args.log_level), format="%(asctime)s %(levelname)s: %(message)s")
+    logging.basicConfig(
+        level=getattr(logging, args.log_level),
+        format="%(asctime)s %(levelname)s: %(message)s",
+    )
 
     api_key = args.resend_api_key
     if not api_key and not args.dry_run:
-        logger.error("Missing RESEND_API_KEY environment variable or --resend-api-key flag.")
-        logger.info("Tip: Get your free Resend key at https://resend.com and pass RESEND_API_KEY=re_...")
+        logger.error(
+            "Missing RESEND_API_KEY environment variable or --resend-api-key flag."
+        )
+        logger.info(
+            "Tip: Get your free Resend key at https://resend.com and pass RESEND_API_KEY=re_..."
+        )
         sys.exit(1)
 
     # 1. Load target breaking change(s)
@@ -444,11 +504,17 @@ def main() -> None:
     # 2. Test mode dispatch
     if args.test_email:
         test_change = target_changes[0]
-        service_name = test_change.get("service") or test_change.get("service_name") or "Google Cloud"
+        service_name = (
+            test_change.get("service")
+            or test_change.get("service_name")
+            or "Google Cloud"
+        )
         subject = f"⚠️ [Breaking Alert] {service_name}: {test_change.get('title')}"
         html_body = render_breaking_email_html(test_change)
 
-        logger.info(f"Dispatching TEST EMAIL to {args.test_email} for change: {test_change.get('slug')}")
+        logger.info(
+            f"Dispatching TEST EMAIL to {args.test_email} for change: {test_change.get('slug')}"
+        )
         if args.dry_run:
             print(f"\n--- SUBJECT: {subject} ---")
             print(f"--- TO: {args.test_email} ---")
@@ -464,15 +530,19 @@ def main() -> None:
             to_email=args.test_email,
             subject=subject,
             html_content=html_body,
-            allow_dev_fallback=is_dev or bool(args.test_email)
+            allow_dev_fallback=is_dev or bool(args.test_email),
         )
         if success:
             logger.info("🎉 Test email dispatched successfully!")
         sys.exit(0 if success else 1)
 
     # 3. Production subscriber loop
-    subscribers = fetch_firestore_subscribers(project_id=args.project, database_id=args.database)
-    logger.info(f"Found {len(subscribers)} active breaking change subscriber(s) in Firestore.")
+    subscribers = fetch_firestore_subscribers(
+        project_id=args.project, database_id=args.database
+    )
+    logger.info(
+        f"Found {len(subscribers)} active breaking change subscriber(s) in Firestore."
+    )
 
     if not subscribers and not args.dry_run:
         logger.info("No subscribers currently registered in Firestore. Done.")
@@ -484,8 +554,15 @@ def main() -> None:
 
     for change in target_changes:
         slug = change.get("slug") or change.get("id")
-        service_slug = re.sub(r"[^a-z0-9]+", "-", (change.get("service") or "").lower()).strip("-")
-        service_name = change.get("service") or change.get("service_name") or "Google Cloud"
+        if not isinstance(slug, str):
+            logger.warning("Skipping change without a valid slug")
+            continue
+        service_slug = re.sub(
+            r"[^a-z0-9]+", "-", (change.get("service") or "").lower()
+        ).strip("-")
+        service_name = (
+            change.get("service") or change.get("service_name") or "Google Cloud"
+        )
         subject = f"⚠️ [Breaking Alert] {service_name}: {change.get('title')}"
         html_body = render_breaking_email_html(change)
 
@@ -509,7 +586,7 @@ def main() -> None:
                 to_email=email,
                 subject=subject,
                 html_content=html_body,
-                allow_dev_fallback=is_dev
+                allow_dev_fallback=is_dev,
             )
             if sent:
                 total_sent += 1

@@ -44,7 +44,9 @@ class TestDispatchWeeklyDigest(unittest.TestCase):
         self.assertIn("New Features & Schema Updates (1)", html)
         self.assertIn("Vertex AI", html)
         self.assertIn("BigQuery", html)
-        self.assertIn("https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1", html)
+        self.assertIn(
+            "https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1", html
+        )
         self.assertIn("https://google-cloud-radar.com/?action=alerts", html)
 
     def test_filter_changes_for_subscriber(self):
