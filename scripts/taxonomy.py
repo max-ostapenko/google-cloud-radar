@@ -406,9 +406,8 @@ def determine_radar_ring(status: str, is_breaking: bool, version: str) -> str:
 
     if "deprecat" in status_lower or is_breaking:
         return "hold"
-    if (
-        status_lower in ("released", "ga")
-        or "v1" in version_lower
+    if status_lower in ("released", "ga") or (
+        "v1" in version_lower
         and "beta" not in version_lower
         and "alpha" not in version_lower
     ):
