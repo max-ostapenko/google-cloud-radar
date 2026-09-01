@@ -91,7 +91,6 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "name": "Vertex AI",
         "release_feed_url": "https://cloud.google.com/feeds/vertex-ai-release-notes.xml",
     },
-
     # --- Data Analytics ---
     "bigquery": {
         "ecosystem": "Google Cloud",
@@ -184,7 +183,6 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "name": "Looker Core",
         "release_feed_url": "https://cloud.google.com/feeds/looker-release-notes.xml",
     },
-
     # --- Application Development & Integration ---
     "connectors": {
         "ecosystem": "Google Cloud",
@@ -198,7 +196,6 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "quadrant": "infra_compute",
         "name": "Application Integration",
     },
-
     # --- FinOps & Billing ---
     "appoptimize": {
         "ecosystem": "Google Cloud",
@@ -220,7 +217,6 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "name": "Cloud Billing",
         "release_feed_url": "https://cloud.google.com/feeds/cloud-billing-release-notes.xml",
     },
-
     # =========================================================================
     # 2. GOOGLE WORKSPACE
     # =========================================================================
@@ -248,7 +244,6 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "quadrant": "infra_compute",
         "name": "Drive API",
     },
-
     # =========================================================================
     # 3. GOOGLE MARKETING PLATFORM
     # =========================================================================
@@ -276,7 +271,6 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "quadrant": "data_platforms",
         "name": "Chrome UX Report",
     },
-
     # =========================================================================
     # 4. PERSONAL / CONSUMER
     # =========================================================================
@@ -292,7 +286,6 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "quadrant": "infra_compute",
         "name": "YouTube Data API",
     },
-
     # =========================================================================
     # 5. CHROME & WEB
     # =========================================================================
@@ -314,7 +307,6 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "quadrant": "infra_compute",
         "name": "Version History",
     },
-
     # =========================================================================
     # 6. ANDROID & PLAY
     # =========================================================================
@@ -324,7 +316,6 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "quadrant": "infra_compute",
         "name": "Google Play Developer API",
     },
-
     # =========================================================================
     # 7. MORE / CORE & SECURITY
     # =========================================================================
@@ -415,7 +406,11 @@ def determine_radar_ring(status: str, is_breaking: bool, version: str) -> str:
 
     if "deprecat" in status_lower or is_breaking:
         return "hold"
-    if status_lower in ("released", "ga") or "v1" in version_lower and "beta" not in version_lower and "alpha" not in version_lower:
+    if status_lower in ("released", "ga") or (
+        "v1" in version_lower
+        and "beta" not in version_lower
+        and "alpha" not in version_lower
+    ):
         return "adopt"
     if "beta" in version_lower or "preview" in status_lower or "trial" in status_lower:
         return "trial"
@@ -440,4 +435,3 @@ def get_official_release_feeds() -> dict[str, str]:
         if "release_feed_url" in meta:
             feeds[key] = meta["release_feed_url"]
     return feeds
-

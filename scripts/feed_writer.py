@@ -142,7 +142,9 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
     # Extract RPC methods if present
     extracted_methods = insight.get("extracted_methods", [])
     if not extracted_methods:
-        method_matches = re.findall(r"`([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+){2,})`", f"{summary} {details}")
+        method_matches = re.findall(
+            r"`([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+){2,})`", f"{summary} {details}"
+        )
         extracted_methods = list(dict.fromkeys(method_matches))[:6]
 
     entry = {
@@ -167,7 +169,9 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
     }
 
     is_update = file_path.exists()
-    file_path.write_text(json.dumps(entry, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    file_path.write_text(
+        json.dumps(entry, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
 
     if is_update:
         logger.info(f"  Updated: {_display_path(file_path)} (score={score})")

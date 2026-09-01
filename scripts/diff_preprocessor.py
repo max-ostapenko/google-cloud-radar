@@ -141,12 +141,21 @@ def detect_breaking_changes(
     for p in added_paths:
         parts = p.split(".")
         new_val = new_flat.get(p)
-        if parts[-1] == "required" and "parameters" in parts and new_val in (True, "true"):
+        if (
+            parts[-1] == "required"
+            and "parameters" in parts
+            and new_val in (True, "true")
+        ):
             param_name = parts[-2] if len(parts) >= 2 else "parameter"
             reason = f"Parameter '{param_name}' was changed to strictly required"
             if reason not in reasons:
                 reasons.append(reason)
-        elif parts[-1] == "readOnly" and "schemas" in parts and "properties" in parts and new_val in (True, "true"):
+        elif (
+            parts[-1] == "readOnly"
+            and "schemas" in parts
+            and "properties" in parts
+            and new_val in (True, "true")
+        ):
             s_idx = parts.index("schemas")
             p_idx = parts.index("properties")
             schema_name = parts[s_idx + 1] if len(parts) > s_idx + 1 else "Schema"
@@ -164,7 +173,10 @@ def detect_breaking_changes(
             idx = parts.index("methods")
             if len(parts) > idx + 1:
                 method_name = parts[idx + 1]
-                if len(parts) == idx + 2 or (len(parts) == idx + 3 and parts[idx + 2] in ("httpMethod", "id", "path")):
+                if len(parts) == idx + 2 or (
+                    len(parts) == idx + 3
+                    and parts[idx + 2] in ("httpMethod", "id", "path")
+                ):
                     reason = f"Removed API method '{method_name}'"
                     if reason not in reasons:
                         reasons.append(reason)
@@ -174,7 +186,10 @@ def detect_breaking_changes(
             idx = parts.index("parameters")
             if len(parts) > idx + 1:
                 param_name = parts[idx + 1]
-                if len(parts) == idx + 2 or (len(parts) == idx + 3 and parts[idx + 2] in ("type", "location", "format")):
+                if len(parts) == idx + 2 or (
+                    len(parts) == idx + 3
+                    and parts[idx + 2] in ("type", "location", "format")
+                ):
                     reason = f"Removed parameter '{param_name}' from method"
                     if reason not in reasons:
                         reasons.append(reason)
@@ -186,8 +201,13 @@ def detect_breaking_changes(
             if s_idx < p_idx and len(parts) > p_idx + 1:
                 schema_name = parts[s_idx + 1]
                 prop_name = parts[p_idx + 1]
-                if len(parts) == p_idx + 2 or (len(parts) == p_idx + 3 and parts[p_idx + 2] in ("type", "$ref", "format")):
-                    reason = f"Removed property '{prop_name}' from schema '{schema_name}'"
+                if len(parts) == p_idx + 2 or (
+                    len(parts) == p_idx + 3
+                    and parts[p_idx + 2] in ("type", "$ref", "format")
+                ):
+                    reason = (
+                        f"Removed property '{prop_name}' from schema '{schema_name}'"
+                    )
                     if reason not in reasons:
                         reasons.append(reason)
 
@@ -222,7 +242,11 @@ def detect_breaking_changes(
                     reason = f"Property '{prop_name}' in schema '{schema_name}' changed referenced type from '{old_val}' to '{new_val}'"
                     if reason not in reasons:
                         reasons.append(reason)
-                elif attr == "readOnly" and (old_val in (False, None)) and (new_val is True):
+                elif (
+                    attr == "readOnly"
+                    and (old_val in (False, None))
+                    and (new_val is True)
+                ):
                     reason = f"Property '{prop_name}' in schema '{schema_name}' was made read-only / immutable"
                     if reason not in reasons:
                         reasons.append(reason)
@@ -282,7 +306,9 @@ def build_structured_diff(
     # If the file was deleted (new is empty) or virtually all content was stripped without additions,
     # skip generating an update. True GCP API deprecations occur inside active discovery docs
     # with explicit "deprecated: true" flags.
-    if (not new_flat and old_flat) or (len(new_flat) < 5 and len(removed) > 40 and not added):
+    if (not new_flat and old_flat) or (
+        len(new_flat) < 5 and len(removed) > 40 and not added
+    ):
         logger.info(
             f"  {filename}: document wiped or deleted ({len(removed)} removals, {len(new_flat)} remaining). "
             "Skipping feed generation to prevent transient sweep false positives."

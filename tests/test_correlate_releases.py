@@ -1,7 +1,6 @@
 import json
 import os
 import tempfile
-import pytest
 from scripts import correlate_releases
 
 
@@ -40,24 +39,26 @@ def test_match_change_against_releases_by_rpc():
         "slug": "2026-08-01-aiplatform-v1beta1",
         "title": "Vertex AI: Session Compaction and Transcription",
         "first_detected": "2026-08-01",
-        "extracted_methods": ["projects.locations.reasoningEngines.sessions.compact"]
+        "extracted_methods": ["projects.locations.reasoningEngines.sessions.compact"],
     }
     release_entries = [
         {
             "title": "Unrelated BigQuery update",
             "url": "https://cloud.google.com/release-notes/1",
             "date": "2026-08-10",
-            "content": "bigquery adds new streaming options"
+            "content": "bigquery adds new streaming options",
         },
         {
             "title": "Vertex AI adds session compact",
             "url": "https://cloud.google.com/release-notes/2",
             "date": "2026-08-15",
-            "content": "developers can now compact sessions in reasoning engines"
-        }
+            "content": "developers can now compact sessions in reasoning engines",
+        },
     ]
 
-    match = correlate_releases.match_change_against_releases(change_meta, release_entries)
+    match = correlate_releases.match_change_against_releases(
+        change_meta, release_entries
+    )
     assert match is not None
     assert match["date"] == "2026-08-15"
     assert match["url"] == "https://cloud.google.com/release-notes/2"
@@ -71,13 +72,16 @@ def test_update_json_file():
             "api": "aiplatform.v1beta1",
             "title": "Session Compaction",
             "status": "canary",
-            "radar_ring": "assess"
+            "radar_ring": "assess",
         }
         json.dump(doc, tmp)
         tmp_path = tmp.name
 
     try:
-        rel_info = {"date": "2026-08-20", "url": "https://cloud.google.com/release-notes#1"}
+        rel_info = {
+            "date": "2026-08-20",
+            "url": "https://cloud.google.com/release-notes#1",
+        }
         ok = correlate_releases.update_json_file(tmp_path, rel_info, lead_time_days=19)
         assert ok is True
 
@@ -88,6 +92,9 @@ def test_update_json_file():
         assert updated["radar_ring"] == "adopt"
         assert updated["lead_time_days"] == 19
         assert updated["official_release_date"] == "2026-08-20"
-        assert updated["official_release_notes_url"] == "https://cloud.google.com/release-notes#1"
+        assert (
+            updated["official_release_notes_url"]
+            == "https://cloud.google.com/release-notes#1"
+        )
     finally:
         os.unlink(tmp_path)
