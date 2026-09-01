@@ -1,5 +1,26 @@
 [
   {
+    "id": "2026-09-01-androidpublisher-v3",
+    "slug": "2026-09-01-androidpublisher-v3",
+    "date": "2026-09-01",
+    "api": "androidpublisher.v3",
+    "service": "Google Play Android Developer API",
+    "service_name": "Google Play Android Developer API",
+    "title": "New External Link Reporting and Game Reward Limits",
+    "summary": "The API now supports reporting for external content link transactions and introduces redemption limits for game-specific one-time product offers.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 7,
+    "tags": [
+      "Google Play",
+      "Monetization",
+      "Transactions",
+      "Games"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-01T14:38:22.852754+00:00"
+  },
+  {
     "id": "2026-08-30-aiplatform-v1beta1",
     "slug": "2026-08-30-aiplatform-v1beta1",
     "date": "2026-08-30",
