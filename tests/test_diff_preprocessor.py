@@ -147,7 +147,10 @@ class TestDiffPreprocessor(unittest.TestCase):
                             "httpMethod": "DELETE",
                             "parameters": {
                                 "datasetId": {"type": "string"},
-                                "deleteContents": {"type": "boolean", "required": False},
+                                "deleteContents": {
+                                    "type": "boolean",
+                                    "required": False,
+                                },
                             },
                         },
                         "legacyMethod": {
@@ -205,7 +208,9 @@ class TestDiffPreprocessor(unittest.TestCase):
         self.assertTrue(any("Removed API method 'legacyMethod'" in r for r in reasons))
         self.assertTrue(any("Removed parameter 'deleteContents'" in r for r in reasons))
         self.assertTrue(any("Removed property 'removedField'" in r for r in reasons))
-        self.assertTrue(any("changed type from 'array' to 'object'" in r for r in reasons))
+        self.assertTrue(
+            any("changed type from 'array' to 'object'" in r for r in reasons)
+        )
         self.assertTrue(any("was changed to strictly required" in r for r in reasons))
 
     def test_detect_breaking_changes_false_for_pure_additions(self):
@@ -239,7 +244,10 @@ class TestDiffPreprocessor(unittest.TestCase):
                             "httpMethod": "POST",
                             "parameters": {
                                 "projectId": {"type": "string"},
-                                "newOptionalParam": {"type": "boolean", "required": False},
+                                "newOptionalParam": {
+                                    "type": "boolean",
+                                    "required": False,
+                                },
                             },
                         },
                         "newExtraMethod": {
@@ -269,5 +277,3 @@ class TestDiffPreprocessor(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-

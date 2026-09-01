@@ -25,13 +25,19 @@ class TestDispatchEmailAlerts(unittest.TestCase):
         html = dispatch_email_alerts.render_breaking_email_html(self.sample_change)
         self.assertIn("Vertex AI", html)
         self.assertIn("Vertex AI: Breaking Changes & Agent IAM Controls", html)
-        self.assertIn("https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1", html)
+        self.assertIn(
+            "https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1", html
+        )
         self.assertIn("https://google-cloud-radar.com/?action=alerts", html)
         self.assertIn("publishers.v1beta1.compact", html)
 
     def test_is_service_watched(self):
         # All services subscriber
-        sub_all = {"email": "user@example.com", "all_services": True, "watched_services": []}
+        sub_all = {
+            "email": "user@example.com",
+            "all_services": True,
+            "watched_services": [],
+        }
         self.assertTrue(dispatch_email_alerts.is_service_watched(sub_all, "vertex-ai"))
         self.assertTrue(dispatch_email_alerts.is_service_watched(sub_all, "bigquery"))
 
@@ -41,8 +47,12 @@ class TestDispatchEmailAlerts(unittest.TestCase):
             "all_services": False,
             "watched_services": ["vertex-ai", "dataform"],
         }
-        self.assertTrue(dispatch_email_alerts.is_service_watched(sub_specific, "vertex-ai"))
-        self.assertFalse(dispatch_email_alerts.is_service_watched(sub_specific, "bigquery"))
+        self.assertTrue(
+            dispatch_email_alerts.is_service_watched(sub_specific, "vertex-ai")
+        )
+        self.assertFalse(
+            dispatch_email_alerts.is_service_watched(sub_specific, "bigquery")
+        )
 
     @patch.dict(os.environ, {"ENVIRONMENT": "production", "CI": "false"}, clear=True)
     def test_is_dev_environment_production(self):

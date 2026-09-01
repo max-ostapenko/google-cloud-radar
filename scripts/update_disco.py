@@ -24,7 +24,7 @@ from typing import Any, Optional
 try:
     from scripts.taxonomy import is_watched_api
 except ImportError:
-    from taxonomy import is_watched_api
+    from taxonomy import is_watched_api  # type: ignore[import-not-found, no-redef]
 
 
 def main() -> None:

@@ -68,10 +68,13 @@ def get_access_token() -> str:
     try:
         import google.auth
         import google.auth.transport.requests
-        credentials, _ = google.auth.default(scopes=[
-            "https://www.googleapis.com/auth/cloud-platform",
-            "https://www.googleapis.com/auth/datastore"
-        ])
+
+        credentials, _ = google.auth.default(
+            scopes=[
+                "https://www.googleapis.com/auth/cloud-platform",
+                "https://www.googleapis.com/auth/datastore",
+            ]
+        )
         auth_req = google.auth.transport.requests.Request()
         credentials.refresh(auth_req)
         if credentials.token:
@@ -83,7 +86,7 @@ def get_access_token() -> str:
         token = subprocess.check_output(
             ["gcloud", "auth", "print-access-token", "--quiet"],
             text=True,
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
         ).strip()
         if token:
             return token
@@ -97,7 +100,10 @@ def is_dev_environment() -> bool:
     """Returns True if running locally in development rather than production CI."""
     if os.getenv("ENVIRONMENT", "").lower() in ("production", "prod"):
         return False
-    if os.getenv("CI", "").lower() in ("true", "1") or os.getenv("GITHUB_ACTIONS") == "true":
+    if (
+        os.getenv("CI", "").lower() in ("true", "1")
+        or os.getenv("GITHUB_ACTIONS") == "true"
+    ):
         return False
     return True
 
@@ -109,13 +115,13 @@ def send_resend_email(
     subject: str,
     html_content: str,
     text_content: Optional[str] = None,
-    allow_dev_fallback: bool = False
+    allow_dev_fallback: bool = False,
 ) -> bool:
     """Sends an email via Resend REST API."""
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
-        "User-Agent": "Google-Cloud-Radar-Digest/1.0"
+        "User-Agent": "Google-Cloud-Radar-Digest/1.0",
     }
 
     payload = {
@@ -128,19 +134,29 @@ def send_resend_email(
         payload["text"] = text_content
 
     data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(RESEND_API_URL, data=data, headers=headers, method="POST")
+    req = urllib.request.Request(
+        RESEND_API_URL, data=data, headers=headers, method="POST"
+    )
 
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             resp_body = resp.read().decode("utf-8")
             result = json.loads(resp_body)
-            logger.info(f"✓ Digest email successfully sent to {to_email} (Resend ID: {result.get('id', 'N/A')})")
+            logger.info(
+                f"✓ Digest email successfully sent to {to_email} (Resend ID: {result.get('id', 'N/A')})"
+            )
             return True
     except urllib.error.HTTPError as e:
         error_msg = e.read().decode("utf-8")
         # Fallback to sandbox domain ONLY in development / test environment
-        if allow_dev_fallback and ("domain" in error_msg.lower() or e.code == 403) and from_email != FALLBACK_SANDBOX_FROM_EMAIL:
-            logger.warning(f"[DEV ENV] Domain in '{from_email}' is not yet verified in Resend. Retrying with '{FALLBACK_SANDBOX_FROM_EMAIL}' sandbox domain...")
+        if (
+            allow_dev_fallback
+            and ("domain" in error_msg.lower() or e.code == 403)
+            and from_email != FALLBACK_SANDBOX_FROM_EMAIL
+        ):
+            logger.warning(
+                f"[DEV ENV] Domain in '{from_email}' is not yet verified in Resend. Retrying with '{FALLBACK_SANDBOX_FROM_EMAIL}' sandbox domain..."
+            )
             return send_resend_email(
                 api_key=api_key,
                 from_email=FALLBACK_SANDBOX_FROM_EMAIL,
@@ -148,9 +164,11 @@ def send_resend_email(
                 subject=subject,
                 html_content=html_content,
                 text_content=text_content,
-                allow_dev_fallback=False
+                allow_dev_fallback=False,
             )
-        logger.error(f"✗ Resend API HTTP error sending to {to_email} ({e.code}): {error_msg}")
+        logger.error(
+            f"✗ Resend API HTTP error sending to {to_email} ({e.code}): {error_msg}"
+        )
         return False
     except Exception as e:
         logger.error(f"✗ Failed to send digest email to {to_email}: {e}")
@@ -188,7 +206,9 @@ def load_recent_changes(days: int = 7) -> list[dict]:
     return changes
 
 
-def render_weekly_digest_html(changes: list[dict], week_label: Optional[str] = None) -> str:
+def render_weekly_digest_html(
+    changes: list[dict], week_label: Optional[str] = None
+) -> str:
     """Renders a responsive, modern HTML email template for the weekly digest."""
     if not week_label:
         today = datetime.date.today()
@@ -199,7 +219,7 @@ def render_weekly_digest_html(changes: list[dict], week_label: Optional[str] = N
     non_breaking_changes = [c for c in changes if not c.get("breaking")]
     breaking_count = len(breaking_changes)
     non_breaking_count = len(non_breaking_changes)
-    
+
     unique_services = set()
     total_methods = 0
     for c in changes:
@@ -214,14 +234,24 @@ def render_weekly_digest_html(changes: list[dict], week_label: Optional[str] = N
     breaking_items_html = ""
     if breaking_changes:
         for c in breaking_changes[:5]:
-            svc_name = html.escape(c.get("service") or c.get("service_name") or "Google Cloud")
+            svc_name = html.escape(
+                c.get("service") or c.get("service_name") or "Google Cloud"
+            )
             raw_title = c.get("title") or ""
             title = html.escape(raw_title)
-            display_title = title if raw_title.lower().startswith(svc_name.lower()) else f"{svc_name}: {title}"
+            display_title = (
+                title
+                if raw_title.lower().startswith(svc_name.lower())
+                else f"{svc_name}: {title}"
+            )
             slug = c.get("slug") or c.get("id") or ""
             summary = html.escape(c.get("summary") or "")
             reasons = c.get("breaking_reasons") or []
-            reason_text = f" · <span style='color: #b3261e;'>{html.escape(reasons[0])}</span>" if reasons else ""
+            reason_text = (
+                f" · <span style='color: #b3261e;'>{html.escape(reasons[0])}</span>"
+                if reasons
+                else ""
+            )
 
             breaking_items_html += f"""
             <div style="margin-bottom: 14px; padding: 14px 16px; background-color: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid #ea4335; border-radius: 6px;">
@@ -246,28 +276,43 @@ def render_weekly_digest_html(changes: list[dict], week_label: Optional[str] = N
 
     # Render Other Recent Updates Section (Sorted by impact - non-breaking only)
     impact_order = {"high": 0, "medium": 1, "low": 2}
-    sorted_non_breaking = sorted(non_breaking_changes, key=lambda x: impact_order.get((x.get("impact") or "low").lower(), 3))
+    sorted_non_breaking = sorted(
+        non_breaking_changes,
+        key=lambda x: impact_order.get((x.get("impact") or "low").lower(), 3),
+    )
 
     regular_items_html = ""
     for c in sorted_non_breaking[:12]:
-        svc_name = html.escape(c.get("service") or c.get("service_name") or "Google Cloud")
+        svc_name = html.escape(
+            c.get("service") or c.get("service_name") or "Google Cloud"
+        )
         api = html.escape(c.get("api") or "")
         title = html.escape(c.get("title") or "")
         slug = c.get("slug") or c.get("id") or ""
         summary = html.escape(c.get("summary") or "")
         impact = (c.get("impact") or "low").upper()
-        
+
         if impact == "HIGH":
-            badge_style = "background-color: #fef7e0; color: #b06000; border: 1px solid #fce8b2;"
+            badge_style = (
+                "background-color: #fef7e0; color: #b06000; border: 1px solid #fce8b2;"
+            )
         elif impact == "MEDIUM":
-            badge_style = "background-color: #e8f0fe; color: #1967d2; border: 1px solid #d2e3fc;"
+            badge_style = (
+                "background-color: #e8f0fe; color: #1967d2; border: 1px solid #d2e3fc;"
+            )
         else:
-            badge_style = "background-color: #f1f3f4; color: #5f6368; border: 1px solid #dadce0;"
+            badge_style = (
+                "background-color: #f1f3f4; color: #5f6368; border: 1px solid #dadce0;"
+            )
 
         badge_text = f"{impact} IMPACT"
 
         methods = c.get("extracted_methods") or []
-        methods_chip = f"<span style='font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; background: #f1f3f4; color: #3c4043; padding: 2px 6px; border-radius: 4px; margin-left: 6px;'>+{len(methods)} methods</span>" if methods else ""
+        methods_chip = (
+            f"<span style='font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; background: #f1f3f4; color: #3c4043; padding: 2px 6px; border-radius: 4px; margin-left: 6px;'>+{len(methods)} methods</span>"
+            if methods
+            else ""
+        )
 
         regular_items_html += f"""
         <div style="padding: 16px 0; border-bottom: 1px solid #eeeeee;">
@@ -390,13 +435,14 @@ def render_weekly_digest_html(changes: list[dict], week_label: Optional[str] = N
 
 
 def fetch_firestore_weekly_subscribers(
-    project_id: str = DEFAULT_GCP_PROJECT,
-    database_id: str = DEFAULT_FIRESTORE_DB
+    project_id: str = DEFAULT_GCP_PROJECT, database_id: str = DEFAULT_FIRESTORE_DB
 ) -> list[dict]:
     """Queries Firestore `users` collection for subscribers who enabled weekly digests."""
     token = get_access_token()
     if not token:
-        logger.warning("No Google Cloud access token found. Cannot query Firestore subscribers.")
+        logger.warning(
+            "No Google Cloud access token found. Cannot query Firestore subscribers."
+        )
         return []
 
     url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/{database_id}/documents/users"
@@ -413,7 +459,7 @@ def fetch_firestore_weekly_subscribers(
                 uid = fields.get("uid", {}).get("stringValue", "")
                 weekly_digest = fields.get("weeklyDigest", {}).get("booleanValue", True)
                 all_services = fields.get("allServices", {}).get("booleanValue", True)
-                
+
                 watched_services = []
                 array_val = fields.get("watchedServices", {}).get("arrayValue", {})
                 for item in array_val.get("values", []):
@@ -421,12 +467,14 @@ def fetch_firestore_weekly_subscribers(
                         watched_services.append(item["stringValue"])
 
                 if email and weekly_digest:
-                    subscribers.append({
-                        "uid": uid or email,
-                        "email": email,
-                        "all_services": all_services,
-                        "watched_services": watched_services,
-                    })
+                    subscribers.append(
+                        {
+                            "uid": uid or email,
+                            "email": email,
+                            "all_services": all_services,
+                            "watched_services": watched_services,
+                        }
+                    )
     except Exception as e:
         logger.warning(f"Failed to fetch Firestore subscribers: {e}")
 
@@ -450,10 +498,7 @@ def filter_changes_for_subscriber(changes: list[dict], subscriber: dict) -> list
 
 
 def has_weekly_digest_been_sent(
-    project_id: str,
-    database_id: str,
-    dispatch_id: str,
-    token: str
+    project_id: str, database_id: str, dispatch_id: str, token: str
 ) -> bool:
     """Checks Firestore `alert_dispatches` collection to prevent duplicate weekly emails."""
     if not token:
@@ -476,11 +521,7 @@ def has_weekly_digest_been_sent(
 
 
 def record_weekly_digest_sent(
-    project_id: str,
-    database_id: str,
-    dispatch_id: str,
-    email: str,
-    token: str
+    project_id: str, database_id: str, dispatch_id: str, email: str, token: str
 ) -> None:
     """Records weekly dispatch in Firestore for idempotency tracking."""
     if not token:
@@ -492,15 +533,22 @@ def record_weekly_digest_sent(
             "dispatch_id": {"stringValue": dispatch_id},
             "type": {"stringValue": "weekly_digest"},
             "recipient_email": {"stringValue": email},
-            "sent_at": {"timestampValue": datetime.datetime.now(datetime.timezone.utc).isoformat()}
+            "sent_at": {
+                "timestampValue": datetime.datetime.now(
+                    datetime.timezone.utc
+                ).isoformat()
+            },
         }
     }
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
         url,
         data=data,
-        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-        method="POST"
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
     )
 
     try:
@@ -512,26 +560,53 @@ def record_weekly_digest_sent(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Dispatch weekly intelligence digest emails.")
-    parser.add_argument("--test-email", help="Send a test digest email to a single address and exit.")
-    parser.add_argument("--dry-run", action="store_true", help="Preview digest recipients and content without sending.")
-    parser.add_argument("--days", type=int, default=7, help="Number of past days of changes to include (default: 7).")
-    parser.add_argument("--project", default=DEFAULT_GCP_PROJECT, help="Google Cloud project ID.")
-    parser.add_argument("--database", default=DEFAULT_FIRESTORE_DB, help="Firestore database ID (default: 'radar').")
-    parser.add_argument("--from-email", default=DEFAULT_FROM_EMAIL, help="Sender email address.")
+    parser = argparse.ArgumentParser(
+        description="Dispatch weekly intelligence digest emails."
+    )
+    parser.add_argument(
+        "--test-email", help="Send a test digest email to a single address and exit."
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview digest recipients and content without sending.",
+    )
+    parser.add_argument(
+        "--days",
+        type=int,
+        default=7,
+        help="Number of past days of changes to include (default: 7).",
+    )
+    parser.add_argument(
+        "--project", default=DEFAULT_GCP_PROJECT, help="Google Cloud project ID."
+    )
+    parser.add_argument(
+        "--database",
+        default=DEFAULT_FIRESTORE_DB,
+        help="Firestore database ID (default: 'radar').",
+    )
+    parser.add_argument(
+        "--from-email", default=DEFAULT_FROM_EMAIL, help="Sender email address."
+    )
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s"
+    )
 
     api_key = os.getenv("RESEND_API_KEY")
     if not api_key and not args.dry_run:
-        logger.error("RESEND_API_KEY environment variable is missing. Cannot dispatch emails.")
+        logger.error(
+            "RESEND_API_KEY environment variable is missing. Cannot dispatch emails."
+        )
         sys.exit(1)
 
     # 1. Load target weekly changes
     changes = load_recent_changes(days=args.days)
     if not changes:
-        logger.info(f"No changes found in the last {args.days} days to include in digest.")
+        logger.info(
+            f"No changes found in the last {args.days} days to include in digest."
+        )
         sys.exit(0)
 
     today = datetime.date.today()
@@ -544,7 +619,9 @@ def main():
     # 2. Test mode dispatch
     if args.test_email:
         html_body = render_weekly_digest_html(changes, week_label=week_label)
-        logger.info(f"Dispatching TEST WEEKLY DIGEST to {args.test_email} with {len(changes)} changes")
+        logger.info(
+            f"Dispatching TEST WEEKLY DIGEST to {args.test_email} with {len(changes)} changes"
+        )
 
         if args.dry_run:
             print(f"\n--- SUBJECT: {subject} ---")
@@ -561,18 +638,24 @@ def main():
             to_email=args.test_email,
             subject=subject,
             html_content=html_body,
-            allow_dev_fallback=is_dev or bool(args.test_email)
+            allow_dev_fallback=is_dev or bool(args.test_email),
         )
         if success:
             logger.info("🎉 Test weekly digest dispatched successfully!")
         sys.exit(0 if success else 1)
 
     # 3. Production subscriber loop
-    subscribers = fetch_firestore_weekly_subscribers(project_id=args.project, database_id=args.database)
-    logger.info(f"Found {len(subscribers)} active weekly digest subscriber(s) in Firestore.")
+    subscribers = fetch_firestore_weekly_subscribers(
+        project_id=args.project, database_id=args.database
+    )
+    logger.info(
+        f"Found {len(subscribers)} active weekly digest subscriber(s) in Firestore."
+    )
 
     if not subscribers and not args.dry_run:
-        logger.info("No weekly digest subscribers currently registered in Firestore. Done.")
+        logger.info(
+            "No weekly digest subscribers currently registered in Firestore. Done."
+        )
         sys.exit(0)
 
     token = get_access_token()
@@ -586,14 +669,20 @@ def main():
             logger.debug(f"Skipping {email} (no changes matching watched services)")
             continue
 
-        dispatch_id = f"weekly_{iso_year}_w{iso_week}_{re.sub(r'[^a-zA-Z0-9]', '_', email)}"
+        dispatch_id = (
+            f"weekly_{iso_year}_w{iso_week}_{re.sub(r'[^a-zA-Z0-9]', '_', email)}"
+        )
 
         if has_weekly_digest_been_sent(args.project, args.database, dispatch_id, token):
-            logger.debug(f"Skipping {email} (weekly digest already sent for {dispatch_id})")
+            logger.debug(
+                f"Skipping {email} (weekly digest already sent for {dispatch_id})"
+            )
             continue
 
         if args.dry_run:
-            logger.info(f"[DRY-RUN] Would send weekly digest ({len(sub_changes)} changes) to {email}")
+            logger.info(
+                f"[DRY-RUN] Would send weekly digest ({len(sub_changes)} changes) to {email}"
+            )
             continue
 
         html_body = render_weekly_digest_html(sub_changes, week_label=week_label)
@@ -603,11 +692,13 @@ def main():
             to_email=email,
             subject=subject,
             html_content=html_body,
-            allow_dev_fallback=is_dev
+            allow_dev_fallback=is_dev,
         )
         if sent:
             total_sent += 1
-            record_weekly_digest_sent(args.project, args.database, dispatch_id, email, token)
+            record_weekly_digest_sent(
+                args.project, args.database, dispatch_id, email, token
+            )
 
     logger.info(f"Weekly digest dispatch complete. Sent {total_sent} digest email(s).")
 

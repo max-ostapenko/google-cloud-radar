@@ -1,4 +1,4 @@
-google-genai >= 2.15.0
+google-genai >= 2.20.0
 mypy == 2.3.0
 black == 26.5.1
 google-auth >= 2.56.2
