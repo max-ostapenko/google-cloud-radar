@@ -3,23 +3,23 @@
   "slug": "2026-09-01-androidpublisher-v3",
   "date": "2026-09-01",
   "api": "androidpublisher.v3",
-  "service": "Google Play Android Developer API",
-  "service_name": "Google Play Android Developer API",
-  "title": "New External Link Reporting and Game Reward Limits",
+  "service": "Google Play Developer API",
+  "service_name": "Google Play Developer API",
+  "title": "Support for External Link Reporting and Game Reward Limits",
   "summary": "The API now supports reporting for external content link transactions and introduces redemption limits for game-specific one-time product offers.",
-  "details": "Developers participating in external link programs can now use the new `ExternalContentLinkDetails` object within `ExternalTransaction`. This includes fields for `linkType` (distinguishing between digital content offers and app downloads), `externalAppCategory` (APP or GAME), and `installedAppPackage`. Additionally, `OneTimeProductOffer` has been expanded with `OneTimeProductGameRewardOffer`, which allows setting a `redemptionLimit` between 1 and 50 for game-specific rewards.",
+  "details": "Developers participating in external link programs can now use the new ExternalContentLinkDetails object within ExternalTransaction. This includes fields for linkType (distinguishing between digital content offers and app downloads), externalAppCategory (APP or GAME), and installedAppPackage. Additionally, OneTimeProductOffer has been expanded with OneTimeProductGameRewardOffer, which allows setting a redemptionLimit between 1 and 50 for game-specific rewards. This is a significant addition for developers managing alternative billing or promotional campaigns outside the standard Play Store flow.",
   "impact": "medium",
   "breaking": false,
-  "interesting_score": 7,
+  "interesting_score": 6,
   "tags": [
     "Google Play",
     "Monetization",
-    "Transactions",
-    "Games"
+    "External Transactions",
+    "Gaming"
   ],
   "extracted_methods": [],
   "status": "canary",
   "radar_ring": "assess",
   "lead_time_days": 14,
-  "generated_at": "2026-09-01T14:38:22.852754+00:00"
+  "generated_at": "2026-09-01T18:16:10.015590+00:00"
 }
