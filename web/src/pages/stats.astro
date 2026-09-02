@@ -262,7 +262,15 @@ const schemaData = {
                       </div>
                     </td>
                     <td class="col-lead text-center">
-                      <span class="lead-pill">~{svc.avgLeadTime}d</span>
+                      {
+                        svc.avgLeadTime !== null ? (
+                          <span class="lead-pill">~{svc.avgLeadTime}d</span>
+                        ) : (
+                          <span class="lead-pill pending" title="All detected updates are currently in Canary pre-release (awaiting official GA announcement)">
+                            Canary
+                          </span>
+                        )
+                      }
                     </td>
                   </tr>
                 );
@@ -860,6 +868,15 @@ const schemaData = {
     border: 1px solid var(--google-blue-border);
     padding: 2px 8px;
     border-radius: var(--radius-full);
+  }
+
+  .lead-pill.pending {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--text-tertiary, #5f6368);
+    background-color: var(--bg-tertiary, #f1f3f4);
+    border: 1px solid var(--border-subtle, #dadce0);
   }
 
   .clickable-row {

@@ -7,7 +7,7 @@ export interface ServiceVelocityStat {
   count: number;
   breakingCount: number;
   breakingRate: number;
-  avgLeadTime: number;
+  avgLeadTime: number | null;
   methodsCount: number;
   velocityScore: number;
   topApis: string[];
@@ -33,7 +33,7 @@ export interface RadarStatsReport {
   overallBreakingRate: number;
   totalMethodsTracked: number;
   totalServicesMonitored: number;
-  overallAvgLeadTime: number;
+  overallAvgLeadTime: number | null;
   serviceVelocities: ServiceVelocityStat[];
   categoryStats: CategoryStat[];
   leadTimeBuckets: LeadTimeBucket[];
@@ -112,7 +112,7 @@ export async function computeRadarStats(daysWindow: number = 90): Promise<RadarS
     }
 
     const avgLeadTime =
-      svcLeadTimeCount > 0 ? Math.round((svcLeadTimeSum / svcLeadTimeCount) * 10) / 10 : 14.0;
+      svcLeadTimeCount > 0 ? Math.round((svcLeadTimeSum / svcLeadTimeCount) * 10) / 10 : null;
 
     // Velocity score based on updates count + methods count + freshness
     const velocityScore = count * 10 + svcMethods * 2;
@@ -155,7 +155,7 @@ export async function computeRadarStats(daysWindow: number = 90): Promise<RadarS
     }))
     .sort((a, b) => b.count - a.count);
 
-  // Lead time buckets
+  // Lead time buckets (strictly for verified released entries)
   const buckets = [
     { label: '< 7 Days', count: 0, percentage: 0 },
     { label: '7 - 14 Days', count: 0, percentage: 0 },
@@ -164,15 +164,17 @@ export async function computeRadarStats(daysWindow: number = 90): Promise<RadarS
   ];
 
   for (const entry of filteredEntries) {
-    const days = entry.lead_time_days || (entry.interesting_score >= 8 ? 16 : 10);
-    if (days < 7) buckets[0].count += 1;
-    else if (days <= 14) buckets[1].count += 1;
-    else if (days <= 30) buckets[2].count += 1;
-    else buckets[3].count += 1;
+    if (entry.lead_time_days !== undefined && entry.lead_time_days !== null && entry.lead_time_days > 0) {
+      const days = entry.lead_time_days;
+      if (days < 7) buckets[0].count += 1;
+      else if (days <= 14) buckets[1].count += 1;
+      else if (days <= 30) buckets[2].count += 1;
+      else buckets[3].count += 1;
+    }
   }
 
   for (const b of buckets) {
-    b.percentage = totalSignals > 0 ? Math.round((b.count / totalSignals) * 100) : 0;
+    b.percentage = entriesWithLeadTime > 0 ? Math.round((b.count / entriesWithLeadTime) * 100) : 0;
   }
 
   return {
@@ -186,6 +188,8 @@ export async function computeRadarStats(daysWindow: number = 90): Promise<RadarS
     serviceVelocities,
     categoryStats,
     leadTimeBuckets: buckets,
-    fastestServices: [...serviceVelocities].sort((a, b) => a.avgLeadTime - b.avgLeadTime),
+    fastestServices: [...serviceVelocities]
+      .filter((s) => s.avgLeadTime !== null)
+      .sort((a, b) => a.avgLeadTime! - b.avgLeadTime!),
   };
 }

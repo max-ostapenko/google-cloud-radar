@@ -92,7 +92,10 @@
       "SQL"
     ],
     "extracted_methods": [],
-    "generated_at": "2026-08-29T14:58:03.718475+00:00"
+    "generated_at": "2026-08-29T14:58:03.718475+00:00",
+    "status": "canary",
+    "radar_ring": "hold",
+    "lead_time_days": null
   },
   {
     "id": "2026-08-29-aiplatform-v1beta1",
@@ -163,7 +166,10 @@
       "accounts.containers.combine",
       "accounts.containers.move_tag_id"
     ],
-    "generated_at": "2026-08-27T20:39:41.844467+00:00"
+    "generated_at": "2026-08-27T20:39:41.844467+00:00",
+    "status": "canary",
+    "radar_ring": "assess",
+    "lead_time_days": null
   },
   {
     "id": "2026-08-27-drive-v3",
@@ -183,7 +189,10 @@
       "Documentation"
     ],
     "extracted_methods": [],
-    "generated_at": "2026-08-27T20:39:41.842340+00:00"
+    "generated_at": "2026-08-27T20:39:41.842340+00:00",
+    "status": "canary",
+    "radar_ring": "assess",
+    "lead_time_days": null
   },
   {
     "id": "2026-08-25-youtube-v3",
@@ -555,10 +564,12 @@
       "Graph Databases"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-08-19T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 7,
+    "generated_at": "2026-08-19T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-08-19-datacatalog-v1",
@@ -579,10 +590,12 @@
       "datacatalog"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-08-19T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 7,
+    "generated_at": "2026-08-19T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-08-14-aiplatform-v1beta1",
@@ -808,10 +821,12 @@
       "pipelines"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-08-06T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 7,
+    "generated_at": "2026-08-06T03:00:00Z",
+    "official_release_date": "2026-08-13",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataform/docs/release-notes#August_13_2026"
   },
   {
     "id": "2026-07-30-analyticshub-v1",
@@ -911,10 +926,12 @@
       "networking"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-07-26T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 18,
+    "generated_at": "2026-07-26T03:00:00Z",
+    "official_release_date": "2026-08-13",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#August_13_2026"
   },
   {
     "id": "2026-07-26-bigquery-v2",
@@ -936,10 +953,12 @@
       "SQL"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-07-26T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 4,
+    "generated_at": "2026-07-26T03:00:00Z",
+    "official_release_date": "2026-07-30",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#July_30_2026"
   },
   {
     "id": "2026-07-26-aiplatform-v1beta1",
@@ -1169,10 +1188,12 @@
       "Observability"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-07-09T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 42,
+    "generated_at": "2026-07-09T03:00:00Z",
+    "official_release_date": "2026-08-20",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#August_20_2026"
   },
   {
     "id": "2026-07-06-bigquerydatatransfer-v1",
@@ -1294,10 +1315,12 @@
       "governance"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-07-02T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 55,
+    "generated_at": "2026-07-02T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-07-01-tagmanager-v2",
@@ -1344,10 +1367,12 @@
     "extracted_methods": [
       "projects.locations.reservationGroups.patch"
     ],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-07-01T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 12,
+    "generated_at": "2026-07-01T03:00:00Z",
+    "official_release_date": "2026-07-13",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#July_13_2026"
   },
   {
     "id": "2026-06-30-pagespeedonline-v5",
@@ -1446,10 +1471,12 @@
       "Data Egress"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-06-26T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 34,
+    "generated_at": "2026-06-26T03:00:00Z",
+    "official_release_date": "2026-07-30",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#July_30_2026"
   },
   {
     "id": "2026-06-25-dataplex-v1",
@@ -1470,10 +1497,12 @@
       "dataplex"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-06-25T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 62,
+    "generated_at": "2026-06-25T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-06-24-dataform-v1beta1",
@@ -1564,10 +1593,12 @@
       "airflow"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-06-23T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 24,
+    "generated_at": "2026-06-23T03:00:00Z",
+    "official_release_date": "2026-07-17",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#July_17_2026"
   },
   {
     "id": "2026-06-23-bigquery-v2",
@@ -1612,10 +1643,12 @@
       "Monitoring"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-06-22T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 42,
+    "generated_at": "2026-06-22T03:00:00Z",
+    "official_release_date": "2026-08-03",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#August_03_2026"
   },
   {
     "id": "2026-06-22-biglake-v1",
@@ -1637,10 +1670,12 @@
       "metastore"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-06-22T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 21,
+    "generated_at": "2026-06-22T03:00:00Z",
+    "official_release_date": "2026-07-13",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#July_13_2026"
   },
   {
     "id": "2026-06-21-tagmanager-v2",
@@ -1710,10 +1745,12 @@
       "ops"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-06-21T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 58,
+    "generated_at": "2026-06-21T03:00:00Z",
+    "official_release_date": "2026-08-18",
+    "official_release_notes_url": "https://docs.cloud.google.com/looker/docs/release-notes#August_18_2026"
   },
   {
     "id": "2026-06-21-dataplex-v1",
@@ -1735,10 +1772,12 @@
       "Graph Metadata"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-06-21T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 66,
+    "generated_at": "2026-06-21T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-06-21-dataform-v1beta1",
@@ -1785,10 +1824,12 @@
       "Automation"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-06-21T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 8,
+    "generated_at": "2026-06-21T03:00:00Z",
+    "official_release_date": "2026-06-29",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataform/docs/release-notes#June_29_2026"
   },
   {
     "id": "2026-06-21-connectors-v2",
@@ -1834,10 +1875,12 @@
       "metadata"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-06-21T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 53,
+    "generated_at": "2026-06-21T03:00:00Z",
+    "official_release_date": "2026-08-13",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#August_13_2026"
   },
   {
     "id": "2026-06-21-bigquery-v2",
@@ -1858,10 +1901,12 @@
       "Documentation"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-06-21T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 4,
+    "generated_at": "2026-06-21T03:00:00Z",
+    "official_release_date": "2026-06-25",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#June_25_2026"
   },
   {
     "id": "2026-06-21-analyticshub-v1",
@@ -1956,10 +2001,12 @@
       "documentation"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-05-28T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 1,
+    "generated_at": "2026-05-28T03:00:00Z",
+    "official_release_date": "2026-05-29",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#May_29_2026"
   },
   {
     "id": "2026-05-28-bigqueryconnection-v1",
@@ -1982,10 +2029,12 @@
     "extracted_methods": [
       "configuration.parameters.parameter_id"
     ],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-05-28T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 90,
+    "generated_at": "2026-05-28T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-05-28-bigquery-v2",
@@ -2033,10 +2082,12 @@
     "extracted_methods": [
       "projects.locations.changeRequests"
     ],
-    "status": "canary",
-    "radar_ring": "hold",
-    "lead_time_days": null,
-    "generated_at": "2026-05-22T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 3,
+    "generated_at": "2026-05-22T03:00:00Z",
+    "official_release_date": "2026-05-25",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#May_25_2026"
   },
   {
     "id": "2026-05-21-datalineage-v1",
@@ -2057,10 +2108,12 @@
       "datalineage"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-05-21T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 97,
+    "generated_at": "2026-05-21T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-05-20-dataform-v1beta1",
