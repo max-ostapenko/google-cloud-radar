@@ -1,0 +1,90 @@
+name: Request API Monitoring
+description: Request a new Google Cloud, Workspace, or Google developer API to be monitored by Radar.
+title: "Request: Monitor [API Name]"
+labels: ["monitoring-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a new API to monitor! Google Cloud Radar monitors Google Discovery Service schemas in real time to catch silent updates, breaking changes, and method additions.
+
+        Please provide the details below so we can add it to our taxonomy and ingestion pipeline.
+
+  - type: input
+    id: api_id
+    attributes:
+      label: API Identifier
+      description: The canonical Google Discovery API identifier and version (e.g., `spanner.v1`, `compute.v1`, `alloydb.v1`, `run.v2`).
+      placeholder: e.g. spanner.v1
+    validations:
+      required: true
+
+  - type: input
+    id: display_name
+    attributes:
+      label: Service Display Name
+      description: The user-facing name for this API (e.g., `Cloud Spanner`, `Compute Engine`, `AlloyDB`).
+      placeholder: e.g. Cloud Spanner
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ecosystem
+    attributes:
+      label: Ecosystem
+      description: Which top-level Google ecosystem does this API belong to?
+      options:
+        - "Google Cloud"
+        - "Workspace"
+        - "Marketing Platform"
+        - "Android & Play"
+        - "Chrome & Web"
+        - "Personal / Consumer"
+        - "Other / Core"
+    validations:
+      required: true
+
+  - type: input
+    id: category
+    attributes:
+      label: Category
+      description: The functional subcategory (e.g., `Databases`, `Compute`, `AI & ML`, `Data Analytics`, `Networking`, `Security`).
+      placeholder: e.g. Databases
+    validations:
+      required: true
+
+  - type: input
+    id: discovery_url
+    attributes:
+      label: Discovery Service Document URL (Optional)
+      description: The direct `$discovery/rest` endpoint if known. If omitted, we will discover it automatically from the Google Discovery directory.
+      placeholder: e.g. https://spanner.googleapis.com/$discovery/rest?version=v1
+    validations:
+      required: false
+
+  - type: input
+    id: release_feed_url
+    attributes:
+      label: Official Release Notes Feed URL (Optional)
+      description: Official Atom/RSS feed URL for GA correlation (e.g., `https://docs.cloud.google.com/feeds/spanner-release-notes.xml`).
+      placeholder: e.g. https://docs.cloud.google.com/feeds/spanner-release-notes.xml
+    validations:
+      required: false
+
+  - type: input
+    id: doc_url
+    attributes:
+      label: Official Documentation Link (Optional)
+      description: URL to official documentation or landing page.
+      placeholder: e.g. https://cloud.google.com/spanner/docs
+    validations:
+      required: false
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Why should this API be monitored? (Optional)
+      description: Share your production use case, pipeline dependencies, or why early Canary alerts are important for this API.
+      placeholder: "We rely heavily on Cloud Spanner in production and want to be notified of schema additions and deprecations ahead of documentation..."
+    validations:
+      required: false
