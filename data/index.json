@@ -39,7 +39,10 @@
       "vertex-ai"
     ],
     "extracted_methods": [],
-    "generated_at": "2026-08-30T04:35:58.780061+00:00"
+    "generated_at": "2026-08-30T04:35:58.780061+00:00",
+    "status": "canary",
+    "radar_ring": "hold",
+    "lead_time_days": null
   },
   {
     "id": "2026-08-30-aiplatform-v1",
@@ -60,7 +63,10 @@
       "Breaking Change"
     ],
     "extracted_methods": [],
-    "generated_at": "2026-08-30T04:35:58.777866+00:00"
+    "generated_at": "2026-08-30T04:35:58.777866+00:00",
+    "status": "canary",
+    "radar_ring": "hold",
+    "lead_time_days": null
   },
   {
     "id": "2026-08-29-dataplex-v1",
@@ -102,7 +108,10 @@
       "transcription"
     ],
     "extracted_methods": [],
-    "generated_at": "2026-08-29T22:31:04.233823+00:00"
+    "generated_at": "2026-08-29T22:31:04.233823+00:00",
+    "status": "canary",
+    "radar_ring": "hold",
+    "lead_time_days": null
   },
   {
     "id": "2026-08-29-aiplatform-v1",
@@ -123,7 +132,10 @@
       "Vertex AI"
     ],
     "extracted_methods": [],
-    "generated_at": "2026-08-29T22:31:04.232207+00:00"
+    "generated_at": "2026-08-29T22:31:04.232207+00:00",
+    "status": "canary",
+    "radar_ring": "hold",
+    "lead_time_days": null
   },
   {
     "id": "2026-08-27-tagmanager-v2",

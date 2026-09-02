@@ -9,6 +9,7 @@ the lead time (in days), and updates the JSON records and Firestore documents.
 
 import argparse
 import datetime
+import email.utils
 import glob
 import json
 import os
@@ -123,63 +124,124 @@ def parse_feed_xml(xml_text: str) -> list:
     return entries
 
 
-def calculate_lead_time(canary_date_str: str, release_date_str: str) -> int:
-    """Calculates lead time delta in days between discovery canary and official GA."""
+def parse_date(date_str: str) -> datetime.date | None:
+    """Parses ISO-8601, RFC-822/2822, or natural date string into a datetime.date object."""
+    if not date_str:
+        return None
+    cleaned = date_str.strip()
+    # Try ISO date prefix YYYY-MM-DD
+    if len(cleaned) >= 10 and re.match(r"^\d{4}-\d{2}-\d{2}", cleaned):
+        try:
+            return datetime.datetime.strptime(cleaned[:10], "%Y-%m-%d").date()
+        except ValueError:
+            pass
+    # Try RFC-822 / RFC-2822 (standard RSS pubDate, e.g. 'Tue, 25 Aug 2026 09:00:00 GMT')
     try:
-        d1 = datetime.datetime.strptime(canary_date_str[:10], "%Y-%m-%d").date()
-        d2 = datetime.datetime.strptime(release_date_str[:10], "%Y-%m-%d").date()
-        delta = (d2 - d1).days
-        return max(0, delta)
+        dt = email.utils.parsedate_to_datetime(cleaned)
+        return dt.date()
     except Exception:
-        return 14
+        pass
+    # Try human/Atom header formats (e.g. 'March 16, 2026')
+    for fmt in ("%B %d, %Y", "%b %d, %Y", "%Y/%m/%d"):
+        try:
+            return datetime.datetime.strptime(cleaned, fmt).date()
+        except ValueError:
+            pass
+    return None
+
+
+def calculate_lead_time(canary_date_str: str, release_date_str: str) -> int:
+    """Calculates lead time delta in days between discovery canary and official GA.
+    Returns max(0, delta) or 0 on parse failure.
+    """
+    d1 = parse_date(canary_date_str)
+    d2 = parse_date(release_date_str)
+    if not d1 or not d2:
+        return 0
+    delta = (d2 - d1).days
+    return max(0, delta)
 
 
 def match_change_against_releases(
-    change_meta: dict, release_entries: list
+    change_meta: dict, release_entries: list, max_lead_days: int = 120
 ) -> dict | None:
-    """Matches a canary change entry against official release entries."""
+    """Matches a canary change entry against official release entries.
+    Strictly requires release entries to have been published ON or AFTER the canary detection date
+    (with at most 1 day timezone tolerance) and within max_lead_days.
+    """
     if not release_entries:
+        return None
+
+    canary_date = parse_date(change_meta.get("first_detected") or "")
+    if not canary_date:
         return None
 
     title_words = set(re.findall(r"\w+", change_meta["title"].lower()))
     stop_words = {
-        "a",
-        "an",
-        "the",
-        "and",
-        "or",
-        "in",
-        "on",
-        "for",
-        "with",
-        "to",
-        "api",
-        "update",
-        "new",
-        "support",
+        "a", "an", "the", "and", "or", "in", "on", "for", "with", "to", "of", "at", "by", "from",
+        "api", "update", "updates", "new", "support", "supports", "supported",
+        "breaking", "change", "changes", "changed", "feature", "features",
+        "service", "services", "version", "beta", "alpha", "v1", "v2", "v3",
+        "google", "cloud", "platform", "field", "fields", "resource", "resources",
+        "method", "methods", "schema", "introduces", "adds", "added", "removes", "removed",
+        "deprecated", "deprecation", "deprecations",
     }
     significant_words = {w for w in title_words if len(w) > 3 and w not in stop_words}
 
     methods = [m.lower() for m in change_meta.get("extracted_methods", [])]
+    generic_method_verbs = {
+        "get", "set", "list", "create", "delete", "update", "patch", "search",
+        "export", "import", "batch", "cancel", "run", "read", "write"
+    }
+
+    valid_candidates = []
 
     for rel in release_entries:
-        rel_text = f"{rel['title']} {rel['content']}".lower()
+        rel_date = parse_date(rel.get("date") or "")
+        if not rel_date:
+            continue
 
-        # 1. Exact RPC Method Match
+        delta_days = (rel_date - canary_date).days
+        # Must be released ON or AFTER canary date (allowing 1 day timezone margin), up to max_lead_days
+        if delta_days < -1 or delta_days > max_lead_days:
+            continue
+
+        rel_text = f"{rel.get('title', '')} {rel.get('content', '')}".lower()
+
+        matched = False
+
+        # 1. Exact RPC Method Match (skip generic verbs unless qualified)
         for method in methods:
-            short_method = method.split(".")[-1]
-            if short_method and len(short_method) > 4 and short_method in rel_text:
-                return rel
+            parts = method.split(".")
+            short_method = parts[-1]
+            if short_method in generic_method_verbs and len(parts) >= 2:
+                target_check = f"{parts[-2]}.{short_method}"
+            else:
+                target_check = short_method
 
-        # 2. Significant Title Keywords Match
-        if significant_words:
-            matched_words = [w for w in significant_words if w in rel_text]
+            if len(target_check) > 3 and target_check in rel_text:
+                matched = True
+                break
+
+        # 2. Significant Title Keywords Match (word boundary match, requires >=2 distinct domain words)
+        if not matched and significant_words:
+            matched_words = [
+                w for w in significant_words if re.search(r"\b" + re.escape(w) + r"\b", rel_text)
+            ]
             if len(matched_words) >= 2 or (
                 len(significant_words) == 1 and len(matched_words) == 1
             ):
-                return rel
+                matched = True
 
-    return None
+        if matched:
+            valid_candidates.append((delta_days, rel))
+
+    if not valid_candidates:
+        return None
+
+    # Pick the match with the closest subsequent release date
+    valid_candidates.sort(key=lambda x: (abs(x[0]), x[0]))
+    return valid_candidates[0][1]
 
 
 def update_json_file(file_path: str, release_info: dict, lead_time_days: int) -> bool:
@@ -316,6 +378,29 @@ def run_correlation(
             print(
                 f"🎯 Correlated! {slug} -> Officially released on {match['date']} (Lead time: {lead_time} days)"
             )
+
+    if matched_results:
+        # Sync index.json if it exists
+        index_path = os.path.join(os.path.dirname(data_dir), "index.json")
+        if os.path.exists(index_path):
+            try:
+                with open(index_path, "r", encoding="utf-8") as f:
+                    index_data = json.load(f)
+                matched_dict = {m["slug"]: m for m in matched_results}
+                for entry in index_data:
+                    slug = entry.get("slug")
+                    if slug in matched_dict:
+                        m = matched_dict[slug]
+                        entry["status"] = "released"
+                        entry["radar_ring"] = "adopt"
+                        entry["lead_time_days"] = m["lead_time_days"]
+                        entry["official_release_date"] = m["official_release_date"]
+                        entry["official_release_notes_url"] = m["official_url"]
+                with open(index_path, "w", encoding="utf-8") as f:
+                    json.dump(index_data, f, indent=2, ensure_ascii=False)
+                    f.write("\n")
+            except Exception as e:
+                print(f"⚠️ Error syncing index.json: {e}", file=sys.stderr)
 
     return matched_results
 

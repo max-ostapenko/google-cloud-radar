@@ -18,10 +18,8 @@
     "Breaking Change"
   ],
   "extracted_methods": [],
-  "status": "released",
-  "radar_ring": "adopt",
-  "lead_time_days": 0,
-  "generated_at": "2026-08-30T04:35:58.777866+00:00",
-  "official_release_date": "2025-09-10",
-  "official_release_notes_url": "https://docs.cloud.google.com/vertex-ai/docs/release-notes#September_10_2025"
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": null,
+  "generated_at": "2026-08-30T04:35:58.777866+00:00"
 }

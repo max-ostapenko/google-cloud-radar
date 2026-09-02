@@ -64,6 +64,29 @@ def test_match_change_against_releases_by_rpc():
     assert match["url"] == "https://cloud.google.com/release-notes/2"
 
 
+def test_reject_past_release_notes():
+    change_meta = {
+        "slug": "2026-08-01-aiplatform-v1beta1",
+        "title": "Vertex AI: Session Compaction and Transcription",
+        "first_detected": "2026-08-01",
+        "extracted_methods": ["projects.locations.reasoningEngines.sessions.compact"],
+    }
+    # Past release notes (e.g. from 2025 or months earlier) must be rejected
+    release_entries = [
+        {
+            "title": "Vertex AI adds session compact",
+            "url": "https://cloud.google.com/release-notes/old",
+            "date": "2025-09-10",
+            "content": "developers can now compact sessions in reasoning engines",
+        }
+    ]
+
+    match = correlate_releases.match_change_against_releases(
+        change_meta, release_entries
+    )
+    assert match is None
+
+
 def test_update_json_file():
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as tmp:
         doc = {
