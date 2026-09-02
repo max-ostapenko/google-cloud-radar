@@ -68,8 +68,8 @@ const schemaData = {
           <span class="kpi-tag">Lead Time</span>
         </div>
         <div class="kpi-value-row">
-          <span class="kpi-value">{stats.overallAvgLeadTime}</span>
-          <span class="kpi-unit">days</span>
+          <span class="kpi-value">{stats.overallAvgLeadTime ?? "—"}</span>
+          {stats.overallAvgLeadTime !== null && <span class="kpi-unit">days</span>}
         </div>
         <div class="kpi-label">Canary → GA Lead Time</div>
         <div class="kpi-subtext">

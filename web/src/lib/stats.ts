@@ -87,7 +87,7 @@ export async function computeRadarStats(daysWindow: number = 90): Promise<RadarS
   }
 
   const overallAvgLeadTime =
-    entriesWithLeadTime > 0 ? Math.round((totalLeadTimeSum / entriesWithLeadTime) * 10) / 10 : 14.2;
+    entriesWithLeadTime > 0 ? Math.round((totalLeadTimeSum / entriesWithLeadTime) * 10) / 10 : null;
 
   // Compute stats per service
   const serviceVelocities: ServiceVelocityStat[] = [];
