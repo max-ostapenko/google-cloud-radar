@@ -1,0 +1,24 @@
+{
+  "id": "2026-09-02-youtube-v3",
+  "slug": "2026-09-02-youtube-v3",
+  "date": "2026-09-02",
+  "api": "youtube.v3",
+  "service": "YouTube Data API",
+  "service_name": "YouTube Data API",
+  "title": "Granular Scopes for Video Ratings",
+  "summary": "The videos.getRating method now supports the youtube.readonly scope, allowing for more restricted access to rating data.",
+  "details": "The OAuth 2.0 scope requirements for the `videos.getRating` method have been updated. Specifically, `https://www.googleapis.com/auth/youtube.readonly` has been added as a valid scope. While `https://www.googleapis.com/auth/youtubepartner` remains available, developers can now follow the principle of least privilege by using the read-only scope for applications that only need to check video ratings without requiring full partner permissions.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 4,
+  "tags": [
+    "oauth",
+    "security",
+    "permissions"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": null,
+  "generated_at": "2026-09-02T22:28:31.152287+00:00"
+}

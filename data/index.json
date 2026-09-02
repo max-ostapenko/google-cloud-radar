@@ -1,5 +1,46 @@
 [
   {
+    "id": "2026-09-02-youtube-v3",
+    "slug": "2026-09-02-youtube-v3",
+    "date": "2026-09-02",
+    "api": "youtube.v3",
+    "service": "YouTube Data API",
+    "service_name": "YouTube Data API",
+    "title": "Granular Scopes for Video Ratings",
+    "summary": "The videos.getRating method now supports the youtube.readonly scope, allowing for more restricted access to rating data.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 4,
+    "tags": [
+      "oauth",
+      "security",
+      "permissions"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-02T22:28:31.152287+00:00"
+  },
+  {
+    "id": "2026-09-02-cloudbilling-v1",
+    "slug": "2026-09-02-cloudbilling-v1",
+    "date": "2026-09-02",
+    "api": "cloudbilling.v1",
+    "service": "Cloud Billing",
+    "service_name": "Cloud Billing",
+    "title": "Cloud Billing adds Agent Messaging and Task Management",
+    "summary": "The Cloud Billing API has introduced a new interaction model involving 'agents' and 'tasks', while enforcing stricter requirements on existing parameters.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking-change",
+      "billing",
+      "tasks",
+      "streaming"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-02T22:28:31.150016+00:00"
+  },
+  {
     "id": "2026-09-01-androidpublisher-v3",
     "slug": "2026-09-01-androidpublisher-v3",
     "date": "2026-09-01",
