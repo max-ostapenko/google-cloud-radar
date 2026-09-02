@@ -26,33 +26,76 @@ except ImportError:
 OFFICIAL_RELEASE_FEEDS = get_official_release_feeds()
 
 _FEED_CACHE: dict[str, list] = {}
+_FEED_HEALTH: dict[str, dict] = {}
+
+SERVICE_AFFINITY_KEYWORDS = {
+    "gmail": ["gmail", "mail", "email", "inbox", "message"],
+    "drive": ["drive", "google drive", "doc", "docs", "sheet", "sheets", "slide", "slides", "file", "folder"],
+    "admin": ["admin", "directory", "organization", "domain", "workspace", "user", "transfer"],
+    "script": ["apps script", "script", "appsscript", "macro", "execution"],
+    "androidpublisher": ["play", "google play", "play store", "android", "developer console", "billing", "monetization"],
+}
 
 
-def fetch_feed_entries(feed_url: str) -> list:
-    """Fetches and parses an RSS/Atom release notes feed, caching results per run."""
+def log_feed_warning(service_key: str, feed_url: str, message: str) -> None:
+    """Logs a formatted warning to stderr and emits a GitHub Actions warning annotation if in CI."""
+    warn_text = f"⚠️ [FEED_HEALTH] {service_key or 'Feed'}: {message} ({feed_url})"
+    print(warn_text, file=sys.stderr)
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        # GitHub Actions workflow command to create an in-UI warning banner
+        title = f"Release Feed Warning ({service_key})" if service_key else "Release Feed Warning"
+        print(f"::warning title={title}::{message} at {feed_url}")
+
+
+def fetch_feed_entries(feed_url: str, service_key: str = "") -> list:
+    """Fetches and parses an RSS/Atom release notes feed, caching results per run.
+    Monitors feed health (HTTP errors, empty content) and alerts accordingly.
+    """
     if feed_url in _FEED_CACHE:
+        # Register additional service sharing this cached feed
+        if service_key and feed_url in _FEED_HEALTH:
+            services = _FEED_HEALTH[feed_url].setdefault("services", [])
+            if service_key not in services:
+                services.append(service_key)
         return _FEED_CACHE[feed_url]
 
     req = urllib.request.Request(
         feed_url,
         headers={
-            "User-Agent": "GCP-Discovery-Radar/1.0 (+https://gcp-cloud-radar.web.app)"
+            "User-Agent": "GCP-Discovery-Radar/1.0 (+https://google-cloud-radar.com)"
         },
     )
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            status_code = resp.getcode()
+            if status_code != 200:
+                log_feed_warning(service_key, feed_url, f"Unexpected HTTP status {status_code}")
+                _FEED_HEALTH[feed_url] = {"status": "error", "error": f"HTTP {status_code}", "services": [service_key]}
+                _FEED_CACHE[feed_url] = []
+                return []
             xml_text = resp.read().decode("utf-8")
+
         entries = parse_feed_xml(xml_text)
+        if not entries:
+            log_feed_warning(service_key, feed_url, "Feed returned 200 OK but contained 0 parseable entries")
+            _FEED_HEALTH[feed_url] = {"status": "empty", "services": [service_key]}
+        else:
+            _FEED_HEALTH[feed_url] = {"status": "healthy", "count": len(entries), "services": [service_key]}
+
         _FEED_CACHE[feed_url] = entries
         return entries
     except Exception as e:
-        print(f"⚠️ Could not fetch release feed from {feed_url}: {e}", file=sys.stderr)
+        err_msg = str(e)
+        log_feed_warning(service_key, feed_url, f"Network/HTTP error: {err_msg}")
+        _FEED_HEALTH[feed_url] = {"status": "error", "error": err_msg, "services": [service_key]}
         _FEED_CACHE[feed_url] = []
         return []
 
 
 def parse_feed_xml(xml_text: str) -> list:
-    """Parses XML string into a list of release entries (title, link, published_date, content)."""
+    """Parses XML string into a list of release entries (title, link, published_date, content).
+    Supports both Atom (<entry>) and RSS 2.0 (<item>) standards.
+    """
     entries = []
     try:
         root = ET.fromstring(xml_text)
@@ -60,61 +103,64 @@ def parse_feed_xml(xml_text: str) -> list:
         ns_uri = m.group(1) if m else ""
         ns = {"atom": ns_uri} if ns_uri else {}
 
-        atom_entries = root.findall("atom:entry", ns) if ns else root.findall("entry")
-        if not atom_entries:
-            atom_entries = root.findall(
-                ".//{http://www.w3.org/2005/Atom}entry"
-            ) or root.findall(".//entry")
+        # 1. Look for Atom entries
+        raw_entries = root.findall("atom:entry", ns) if ns else root.findall("entry")
+        if not raw_entries:
+            raw_entries = root.findall(".//{http://www.w3.org/2005/Atom}entry") or root.findall(".//entry")
 
-        for entry in atom_entries:
+        # 2. If no Atom entries, check for RSS 2.0 <item> elements
+        if not raw_entries:
+            raw_entries = root.findall(".//item")
+
+        for entry in raw_entries:
+            # Title
             title = entry.find("atom:title", ns) if ns else entry.find("title")
             if title is None:
-                title = entry.find(
-                    ".//{http://www.w3.org/2005/Atom}title"
-                ) or entry.find(".//title")
+                title = entry.find(".//{http://www.w3.org/2005/Atom}title") or entry.find(".//title")
             title_text = title.text.strip() if title is not None and title.text else ""
 
-            link_elem = entry.find("atom:link", ns) if ns else entry.find("link")
+            # Link (prefer rel="alternate" or type="text/html")
             link_url = ""
-            if link_elem is not None:
-                link_url = link_elem.attrib.get("href") or link_elem.text or ""
+            links = entry.findall("atom:link", ns) if ns else entry.findall("link")
+            for l in links:
+                rel = l.attrib.get("rel", "alternate")
+                href = l.attrib.get("href", "")
+                if rel == "alternate" and href:
+                    link_url = href
+                    break
+            if not link_url and links:
+                link_url = links[0].attrib.get("href") or links[0].text or ""
+            if not link_url:
+                link_elem = entry.find("link")
+                if link_elem is not None:
+                    link_url = link_elem.text or link_elem.attrib.get("href", "")
 
+            # Date (Atom updated/published or RSS pubDate/dc:date)
             pub_elem = None
-            for tag in ["atom:updated", "atom:published", "updated", "published"]:
-                candidate = (
-                    entry.find(tag, ns)
-                    if (ns and tag.startswith("atom:"))
-                    else entry.find(tag)
-                )
+            for tag in ["atom:updated", "atom:published", "updated", "published", "pubDate", "dc:date"]:
+                candidate = entry.find(tag, ns) if (ns and tag.startswith("atom:")) else entry.find(tag)
                 if candidate is not None and candidate.text:
                     pub_elem = candidate
                     break
-            pub_date = (
-                pub_elem.text.strip() if pub_elem is not None and pub_elem.text else ""
-            )
+            raw_date = pub_elem.text.strip() if pub_elem is not None and pub_elem.text else ""
+            parsed_d = parse_date(raw_date)
+            date_str = parsed_d.isoformat() if parsed_d else raw_date[:10]
 
+            # Content
             content_elem = None
-            for tag in ["atom:content", "atom:summary", "content", "summary"]:
-                candidate = (
-                    entry.find(tag, ns)
-                    if (ns and tag.startswith("atom:"))
-                    else entry.find(tag)
-                )
+            for tag in ["atom:content", "atom:summary", "content", "summary", "description", "{http://purl.org/rss/1.0/modules/content/}encoded"]:
+                candidate = entry.find(tag, ns) if (ns and tag.startswith("atom:")) else entry.find(tag)
                 if candidate is not None and candidate.text:
                     content_elem = candidate
                     break
-            content_text = (
-                content_elem.text.strip()
-                if content_elem is not None and content_elem.text
-                else ""
-            )
+            content_text = content_elem.text.strip() if content_elem is not None and content_elem.text else ""
 
             if title_text or content_text:
                 entries.append(
                     {
                         "title": title_text,
                         "url": link_url,
-                        "date": pub_date[:10],
+                        "date": date_str,
                         "content": content_text,
                     }
                 )
@@ -163,11 +209,12 @@ def calculate_lead_time(canary_date_str: str, release_date_str: str) -> int:
 
 
 def match_change_against_releases(
-    change_meta: dict, release_entries: list, max_lead_days: int = 120
+    change_meta: dict, release_entries: list, max_lead_days: int = 120, service_key: str = ""
 ) -> dict | None:
     """Matches a canary change entry against official release entries.
     Strictly requires release entries to have been published ON or AFTER the canary detection date
     (with at most 1 day timezone tolerance) and within max_lead_days.
+    When matching multi-service feeds (e.g. Workspace Updates blog), enforces service affinity.
     """
     if not release_entries:
         return None
@@ -223,15 +270,50 @@ def match_change_against_releases(
                 matched = True
                 break
 
-        # 2. Significant Title Keywords Match (word boundary match, requires >=2 distinct domain words)
+        # 2. Significant Title Keywords Match
         if not matched and significant_words:
-            matched_words = [
-                w for w in significant_words if re.search(r"\b" + re.escape(w) + r"\b", rel_text)
+            # Check service affinity for multi-service feeds (e.g. Workspace updates blog)
+            if service_key and service_key in SERVICE_AFFINITY_KEYWORDS:
+                has_service_affinity = any(
+                    re.search(r"\b" + re.escape(ak) + r"\b", rel_text)
+                    for ak in SERVICE_AFFINITY_KEYWORDS[service_key]
+                )
+                if not has_service_affinity:
+                    continue
+
+            rel_title = rel.get("title", "").lower()
+            rel_content = rel.get("content", "").lower()
+
+            # A: If the release entry's TITLE contains >= 2 significant words -> Match!
+            title_matched_words = [
+                w for w in significant_words if re.search(r"\b" + re.escape(w) + r"\b", rel_title)
             ]
-            if len(matched_words) >= 2 or (
-                len(significant_words) == 1 and len(matched_words) == 1
-            ):
+            if len(title_matched_words) >= 2 or (len(significant_words) == 1 and len(title_matched_words) == 1):
                 matched = True
+
+            # B: If matching in CONTENT:
+            # For short entries (standard release notes <= 600 chars), require >= 2 distinct words.
+            # For long articles (blog posts > 600 chars), require >= 3 distinct words or a 2-word bigram phrase.
+            elif not matched:
+                content_matched_words = [
+                    w for w in significant_words if re.search(r"\b" + re.escape(w) + r"\b", rel_content)
+                ]
+                if len(rel_content) <= 600:
+                    if len(content_matched_words) >= 2 or (len(significant_words) == 1 and len(content_matched_words) == 1):
+                        matched = True
+                else:
+                    if len(content_matched_words) >= 3:
+                        matched = True
+                    else:
+                        title_clean_words = [
+                            w for w in re.findall(r"\w+", change_meta["title"].lower())
+                            if len(w) > 3 and w not in stop_words
+                        ]
+                        for i in range(len(title_clean_words) - 1):
+                            bigram = f"{title_clean_words[i]} {title_clean_words[i+1]}"
+                            if len(bigram) > 8 and bigram in rel_content:
+                                matched = True
+                                break
 
         if matched:
             valid_candidates.append((delta_days, rel))
@@ -356,9 +438,11 @@ def run_correlation(
         if custom_releases and service_key in custom_releases:
             release_entries = custom_releases[service_key]
         elif feed_url:
-            release_entries = fetch_feed_entries(feed_url)
+            release_entries = fetch_feed_entries(feed_url, service_key=service_key)
 
-        match = match_change_against_releases(change_meta, release_entries)
+        match = match_change_against_releases(
+            change_meta, release_entries, service_key=service_key
+        )
         if match:
             lead_time = calculate_lead_time(first_detected, match["date"])
             update_json_file(file_path, match, lead_time)
@@ -401,6 +485,33 @@ def run_correlation(
                     f.write("\n")
             except Exception as e:
                 print(f"⚠️ Error syncing index.json: {e}", file=sys.stderr)
+
+    # Summary of feed health
+    total_feeds = len(_FEED_HEALTH)
+    healthy_feeds = sum(1 for h in _FEED_HEALTH.values() if h.get("status") == "healthy")
+    warning_feeds = total_feeds - healthy_feeds
+    if total_feeds > 0:
+        print(f"\n📊 Release Feed Health: {healthy_feeds}/{total_feeds} feeds active and healthy ({warning_feeds} warnings)")
+        for url, h in _FEED_HEALTH.items():
+            if h.get("status") != "healthy":
+                svcs = ", ".join(h.get("services", []))
+                print(f"   ⚠️ Warning [{svcs}]: {h.get('error', '0 entries parsed')} ({url})")
+
+    # Optionally write to GitHub Actions Step Summary if available
+    step_summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if step_summary_path and os.path.exists(os.path.dirname(step_summary_path)):
+        try:
+            with open(step_summary_path, "a", encoding="utf-8") as f:
+                f.write("\n### 📡 Release Feed Health Summary\n\n")
+                f.write(f"**{healthy_feeds}/{total_feeds}** feeds verified active.\n\n")
+                if warning_feeds > 0:
+                    f.write("| Service | Status | Feed URL |\n|---|---|---|\n")
+                    for url, h in _FEED_HEALTH.items():
+                        if h.get("status") != "healthy":
+                            svcs = ", ".join(h.get("services", []))
+                            f.write(f"| `{svcs}` | ⚠️ {h.get('error', 'Empty')} | `{url}` |\n")
+        except Exception:
+            pass
 
     return matched_results
 

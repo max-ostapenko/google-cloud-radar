@@ -18,7 +18,12 @@
       "Gaming"
     ],
     "extracted_methods": [],
-    "generated_at": "2026-09-01T18:16:10.015590+00:00"
+    "generated_at": "2026-09-01T18:16:10.015590+00:00",
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 0,
+    "official_release_date": "2026-09-01",
+    "official_release_notes_url": "https://android-developers.googleblog.com/2026/09/leverage-gemma-4-android-studio-quail.html"
   },
   {
     "id": "2026-08-30-aiplatform-v1beta1",
@@ -347,10 +352,12 @@
       "android"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-08-25T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 0,
+    "generated_at": "2026-08-25T03:00:00Z",
+    "official_release_date": "2026-08-25",
+    "official_release_notes_url": "https://android-developers.googleblog.com/2026/08/ensuring-safety-genai-preventing-non-consensual-intimate-content.html"
   },
   {
     "id": "2026-08-25-admin-reports-v1",
@@ -372,10 +379,12 @@
       "audit-logs"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-08-25T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 8,
+    "generated_at": "2026-08-25T03:00:00Z",
+    "official_release_date": "2026-09-02",
+    "official_release_notes_url": "http://workspaceupdates.googleblog.com/2026/09/automate-drive-gmail-and-google-chat-actions-with-new-steps-in-Workspace-Studio.html"
   },
   {
     "id": "2026-08-25-admin-directory-v1",

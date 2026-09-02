@@ -189,12 +189,14 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "category": "Application Development",
         "quadrant": "infra_compute",
         "name": "Integration Connectors",
+        "release_feed_url": "https://docs.cloud.google.com/feeds/integration-connectors-release-notes.xml",
     },
     "integrations": {
         "ecosystem": "Google Cloud",
         "category": "Application Development",
         "quadrant": "infra_compute",
         "name": "Application Integration",
+        "release_feed_url": "https://docs.cloud.google.com/feeds/application-integration-release-notes.xml",
     },
     # --- FinOps & Billing ---
     "appoptimize": {
@@ -208,14 +210,14 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "category": "FinOps & Billing",
         "quadrant": "security_finops",
         "name": "Cloud Billing Budgets",
-        "release_feed_url": "https://cloud.google.com/feeds/cloud-billing-release-notes.xml",
+        "release_feed_url": "https://docs.cloud.google.com/feeds/cloud-billing-release-notes.xml",
     },
     "cloudbilling": {
         "ecosystem": "Google Cloud",
         "category": "FinOps & Billing",
         "quadrant": "security_finops",
         "name": "Cloud Billing",
-        "release_feed_url": "https://cloud.google.com/feeds/cloud-billing-release-notes.xml",
+        "release_feed_url": "https://docs.cloud.google.com/feeds/cloud-billing-release-notes.xml",
     },
     # =========================================================================
     # 2. GOOGLE WORKSPACE
@@ -225,24 +227,28 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "category": "Apps Script",
         "quadrant": "infra_compute",
         "name": "Apps Script",
+        "release_feed_url": "https://workspaceupdates.googleblog.com/feeds/posts/default",
     },
     "admin": {
         "ecosystem": "Workspace",
         "category": "Admin SDK",
         "quadrant": "infra_compute",
         "name": "Admin SDK",
+        "release_feed_url": "https://workspaceupdates.googleblog.com/feeds/posts/default",
     },
     "gmail": {
         "ecosystem": "Workspace",
         "category": "Gmail API",
         "quadrant": "infra_compute",
         "name": "Gmail API",
+        "release_feed_url": "https://workspaceupdates.googleblog.com/feeds/posts/default",
     },
     "drive": {
         "ecosystem": "Workspace",
         "category": "Drive API",
         "quadrant": "infra_compute",
         "name": "Drive API",
+        "release_feed_url": "https://workspaceupdates.googleblog.com/feeds/posts/default",
     },
     # =========================================================================
     # 3. GOOGLE MARKETING PLATFORM
@@ -315,6 +321,7 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "category": "Google Play",
         "quadrant": "infra_compute",
         "name": "Google Play Developer API",
+        "release_feed_url": "https://android-developers.googleblog.com/feeds/posts/default",
     },
     # =========================================================================
     # 7. MORE / CORE & SECURITY
