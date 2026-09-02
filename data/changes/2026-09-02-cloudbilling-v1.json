@@ -1,0 +1,25 @@
+{
+  "id": "2026-09-02-cloudbilling-v1",
+  "slug": "2026-09-02-cloudbilling-v1",
+  "date": "2026-09-02",
+  "api": "cloudbilling.v1",
+  "service": "Cloud Billing",
+  "service_name": "Cloud Billing",
+  "title": "Cloud Billing adds Agent Messaging and Task Management",
+  "summary": "The Cloud Billing API has introduced a new interaction model involving 'agents' and 'tasks', while enforcing stricter requirements on existing parameters.",
+  "details": "This update introduces significant new resources: `message` and `tasks`. Developers can now use `message.send` for blocking requests to a billing agent and `message.stream` for real-time updates. Accompanying these are task management methods including `tasks.get`, `tasks.cancel`, and `tasks.subscribe` for monitoring long-running operations. Crucially, this is a breaking change: the `name` and `parent` parameters have been promoted to strictly required across several methods. If your existing integrations omitted these fields, they will now fail. Additionally, `tasks.get` now supports a `historyLength` parameter and an experimental `tenant` parameter for multi-tenant environments.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "billing",
+    "tasks",
+    "streaming"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": null,
+  "generated_at": "2026-09-02T22:28:31.150016+00:00"
+}
