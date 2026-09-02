@@ -241,7 +241,7 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, "-");
         </div>
 
         {
-          entry.lead_time_days && (
+          entry.status === "released" && entry.lead_time_days != null && (
             <>
               <span class="meta-dot">•</span>
               <div class="meta-item lead-time-highlight">

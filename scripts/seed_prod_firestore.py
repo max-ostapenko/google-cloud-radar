@@ -109,7 +109,7 @@ def parse_json_change_file(file_path: str) -> dict:
     radar_quadrant = data.get("radar_quadrant") or get_quadrant_for_service(
         service_name
     )
-    lead_time_days = data.get("lead_time_days", 14)
+    lead_time_days = data.get("lead_time_days") if status == "released" else None
     summary = data.get("summary", "")
     details = data.get("details", summary)
     extracted_methods = data.get("extracted_methods", [])

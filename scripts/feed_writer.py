@@ -164,7 +164,7 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
         "extracted_methods": extracted_methods,
         "status": "canary",
         "radar_ring": "hold" if breaking else "assess",
-        "lead_time_days": 14,
+        "lead_time_days": None,
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
 

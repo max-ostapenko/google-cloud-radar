@@ -20,6 +20,6 @@
   "extracted_methods": [],
   "status": "canary",
   "radar_ring": "hold",
-  "lead_time_days": 14,
+  "lead_time_days": null,
   "generated_at": "2026-08-29T14:58:03.718475+00:00"
 }
