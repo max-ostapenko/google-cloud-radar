@@ -39,7 +39,7 @@ jobs:
         run: pip install google-genai google-auth
 
       - name: Restore and cache release notes archive
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: data/release_notes_archive.json
           key: release-notes-archive-${{ runner.os }}-${{ github.run_id }}
