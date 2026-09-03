@@ -40,4 +40,4 @@ jobs:
 
       - name: Update discoveries, extract diffs, correlate releases, sync Firestore DB, dispatch email alerts, and open PR
         run: |
-          python scripts/update_disco.py && python scripts/diff_to_feed.py && python scripts/correlate_releases.py --database radar && python scripts/seed_prod_firestore.py --database radar && python scripts/dispatch_email_alerts.py --database radar && python scripts/open_pr.py
+          python scripts/update_disco.py && python scripts/diff_to_feed.py && python scripts/correlate_releases.py --database radar && python scripts/seed_prod_firestore.py --project gcp-cloud-radar --database radar && python scripts/dispatch_email_alerts.py --project gcp-cloud-radar --database radar && python scripts/open_pr.py

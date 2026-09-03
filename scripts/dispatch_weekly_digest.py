@@ -64,7 +64,21 @@ load_env_file()
 
 
 def get_access_token() -> str:
-    """Retrieves active OAuth2 access token via google-auth or gcloud CLI."""
+    """Retrieves active OAuth2 access token via gcloud CLI or google-auth ADC."""
+    # When running locally, prefer active gcloud CLI credentials
+    if is_dev_environment():
+        try:
+            token = subprocess.check_output(
+                ["gcloud", "auth", "print-access-token", "--quiet"],
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+            if token:
+                return token
+        except Exception:
+            pass
+
+    # In CI / production, use Application Default Credentials (ADC)
     try:
         import google.auth
         import google.auth.transport.requests
@@ -446,7 +460,11 @@ def fetch_firestore_weekly_subscribers(
         return []
 
     url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/{database_id}/documents/users"
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "x-goog-user-project": project_id,
+    }
+    req = urllib.request.Request(url, headers=headers)
 
     subscribers = []
     try:
@@ -475,6 +493,10 @@ def fetch_firestore_weekly_subscribers(
                             "watched_services": watched_services,
                         }
                     )
+    except urllib.error.HTTPError as e:
+        logger.warning(
+            f"Failed to fetch Firestore subscribers: HTTP Error {e.code}: {e.read().decode('utf-8')}"
+        )
     except Exception as e:
         logger.warning(f"Failed to fetch Firestore subscribers: {e}")
 
@@ -505,7 +527,11 @@ def has_weekly_digest_been_sent(
         return False
 
     url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/{database_id}/documents/alert_dispatches/{dispatch_id}"
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "x-goog-user-project": project_id,
+    }
+    req = urllib.request.Request(url, headers=headers)
 
     try:
         with urllib.request.urlopen(req, timeout=5) as resp:
@@ -541,13 +567,15 @@ def record_weekly_digest_sent(
         }
     }
     data = json.dumps(payload).encode("utf-8")
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+        "x-goog-user-project": project_id,
+    }
     req = urllib.request.Request(
         url,
         data=data,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        },
+        headers=headers,
         method="POST",
     )
 

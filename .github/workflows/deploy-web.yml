@@ -52,6 +52,6 @@ jobs:
         working-directory: web
         run: npm run build
 
-      - name: Deploy to Firebase Hosting
+      - name: Deploy to Firebase Hosting and Firestore Rules
         working-directory: web
-        run: npx -y firebase-tools deploy --only hosting --project gcp-cloud-radar
+        run: npx -y firebase-tools deploy --only hosting,firestore:rules --project gcp-cloud-radar
