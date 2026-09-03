@@ -1,0 +1,23 @@
+{
+  "id": "2026-09-03-drive-v3",
+  "slug": "2026-09-03-drive-v3",
+  "date": "2026-09-03",
+  "api": "drive.v3",
+  "service": "Google Drive",
+  "service_name": "Google Drive",
+  "title": "Drive files.copy now supports copying comments",
+  "summary": "The Drive API now allows developers to include comments when duplicating files via the files.copy method.",
+  "details": "A new boolean query parameter, `copyComments`, has been added to the `files.copy` method. When set to `true`, the operation will duplicate the comments associated with the source file to the new copy. The parameter defaults to `false`, maintaining existing behavior unless explicitly enabled by the developer.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 5,
+  "tags": [
+    "files",
+    "collaboration"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": null,
+  "generated_at": "2026-09-03T20:20:58.844940+00:00"
+}
