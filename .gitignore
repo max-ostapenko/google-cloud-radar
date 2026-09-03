@@ -57,3 +57,7 @@ test
 .agents/
 DESIGN.md
 PRODUCT.md
+
+# Release notes cache
+data/release_notes_archive.json
+

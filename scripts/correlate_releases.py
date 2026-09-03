@@ -58,14 +58,43 @@ def load_release_archive(archive_path: str) -> dict[str, list[dict]]:
     return {}
 
 
+ARCHIVE_RETENTION_DAYS = 180
+
+
 def save_release_archive(archive_path: str, archive_data: dict[str, list[dict]]) -> None:
-    """Saves release notes archive to disk."""
+    """Saves release notes archive to disk with a rolling retention window and lean bullets
+    to prevent repository and cache bloat.
+    """
     try:
+        cutoff_date = (datetime.date.today() - datetime.timedelta(days=ARCHIVE_RETENTION_DAYS)).isoformat()
+        lean_archive: dict[str, list[dict]] = {}
+
+        for feed_url, entries in archive_data.items():
+            feed_entries = []
+            for e in entries:
+                d = e.get("date", "")
+                if d and d < cutoff_date:
+                    continue
+                bullets = e.get("bullets")
+                if bullets is None:
+                    raw_content = e.get("content", "")
+                    bullets = extract_bullets(raw_content, e.get("title", ""))
+                feed_entries.append(
+                    {
+                        "title": e.get("title", ""),
+                        "url": e.get("url", ""),
+                        "date": d,
+                        "bullets": bullets,
+                    }
+                )
+            if feed_entries:
+                lean_archive[feed_url] = feed_entries
+
         dir_name = os.path.dirname(os.path.abspath(archive_path))
         if dir_name:
             os.makedirs(dir_name, exist_ok=True)
         with open(archive_path, "w", encoding="utf-8") as f:
-            json.dump(archive_data, f, indent=2, ensure_ascii=False)
+            json.dump(lean_archive, f, indent=2, ensure_ascii=False)
             f.write("\n")
     except Exception as e:
         print(f"⚠️ Warning saving release archive: {e}", file=sys.stderr)
@@ -367,7 +396,9 @@ def match_change_against_releases(
         if delta_days < -1 or delta_days > max_lead_days:
             continue
 
-        bullets = extract_bullets(rel.get("content", ""), rel.get("title", ""))
+        bullets = rel.get("bullets")
+        if bullets is None:
+            bullets = extract_bullets(rel.get("content", ""), rel.get("title", ""))
         matched = False
 
         for b in bullets:

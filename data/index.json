@@ -1,46 +1,5 @@
 [
   {
-    "id": "2026-09-03-youtube-v3",
-    "slug": "2026-09-03-youtube-v3",
-    "date": "2026-09-03",
-    "api": "youtube.v3",
-    "service": "YouTube Data API",
-    "service_name": "YouTube Data API",
-    "title": "Expanded Scopes for Video Rating Retrieval",
-    "summary": "The videos.getRating method now officially supports the youtube.readonly scope, enabling more granular access control.",
-    "impact": "low",
-    "breaking": false,
-    "interesting_score": 4,
-    "tags": [
-      "auth",
-      "security",
-      "youtube-api"
-    ],
-    "extracted_methods": [],
-    "generated_at": "2026-09-03T03:42:47.504127+00:00"
-  },
-  {
-    "id": "2026-09-03-cloudbilling-v1",
-    "slug": "2026-09-03-cloudbilling-v1",
-    "date": "2026-09-03",
-    "api": "cloudbilling.v1",
-    "service": "Cloud Billing",
-    "service_name": "Cloud Billing",
-    "title": "Cloud Billing adds Agent/Task model with breaking changes",
-    "summary": "The Cloud Billing API is shifting toward an asynchronous, agent-based interaction model with new message and task resources, while enforcing stricter parameter requirements.",
-    "impact": "high",
-    "breaking": true,
-    "interesting_score": 9,
-    "tags": [
-      "Breaking Change",
-      "Billing",
-      "Streaming",
-      "Agents"
-    ],
-    "extracted_methods": [],
-    "generated_at": "2026-09-03T03:42:47.501923+00:00"
-  },
-  {
     "id": "2026-09-02-youtube-v3",
     "slug": "2026-09-02-youtube-v3",
     "date": "2026-09-02",

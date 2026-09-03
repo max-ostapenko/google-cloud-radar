@@ -42,10 +42,15 @@ DESCRIPTION_ONLY_KEYS = frozenset(["description", "title"])
 MAX_ENTRIES_PER_CATEGORY = 60
 
 
-def get_changed_discovery_files(base_ref: str, head_ref: str) -> list[str]:
-    """Return list of discovery JSON filenames that changed between two refs."""
+def get_changed_discovery_files(base_ref: str, head_ref: str = "WORKTREE") -> list[str]:
+    """Return list of discovery JSON filenames that changed between two refs (or against working tree)."""
+    if not head_ref or head_ref == "WORKTREE":
+        cmd = ["git", "diff", "--name-only", base_ref, "--", "discoveries/"]
+    else:
+        cmd = ["git", "diff", "--name-only", base_ref, head_ref, "--", "discoveries/"]
+
     result = subprocess.run(
-        ["git", "diff", "--name-only", base_ref, head_ref, "--", "discoveries/"],
+        cmd,
         capture_output=True,
         text=True,
         check=False,
@@ -60,7 +65,14 @@ def get_changed_discovery_files(base_ref: str, head_ref: str) -> list[str]:
 
 
 def get_file_content_at_ref(ref: str, filepath: str) -> str:
-    """Return full file content at a specific git ref, or '' if it didn't exist."""
+    """Return full file content at a specific git ref, or from working tree if WORKTREE."""
+    if not ref or ref == "WORKTREE":
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                return f.read()
+        except (FileNotFoundError, OSError):
+            return ""
+
     result = subprocess.run(
         ["git", "show", f"{ref}:{filepath}"],
         capture_output=True,
@@ -374,7 +386,7 @@ def build_structured_diff(
 
 
 def extract_structured_diffs(
-    base_ref: str = "HEAD~1", head_ref: str = "HEAD"
+    base_ref: str = "HEAD", head_ref: str = "WORKTREE"
 ) -> list[dict]:
     """Main entry point: returns a list of structured diffs, one per changed API.
 

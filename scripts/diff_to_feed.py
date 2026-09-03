@@ -23,6 +23,66 @@ from scripts.feed_writer import write_insights, get_recent_feed_entries
 from scripts.llm_client import analyze_api_diff
 
 
+def is_duplicate_diff(diff: dict, recent_history: list[dict]) -> tuple[bool, str]:
+    """Check if the changes in diff are already documented in recent history for this API."""
+    if not recent_history:
+        return False, ""
+
+    # 1. Extract added / modified method names
+    diff_methods = set()
+    for cat in ("added", "modified", "removed"):
+        for e in diff.get(cat, []):
+            p = e.get("path", "")
+            if "methods." in p:
+                parts = p.split(".")
+                idx = parts.index("methods")
+                if len(parts) > idx + 1:
+                    diff_methods.add(parts[idx + 1].lower())
+
+    # 2. Extract specific values added or modified (like scopes, new params, enum values)
+    specific_values = set()
+    for cat in ("added", "modified"):
+        for e in diff.get(cat, []):
+            val = str(e.get("value") or e.get("new") or "").strip().lower()
+            if val and len(val) > 4 and not val.startswith("{") and not val.startswith("["):
+                specific_values.add(val.split("/")[-1])
+
+    for entry in recent_history:
+        slug = entry.get("slug", "")
+        date_str = entry.get("date", "")
+        entry_text = (
+            entry.get("title", "")
+            + " "
+            + entry.get("summary", "")
+            + " "
+            + entry.get("details", "")
+            + " "
+            + entry.get("content", "")
+        ).lower()
+
+        # If diff has specific methods, check if ALL of them are already covered
+        if diff_methods:
+            matched_methods = {m for m in diff_methods if m in entry_text}
+            if matched_methods == diff_methods:
+                methods_str = ", ".join(sorted(diff_methods))
+                return (
+                    True,
+                    f"All {len(diff_methods)} method(s) ({methods_str}) already documented in {slug} ({date_str})",
+                )
+
+        # If diff has specific values (e.g. scopes, enums) and no methods
+        if specific_values and not diff_methods:
+            matched_values = {v for v in specific_values if v in entry_text}
+            if len(matched_values) == len(specific_values):
+                values_str = ", ".join(sorted(specific_values))
+                return (
+                    True,
+                    f"All key value(s) ({values_str}) already documented in {slug} ({date_str})",
+                )
+
+    return False, ""
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate API change insights and write to feed."
@@ -34,13 +94,13 @@ def main() -> None:
     )
     parser.add_argument(
         "--base",
-        default="HEAD~1",
-        help="Base git ref to diff against (default: HEAD~1).",
+        default="HEAD",
+        help="Base git ref to diff against (default: HEAD).",
     )
     parser.add_argument(
         "--head",
-        default="HEAD",
-        help="Head git ref (default: HEAD).",
+        default="WORKTREE",
+        help="Head git ref (default: WORKTREE uncommitted changes).",
     )
     parser.add_argument(
         "--date",
@@ -94,6 +154,13 @@ def main() -> None:
                 f"Found existing feed entry for {api} today. Will request LLM merge."
             )
         if recent_history:
+            is_dup, reason = is_duplicate_diff(diff, recent_history)
+            if is_dup:
+                logger.info(
+                    f"  Skipping {api}: duplicate of recent historical change ({reason})."
+                )
+                continue
+
             logger.info(
                 f"Found {len(recent_history)} recent historical feed entries for {api}. Will pass as context."
             )

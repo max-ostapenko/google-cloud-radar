@@ -53,8 +53,11 @@ You will receive a single JSON object with the following structure:
   - Retain previously documented entities from earlier today even if they temporarily disappeared in a sub-build.
   - Update `title`, `summary`, `details`, `tags`, `impact`, and `interesting_score` to reflect cumulative daily progress.
 
-- **Handling recent_history_content (Context):**
-  If `recent_history_content` is present, use it as context to understand ongoing features and avoid repeating historical context as brand new announcements.
+- **Handling recent_history_content (Duplicate & Rollback Detection):**
+  If `recent_history_content` is present:
+  - If the changes in this diff are already completely documented in a recent historical entry (e.g. from the past 14 days) and represent NO meaningful new capabilities or schemas beyond what was already announced, set `interesting_score`: 1 so it is skipped.
+  - If the diff represents a ROLLBACK (methods, parameters, or schemas that were recently added in historical entries are now being removed), explicitly describe it as a rollback or retraction of that recent feature in the details and summary, rather than a standard removal.
+  - If the diff is a RE-ROLLOUT after a previous rollback, explicitly note that the capability has been restored/reinstated.
 
 ## Output format
 

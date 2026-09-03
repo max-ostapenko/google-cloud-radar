@@ -228,7 +228,6 @@ def open_pr(github_token: Optional[str]) -> None:
         github_token {Optional[str]} -- The github token, if provided
     """
     branch: str = commit_changes()
-    generate_and_commit_feed()
     push_changes(branch, github_token)
     pr_number: str = create_pr(branch)
     update_pr(pr_number, github_token)
