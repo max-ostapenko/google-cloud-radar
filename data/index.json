@@ -19,6 +19,24 @@
     "generated_at": "2026-09-03T20:20:58.844940+00:00"
   },
   {
+    "id": "2026-09-03-bigqueryreservation-v1",
+    "slug": "2026-09-03-bigqueryreservation-v1",
+    "date": "2026-09-03",
+    "api": "bigqueryreservation.v1",
+    "service": "BigQuery Reservation",
+    "service_name": "BigQuery Reservation",
+    "title": "Minor documentation update for Assignment principal",
+    "summary": "The description for the principal field in the Assignment resource has been updated for clarity and grammatical consistency.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 2,
+    "tags": [
+      "BigQuery"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-03T22:25:18.521789+00:00"
+  },
+  {
     "id": "2026-09-02-youtube-v3",
     "slug": "2026-09-02-youtube-v3",
     "date": "2026-09-02",

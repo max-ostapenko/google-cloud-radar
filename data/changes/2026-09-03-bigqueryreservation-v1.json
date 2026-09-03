@@ -1,0 +1,22 @@
+{
+  "id": "2026-09-03-bigqueryreservation-v1",
+  "slug": "2026-09-03-bigqueryreservation-v1",
+  "date": "2026-09-03",
+  "api": "bigqueryreservation.v1",
+  "service": "BigQuery Reservation",
+  "service_name": "BigQuery Reservation",
+  "title": "Minor documentation update for Assignment principal",
+  "summary": "The description for the principal field in the Assignment resource has been updated for clarity and grammatical consistency.",
+  "details": "This change is limited to a minor wording update in the description of the `Assignment.principal` field. It clarifies the fallback logic for reservation assignments and the supported principal formats (users, service accounts, and workload identity pools) without altering the underlying API behavior or schema.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 2,
+  "tags": [
+    "BigQuery"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": null,
+  "generated_at": "2026-09-03T22:25:18.521789+00:00"
+}
