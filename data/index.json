@@ -1063,10 +1063,12 @@
       "Reasoning Engine"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "hold",
-    "lead_time_days": null,
-    "generated_at": "2026-07-26T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 37,
+    "generated_at": "2026-07-26T03:00:00Z",
+    "official_release_date": "2026-09-01",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/release-notes#September_01_2026"
   },
   {
     "id": "2026-07-26-aiplatform-v1",
@@ -1218,10 +1220,12 @@
       "Streaming"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-07-14T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 1,
+    "generated_at": "2026-07-14T03:00:00Z",
+    "official_release_date": "2026-07-15",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/release-notes#July_15_2026"
   },
   {
     "id": "2026-07-14-aiplatform-v1",
@@ -1347,10 +1351,12 @@
       "Reasoning Engine"
     ],
     "extracted_methods": [],
-    "status": "canary",
-    "radar_ring": "hold",
-    "lead_time_days": null,
-    "generated_at": "2026-07-03T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 5,
+    "generated_at": "2026-07-03T03:00:00Z",
+    "official_release_date": "2026-07-08",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/release-notes#July_08_2026"
   },
   {
     "id": "2026-07-03-aiplatform-v1",
@@ -1528,10 +1534,12 @@
       "projects.locations.agents",
       "projects.locations.semanticGovernancePolicyEngine"
     ],
-    "status": "canary",
-    "radar_ring": "assess",
-    "lead_time_days": null,
-    "generated_at": "2026-06-27T03:00:00Z"
+    "status": "released",
+    "radar_ring": "adopt",
+    "lead_time_days": 2,
+    "generated_at": "2026-06-27T03:00:00Z",
+    "official_release_date": "2026-06-29",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/release-notes#June_29_2026"
   },
   {
     "id": "2026-06-26-bigquery-v2",

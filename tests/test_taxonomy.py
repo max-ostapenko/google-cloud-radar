@@ -113,12 +113,16 @@ class TestTaxonomy(unittest.TestCase):
         )
         self.assertEqual(
             taxonomy.get_release_feed_url("vertex"),
-            "https://cloud.google.com/feeds/vertex-ai-release-notes.xml",
+            "https://docs.cloud.google.com/feeds/gemini-enterprise-agent-platform-release-notes.xml",
         )
+        vertex_urls = taxonomy.get_release_feed_urls("vertex")
+        self.assertEqual(len(vertex_urls), 1)
         self.assertIsNone(taxonomy.get_release_feed_url("unknown_service"))
+        self.assertEqual(taxonomy.get_release_feed_urls("unknown_service"), [])
         feeds = taxonomy.get_official_release_feeds()
         self.assertIn("bigquery", feeds)
         self.assertIn("dataform", feeds)
+        self.assertIn("vertex", feeds)
 
 
 if __name__ == "__main__":

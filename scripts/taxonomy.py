@@ -82,14 +82,18 @@ WATCHED_SERVICES: dict[str, ServiceMeta] = {
         "category": "AI & ML",
         "quadrant": "ai_ml",
         "name": "Vertex AI",
-        "release_feed_url": "https://cloud.google.com/feeds/vertex-ai-release-notes.xml",
+        "release_feed_urls": [
+            "https://docs.cloud.google.com/feeds/gemini-enterprise-agent-platform-release-notes.xml",
+        ],
     },
     "vertex": {
         "ecosystem": "Google Cloud",
         "category": "AI & ML",
         "quadrant": "ai_ml",
         "name": "Vertex AI",
-        "release_feed_url": "https://cloud.google.com/feeds/vertex-ai-release-notes.xml",
+        "release_feed_urls": [
+            "https://docs.cloud.google.com/feeds/gemini-enterprise-agent-platform-release-notes.xml",
+        ],
     },
     # --- Data Analytics ---
     "bigquery": {
@@ -424,21 +428,42 @@ def determine_radar_ring(status: str, is_breaking: bool, version: str) -> str:
     return "assess"
 
 
-def get_release_feed_url(service_or_api: str) -> Optional[str]:
-    """Returns official Google release RSS/Atom feed URL for a service if configured."""
+def get_release_feed_urls(service_or_api: str) -> list[str]:
+    """Returns list of official Google release RSS/Atom feed URLs for a service if configured."""
     lower = service_or_api.lower()
+    meta = None
     if lower in WATCHED_SERVICES:
-        return WATCHED_SERVICES[lower].get("release_feed_url")
-    for key, meta in WATCHED_SERVICES.items():
-        if key in lower:
-            return meta.get("release_feed_url")
-    return None
+        meta = WATCHED_SERVICES[lower]
+    else:
+        for key, candidate_meta in WATCHED_SERVICES.items():
+            if key in lower:
+                meta = candidate_meta
+                break
+    if not meta:
+        return []
+
+    urls = []
+    if "release_feed_urls" in meta and isinstance(meta["release_feed_urls"], list):
+        for u in meta["release_feed_urls"]:
+            if u and u not in urls:
+                urls.append(u)
+    if "release_feed_url" in meta and meta["release_feed_url"]:
+        if meta["release_feed_url"] not in urls:
+            urls.append(meta["release_feed_url"])
+    return urls
+
+
+def get_release_feed_url(service_or_api: str) -> Optional[str]:
+    """Returns the primary official Google release RSS/Atom feed URL for backward compatibility."""
+    urls = get_release_feed_urls(service_or_api)
+    return urls[0] if urls else None
 
 
 def get_official_release_feeds() -> dict[str, str]:
     """Returns a mapping of service identifier to official release notes RSS feed URL."""
     feeds = {}
-    for key, meta in WATCHED_SERVICES.items():
-        if "release_feed_url" in meta:
-            feeds[key] = meta["release_feed_url"]
+    for key in WATCHED_SERVICES:
+        urls = get_release_feed_urls(key)
+        if urls:
+            feeds[key] = urls[0]
     return feeds

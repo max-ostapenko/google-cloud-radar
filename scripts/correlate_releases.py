@@ -19,9 +19,17 @@ import urllib.request
 import xml.etree.ElementTree as ET
 
 try:
-    from scripts.taxonomy import get_release_feed_url, get_official_release_feeds
+    from scripts.taxonomy import (
+        get_release_feed_url,
+        get_release_feed_urls,
+        get_official_release_feeds,
+    )
 except ImportError:
-    from taxonomy import get_release_feed_url, get_official_release_feeds  # type: ignore[import-not-found, no-redef]
+    from taxonomy import (  # type: ignore[import-not-found, no-redef]
+        get_release_feed_url,
+        get_release_feed_urls,
+        get_official_release_feeds,
+    )
 
 OFFICIAL_RELEASE_FEEDS = get_official_release_feeds()
 
@@ -37,6 +45,32 @@ SERVICE_AFFINITY_KEYWORDS = {
 }
 
 
+def load_release_archive(archive_path: str) -> dict[str, list[dict]]:
+    """Loads historical release notes archive from JSON disk file."""
+    if os.path.exists(archive_path):
+        try:
+            with open(archive_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return data
+        except Exception as e:
+            print(f"⚠️ Warning loading release archive: {e}", file=sys.stderr)
+    return {}
+
+
+def save_release_archive(archive_path: str, archive_data: dict[str, list[dict]]) -> None:
+    """Saves release notes archive to disk."""
+    try:
+        dir_name = os.path.dirname(os.path.abspath(archive_path))
+        if dir_name:
+            os.makedirs(dir_name, exist_ok=True)
+        with open(archive_path, "w", encoding="utf-8") as f:
+            json.dump(archive_data, f, indent=2, ensure_ascii=False)
+            f.write("\n")
+    except Exception as e:
+        print(f"⚠️ Warning saving release archive: {e}", file=sys.stderr)
+
+
 def log_feed_warning(service_key: str, feed_url: str, message: str) -> None:
     """Logs a formatted warning to stderr and emits a GitHub Actions warning annotation if in CI."""
     warn_text = f"⚠️ [FEED_HEALTH] {service_key or 'Feed'}: {message} ({feed_url})"
@@ -47,8 +81,11 @@ def log_feed_warning(service_key: str, feed_url: str, message: str) -> None:
         print(f"::warning title={title}::{message} at {feed_url}")
 
 
-def fetch_feed_entries(feed_url: str, service_key: str = "") -> list:
+def fetch_feed_entries(
+    feed_url: str, service_key: str = "", archive: Optional[dict] = None
+) -> list:
     """Fetches and parses an RSS/Atom release notes feed, caching results per run.
+    Merges live entries with persistent archive so historical notes beyond Google's 30-item limit are preserved.
     Monitors feed health (HTTP errors, empty content) and alerts accordingly.
     """
     if feed_url in _FEED_CACHE:
@@ -65,31 +102,50 @@ def fetch_feed_entries(feed_url: str, service_key: str = "") -> list:
             "User-Agent": "GCP-Discovery-Radar/1.0 (+https://google-cloud-radar.com)"
         },
     )
+    live_entries = []
     try:
         with urllib.request.urlopen(req, timeout=12) as resp:
             status_code = resp.getcode()
             if status_code != 200:
                 log_feed_warning(service_key, feed_url, f"Unexpected HTTP status {status_code}")
                 _FEED_HEALTH[feed_url] = {"status": "error", "error": f"HTTP {status_code}", "services": [service_key]}
-                _FEED_CACHE[feed_url] = []
-                return []
-            xml_text = resp.read().decode("utf-8")
-
-        entries = parse_feed_xml(xml_text)
-        if not entries:
-            log_feed_warning(service_key, feed_url, "Feed returned 200 OK but contained 0 parseable entries")
-            _FEED_HEALTH[feed_url] = {"status": "empty", "services": [service_key]}
-        else:
-            _FEED_HEALTH[feed_url] = {"status": "healthy", "count": len(entries), "services": [service_key]}
-
-        _FEED_CACHE[feed_url] = entries
-        return entries
+            else:
+                xml_text = resp.read().decode("utf-8")
+                live_entries = parse_feed_xml(xml_text)
+                if not live_entries:
+                    log_feed_warning(service_key, feed_url, "Feed returned 200 OK but contained 0 parseable entries")
+                    _FEED_HEALTH[feed_url] = {"status": "empty", "services": [service_key]}
+                else:
+                    _FEED_HEALTH[feed_url] = {"status": "healthy", "count": len(live_entries), "services": [service_key]}
     except Exception as e:
         err_msg = str(e)
         log_feed_warning(service_key, feed_url, f"Network/HTTP error: {err_msg}")
         _FEED_HEALTH[feed_url] = {"status": "error", "error": err_msg, "services": [service_key]}
-        _FEED_CACHE[feed_url] = []
-        return []
+
+    # Merge with persistent archive
+    combined_entries = []
+    seen_ids = set()
+
+    # Add live entries first
+    for e in live_entries:
+        uid = e.get("url") or f"{e.get('date')}:{e.get('title')}"
+        if uid not in seen_ids:
+            seen_ids.add(uid)
+            combined_entries.append(e)
+
+    # Add historical entries from archive
+    if archive is not None and feed_url in archive:
+        for e in archive[feed_url]:
+            uid = e.get("url") or f"{e.get('date')}:{e.get('title')}"
+            if uid not in seen_ids:
+                seen_ids.add(uid)
+                combined_entries.append(e)
+
+    if archive is not None and combined_entries:
+        archive[feed_url] = combined_entries
+
+    _FEED_CACHE[feed_url] = combined_entries
+    return combined_entries
 
 
 def parse_feed_xml(xml_text: str) -> list:
@@ -134,6 +190,13 @@ def parse_feed_xml(xml_text: str) -> list:
                 link_elem = entry.find("link")
                 if link_elem is not None:
                     link_url = link_elem.text or link_elem.attrib.get("href", "")
+
+            # Normalize Google doc URLs: Google's feed generator erroneously inserts /docs/ for gemini-enterprise-agent-platform
+            if "gemini-enterprise-agent-platform/docs/release-notes" in link_url:
+                link_url = link_url.replace(
+                    "gemini-enterprise-agent-platform/docs/release-notes",
+                    "gemini-enterprise-agent-platform/release-notes",
+                )
 
             # Date (Atom updated/published or RSS pubDate/dc:date)
             pub_elem = None
@@ -208,13 +271,68 @@ def calculate_lead_time(canary_date_str: str, release_date_str: str) -> int:
     return max(0, delta)
 
 
+GENERIC_DOMAIN_WORDS = {
+    "a", "an", "the", "and", "or", "in", "on", "for", "with", "to", "of", "at", "by", "from",
+    "api", "update", "updates", "new", "support", "supports", "supported",
+    "breaking", "change", "changes", "changed", "feature", "features",
+    "service", "services", "version", "beta", "alpha", "v1", "v2", "v3",
+    "google", "cloud", "platform", "field", "fields", "resource", "resources",
+    "method", "methods", "schema", "introduces", "adds", "added", "removes", "removed",
+    "deprecated", "deprecation", "deprecations", "clarified", "clarifies", "clarification",
+    "agent", "agents", "safety", "client", "runtime", "runtimes", "system", "systems",
+    "model", "models", "workflow", "workflows", "controls", "management",
+    "developer", "developers", "preview", "general", "availability", "ga",
+    "configuration", "config", "endpoint", "endpoints", "request", "requests", "response", "responses",
+    "data", "policy", "policies", "iam", "reports", "admin", "workspace", "organization", "project",
+    "user", "users", "group", "groups", "call", "calls", "parameters", "parameter", "properties", "property",
+    "query", "queries", "result", "results", "table", "tables", "file", "files", "item", "items", "code"
+}
+
+GENERIC_METHOD_VERBS = {
+    "get", "set", "list", "create", "delete", "update", "patch", "search",
+    "export", "import", "batch", "cancel", "run", "read", "write", "call"
+}
+
+
+def extract_bullets(content_html: str, title: str = "") -> list[str]:
+    """Extracts individual release note bullets/paragraphs to prevent cross-bullet false matches."""
+    chunks = re.split(r"</?(?:li|p|h[2-4]|tr|section|article)\b[^>]*>", content_html, flags=re.IGNORECASE)
+    cleaned = []
+    if title and len(title) > 10:
+        cleaned.append(title.lower())
+    for c in chunks:
+        text = re.sub(r"<[^>]+>", " ", c).strip()
+        text = re.sub(r"\s+", " ", text)
+        if len(text) >= 20:
+            cleaned.append(text.lower())
+    return cleaned
+
+
+def extract_technical_phrases(title: str) -> list[str]:
+    """Extracts distinctive 2-word and 3-word technical phrases from title."""
+    words = re.findall(r"[A-Za-z0-9_]+", title.lower())
+    phrases = []
+    for i in range(len(words) - 1):
+        w1, w2 = words[i], words[i+1]
+        if w1 not in GENERIC_DOMAIN_WORDS and w2 not in GENERIC_DOMAIN_WORDS and len(w1) >= 4 and len(w2) >= 4:
+            phrases.append(f"{w1} {w2}")
+    for i in range(len(words) - 2):
+        w1, w2, w3 = words[i], words[i+1], words[i+2]
+        if (w1 not in GENERIC_DOMAIN_WORDS or w2 not in GENERIC_DOMAIN_WORDS) and w3 not in GENERIC_DOMAIN_WORDS:
+            p = f"{w1} {w2} {w3}"
+            if len(p) >= 12:
+                phrases.append(p)
+    return phrases
+
+
 def match_change_against_releases(
     change_meta: dict, release_entries: list, max_lead_days: int = 120, service_key: str = ""
 ) -> dict | None:
-    """Matches a canary change entry against official release entries.
-    Strictly requires release entries to have been published ON or AFTER the canary detection date
-    (with at most 1 day timezone tolerance) and within max_lead_days.
-    When matching multi-service feeds (e.g. Workspace Updates blog), enforces service affinity.
+    """Matches a canary change entry against official release entries with strict confidence.
+    Prioritizes high confidence:
+    1. Specific technical RPC method or qualified resource name in the release bullet.
+    2. Exact multi-word technical keyphrase match inside a single release bullet.
+    3. Distinctive keyword cluster (>= 3 rare domain words) strictly within the SAME bullet.
     """
     if not release_entries:
         return None
@@ -223,23 +341,20 @@ def match_change_against_releases(
     if not canary_date:
         return None
 
-    title_words = set(re.findall(r"\w+", change_meta["title"].lower()))
-    stop_words = {
-        "a", "an", "the", "and", "or", "in", "on", "for", "with", "to", "of", "at", "by", "from",
-        "api", "update", "updates", "new", "support", "supports", "supported",
-        "breaking", "change", "changes", "changed", "feature", "features",
-        "service", "services", "version", "beta", "alpha", "v1", "v2", "v3",
-        "google", "cloud", "platform", "field", "fields", "resource", "resources",
-        "method", "methods", "schema", "introduces", "adds", "added", "removes", "removed",
-        "deprecated", "deprecation", "deprecations",
-    }
-    significant_words = {w for w in title_words if len(w) > 3 and w not in stop_words}
-
+    title = change_meta.get("title", "").lower()
+    technical_phrases = extract_technical_phrases(change_meta.get("title", ""))
+    rare_words = [w for w in re.findall(r"[a-z0-9_]+", title) if len(w) >= 5 and w not in GENERIC_DOMAIN_WORDS]
     methods = [m.lower() for m in change_meta.get("extracted_methods", [])]
-    generic_method_verbs = {
-        "get", "set", "list", "create", "delete", "update", "patch", "search",
-        "export", "import", "batch", "cancel", "run", "read", "write"
-    }
+
+    # Pre-qualify RPC methods
+    qual_methods = []
+    for m in methods:
+        parts = m.split(".")
+        short_m = parts[-1]
+        if short_m in GENERIC_METHOD_VERBS and len(parts) >= 2:
+            qual_methods.append(f"{parts[-2]}.{short_m}")
+        elif len(short_m) >= 6 and short_m not in GENERIC_METHOD_VERBS:
+            qual_methods.append(short_m)
 
     valid_candidates = []
 
@@ -249,71 +364,34 @@ def match_change_against_releases(
             continue
 
         delta_days = (rel_date - canary_date).days
-        # Must be released ON or AFTER canary date (allowing 1 day timezone margin), up to max_lead_days
         if delta_days < -1 or delta_days > max_lead_days:
             continue
 
-        rel_text = f"{rel.get('title', '')} {rel.get('content', '')}".lower()
-
+        bullets = extract_bullets(rel.get("content", ""), rel.get("title", ""))
         matched = False
 
-        # 1. Exact RPC Method Match (skip generic verbs unless qualified)
-        for method in methods:
-            parts = method.split(".")
-            short_method = parts[-1]
-            if short_method in generic_method_verbs and len(parts) >= 2:
-                target_check = f"{parts[-2]}.{short_method}"
-            else:
-                target_check = short_method
-
-            if len(target_check) > 3 and target_check in rel_text:
-                matched = True
+        for b in bullets:
+            # 1. Distinctive RPC Method Match in this bullet
+            for qm in qual_methods:
+                if re.search(r"\b" + re.escape(qm) + r"\b", b):
+                    matched = True
+                    break
+            if matched:
                 break
 
-        # 2. Significant Title Keywords Match
-        if not matched and significant_words:
-            # Check service affinity for multi-service feeds (e.g. Workspace updates blog)
-            if service_key and service_key in SERVICE_AFFINITY_KEYWORDS:
-                has_service_affinity = any(
-                    re.search(r"\b" + re.escape(ak) + r"\b", rel_text)
-                    for ak in SERVICE_AFFINITY_KEYWORDS[service_key]
-                )
-                if not has_service_affinity:
-                    continue
+            # 2. Multi-word technical phrase in this bullet
+            for tp in technical_phrases:
+                if tp in b:
+                    matched = True
+                    break
+            if matched:
+                break
 
-            rel_title = rel.get("title", "").lower()
-            rel_content = rel.get("content", "").lower()
-
-            # A: If the release entry's TITLE contains >= 2 significant words -> Match!
-            title_matched_words = [
-                w for w in significant_words if re.search(r"\b" + re.escape(w) + r"\b", rel_title)
-            ]
-            if len(title_matched_words) >= 2 or (len(significant_words) == 1 and len(title_matched_words) == 1):
+            # 3. >= 3 rare domain words in this single bullet
+            b_words = [w for w in rare_words if re.search(r"\b" + re.escape(w) + r"\b", b)]
+            if len(b_words) >= 3:
                 matched = True
-
-            # B: If matching in CONTENT:
-            # For short entries (standard release notes <= 600 chars), require >= 2 distinct words.
-            # For long articles (blog posts > 600 chars), require >= 3 distinct words or a 2-word bigram phrase.
-            elif not matched:
-                content_matched_words = [
-                    w for w in significant_words if re.search(r"\b" + re.escape(w) + r"\b", rel_content)
-                ]
-                if len(rel_content) <= 600:
-                    if len(content_matched_words) >= 2 or (len(significant_words) == 1 and len(content_matched_words) == 1):
-                        matched = True
-                else:
-                    if len(content_matched_words) >= 3:
-                        matched = True
-                    else:
-                        title_clean_words = [
-                            w for w in re.findall(r"\w+", change_meta["title"].lower())
-                            if len(w) > 3 and w not in stop_words
-                        ]
-                        for i in range(len(title_clean_words) - 1):
-                            bigram = f"{title_clean_words[i]} {title_clean_words[i+1]}"
-                            if len(bigram) > 8 and bigram in rel_content:
-                                matched = True
-                                break
+                break
 
         if matched:
             valid_candidates.append((delta_days, rel))
@@ -400,10 +478,15 @@ def run_correlation(
     project_id: str = "",
     database_id: str = "",
     token: str = "",
+    archive_path: Optional[str] = None,
 ) -> list:
     """Runs the correlation engine across all canary changes in data_dir."""
     files = sorted(glob.glob(os.path.join(data_dir, "*.json")))
 
+    if archive_path is None:
+        archive_path = os.path.join(os.path.dirname(data_dir), "release_notes_archive.json")
+
+    archive = load_release_archive(archive_path) if archive_path else {}
     matched_results = []
 
     for file_path in files:
@@ -429,16 +512,23 @@ def run_correlation(
             "extracted_methods": extracted_methods,
         }
 
-        # Match against release feeds
+        # Match against release feeds (supports multi-feed mapping)
         service_key = slug.split("-")[3] if len(slug.split("-")) > 3 else ""
-        feed_url = get_release_feed_url(service_key) or OFFICIAL_RELEASE_FEEDS.get(
-            service_key
-        )
+        feed_urls = get_release_feed_urls(service_key)
+        if not feed_urls and service_key in OFFICIAL_RELEASE_FEEDS:
+            feed_urls = [OFFICIAL_RELEASE_FEEDS[service_key]]
+
         release_entries = []
         if custom_releases and service_key in custom_releases:
             release_entries = custom_releases[service_key]
-        elif feed_url:
-            release_entries = fetch_feed_entries(feed_url, service_key=service_key)
+        elif feed_urls:
+            seen_uids = set()
+            for u in feed_urls:
+                for entry in fetch_feed_entries(u, service_key=service_key, archive=archive):
+                    uid = entry.get("url") or f"{entry.get('date')}:{entry.get('title')}"
+                    if uid not in seen_uids:
+                        seen_uids.add(uid)
+                        release_entries.append(entry)
 
         match = match_change_against_releases(
             change_meta, release_entries, service_key=service_key
@@ -486,6 +576,10 @@ def run_correlation(
             except Exception as e:
                 print(f"⚠️ Error syncing index.json: {e}", file=sys.stderr)
 
+    # Persist release notes archive
+    if archive and archive_path:
+        save_release_archive(archive_path, archive)
+
     # Summary of feed health
     total_feeds = len(_FEED_HEALTH)
     healthy_feeds = sum(1 for h in _FEED_HEALTH.values() if h.get("status") == "healthy")
@@ -524,6 +618,11 @@ def main():
         "--data-dir", default="data/changes", help="Path to data/changes directory"
     )
     parser.add_argument(
+        "--archive-path",
+        default="data/release_notes_archive.json",
+        help="Path to persistent release notes archive JSON",
+    )
+    parser.add_argument(
         "--project", default="gcp-cloud-radar", help="GCP Project ID for Firestore sync"
     )
     parser.add_argument("--database", default="radar", help="Firestore database ID")
@@ -543,7 +642,11 @@ def main():
 
     print(f"📡 Starting Canary -> GA Release Correlator on '{args.data_dir}'...")
     results = run_correlation(
-        args.data_dir, project_id=args.project, database_id=args.database, token=token
+        args.data_dir,
+        project_id=args.project,
+        database_id=args.database,
+        token=token,
+        archive_path=args.archive_path,
     )
     print(f"✨ Finished! Correlated {len(results)} new releases.")
 
