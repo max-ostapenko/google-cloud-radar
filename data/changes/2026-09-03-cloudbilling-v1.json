@@ -1,0 +1,25 @@
+{
+  "id": "2026-09-03-cloudbilling-v1",
+  "slug": "2026-09-03-cloudbilling-v1",
+  "date": "2026-09-03",
+  "api": "cloudbilling.v1",
+  "service": "Cloud Billing",
+  "service_name": "Cloud Billing",
+  "title": "Cloud Billing adds Agent/Task model with breaking changes",
+  "summary": "The Cloud Billing API is shifting toward an asynchronous, agent-based interaction model with new message and task resources, while enforcing stricter parameter requirements.",
+  "details": "This update introduces a significant new interaction paradigm via the `message` and `tasks` resources. Developers can now use `message.send` for blocking agent requests and `message.stream` for real-time event streams. To manage these operations, new task methods including `tasks.get`, `tasks.cancel`, and `tasks.subscribe` (a streaming listener) have been added. Note that this is a breaking change: the `name` and `parent` parameters are now strictly required across several methods. Additionally, `tasks.get` now supports a `historyLength` parameter and an experimental `tenant` parameter for multi-tenant environments.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "Breaking Change",
+    "Billing",
+    "Streaming",
+    "Agents"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": null,
+  "generated_at": "2026-09-03T03:42:47.501923+00:00"
+}
