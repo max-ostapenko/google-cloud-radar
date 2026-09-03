@@ -17,6 +17,7 @@ import re
 import sys
 import urllib.request
 import xml.etree.ElementTree as ET
+from typing import Any, Optional
 
 try:
     from scripts.taxonomy import (
