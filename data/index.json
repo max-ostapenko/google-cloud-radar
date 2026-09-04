@@ -1,5 +1,46 @@
 [
   {
+    "id": "2026-09-04-aiplatform-v1beta1",
+    "slug": "2026-09-04-aiplatform-v1beta1",
+    "date": "2026-09-04",
+    "api": "aiplatform.v1beta1",
+    "service": "Vertex AI",
+    "service_name": "Vertex AI",
+    "title": "Vertex AI: Breaking Parameter Changes & Auth Scope Shift",
+    "summary": "Vertex AI v1beta1 enforces mandatory name and parent parameters and transitions many resource fields to read-only status. Additionally, the API is shifting its primary OAuth scope to the service-specific aiplatform scope.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking-change",
+      "iam",
+      "vertex-ai"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-04T09:24:25.588555+00:00"
+  },
+  {
+    "id": "2026-09-04-aiplatform-v1",
+    "slug": "2026-09-04-aiplatform-v1",
+    "date": "2026-09-04",
+    "api": "aiplatform.v1",
+    "service": "Vertex AI",
+    "service_name": "Vertex AI",
+    "title": "Vertex AI shifts to granular OAuth scopes",
+    "summary": "Vertex AI is promoting the specific `aiplatform` OAuth scope as the primary authorization method across most resources, while finalizing the enforcement of the `name` parameter as strictly required.",
+    "impact": "medium",
+    "breaking": true,
+    "interesting_score": 7,
+    "tags": [
+      "security",
+      "iam",
+      "breaking-change",
+      "vertex-ai"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-04T09:24:25.586269+00:00"
+  },
+  {
     "id": "2026-09-04-admin-directory-v1",
     "slug": "2026-09-04-admin-directory-v1",
     "date": "2026-09-04",

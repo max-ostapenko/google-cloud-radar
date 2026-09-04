@@ -1,0 +1,25 @@
+{
+  "id": "2026-09-04-aiplatform-v1",
+  "slug": "2026-09-04-aiplatform-v1",
+  "date": "2026-09-04",
+  "api": "aiplatform.v1",
+  "service": "Vertex AI",
+  "service_name": "Vertex AI",
+  "title": "Vertex AI shifts to granular OAuth scopes",
+  "summary": "Vertex AI is promoting the specific `aiplatform` OAuth scope as the primary authorization method across most resources, while finalizing the enforcement of the `name` parameter as strictly required.",
+  "details": "A major update to the authorization model introduces `https://www.googleapis.com/auth/aiplatform` as the primary scope for methods across `customJobs`, `dataLabelingJobs`, `datasets`, `endpoints`, and `featureGroups`. While the broad `cloud-platform` scope remains supported, it has been moved to a secondary position in the discovery document, signaling a shift toward the Principle of Least Privilege. Additionally, this update confirms the breaking change where the `name` parameter is now strictly required across these resource methods, requiring developers to ensure all API calls include the full resource name.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 7,
+  "tags": [
+    "security",
+    "iam",
+    "breaking-change",
+    "vertex-ai"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": null,
+  "generated_at": "2026-09-04T09:24:25.586269+00:00"
+}
