@@ -1,5 +1,25 @@
 [
   {
+    "id": "2026-09-04-admin-directory-v1",
+    "slug": "2026-09-04-admin-directory-v1",
+    "date": "2026-09-04",
+    "api": "admin.directory_v1",
+    "service": "Admin SDK Directory API",
+    "service_name": "Admin SDK Directory API",
+    "title": "Time-bound Role Assignments in Directory API",
+    "summary": "The Directory API now supports expiring role assignments, allowing administrators to set a specific timestamp for when a user's role should be automatically revoked.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "security",
+      "iam",
+      "workspace"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-04T03:44:27.802791+00:00"
+  },
+  {
     "id": "2026-09-03-drive-v3",
     "slug": "2026-09-03-drive-v3",
     "date": "2026-09-03",

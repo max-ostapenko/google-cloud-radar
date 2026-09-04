@@ -1,0 +1,24 @@
+{
+  "id": "2026-09-04-admin-directory-v1",
+  "slug": "2026-09-04-admin-directory-v1",
+  "date": "2026-09-04",
+  "api": "admin.directory_v1",
+  "service": "Admin SDK Directory API",
+  "service_name": "Admin SDK Directory API",
+  "title": "Time-bound Role Assignments in Directory API",
+  "summary": "The Directory API now supports expiring role assignments, allowing administrators to set a specific timestamp for when a user's role should be automatically revoked.",
+  "details": "A new `ExpirationDetails` object has been added to the `RoleAssignment` schema, containing an `expireTime` field (ISO 8601 timestamp). By including this in a `RoleAssignment` resource, developers can now implement temporary access controls and automated privilege revocation directly through the API, reducing the need for external cleanup scripts or manual intervention.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "security",
+    "iam",
+    "workspace"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": null,
+  "generated_at": "2026-09-04T03:44:27.802791+00:00"
+}
