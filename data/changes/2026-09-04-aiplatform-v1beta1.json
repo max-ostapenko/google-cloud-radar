@@ -1,0 +1,24 @@
+{
+  "id": "2026-09-04-aiplatform-v1beta1",
+  "slug": "2026-09-04-aiplatform-v1beta1",
+  "date": "2026-09-04",
+  "api": "aiplatform.v1beta1",
+  "service": "Vertex AI",
+  "service_name": "Vertex AI",
+  "title": "Vertex AI: Breaking Parameter Changes & Auth Scope Shift",
+  "summary": "Vertex AI v1beta1 enforces mandatory name and parent parameters and transitions many resource fields to read-only status. Additionally, the API is shifting its primary OAuth scope to the service-specific aiplatform scope.",
+  "details": "This update introduces several breaking changes: the 'name' and 'parent' parameters are now strictly required across multiple methods, requiring updates to any client calls that previously omitted them. Furthermore, a wide range of properties in the A2ATaskRecord schema—including status, history, artifacts, createTime, and expireTime—have been marked as read-only/immutable, as has the useGkeTd field in SandboxEnvironmentSnapshot. Client-side attempts to modify these fields will now fail.\n\nOn the authentication front, Vertex AI is transitioning its primary OAuth scope. Methods for Agents, Apps, Datasets, and Endpoints now prioritize the 'https://www.googleapis.com/auth/aiplatform' scope over the generic 'cloud-platform' scope. While the generic scope is often still listed as a secondary option, developers should verify their service account permissions and client library configurations to ensure they are using the most specific scope recommended for Vertex AI operations.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "iam",
+    "vertex-ai"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": null,
+  "generated_at": "2026-09-04T09:24:25.588555+00:00"
+}
