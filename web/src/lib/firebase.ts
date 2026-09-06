@@ -24,6 +24,7 @@ import {
   deleteDoc,
   query,
   orderBy,
+  limit,
   onSnapshot,
   serverTimestamp,
   increment,
@@ -175,8 +176,18 @@ export interface CommentItem {
   created_at: any;
 }
 
+interface DebounceReactionItem {
+  timer: ReturnType<typeof setTimeout>;
+  initialValue: boolean;
+  targetValue: boolean;
+  resolve: (val: boolean) => void;
+  reject: (err: any) => void;
+}
+
+const reactionDebounceMap = new Map<string, DebounceReactionItem>();
+
 /**
- * Toggle user impact reaction with local fallback & atomic counter
+ * Toggle user impact reaction with local fallback, 400ms debouncing, and atomic counter
  */
 export async function toggleUserReaction(
   changeId: string,
@@ -187,29 +198,83 @@ export async function toggleUserReaction(
   const nextValue = !currentValue;
   const storageKey = `gcp_radar_reactions_${changeId}`;
 
-  // Always update local storage reaction map
+  // 1. Always update local storage reaction map immediately for instant feedback
   try {
     const userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
     userVotes[type] = nextValue;
     localStorage.setItem(storageKey, JSON.stringify(userVotes));
   } catch {}
 
-  // If local environment, return immediately without calling prod Firestore
-  if (isLocalEnvironment()) {
+  // 2. If local environment or invalid user, return immediately without calling prod Firestore
+  if (isLocalEnvironment() || !user?.uid) {
     return nextValue;
+  }
+
+  // 3. Debounce and coalesce rapid clicks into a single Firestore write
+  const debounceKey = `${changeId}_${user.uid}_${type}`;
+
+  return new Promise<boolean>((resolve, reject) => {
+    const existing = reactionDebounceMap.get(debounceKey);
+
+    if (existing) {
+      clearTimeout(existing.timer);
+      existing.targetValue = nextValue;
+      const prevResolve = existing.resolve;
+      existing.resolve = (val: boolean) => {
+        prevResolve(val);
+        resolve(val);
+      };
+
+      existing.timer = setTimeout(async () => {
+        reactionDebounceMap.delete(debounceKey);
+        await executeReactionSync(changeId, user, type, existing.initialValue, existing.targetValue)
+          .then(existing.resolve)
+          .catch(existing.reject);
+      }, 400);
+    } else {
+      const item: DebounceReactionItem = {
+        timer: null as any,
+        initialValue: currentValue,
+        targetValue: nextValue,
+        resolve,
+        reject,
+      };
+
+      item.timer = setTimeout(async () => {
+        reactionDebounceMap.delete(debounceKey);
+        await executeReactionSync(changeId, user, type, item.initialValue, item.targetValue)
+          .then(item.resolve)
+          .catch(item.reject);
+      }, 400);
+
+      reactionDebounceMap.set(debounceKey, item);
+    }
+  });
+}
+
+async function executeReactionSync(
+  changeId: string,
+  user: User | any,
+  type: ReactionType,
+  initialValue: boolean,
+  targetValue: boolean
+): Promise<boolean> {
+  // If user toggled on and off rapidly back to initial state, zero writes required!
+  if (targetValue === initialValue) {
+    return targetValue;
   }
 
   try {
     const dbInstance = getFirebaseDb();
     const reactionDocRef = doc(dbInstance, 'changes', changeId, 'reactions', user.uid);
     const changeDocRef = doc(dbInstance, 'changes', changeId);
-    const delta = nextValue ? 1 : -1;
+    const delta = targetValue ? 1 : -1;
 
     await setDoc(
       reactionDocRef,
       {
         user_id: user.uid,
-        [type]: nextValue,
+        [type]: targetValue,
         updated_at: serverTimestamp(),
       },
       { merge: true }
@@ -225,10 +290,10 @@ export async function toggleUserReaction(
       { merge: true }
     );
 
-    return nextValue;
+    return targetValue;
   } catch (err) {
     console.warn('Firestore reaction sync fallback (offline/permission):', err);
-    return nextValue;
+    return targetValue;
   }
 }
 
@@ -380,7 +445,7 @@ export function listenToComments(
   try {
     const dbInstance = getFirebaseDb();
     const commentsCol = collection(dbInstance, 'changes', changeId, 'comments');
-    const q = query(commentsCol, orderBy('created_at', 'desc'));
+    const q = query(commentsCol, orderBy('created_at', 'desc'), limit(25));
 
     return onSnapshot(
       q,
@@ -420,13 +485,17 @@ export async function addComment(
   content: string
 ): Promise<CommentItem> {
   const localCommentsKey = `gcp_radar_comments_${changeId}`;
+  const trimmedContent = content.trim().slice(0, 1000);
+  const authorName = (user.displayName || 'Google Cloud Engineer').slice(0, 80);
+  const authorPhoto = (user.photoURL || '').slice(0, 500);
+
   const newComment: CommentItem = {
     id: `comment_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     change_id: changeId,
     author_id: user.uid || 'dev-user',
-    author_name: user.displayName || 'Google Cloud Engineer',
-    author_photo: user.photoURL || '',
-    content: content.trim(),
+    author_name: authorName,
+    author_photo: authorPhoto,
+    content: trimmedContent,
     created_at: new Date().toISOString(),
   };
 
@@ -454,9 +523,9 @@ export async function addComment(
     const docRef = await addDoc(commentsCol, {
       change_id: changeId,
       author_id: user.uid,
-      author_name: user.displayName || 'Google Cloud Engineer',
-      author_photo: user.photoURL || '',
-      content: content.trim(),
+      author_name: authorName,
+      author_photo: authorPhoto,
+      content: trimmedContent,
       created_at: serverTimestamp(),
     });
 
@@ -600,13 +669,13 @@ export async function saveUserAlertPreferences(
       docRef,
       {
         uid: user.uid,
-        email: user.email || '',
-        displayName: user.displayName || '',
-        photoURL: user.photoURL || '',
+        email: (user.email || '').slice(0, 120),
+        displayName: (user.displayName || '').slice(0, 100),
+        photoURL: (user.photoURL || '').slice(0, 500),
         breakingAlerts: fullPrefs.breakingAlerts,
         weeklyDigest: fullPrefs.weeklyDigest,
         allServices: fullPrefs.allServices,
-        watchedServices: fullPrefs.watchedServices,
+        watchedServices: (fullPrefs.watchedServices || []).slice(0, 100),
         updated_at: serverTimestamp(),
       },
       { merge: true }
