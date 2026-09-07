@@ -469,7 +469,8 @@
     "tags": [
       "breaking change",
       "google play",
-      "android"
+      "android",
+      "android publisher"
     ],
     "extracted_methods": [],
     "status": "released",

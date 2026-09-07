@@ -29,6 +29,12 @@ class TestTaxonomy(unittest.TestCase):
         self.assertEqual(
             taxonomy.get_ecosystem_for_service("androidpublisher"), "Android"
         )
+        self.assertEqual(
+            taxonomy.get_ecosystem_for_service("Android Publisher"), "Android"
+        )
+        self.assertEqual(
+            taxonomy.get_ecosystem_for_service("Google Play Developer API"), "Android"
+        )
         self.assertEqual(taxonomy.get_ecosystem_for_service("safebrowsing"), "More")
 
     def test_get_category_for_service(self):
@@ -41,6 +47,15 @@ class TestTaxonomy(unittest.TestCase):
             taxonomy.get_category_for_service("cloudbilling"), "FinOps & Billing"
         )
         self.assertEqual(taxonomy.get_category_for_service("tagmanager"), "Tag Manager")
+        self.assertEqual(
+            taxonomy.get_category_for_service("androidpublisher"), "Android"
+        )
+        self.assertEqual(
+            taxonomy.get_category_for_service("Android Publisher"), "Android"
+        )
+        self.assertEqual(
+            taxonomy.get_category_for_service("Google Play Developer API"), "Android"
+        )
 
     def test_get_quadrant_for_service(self):
         self.assertEqual(taxonomy.get_quadrant_for_service("aiplatform"), "ai_ml")
@@ -49,6 +64,12 @@ class TestTaxonomy(unittest.TestCase):
         )
         self.assertEqual(
             taxonomy.get_quadrant_for_service("cloudbilling"), "security_finops"
+        )
+        self.assertEqual(
+            taxonomy.get_quadrant_for_service("Android Publisher"), "infra_compute"
+        )
+        self.assertEqual(
+            taxonomy.get_quadrant_for_service("Google Play Developer API"), "infra_compute"
         )
 
     def test_determine_radar_ring(self):

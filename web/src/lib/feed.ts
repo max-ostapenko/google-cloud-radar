@@ -97,37 +97,53 @@ export interface WatchedServiceConfig {
 
 const watchedServices = taxonomyData.watched_services as Record<string, WatchedServiceConfig>;
 
-const SERVICE_META_MAP: Record<string, { ecosystem: Ecosystem; category: ServiceCategory }> = {};
+const SERVICE_META_MAP: Record<string, { ecosystem: Ecosystem; category: ServiceCategory; name: string }> = {};
 
 for (const [key, meta] of Object.entries(watchedServices)) {
   const itemMeta = {
     ecosystem: meta.ecosystem,
     category: meta.category,
+    name: meta.name || key,
   };
   SERVICE_META_MAP[key.toLowerCase()] = itemMeta;
+  const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (cleanKey) SERVICE_META_MAP[cleanKey] = itemMeta;
+
   if (meta.name) {
     SERVICE_META_MAP[meta.name.toLowerCase()] = itemMeta;
+    const cleanName = meta.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (cleanName) SERVICE_META_MAP[cleanName] = itemMeta;
   }
+}
+
+export function findServiceMeta(serviceOrApi: string): { ecosystem: Ecosystem; category: ServiceCategory; name: string } | null {
+  if (!serviceOrApi) return null;
+  const lower = serviceOrApi.toLowerCase().trim();
+  if (SERVICE_META_MAP[lower]) return SERVICE_META_MAP[lower];
+
+  const clean = lower.replace(/[^a-z0-9]/g, '');
+  if (clean && SERVICE_META_MAP[clean]) return SERVICE_META_MAP[clean];
+
+  for (const [key, meta] of Object.entries(SERVICE_META_MAP)) {
+    if (lower.includes(key)) {
+      return meta;
+    }
+    const cleanKey = key.replace(/[^a-z0-9]/g, '');
+    if (clean && cleanKey && cleanKey.length >= 4 && clean.includes(cleanKey)) {
+      return meta;
+    }
+  }
+  return null;
 }
 
 export function getEcosystemForService(serviceOrApi: string): Ecosystem {
-  const lower = (serviceOrApi || '').toLowerCase();
-  for (const [key, meta] of Object.entries(SERVICE_META_MAP)) {
-    if (lower.includes(key)) {
-      return meta.ecosystem;
-    }
-  }
-  return 'Google Cloud';
+  const meta = findServiceMeta(serviceOrApi);
+  return meta?.ecosystem || 'Google Cloud';
 }
 
 export function getCategoryForService(serviceOrApi: string): ServiceCategory {
-  const lower = (serviceOrApi || '').toLowerCase();
-  for (const [key, meta] of Object.entries(SERVICE_META_MAP)) {
-    if (lower.includes(key)) {
-      return meta.category;
-    }
-  }
-  return 'Data Analytics';
+  const meta = findServiceMeta(serviceOrApi);
+  return meta?.category || 'Data Analytics';
 }
 
 export interface DiscoveryDirectoryItem {
@@ -260,7 +276,7 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       const f = doc.fields || {};
       const id = f.id?.stringValue || f.slug?.stringValue || '';
       const service = f.service_name?.stringValue || f.service?.stringValue || 'Google Cloud';
-      const service_id = f.service_id?.stringValue || id.toLowerCase();
+      const service_id = f.service_id?.stringValue || slugify(service);
       const api = f.api?.stringValue || '';
       const version = f.version?.stringValue || (api.includes('.') ? api.split('.').pop() : 'v1');
       const rawDate = f.first_detected_at?.timestampValue || f.first_detected_at?.stringValue || f.date?.stringValue || id.slice(0, 10);

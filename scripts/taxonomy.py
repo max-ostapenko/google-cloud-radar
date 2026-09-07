@@ -21,6 +21,7 @@ Defines a two-level hierarchy:
 """
 
 import json
+import re
 from pathlib import Path
 from typing import TypedDict, Optional
 
@@ -44,9 +45,36 @@ QUADRANT_MAP: dict[str, str] = _TAXONOMY_DATA.get("quadrant_map", {})
 WATCHED_SERVICES: dict[str, ServiceMeta] = _TAXONOMY_DATA.get("watched_services", {})
 
 
+def _find_service_meta(service_or_api: str) -> Optional[ServiceMeta]:
+    """Finds matching ServiceMeta using exact key, normalized key, or name."""
+    if not service_or_api:
+        return None
+    lower = service_or_api.lower().strip()
+    if lower in WATCHED_SERVICES:
+        return WATCHED_SERVICES[lower]
+
+    clean = re.sub(r"[^a-z0-9]", "", lower)
+
+    # 1. Exact or substring match on key
+    for key, meta in WATCHED_SERVICES.items():
+        clean_key = re.sub(r"[^a-z0-9]", "", key.lower())
+        if key in lower or (clean and clean_key and (clean == clean_key or clean_key in clean)):
+            return meta
+
+    # 2. Match on name
+    for key, meta in WATCHED_SERVICES.items():
+        name = meta.get("name", "").lower()
+        if name:
+            clean_name = re.sub(r"[^a-z0-9]", "", name)
+            if name in lower or (clean and clean_name and (clean == clean_name or clean_name in clean or clean in clean_name)):
+                return meta
+
+    return None
+
+
 def is_watched_api(api_name: str) -> bool:
     """Returns True if the API is on the watchlist."""
-    return api_name.lower() in WATCHED_SERVICES
+    return _find_service_meta(api_name) is not None
 
 
 def get_watched_api_names() -> list[str]:
@@ -56,12 +84,9 @@ def get_watched_api_names() -> list[str]:
 
 def get_ecosystem_for_service(service_or_api: str) -> str:
     """Returns top-level ecosystem (e.g. Google Cloud, Workspace, Marketing Platform, etc.)."""
-    lower = service_or_api.lower()
-    if lower in WATCHED_SERVICES:
-        return WATCHED_SERVICES[lower].get("ecosystem", "Google Cloud")
-    for key, meta in WATCHED_SERVICES.items():
-        if key in lower or meta.get("name", "").lower() in lower:
-            return meta.get("ecosystem", "Google Cloud")
+    meta = _find_service_meta(service_or_api)
+    if meta:
+        return meta.get("ecosystem", "Google Cloud")
     return "More"
 
 
@@ -70,22 +95,18 @@ def get_category_for_service(service_or_api: str) -> str:
     Classifies a service or API name into a standardized category.
     Performs exact match first, then substring matching.
     """
-    lower = service_or_api.lower()
-    if lower in WATCHED_SERVICES:
-        return WATCHED_SERVICES[lower].get("category", "Data Analytics")
-
-    for key, meta in WATCHED_SERVICES.items():
-        if key in lower or meta.get("name", "").lower() in lower:
-            return meta.get("category", "Data Analytics")
+    meta = _find_service_meta(service_or_api)
+    if meta:
+        return meta.get("category", "Data Analytics")
 
     return "Data Analytics"
 
 
 def get_quadrant_for_service(service_or_api: str) -> str:
     """Returns the Thoughtworks Tech Radar quadrant for a given service."""
-    lower = service_or_api.lower()
-    if lower in WATCHED_SERVICES:
-        return WATCHED_SERVICES[lower].get("quadrant", "data_platforms")
+    meta = _find_service_meta(service_or_api)
+    if meta and "quadrant" in meta:
+        return meta["quadrant"]
 
     category = get_category_for_service(service_or_api)
     return QUADRANT_MAP.get(category, "data_platforms")

@@ -7,7 +7,7 @@ export async function getStaticPaths() {
 
   return services.map((svc) => {
     const serviceEntries = allEntries.filter(
-      (e) => slugify(e.service) === svc.slug || slugify(e.api) === svc.slug
+      (e) => slugify(e.service) === svc.slug
     );
     return {
       params: { service: svc.slug },
