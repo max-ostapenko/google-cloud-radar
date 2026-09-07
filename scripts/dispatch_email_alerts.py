@@ -19,6 +19,7 @@ Usage:
 import argparse
 import datetime
 import glob
+import html
 import json
 import logging
 import os
@@ -189,24 +190,26 @@ def send_resend_email(
 
 def render_breaking_email_html(change: dict) -> str:
     """Renders a responsive, modern HTML email template for a breaking change alert."""
-    service_name = (
-        change.get("service") or change.get("service_name") or "Google Cloud Service"
-    )
-    title = change.get("title") or f"{service_name} Breaking Change Detected"
-    summary = change.get("summary") or ""
-    details = change.get("details") or summary
-    api = change.get("api") or ""
-    date_str = change.get("date") or datetime.date.today().isoformat()
-    slug = change.get("slug") or change.get("id") or ""
+    raw_service = change.get("service") or change.get("service_name") or "Google Cloud Service"
+    raw_title = change.get("title") or f"{raw_service} Breaking Change Detected"
+    raw_summary = change.get("summary") or ""
+    raw_api = change.get("api") or ""
+    raw_date = change.get("date") or datetime.date.today().isoformat()
+    raw_slug = str(change.get("slug") or change.get("id") or "")
     extracted_methods = change.get("extracted_methods") or []
     tags = change.get("tags") or []
 
-    diff_url = f"https://google-cloud-radar.com/changes/{slug}"
+    service_name = html.escape(str(raw_service))
+    title = html.escape(str(raw_title))
+    summary = html.escape(str(raw_summary))
+    api = html.escape(str(raw_api))
+    date_str = html.escape(str(raw_date))
+    diff_url = f"https://google-cloud-radar.com/changes/{urllib.parse.quote(raw_slug)}"
 
     methods_html = ""
     if extracted_methods:
         methods_items = "".join(
-            f'<li style="margin-bottom: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; color: #b3261e;"><code>{m}</code></li>'
+            f'<li style="margin-bottom: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; color: #b3261e;"><code>{html.escape(str(m))}</code></li>'
             for m in extracted_methods[:8]
         )
         methods_html = f"""
@@ -219,7 +222,7 @@ def render_breaking_email_html(change: dict) -> str:
         """
 
     tags_html = "".join(
-        f'<span style="display: inline-block; background-color: #f1f3f4; color: #5f6368; border: 1px solid #e8eaed; padding: 2px 7px; border-radius: 4px; font-size: 11px; margin-right: 6px; margin-bottom: 6px; font-family: ui-monospace, Menlo, monospace;">#{t}</span>'
+        f'<span style="display: inline-block; background-color: #f1f3f4; color: #5f6368; border: 1px solid #e8eaed; padding: 2px 7px; border-radius: 4px; font-size: 11px; margin-right: 6px; margin-bottom: 6px; font-family: ui-monospace, Menlo, monospace;">#{html.escape(str(t))}</span>'
         for t in tags[:6]
     )
 

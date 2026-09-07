@@ -1,6 +1,23 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { marked } from 'marked';
+import { Marked } from 'marked';
+
+// Secure Marked instance that neutralizes embedded raw HTML while rendering valid Markdown
+const safeMarkdownParser = new Marked({
+  gfm: true,
+  breaks: false,
+  renderer: {
+    html(token: any) {
+      const text = typeof token === 'string' ? token : (token?.text || '');
+      return text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    },
+  },
+});
 
 export type ChangeStatus = 'canary' | 'released' | 'retracted' | 'deprecated';
 export type RadarRing = 'assess' | 'trial' | 'adopt' | 'hold';
@@ -340,7 +357,7 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         } catch {}
       }
 
-      const htmlContent = marked.parse(detailsMarkdown || summary, { async: false }) as string;
+      const htmlContent = safeMarkdownParser.parse(detailsMarkdown || summary, { async: false }) as string;
       const ecosystem = (f.ecosystem?.stringValue as Ecosystem) || getEcosystemForService(service || api);
       const category = (f.category?.stringValue as ServiceCategory) || getCategoryForService(service || api);
 
@@ -427,7 +444,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const details = doc.details || summary;
       const extractedMethods = Array.isArray(doc.extracted_methods) ? doc.extracted_methods : [];
 
-      const htmlContent = marked.parse(details || summary, { async: false }) as string;
+      const htmlContent = safeMarkdownParser.parse(details || summary, { async: false }) as string;
       const ecosystem = (doc.ecosystem as Ecosystem) || getEcosystemForService(service || api);
       const category = (doc.category as ServiceCategory) || getCategoryForService(service || api);
       const status = (doc.status || 'canary').toLowerCase() as ChangeStatus;

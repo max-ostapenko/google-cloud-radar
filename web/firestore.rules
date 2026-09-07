@@ -118,6 +118,8 @@ service cloud.firestore {
           'watchedServices', 'updated_at'
         ]) &&
         data.uid == request.auth.uid &&
+        ('email' in request.auth.token) &&
+        data.email == request.auth.token.email &&
         data.email is string &&
         data.email.size() <= 120 &&
         (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 100)) &&

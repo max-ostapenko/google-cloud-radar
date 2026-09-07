@@ -24,12 +24,33 @@ class TestDispatchEmailAlerts(unittest.TestCase):
     def test_render_breaking_email_html(self):
         html = dispatch_email_alerts.render_breaking_email_html(self.sample_change)
         self.assertIn("Vertex AI", html)
-        self.assertIn("Vertex AI: Breaking Changes & Agent IAM Controls", html)
+        self.assertIn("Vertex AI: Breaking Changes &amp; Agent IAM Controls", html)
         self.assertIn(
             "https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1", html
         )
         self.assertIn("https://google-cloud-radar.com/?action=alerts", html)
         self.assertIn("publishers.v1beta1.compact", html)
+
+    def test_render_breaking_email_html_escapes_special_chars(self):
+        malicious_change = {
+            "slug": "2026-08-30-malicious",
+            "date": "2026-08-30",
+            "service": "Malicious <script>alert(1)</script>",
+            "api": "test.api & co",
+            "title": "Title with <img src=x onerror=alert('xss')>",
+            "summary": "Summary & <b>bold</b> payloads",
+            "extracted_methods": ["<evil_method()>"],
+            "tags": ["<tag1>"],
+        }
+        rendered = dispatch_email_alerts.render_breaking_email_html(malicious_change)
+        self.assertNotIn("<script>", rendered)
+        self.assertNotIn("<img src=x", rendered)
+        self.assertNotIn("<evil_method()>", rendered)
+        self.assertNotIn("<tag1>", rendered)
+        self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", rendered)
+        self.assertIn("&lt;img src=x onerror=alert(&#x27;xss&#x27;)&gt;", rendered)
+        self.assertIn("&lt;evil_method()&gt;", rendered)
+        self.assertIn("#&lt;tag1&gt;", rendered)
 
     def test_is_service_watched(self):
         # All services subscriber
