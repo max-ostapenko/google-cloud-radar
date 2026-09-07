@@ -266,7 +266,7 @@ const ecosystemList: EcosystemGroup[] = [
             </ul>
           )}
 
-          {eco.totalCount === 0 && (
+          {(!eco.directItems || eco.directItems.length === 0) && (!eco.subgroups || eco.subgroups.length === 0) && (
             <div class="empty-ecosystem-msg">No monitored APIs</div>
           )}
         </div>
