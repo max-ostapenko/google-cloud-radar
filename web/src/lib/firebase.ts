@@ -157,12 +157,12 @@ export function onAuthChange(callback: (user: User | null) => void) {
   return onAuthStateChanged(authInstance, callback);
 }
 
-export type ReactionType = 'impacts_prod' | 'breaking_me' | 'watch_ga';
+export type ReactionType = 'like_change' | 'released' | 'false_positive_or_duplicate';
 
 export interface ReactionState {
-  impacts_prod: number;
-  breaking_me: number;
-  watch_ga: number;
+  like_change: number;
+  released: number;
+  false_positive_or_duplicate: number;
   userReactions: Record<ReactionType, boolean>;
 }
 
@@ -301,9 +301,9 @@ export function listenToChange(
         const userVotes = stored ? JSON.parse(stored) : {};
         callback({
           reaction_counts: {
-            impacts_prod: userVotes.impacts_prod ? 1 : 0,
-            breaking_me: userVotes.breaking_me ? 1 : 0,
-            watch_ga: userVotes.watch_ga ? 1 : 0,
+            like_change: userVotes.like_change ? 1 : 0,
+            released: userVotes.released ? 1 : 0,
+            false_positive_or_duplicate: userVotes.false_positive_or_duplicate ? 1 : 0,
           },
         });
       } catch {
@@ -371,9 +371,9 @@ export function listenToUserReactions(
         if (docSnap.exists()) {
           const data = docSnap.data();
           const votes: Record<string, boolean> = {
-            impacts_prod: Boolean(data.impacts_prod),
-            breaking_me: Boolean(data.breaking_me),
-            watch_ga: Boolean(data.watch_ga),
+            like_change: Boolean(data.like_change),
+            released: Boolean(data.released),
+            false_positive_or_duplicate: Boolean(data.false_positive_or_duplicate),
           };
           try {
             localStorage.setItem(storageKey, JSON.stringify(votes));

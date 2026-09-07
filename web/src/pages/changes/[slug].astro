@@ -185,14 +185,6 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, "-");
               </a>
             )
           }
-
-          <a
-            href={`/services/${serviceSlug}`}
-            class="hero-action-btn service-btn"
-            title={`View all ${entry.service} updates`}
-          >
-            <span>{entry.service} feed →</span>
-          </a>
         </div>
       </div>
 
@@ -312,6 +304,9 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, "-");
           </div>
         )
       }
+
+      <!-- Community Verification Reactions inside Hero -->
+      <ReactionsBar slug={entry.slug} title={entry.title} inHero={true} />
     </header>
 
     <!-- Main Content Card -->
@@ -325,12 +320,8 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, "-");
               entry.tags.map((tag) => <span class="tag-chip">#{tag}</span>)
           }
         </div>
-
       </footer>
     </article>
-
-    <!-- Community Signals & Impact Telemetry -->
-    <ReactionsBar slug={entry.slug} title={entry.title} />
   </div>
 </BaseLayout>
 

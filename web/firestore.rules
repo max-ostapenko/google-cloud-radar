@@ -7,12 +7,12 @@ service cloud.firestore {
     // ===============================================================
     //
     // Collection: changes/{changeId}
-    //   - reaction_counts: map of int (allowed keys: impacts_prod, breaking_me, watch_ga; delta <= 1)
+    //   - reaction_counts: map of int (allowed keys: like_change, released, false_positive_or_duplicate; delta <= 1)
     //   - All core metadata fields (service_id, change_date, etc.) are immutable to clients.
     //
     // Subcollection: changes/{changeId}/reactions/{userId}
     //   - user_id: string (must match request.auth.uid)
-    //   - impacts_prod, breaking_me, watch_ga: bool
+    //   - like_change, released, false_positive_or_duplicate: bool
     //   - updated_at: timestamp (enforced serverTimestamp and 1s cooldown)
     //
     // Subcollection: changes/{changeId}/comments/{commentId} (Decommissioned / Disabled)
@@ -49,23 +49,23 @@ service cloud.firestore {
       let prev = resource.data.reaction_counts;
       let curr = request.resource.data.reaction_counts;
       return curr is map &&
-        curr.keys().hasOnly(['impacts_prod', 'breaking_me', 'watch_ga']) &&
-        (!('impacts_prod' in curr) || (curr.impacts_prod is int && curr.impacts_prod >= 0)) &&
-        (!('breaking_me' in curr) || (curr.breaking_me is int && curr.breaking_me >= 0)) &&
-        (!('watch_ga' in curr) || (curr.watch_ga is int && curr.watch_ga >= 0)) &&
+        curr.keys().hasOnly(['like_change', 'released', 'false_positive_or_duplicate']) &&
+        (!('like_change' in curr) || (curr.like_change is int && curr.like_change >= 0)) &&
+        (!('released' in curr) || (curr.released is int && curr.released >= 0)) &&
+        (!('false_positive_or_duplicate' in curr) || (curr.false_positive_or_duplicate is int && curr.false_positive_or_duplicate >= 0)) &&
         // Exactly one reaction counter may change by at most 1 per request
-        (singleReactionDelta(prev, curr, 'impacts_prod') +
-         singleReactionDelta(prev, curr, 'breaking_me') +
-         singleReactionDelta(prev, curr, 'watch_ga') <= 1);
+        (singleReactionDelta(prev, curr, 'like_change') +
+         singleReactionDelta(prev, curr, 'released') +
+         singleReactionDelta(prev, curr, 'false_positive_or_duplicate') <= 1);
     }
 
     function isValidReactionData() {
       let data = request.resource.data;
-      return data.keys().hasOnly(['user_id', 'impacts_prod', 'breaking_me', 'watch_ga', 'updated_at']) &&
+      return data.keys().hasOnly(['user_id', 'like_change', 'released', 'false_positive_or_duplicate', 'updated_at']) &&
         data.user_id == request.auth.uid &&
-        (!('impacts_prod' in data) || data.impacts_prod is bool) &&
-        (!('breaking_me' in data) || data.breaking_me is bool) &&
-        (!('watch_ga' in data) || data.watch_ga is bool) &&
+        (!('like_change' in data) || data.like_change is bool) &&
+        (!('released' in data) || data.released is bool) &&
+        (!('false_positive_or_duplicate' in data) || data.false_positive_or_duplicate is bool) &&
         (!('updated_at' in data) || data.updated_at == request.time);
     }
 

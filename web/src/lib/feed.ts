@@ -25,9 +25,9 @@ export type RadarRing = 'assess' | 'trial' | 'adopt' | 'hold';
 export type RadarQuadrant = 'ai_ml' | 'data_platforms' | 'infra_compute' | 'security_finops';
 
 export interface ReactionCounts {
-  impacts_prod: number;
-  breaking_me: number;
-  watch_ga: number;
+  like_change: number;
+  released: number;
+  false_positive_or_duplicate: number;
 }
 
 export interface FeedEntryMeta {
@@ -280,13 +280,13 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       const radar_quadrant = (f.radar_quadrant?.stringValue || 'infra_compute') as RadarQuadrant;
       const radar_movement = (f.radar_movement?.stringValue || 'new') as 'new' | 'promoted' | 'demoted' | 'unchanged';
 
-      let reaction_counts: ReactionCounts = { impacts_prod: 0, breaking_me: 0, watch_ga: 0 };
+      let reaction_counts: ReactionCounts = { like_change: 0, released: 0, false_positive_or_duplicate: 0 };
       if (f.reaction_counts?.mapValue?.fields) {
         const rc = f.reaction_counts.mapValue.fields;
         reaction_counts = {
-          impacts_prod: parseInt(rc.impacts_prod?.integerValue || '0', 10),
-          breaking_me: parseInt(rc.breaking_me?.integerValue || '0', 10),
-          watch_ga: parseInt(rc.watch_ga?.integerValue || '0', 10),
+          like_change: parseInt(rc.like_change?.integerValue || '0', 10),
+          released: parseInt(rc.released?.integerValue || '0', 10),
+          false_positive_or_duplicate: parseInt(rc.false_positive_or_duplicate?.integerValue || '0', 10),
         };
       }
       const comments_count = parseInt(f.comments_count?.integerValue || '0', 10);
@@ -429,7 +429,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
         lead_time_days,
         official_release_date,
         official_release_notes_url,
-        reaction_counts: { impacts_prod: 0, breaking_me: 0, watch_ga: 0 },
+        reaction_counts: { like_change: 0, released: 0, false_positive_or_duplicate: 0 },
         comments_count: 0,
         stats,
         discoveryRestUrl,

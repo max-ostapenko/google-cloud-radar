@@ -15,9 +15,9 @@ const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en
   timeZone: 'UTC',
 });
 // Reactions & Community Signals (progressive disclosure: counts hidden when 0)
-const impactsCount = entry.reaction_counts?.impacts_prod ?? 0;
-const breakingMeCount = entry.reaction_counts?.breaking_me ?? 0;
-const watchGaCount = entry.reaction_counts?.watch_ga ?? 0;
+const likeChangeCount = entry.reaction_counts?.like_change ?? 0;
+const releasedCount = entry.reaction_counts?.released ?? 0;
+const fpCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
 ---
 
 <article 
@@ -109,39 +109,39 @@ const watchGaCount = entry.reaction_counts?.watch_ga ?? 0;
   <div class="card-social-bar" data-slug={entry.slug}>
     <div class="card-reactions-group">
       <button 
-        class={`card-reaction-btn ${impactsCount > 0 ? 'has-count' : ''}`}
-        data-type="impacts_prod" 
+        class={`card-reaction-btn ${likeChangeCount > 0 ? 'has-count' : ''}`}
+        data-type="like_change" 
         data-slug={entry.slug}
-        title="Impacts My Production Environment"
+        title="Like the change"
+        type="button"
+      >
+        <span class="reaction-icon">👍</span>
+        <span class="reaction-label">Like</span>
+        <span class="reaction-count" data-count-type="like_change" style={likeChangeCount > 0 ? '' : 'display: none;'}>{likeChangeCount}</span>
+      </button>
+
+      <button 
+        class={`card-reaction-btn ${releasedCount > 0 ? 'has-count' : ''}`}
+        data-type="released" 
+        data-slug={entry.slug}
+        title="Mark as Released in official notes/docs"
         type="button"
       >
         <span class="reaction-icon">🚀</span>
-        <span class="reaction-label">Prod Impact</span>
-        <span class="reaction-count" data-count-type="impacts_prod" style={impactsCount > 0 ? '' : 'display: none;'}>{impactsCount}</span>
+        <span class="reaction-label">Released</span>
+        <span class="reaction-count" data-count-type="released" style={releasedCount > 0 ? '' : 'display: none;'}>{releasedCount}</span>
       </button>
 
       <button 
-        class={`card-reaction-btn ${breakingMeCount > 0 ? 'has-count' : ''}`}
-        data-type="breaking_me" 
+        class={`card-reaction-btn ${fpCount > 0 ? 'has-count' : ''}`}
+        data-type="false_positive_or_duplicate" 
         data-slug={entry.slug}
-        title="Flag Breaking for My Team"
+        title="Flag as false-positive or duplicate"
         type="button"
       >
-        <span class="reaction-icon">⚠️</span>
-        <span class="reaction-label">Breaking</span>
-        <span class="reaction-count" data-count-type="breaking_me" style={breakingMeCount > 0 ? '' : 'display: none;'}>{breakingMeCount}</span>
-      </button>
-
-      <button 
-        class={`card-reaction-btn ${watchGaCount > 0 ? 'has-count' : ''}`}
-        data-type="watch_ga" 
-        data-slug={entry.slug}
-        title="Watch for GA Release"
-        type="button"
-      >
-        <span class="reaction-icon">👀</span>
-        <span class="reaction-label">Watch GA</span>
-        <span class="reaction-count" data-count-type="watch_ga" style={watchGaCount > 0 ? '' : 'display: none;'}>{watchGaCount}</span>
+        <span class="reaction-icon">🚩</span>
+        <span class="reaction-label">Noise / FP</span>
+        <span class="reaction-count" data-count-type="false_positive_or_duplicate" style={fpCount > 0 ? '' : 'display: none;'}>{fpCount}</span>
       </button>
     </div>
 
@@ -432,10 +432,25 @@ const watchGaCount = entry.reaction_counts?.watch_ga ?? 0;
     color: var(--text-secondary);
   }
 
-  .card-reaction-btn.active {
+  .card-reaction-btn.active,
+  .card-reaction-btn[data-type="like_change"].active {
     background-color: var(--google-blue-subtle);
     border-color: var(--google-blue-border);
     color: var(--google-blue);
+    font-weight: 600;
+  }
+
+  .card-reaction-btn[data-type="released"].active {
+    background-color: var(--google-green-subtle);
+    border-color: var(--google-green-border);
+    color: var(--google-green);
+    font-weight: 600;
+  }
+
+  .card-reaction-btn[data-type="false_positive_or_duplicate"].active {
+    background-color: var(--google-red-subtle);
+    border-color: var(--google-red-border);
+    color: var(--google-red);
     font-weight: 600;
   }
 
@@ -458,10 +473,23 @@ const watchGaCount = entry.reaction_counts?.watch_ga ?? 0;
     border: 1px solid var(--border-subtle);
   }
 
-  .card-reaction-btn.active .reaction-count {
+  .card-reaction-btn.active .reaction-count,
+  .card-reaction-btn[data-type="like_change"].active .reaction-count {
     background-color: #ffffff;
     border-color: var(--google-blue-border);
     color: var(--google-blue);
+  }
+
+  .card-reaction-btn[data-type="released"].active .reaction-count {
+    background-color: #ffffff;
+    border-color: var(--google-green-border);
+    color: var(--google-green);
+  }
+
+  .card-reaction-btn[data-type="false_positive_or_duplicate"].active .reaction-count {
+    background-color: #ffffff;
+    border-color: var(--google-red-border);
+    color: var(--google-red);
   }
 
   .card-actions-right {

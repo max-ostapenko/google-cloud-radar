@@ -142,7 +142,7 @@ def parse_json_change_file(file_path: str) -> dict:
         "last_updated_at": now_iso,
         "tags": tags,
         "extracted_methods": extracted_methods,
-        "reaction_counts": {"impacts_prod": 0, "breaking_me": 0, "watch_ga": 0},
+        "reaction_counts": {"like_change": 0, "released": 0, "false_positive_or_duplicate": 0},
         "comments_count": 0,
         "stats": json.dumps(
             {

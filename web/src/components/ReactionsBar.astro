@@ -7,55 +7,48 @@ interface Props {
     impacted_users_count?: number;
     comments_count?: number;
   };
+  inHero?: boolean;
 }
 
-const { slug, title, initialStats = {} } = Astro.props;
-const defaultImpactCount = initialStats.impacted_users_count || initialStats.upvotes || 3;
-const defaultBreakingCount = 1;
-const defaultWatchCount = 4;
+const { slug, title, initialStats = {}, inHero = false } = Astro.props;
+const defaultLikeCount = initialStats.upvotes || 0;
+const defaultReleasedCount = 0;
+const defaultFpCount = 0;
 ---
 
-<div class="reactions-bar-container" data-slug={slug}>
-  <div class="reactions-header">
-    <div class="reactions-title">
-      <span class="pulse-icon">🔥</span>
-      <span>Community Signals & Impact Telemetry</span>
-    </div>
-    <span class="reactions-hint">Crowd-sourced signals from GCP platform engineers</span>
-  </div>
-
+<div class={`reactions-bar-container ${inHero ? 'in-hero' : ''}`} data-slug={slug}>
   <div class="reactions-buttons">
     <button
       class="reaction-btn"
-      data-type="impacts_prod"
-      title="Mark that this API change impacts your GCP production environment"
-      aria-label="Impacts My Production"
+      data-type="like_change"
+      title="Like this API change"
+      aria-label="Like the change"
+    >
+      <span class="btn-icon">👍</span>
+      <span class="btn-label">Like the change</span>
+      <span class="count-badge" data-count-type="like_change">{defaultLikeCount}</span>
+    </button>
+
+    <button
+      class="reaction-btn"
+      data-type="released"
+      title="Mark that this change has been confirmed in official release notes or documentation"
+      aria-label="Released"
     >
       <span class="btn-icon">🚀</span>
-      <span class="btn-label">Impacts My Production</span>
-      <span class="count-badge" data-count-type="impacts_prod">{defaultImpactCount}</span>
+      <span class="btn-label">Released</span>
+      <span class="count-badge" data-count-type="released">{defaultReleasedCount}</span>
     </button>
 
     <button
       class="reaction-btn"
-      data-type="breaking_me"
-      title="Flag that this change introduces a breaking incompatibility for your team"
-      aria-label="Breaking in My Env"
+      data-type="false_positive_or_duplicate"
+      title="Flag this change as a false-positive detection or duplicate entry"
+      aria-label="False-positive or duplicate"
     >
-      <span class="btn-icon">⚠️</span>
-      <span class="btn-label">Breaking for Me</span>
-      <span class="count-badge" data-count-type="breaking_me">{defaultBreakingCount}</span>
-    </button>
-
-    <button
-      class="reaction-btn"
-      data-type="watch_ga"
-      title="Add to your personal radar to track when this Canary reaches GA"
-      aria-label="Watch for GA Release"
-    >
-      <span class="btn-icon">👀</span>
-      <span class="btn-label">Watch for GA</span>
-      <span class="count-badge" data-count-type="watch_ga">{defaultWatchCount}</span>
+      <span class="btn-icon">🚩</span>
+      <span class="btn-label">False-positive or duplicate</span>
+      <span class="count-badge" data-count-type="false_positive_or_duplicate">{defaultFpCount}</span>
     </button>
   </div>
 </div>
@@ -186,29 +179,13 @@ const defaultWatchCount = 4;
     margin: 24px 0;
   }
 
-  .reactions-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  .reactions-title {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text-primary);
-  }
-
-  .reactions-hint {
-    font-size: 12px;
-    color: var(--text-tertiary);
+  .reactions-bar-container.in-hero {
+    background-color: transparent;
+    border: none;
+    border-top: 1px solid var(--border-subtle);
+    border-radius: 0;
+    padding: 18px 0 0 0;
+    margin: 20px 0 0 0;
   }
 
   .reactions-buttons {
@@ -240,22 +217,23 @@ const defaultWatchCount = 4;
     transform: translateY(-1px);
   }
 
-  .reaction-btn.active {
+  .reaction-btn.active,
+  .reaction-btn[data-type="like_change"].active {
     background-color: var(--google-blue-subtle);
     border-color: var(--google-blue);
     color: var(--google-blue);
   }
 
-  .reaction-btn[data-type="breaking_me"].active {
+  .reaction-btn[data-type="released"].active {
+    background-color: var(--google-green-subtle);
+    border-color: var(--google-green);
+    color: var(--google-green);
+  }
+
+  .reaction-btn[data-type="false_positive_or_duplicate"].active {
     background-color: var(--google-red-subtle);
     border-color: var(--google-red);
     color: var(--google-red);
-  }
-
-  .reaction-btn[data-type="watch_ga"].active {
-    background-color: var(--google-yellow-subtle);
-    border-color: var(--google-yellow);
-    color: var(--google-yellow);
   }
 
   .count-badge {
@@ -268,18 +246,19 @@ const defaultWatchCount = 4;
     font-weight: 700;
   }
 
-  .reaction-btn.active .count-badge {
+  .reaction-btn.active .count-badge,
+  .reaction-btn[data-type="like_change"].active .count-badge {
     background-color: var(--google-blue);
     color: #ffffff;
   }
 
-  .reaction-btn[data-type="breaking_me"].active .count-badge {
-    background-color: var(--google-red);
+  .reaction-btn[data-type="released"].active .count-badge {
+    background-color: var(--google-green);
     color: #ffffff;
   }
 
-  .reaction-btn[data-type="watch_ga"].active .count-badge {
-    background-color: var(--google-yellow);
+  .reaction-btn[data-type="false_positive_or_duplicate"].active .count-badge {
+    background-color: var(--google-red);
     color: #ffffff;
   }
 
