@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ReactionsBar from "../../components/ReactionsBar.astro";
-import DiscussionsSection from "../../components/DiscussionsSection.astro";
 import { getAllFeedEntries, type FeedEntry } from "../../lib/feed";
 
 export async function getStaticPaths() {
@@ -327,31 +326,11 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, "-");
           }
         </div>
 
-        <div class="footer-actions">
-          <a href="#comments" class="jump-comments-btn">
-            <svg
-              viewBox="0 0 24 24"
-              width="14"
-              height="14"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-              ></path>
-            </svg>
-            <span>Jump to Comments</span>
-          </a>
-        </div>
       </footer>
     </article>
 
     <!-- Community Signals & Impact Telemetry -->
     <ReactionsBar slug={entry.slug} title={entry.title} />
-
-    <!-- Developer Discussion & Comments Section -->
-    <DiscussionsSection slug={entry.slug} />
   </div>
 </BaseLayout>
 
@@ -792,34 +771,6 @@ const serviceSlug = entry.service.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     border: 1px solid var(--border-subtle);
     padding: 2px 8px;
     border-radius: 4px;
-  }
-
-  .footer-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .jump-comments-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--google-blue);
-    text-decoration: none;
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    padding: 5px 10px;
-    border-radius: var(--radius-sm);
-    transition: all 0.15s ease;
-  }
-
-  .jump-comments-btn:hover {
-    background-color: var(--google-blue-subtle);
-    border-color: var(--google-blue-border);
-    text-decoration: none;
   }
 
   @media (max-width: 768px) {

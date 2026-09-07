@@ -18,7 +18,6 @@ const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en
 const impactsCount = entry.reaction_counts?.impacts_prod ?? 0;
 const breakingMeCount = entry.reaction_counts?.breaking_me ?? 0;
 const watchGaCount = entry.reaction_counts?.watch_ga ?? 0;
-const commentsCount = entry.comments_count ?? 0;
 ---
 
 <article 
@@ -147,13 +146,6 @@ const commentsCount = entry.comments_count ?? 0;
     </div>
 
     <div class="card-actions-right">
-      <a href={`/changes/${entry.slug}#comments`} class="card-comments-btn" title="View developer discussion and post comments">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
-        <span>{commentsCount > 0 ? `${commentsCount} Comments` : 'Comment'}</span>
-      </a>
-
       <button
         type="button"
         class="card-share-trigger-btn"
@@ -477,28 +469,6 @@ const commentsCount = entry.comments_count ?? 0;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
-  }
-
-  .card-comments-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    padding: 4px 10px;
-    border-radius: var(--radius-sm);
-    text-decoration: none;
-    transition: all 0.15s ease;
-  }
-
-  .card-comments-btn:hover {
-    color: var(--google-blue);
-    border-color: var(--google-blue-border);
-    background-color: var(--google-blue-subtle);
-    text-decoration: none;
   }
 
   .card-share-trigger-btn {

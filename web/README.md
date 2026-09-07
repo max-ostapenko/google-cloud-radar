@@ -15,7 +15,7 @@ npm run dev
 Open [http://localhost:4321](http://localhost:4321).
 
 ### 2. Full Local Development (With Mock Firestore Server)
-Runs Astro alongside a lightweight, zero-Java Node.js mock Firestore REST server on port `8080` for local comment/reaction testing:
+Runs Astro alongside a lightweight, zero-Java Node.js mock Firestore REST server on port `8080` for local reaction and alert preferences testing:
 ```bash
 npm run dev:all
 ```
@@ -25,7 +25,7 @@ npm run dev:all
 ## 🔍 Instant Client-Side Search Engine
 
 The web app includes an in-browser **MiniSearch** engine running locally on the user's device with 0 cloud server calls:
-* **Fuzzy typo tolerance**: Matches misspellings (e.g. `vertx` $\to$ `Vertex AI`).
+* **Fuzzy typo tolerance**: Matches misspellings (e.g. `platfrm` $\to$ `Agent Platform API`).
 * **Prefix matching**: Live as-you-type autocomplete.
 * **Field boosting**: RPC methods (3.0x), title (2.5x), service (2.0x), tags (1.5x), summary (1.0x).
 
@@ -40,7 +40,7 @@ The web app includes an in-browser **MiniSearch** engine running locally on the 
 | `/breaking` | Dedicated triage radar for backwards-incompatible API changes with active subscription status. |
 | `/timeline/[month]` | Month-specific timeline streams (e.g. `/timeline/2026-08/`). |
 | `/services/[service]` | Service hub with historical change timeline, official docs, and raw Discovery REST endpoints. |
-| `/changes/[slug]` | Deep permalinks with visual AST diffs, copyable RPC chips, social sharing, and discussions. |
+| `/changes/[slug]` | Deep permalinks with visual AST diffs, copyable RPC chips, social sharing, and impact reactions. |
 | `/rss.xml` | Global RSS 2.0 feed for feed readers. |
 | `/api/feed.json` | JSON Feed 1.1 REST API for programmatic consumption. |
 | `/llms.txt` | Context-optimized feed for AI agents and LLMs. |

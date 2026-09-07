@@ -12,7 +12,7 @@ Agent guidelines and engineering invariants for modifying Google Cloud Radar. Fo
 
 2. **Named Firestore Database (`radar`)**:
    - The application strictly uses the named Firestore database **`radar`** (never `(default)`).
-   - Enforced across Python scripts (`--database radar`), client SDK ([`web/src/lib/firebase.ts`](web/src/lib/firebase.ts)), and Terraform rules ([`terraform/firestore.rules`](terraform/firestore.rules)).
+   - Enforced across Python scripts (`--database radar`), client SDK ([`web/src/lib/firebase.ts`](web/src/lib/firebase.ts)), and Terraform rules deployment ([`web/firestore.rules`](web/firestore.rules)).
 
 3. **Rolling 90-Day Benchmark Scope**:
    - Velocity rankings and lead times in [`web/src/lib/stats.ts`](web/src/lib/stats.ts) and `/stats` default to a trailing rolling 90-day window (`ROLLING_WINDOW_DAYS = 90`).

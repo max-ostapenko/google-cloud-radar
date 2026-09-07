@@ -8,7 +8,6 @@ service cloud.firestore {
     //
     // Collection: changes/{changeId}
     //   - reaction_counts: map of int (allowed keys: impacts_prod, breaking_me, watch_ga; delta <= 1)
-    //   - comments_count: int (delta <= 1)
     //   - All core metadata fields (service_id, change_date, etc.) are immutable to clients.
     //
     // Subcollection: changes/{changeId}/reactions/{userId}
@@ -16,14 +15,7 @@ service cloud.firestore {
     //   - impacts_prod, breaking_me, watch_ga: bool
     //   - updated_at: timestamp (enforced serverTimestamp and 1s cooldown)
     //
-    // Subcollection: changes/{changeId}/comments/{commentId}
-    //   - change_id: string (must match path)
-    //   - author_id: string (must match request.auth.uid)
-    //   - author_name: string (1-80 chars)
-    //   - author_photo: optional string (<= 500 chars)
-    //   - content: string (1-1000 chars)
-    //   - created_at: timestamp (enforced serverTimestamp)
-    //   - Immutable once posted; can only be deleted by author.
+    // Subcollection: changes/{changeId}/comments/{commentId} (Decommissioned / Disabled)
     //
     // Collection: users/{userId}
     //   - uid, email, displayName, photoURL, breakingAlerts, weeklyDigest, allServices, watchedServices
@@ -41,11 +33,6 @@ service cloud.firestore {
 
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
-    }
-
-    function absDiffAtMostOne(a, b) {
-      let diff = a - b;
-      return diff == 1 || diff == -1 || diff == 0;
     }
 
     function getCount(countsMap, key) {
@@ -72,12 +59,6 @@ service cloud.firestore {
          singleReactionDelta(prev, curr, 'watch_ga') <= 1);
     }
 
-    function isValidCommentsCountUpdate() {
-      let prevCount = ('comments_count' in resource.data && resource.data.comments_count is int) ? resource.data.comments_count : 0;
-      let currCount = request.resource.data.comments_count;
-      return currCount is int && currCount >= 0 && absDiffAtMostOne(currCount, prevCount);
-    }
-
     function isValidReactionData() {
       let data = request.resource.data;
       return data.keys().hasOnly(['user_id', 'impacts_prod', 'breaking_me', 'watch_ga', 'updated_at']) &&
@@ -93,21 +74,6 @@ service cloud.firestore {
       return !('updated_at' in resource.data) ||
         resource.data.updated_at == null ||
         request.time >= resource.data.updated_at + duration.value(1, 's');
-    }
-
-    function isValidCommentCreate(changeId) {
-      let data = request.resource.data;
-      return data.keys().hasOnly(['change_id', 'author_id', 'author_name', 'author_photo', 'content', 'created_at']) &&
-        data.author_id == request.auth.uid &&
-        data.change_id == changeId &&
-        data.content is string &&
-        data.content.size() >= 1 &&
-        data.content.size() <= 1000 &&
-        data.author_name is string &&
-        data.author_name.size() >= 1 &&
-        data.author_name.size() <= 80 &&
-        (!('author_photo' in data) || (data.author_photo is string && data.author_photo.size() <= 500)) &&
-        data.created_at == request.time;
     }
 
     function isValidUserPreferences() {
@@ -140,16 +106,12 @@ service cloud.firestore {
       allow read: if true;
       allow create, delete: if false;
       allow update: if isAuthenticated() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reaction_counts', 'comments_count']) &&
-        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['reaction_counts']) || isValidReactionCountsUpdate()) &&
-        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['comments_count']) || isValidCommentsCountUpdate());
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reaction_counts']) &&
+        isValidReactionCountsUpdate();
 
-      // Subcollection: Community Discussions / Comments
+      // Subcollection: Comments (Decommissioned / Blocked)
       match /comments/{commentId} {
-        allow read: if true;
-        allow create: if isAuthenticated() && isValidCommentCreate(changeId);
-        allow update: if false; // Immutable once posted to prevent payload inflation
-        allow delete: if isAuthenticated() && resource.data.author_id == request.auth.uid;
+        allow read, write: if false;
       }
 
       // Subcollection: User Impact Reactions
