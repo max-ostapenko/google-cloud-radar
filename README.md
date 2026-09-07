@@ -93,6 +93,12 @@ python scripts/dispatch_email_alerts.py --test-email dev@example.com --slug 2026
 
 ---
 
+## Acknowledgments
+
+This project builds upon the foundational Discovery document synchronization tooling from Google's [`googleapis/discovery-artifact-manager`](https://github.com/googleapis/discovery-artifact-manager).
+
+---
+
 ## Security & License
 
 * **Security**: See [SECURITY.md](SECURITY.md) for vulnerability reporting and security practices.
