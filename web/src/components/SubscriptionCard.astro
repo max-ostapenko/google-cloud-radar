@@ -1,0 +1,301 @@
+---
+interface Props {
+  variant?: 'feed' | 'service';
+  serviceName?: string;
+  serviceSlug?: string;
+}
+
+const { variant = 'feed', serviceName = 'Google Cloud', serviceSlug = '' } = Astro.props;
+const isService = variant === 'service';
+---
+
+<div
+  class="subscription-email-card"
+  data-variant={variant}
+  data-service-slug={serviceSlug}
+  data-service-name={serviceName}
+>
+  <div class="email-card-content">
+    <div class="email-card-icon">{isService ? '🔔' : '⚡'}</div>
+    <div class="email-card-text">
+      {isService ? (
+        <>
+          <strong>Get Instant Alerts for {serviceName}</strong>
+          <p>Never miss an API update, method deprecation, or breaking change in {serviceName}.</p>
+        </>
+      ) : (
+        <>
+          <strong>Get Google Cloud Radar Email Alerts</strong>
+          <p>Instant alerts on breaking changes and Monday digests across all monitored GCP services.</p>
+        </>
+      )}
+    </div>
+  </div>
+
+  <button class="enable-alerts-btn" type="button">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+    </svg>
+    <span>{isService ? `Subscribe to ${serviceName}` : 'Enable Free Alerts'}</span>
+  </button>
+</div>
+
+<script>
+  import {
+    getFirebaseAuth,
+    signInWithGoogle,
+    onAuthChange,
+    getUserAlertPreferences,
+    saveUserAlertPreferences,
+    type UserAlertPreferences,
+  } from '../lib/firebase';
+
+  function initSubscriptionCards() {
+    const cards = document.querySelectorAll<HTMLElement>('.subscription-email-card');
+
+    cards.forEach((card) => {
+      if (card.dataset.initialized) return;
+      card.dataset.initialized = 'true';
+
+      const variant = card.dataset.variant || 'feed';
+      const serviceSlug = card.dataset.serviceSlug || '';
+      const serviceName = card.dataset.serviceName || 'Google Cloud';
+      const textContainer = card.querySelector<HTMLElement>('.email-card-text');
+      const actionBtn = card.querySelector<HTMLButtonElement>('.enable-alerts-btn');
+
+      let currentPrefs: UserAlertPreferences | null = null;
+      let currentUser: any = null;
+
+      const updateCardState = (user: any, prefs: UserAlertPreferences | null) => {
+        currentUser = user;
+        currentPrefs = prefs;
+
+        if (!user || !prefs) {
+          card.classList.remove('is-active-subscriber');
+          if (textContainer) {
+            if (variant === 'service') {
+              textContainer.innerHTML = `<strong>Get Instant Alerts for ${serviceName}</strong><p>Never miss an API update, method deprecation, or breaking change in ${serviceName}.</p>`;
+            } else {
+              textContainer.innerHTML = `<strong>Get Google Cloud Radar Email Alerts</strong><p>Instant alerts on breaking changes and Monday digests across all monitored GCP services.</p>`;
+            }
+          }
+          if (actionBtn) {
+            actionBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><span>${variant === 'service' ? `Subscribe to ${serviceName}` : 'Enable Free Alerts'}</span>`;
+          }
+          return;
+        }
+
+        const isWatchingService = Boolean(
+          prefs.allServices || (prefs.watchedServices && prefs.watchedServices.includes(serviceSlug))
+        );
+        const isFeedSubscribed = Boolean(prefs.breakingAlerts || prefs.weeklyDigest);
+
+        const isActive = variant === 'service' ? isWatchingService : isFeedSubscribed;
+
+        if (isActive) {
+          card.classList.add('is-active-subscriber');
+          if (textContainer) {
+            if (variant === 'service') {
+              textContainer.innerHTML = `<strong>✓ Watching ${serviceName} Alerts for ${user.email || 'your account'}</strong><p>You will be notified of any API changes, schema diffs, or deprecations for ${serviceName}.</p>`;
+            } else {
+              const scopeDesc = prefs.allServices ? 'all GCP services' : `${prefs.watchedServices?.length || 0} watched services`;
+              textContainer.innerHTML = `<strong>✓ Radar Email Alerts Active for ${user.email || 'your account'}</strong><p>Subscribed to ${scopeDesc}${prefs.breakingAlerts ? ' (breaking alerts)' : ''}${prefs.weeklyDigest ? ' + Monday digest' : ''}.</p>`;
+            }
+          }
+          if (actionBtn) {
+            actionBtn.innerHTML = `<span>⚙️ Manage Preferences</span>`;
+          }
+        } else {
+          card.classList.remove('is-active-subscriber');
+          if (textContainer) {
+            if (variant === 'service') {
+              textContainer.innerHTML = `<strong>Get Instant Alerts for ${serviceName}</strong><p>Never miss an API update, method deprecation, or breaking change in ${serviceName}.</p>`;
+            } else {
+              textContainer.innerHTML = `<strong>Get Google Cloud Radar Email Alerts</strong><p>Instant alerts on breaking changes and Monday digests across all monitored GCP services.</p>`;
+            }
+          }
+          if (actionBtn) {
+            actionBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><span>${variant === 'service' ? `Subscribe to ${serviceName}` : 'Enable Free Alerts'}</span>`;
+          }
+        }
+      };
+
+      actionBtn?.addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        // If already active subscriber, open modal to manage
+        if (card.classList.contains('is-active-subscriber')) {
+          window.dispatchEvent(new CustomEvent('open_alerts_modal'));
+          return;
+        }
+
+        if (variant === 'feed') {
+          // Open alerts modal for full signup / preference configuration
+          window.dispatchEvent(new CustomEvent('open_alerts_modal'));
+          return;
+        }
+
+        // Service variant: 1-click subscribe to this service
+        let user = currentUser || getFirebaseAuth().currentUser;
+        if (!user) {
+          try {
+            user = await signInWithGoogle();
+          } catch {
+            console.log('Sign-in cancelled');
+            return;
+          }
+        }
+
+        if (!user) return;
+
+        // Subscribe to this service
+        const prevPrefs = await getUserAlertPreferences(user);
+        const watchedSet = new Set(prevPrefs.watchedServices || []);
+        if (serviceSlug) watchedSet.add(serviceSlug);
+
+        const updatedPrefs = await saveUserAlertPreferences(user, {
+          email: user.email || '',
+          breakingAlerts: true,
+          weeklyDigest: prevPrefs.weeklyDigest !== undefined ? prevPrefs.weeklyDigest : true,
+          allServices: false, // Scoped to watched services
+          watchedServices: Array.from(watchedSet),
+        });
+
+        updateCardState(user, updatedPrefs);
+      });
+
+      onAuthChange(async (user) => {
+        if (user) {
+          const prefs = await getUserAlertPreferences(user);
+          updateCardState(user, prefs);
+        } else {
+          updateCardState(null, null);
+        }
+      });
+
+      window.addEventListener('radar_alert_prefs_update', (e: any) => {
+        if (e.detail) {
+          updateCardState(currentUser, e.detail);
+        }
+      });
+    });
+  }
+
+  initSubscriptionCards();
+  document.addEventListener('astro:page-load', initSubscriptionCards);
+</script>
+
+<style>
+  .subscription-email-card {
+    background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(26, 115, 232, 0.05) 100%);
+    border: 1px solid var(--google-blue-border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    transition: all 0.2s ease;
+  }
+
+  .email-card-content {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 280px;
+  }
+
+  .email-card-icon {
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background-color: var(--google-blue-subtle);
+    border: 1px solid var(--google-blue-border);
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+  }
+
+  .email-card-text strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 3px;
+    line-height: 1.3;
+  }
+
+  .email-card-text p {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .enable-alerts-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--google-blue);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .enable-alerts-btn:hover {
+    background-color: #1557b0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(26, 115, 232, 0.3);
+  }
+
+  .subscription-email-card.is-active-subscriber {
+    background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(52, 168, 83, 0.07) 100%);
+    border-color: rgba(52, 168, 83, 0.35);
+  }
+
+  .subscription-email-card.is-active-subscriber .email-card-icon {
+    background-color: var(--google-green-subtle);
+    border-color: var(--google-green-border);
+  }
+
+  .subscription-email-card.is-active-subscriber .enable-alerts-btn {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+    box-shadow: none;
+  }
+
+  .subscription-email-card.is-active-subscriber .enable-alerts-btn:hover {
+    background-color: var(--bg-surface-hover);
+    border-color: var(--border-strong);
+    color: var(--google-blue);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 680px) {
+    .subscription-email-card {
+      padding: 14px 16px;
+    }
+    .email-card-content {
+      min-width: 100%;
+    }
+    .enable-alerts-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

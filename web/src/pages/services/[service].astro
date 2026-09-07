@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ChangeCard from '../../components/ChangeCard.astro';
+import SubscriptionCard from '../../components/SubscriptionCard.astro';
 import { getAllFeedEntries, getServicesList, slugify, getDiscoveryMetaForApi, type FeedEntry } from '../../lib/feed';
 
 export async function getStaticPaths() {
@@ -133,6 +134,13 @@ const apisWithMeta = apisUsed.map((api) => {
         </div>
       </div>
     </div>
+
+    <!-- Service Specific Subscription Card -->
+    <SubscriptionCard 
+      variant="service" 
+      serviceName={serviceInfo.service} 
+      serviceSlug={serviceInfo.slug} 
+    />
 
     <!-- Timeline of Changes -->
     <div class="timeline-header">

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ChangeCard from '../components/ChangeCard.astro';
+import SubscriptionCard from '../components/SubscriptionCard.astro';
 import { getAllFeedEntries, getServicesList, groupEntriesByMonth } from '../lib/feed';
 
 const entries = await getAllFeedEntries();
@@ -48,6 +49,9 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
         </div>
       </div>
     </div>
+
+    <!-- Feed Subscription Callout Card -->
+    <SubscriptionCard variant="feed" />
 
     <!-- Filters & Action Bar -->
     <div class="filters-bar">
