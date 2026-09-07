@@ -47,7 +47,7 @@ pytest tests/
 python scripts/diff_to_feed.py --dry-run
 
 # Test email dispatch for a specific change
-python scripts/dispatch_email_alerts.py --test-email dev@example.com --slug 2026-08-30-aiplatform-v1beta1
+python scripts/dispatch_email_alerts.py --test-email dev@example.com --slug 2026-08-29-aiplatform-v1beta1
 ```
 *See [`scripts/README.md`](scripts/README.md) for CLI options, prompt tuning, release correlation, and email dispatch.*
 

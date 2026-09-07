@@ -33,7 +33,7 @@ python scripts/seed_prod_firestore.py --project gcp-cloud-radar --database radar
 ### 4. Transactional Breaking Alert Dispatcher
 ```bash
 # Test alert dispatch to a specific email
-python scripts/dispatch_email_alerts.py --test-email user@example.com --slug 2026-08-30-aiplatform-v1beta1
+python scripts/dispatch_email_alerts.py --test-email user@example.com --slug 2026-08-29-aiplatform-v1beta1
 
 # Production run with Firestore subscriber query and deduplication
 python scripts/dispatch_email_alerts.py --project gcp-cloud-radar --database radar

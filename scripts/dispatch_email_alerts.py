@@ -7,7 +7,7 @@ Supports Resend API with idempotency tracking in Cloud Firestore.
 
 Usage:
     # Send test email for a specific change slug:
-    python scripts/dispatch_email_alerts.py --test-email max@example.com --slug 2026-08-30-aiplatform-v1beta1
+    python scripts/dispatch_email_alerts.py --test-email max@example.com --slug 2026-08-29-aiplatform-v1beta1
 
     # Dry run across today's breaking changes:
     python scripts/dispatch_email_alerts.py --dry-run
@@ -487,7 +487,7 @@ def main() -> None:
     parser.add_argument(
         "--slug",
         default=None,
-        help="Target specific change slug (e.g. 2026-08-30-aiplatform-v1beta1).",
+        help="Target specific change slug (e.g. 2026-08-29-aiplatform-v1beta1).",
     )
     parser.add_argument(
         "--project",
