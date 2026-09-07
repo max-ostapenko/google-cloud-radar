@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { Marked } from 'marked';
+import taxonomyData from '../../../data/taxonomy.json';
 
 // Secure Marked instance that neutralizes embedded raw HTML while rendering valid Markdown
 const safeMarkdownParser = new Marked({
@@ -60,6 +61,7 @@ export interface FeedEntryMeta {
   };
 }
 
+export const ECOSYSTEMS = taxonomyData.ecosystems;
 export type Ecosystem =
   | 'Google Cloud'
   | 'Workspace'
@@ -69,6 +71,7 @@ export type Ecosystem =
   | 'Android'
   | 'More';
 
+export const CATEGORIES = taxonomyData.categories;
 export type ServiceCategory =
   | 'AI & ML'
   | 'Data Analytics'
@@ -80,90 +83,37 @@ export type ServiceCategory =
   | 'Chrome & Web'
   | 'Personal'
   | 'Android'
-  | 'More';
+  | 'More'
+  | string;
 
-const SERVICE_META_MAP: Record<string, { ecosystem: Ecosystem; category: ServiceCategory }> = {
-  // Google Cloud
-  aiplatform: { ecosystem: 'Google Cloud', category: 'AI & ML' },
-  'Vertex AI': { ecosystem: 'Google Cloud', category: 'AI & ML' },
-  bigquery: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  'BigQuery': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  biglake: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  'BigLake': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  bigqueryconnection: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  'BigQuery Connection': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  bigquerydatapolicy: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  'BigQuery Data Policy': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  bigquerydatatransfer: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  'BigQuery Data Transfer': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  bigqueryreservation: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  'BigQuery Reservation': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  datacatalog: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  'Data Catalog': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  dataform: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  'Dataform': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  datalineage: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  'Data Lineage': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  dataplex: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  'Dataplex': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  datapipelines: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  'Data Pipelines': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  analyticshub: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  'Analytics Hub': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  looker: { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  'Looker Core': { ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  connectors: { ecosystem: 'Google Cloud', category: 'Application Development' },
-  'Integration Connectors': { ecosystem: 'Google Cloud', category: 'Application Development' },
-  integrations: { ecosystem: 'Google Cloud', category: 'Application Development' },
-  'Application Integration': { ecosystem: 'Google Cloud', category: 'Application Development' },
-  cloudbilling: { ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
-  'Cloud Billing': { ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
-  billingbudgets: { ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
-  'Cloud Billing Budgets': { ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
-  appoptimize: { ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
-  'App Optimize': { ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
+export interface WatchedServiceConfig {
+  ecosystem: Ecosystem;
+  category: ServiceCategory;
+  quadrant?: string;
+  name: string;
+  release_feed_url?: string;
+  release_feed_urls?: string[];
+}
 
-  // Workspace
-  script: { ecosystem: 'Workspace', category: 'Workspace' },
-  'Apps Script': { ecosystem: 'Workspace', category: 'Workspace' },
-  admin: { ecosystem: 'Workspace', category: 'Workspace' },
-  gmail: { ecosystem: 'Workspace', category: 'Workspace' },
-  drive: { ecosystem: 'Workspace', category: 'Workspace' },
+const watchedServices = taxonomyData.watched_services as Record<string, WatchedServiceConfig>;
 
-  // Marketing Platform
-  tagmanager: { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
-  'Tag Manager': { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
-  searchconsole: { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
-  'Search Console': { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
-  pagespeedonline: { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
-  'PageSpeed Insights': { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
-  chromeuxreport: { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
-  'Chrome UX Report': { ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
+const SERVICE_META_MAP: Record<string, { ecosystem: Ecosystem; category: ServiceCategory }> = {};
 
-  // Personal
-  photoslibrary: { ecosystem: 'Personal', category: 'Personal' },
-  youtube: { ecosystem: 'Personal', category: 'Personal' },
-
-  // Chrome
-  abusiveexperiencereport: { ecosystem: 'Chrome', category: 'Chrome & Web' },
-  adexperiencereport: { ecosystem: 'Chrome', category: 'Chrome & Web' },
-  versionhistory: { ecosystem: 'Chrome', category: 'Chrome & Web' },
-
-  // Android
-  androidpublisher: { ecosystem: 'Android', category: 'Android' },
-
-  // More
-  discovery: { ecosystem: 'More', category: 'More' },
-  'Discovery Service': { ecosystem: 'More', category: 'More' },
-  safebrowsing: { ecosystem: 'More', category: 'Security' },
-  webrisk: { ecosystem: 'More', category: 'Security' },
-  libraryagent: { ecosystem: 'More', category: 'More' },
-  'Library Agent': { ecosystem: 'More', category: 'More' },
-};
+for (const [key, meta] of Object.entries(watchedServices)) {
+  const itemMeta = {
+    ecosystem: meta.ecosystem,
+    category: meta.category,
+  };
+  SERVICE_META_MAP[key.toLowerCase()] = itemMeta;
+  if (meta.name) {
+    SERVICE_META_MAP[meta.name.toLowerCase()] = itemMeta;
+  }
+}
 
 export function getEcosystemForService(serviceOrApi: string): Ecosystem {
+  const lower = (serviceOrApi || '').toLowerCase();
   for (const [key, meta] of Object.entries(SERVICE_META_MAP)) {
-    if (serviceOrApi.toLowerCase().includes(key.toLowerCase())) {
+    if (lower.includes(key)) {
       return meta.ecosystem;
     }
   }
@@ -171,8 +121,9 @@ export function getEcosystemForService(serviceOrApi: string): Ecosystem {
 }
 
 export function getCategoryForService(serviceOrApi: string): ServiceCategory {
+  const lower = (serviceOrApi || '').toLowerCase();
   for (const [key, meta] of Object.entries(SERVICE_META_MAP)) {
-    if (serviceOrApi.toLowerCase().includes(key.toLowerCase())) {
+    if (lower.includes(key)) {
       return meta.category;
     }
   }
@@ -541,63 +492,19 @@ export interface ServiceInfo {
   category: ServiceCategory;
 }
 
-export const MONITORED_SERVICES_LIST: { name: string; ecosystem: Ecosystem; category: ServiceCategory }[] = [
-  // Google Cloud - AI & ML
-  { name: 'Vertex AI', ecosystem: 'Google Cloud', category: 'AI & ML' },
+const seenServiceNames = new Set<string>();
+export const MONITORED_SERVICES_LIST: { name: string; ecosystem: Ecosystem; category: ServiceCategory }[] = [];
 
-  // Google Cloud - Data Analytics
-  { name: 'BigQuery', ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  { name: 'BigLake', ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  { name: 'BigQuery Connection API', ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  { name: 'BigQuery Data Policy', ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  { name: 'BigQuery Data Transfer Service', ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  { name: 'BigQuery Reservation', ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  { name: 'Data Catalog', ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  { name: 'Dataform', ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  { name: 'Data Lineage', ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  { name: 'Dataplex', ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  { name: 'Data Pipelines', ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  { name: 'Analytics Hub', ecosystem: 'Google Cloud', category: 'Data Analytics' },
-  { name: 'Looker Core', ecosystem: 'Google Cloud', category: 'Data Analytics' },
-
-  // Google Cloud - Application Development
-  { name: 'Integration Connectors', ecosystem: 'Google Cloud', category: 'Application Development' },
-  { name: 'Application Integration', ecosystem: 'Google Cloud', category: 'Application Development' },
-
-  // Google Cloud - FinOps & Billing
-  { name: 'Cloud Billing', ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
-  { name: 'Cloud Billing Budgets', ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
-  { name: 'App Optimize', ecosystem: 'Google Cloud', category: 'FinOps & Billing' },
-
-  // Workspace
-  { name: 'Apps Script', ecosystem: 'Workspace', category: 'Workspace' },
-  { name: 'Gmail API', ecosystem: 'Workspace', category: 'Workspace' },
-  { name: 'Google Drive API', ecosystem: 'Workspace', category: 'Workspace' },
-
-  // Marketing Platform
-  { name: 'Tag Manager', ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
-  { name: 'Search Console', ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
-  { name: 'PageSpeed Insights', ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
-  { name: 'Chrome UX Report', ecosystem: 'Marketing Platform', category: 'Marketing Platform' },
-
-  // Personal
-  { name: 'Photos Library', ecosystem: 'Personal', category: 'Personal' },
-  { name: 'YouTube Data API', ecosystem: 'Personal', category: 'Personal' },
-
-  // Chrome
-  { name: 'Abusive Experience Report', ecosystem: 'Chrome', category: 'Chrome & Web' },
-  { name: 'Ad Experience Report', ecosystem: 'Chrome', category: 'Chrome & Web' },
-  { name: 'Version History', ecosystem: 'Chrome', category: 'Chrome & Web' },
-
-  // Android
-  { name: 'Google Play Developer API', ecosystem: 'Android', category: 'Android' },
-
-  // More
-  { name: 'Discovery Service', ecosystem: 'More', category: 'More' },
-  { name: 'Safe Browsing', ecosystem: 'More', category: 'Security' },
-  { name: 'Web Risk', ecosystem: 'More', category: 'Security' },
-  { name: 'Library Agent', ecosystem: 'More', category: 'More' },
-];
+for (const meta of Object.values(watchedServices)) {
+  if (meta.name && !seenServiceNames.has(meta.name)) {
+    seenServiceNames.add(meta.name);
+    MONITORED_SERVICES_LIST.push({
+      name: meta.name,
+      ecosystem: meta.ecosystem,
+      category: meta.category,
+    });
+  }
+}
 
 export async function getServicesList(): Promise<ServiceInfo[]> {
   const entries = await getAllFeedEntries();
