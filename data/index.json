@@ -1,5 +1,25 @@
 [
   {
+    "id": "2026-09-07-bigquerydatatransfer-v1",
+    "slug": "2026-09-07-bigquerydatatransfer-v1",
+    "date": "2026-09-07",
+    "api": "bigquerydatatransfer.v1",
+    "service": "BigQuery Data Transfer Service",
+    "service_name": "BigQuery Data Transfer Service",
+    "title": "Secret Manager integration for transfer parameters",
+    "summary": "Developers can now secure sensitive transfer credentials using Secret Manager instead of raw strings. This update also marks specific configuration fields as read-only, which may impact generated client libraries.",
+    "impact": "medium",
+    "breaking": true,
+    "interesting_score": 7,
+    "tags": [
+      "security",
+      "breaking-change",
+      "secrets"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-07T10:01:20.935748+00:00"
+  },
+  {
     "id": "2026-09-04-aiplatform-v1beta1",
     "slug": "2026-09-04-aiplatform-v1beta1",
     "date": "2026-09-04",
