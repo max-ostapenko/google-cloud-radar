@@ -52,7 +52,7 @@
       "ecosystem": "Google Cloud",
       "category": "AI & ML",
       "quadrant": "ai_ml",
-      "name": "Vertex AI",
+      "name": "Agent Platform API",
       "release_feed_urls": [
         "https://docs.cloud.google.com/feeds/gemini-enterprise-agent-platform-release-notes.xml"
       ]
@@ -61,7 +61,7 @@
       "ecosystem": "Google Cloud",
       "category": "AI & ML",
       "quadrant": "ai_ml",
-      "name": "Vertex AI",
+      "name": "Agent Platform API",
       "release_feed_urls": [
         "https://docs.cloud.google.com/feeds/gemini-enterprise-agent-platform-release-notes.xml"
       ]
