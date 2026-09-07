@@ -1,0 +1,24 @@
+{
+  "id": "2026-09-07-bigquerydatatransfer-v1",
+  "slug": "2026-09-07-bigquerydatatransfer-v1",
+  "date": "2026-09-07",
+  "api": "bigquerydatatransfer.v1",
+  "service": "BigQuery Data Transfer Service",
+  "service_name": "BigQuery Data Transfer Service",
+  "title": "Secret Manager integration for transfer parameters",
+  "summary": "Developers can now secure sensitive transfer credentials using Secret Manager instead of raw strings. This update also marks specific configuration fields as read-only, which may impact generated client libraries.",
+  "details": "The API introduces `ParameterConfig` and a new `secretManagerManagedParams` array. This allows you to specify which keys in your transfer `params` should be treated as Secret Manager resource names rather than literal values. The service will automatically fetch the secret during execution. Note that `TransferRun.parameterConfig` and `DataSourceParameter.secretManagerAllowed` are now explicitly marked as `readOnly` in the discovery document. If your integration logic or generated code attempts to write to these fields during a request, it will now fail validation.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 7,
+  "tags": [
+    "security",
+    "breaking-change",
+    "secrets"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": null,
+  "generated_at": "2026-09-07T10:01:20.935748+00:00"
+}
