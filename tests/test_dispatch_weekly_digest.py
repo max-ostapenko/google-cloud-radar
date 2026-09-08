@@ -84,6 +84,70 @@ class TestDispatchWeeklyDigest(unittest.TestCase):
         )
         self.assertTrue(success)
 
+    @patch("scripts.dispatch_weekly_digest.CHANGES_DIR")
+    def test_load_recent_changes_strict_window(self, mock_changes_dir):
+        import datetime
+        import tempfile
+        import json
+        from pathlib import Path
+
+        today = datetime.date.today()
+        recent_date = (today - datetime.timedelta(days=2)).isoformat()
+        old_date = (today - datetime.timedelta(days=20)).isoformat()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            mock_changes_dir.exists.return_value = True
+
+            recent_file = tmp_path / "2026-08-30-recent.json"
+            old_file = tmp_path / "2026-08-10-old.json"
+
+            with open(recent_file, "w") as f:
+                json.dump({"slug": "recent", "date": recent_date}, f)
+
+            with open(old_file, "w") as f:
+                json.dump({"slug": "old", "date": old_date}, f)
+
+            mock_changes_dir.glob.side_effect = tmp_path.glob
+
+            changes = dispatch_weekly_digest.load_recent_changes(days=7)
+            self.assertEqual(1, len(changes))
+            self.assertEqual("recent", changes[0]["slug"])
+
+    @patch("scripts.dispatch_weekly_digest.CHANGES_DIR")
+    def test_load_recent_changes_empty_when_out_of_window(self, mock_changes_dir):
+        import datetime
+        import tempfile
+        import json
+        from pathlib import Path
+
+        today = datetime.date.today()
+        old_date = (today - datetime.timedelta(days=30)).isoformat()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            mock_changes_dir.exists.return_value = True
+
+            old_file = tmp_path / "2026-08-01-old.json"
+            with open(old_file, "w") as f:
+                json.dump({"slug": "old", "date": old_date}, f)
+
+            mock_changes_dir.glob.side_effect = tmp_path.glob
+
+            changes = dispatch_weekly_digest.load_recent_changes(days=7)
+            self.assertEqual(0, len(changes))
+
+    @patch("sys.argv", ["dispatch_weekly_digest.py", "--dry-run"])
+    @patch("scripts.dispatch_weekly_digest.send_resend_email")
+    @patch("scripts.dispatch_weekly_digest.load_recent_changes")
+    def test_main_exits_cleanly_when_no_changes(self, mock_load, mock_send):
+        mock_load.return_value = []
+        with patch.dict(os.environ, {"RESEND_API_KEY": "re_dummy"}, clear=False):
+            with self.assertRaises(SystemExit) as cm:
+                dispatch_weekly_digest.main()
+            self.assertEqual(0, cm.exception.code)
+            mock_send.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
