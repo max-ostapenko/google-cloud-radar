@@ -146,6 +146,14 @@ const fpCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
     </div>
 
     <div class="card-actions-right">
+      <a href={`/changes/${entry.slug}#discussion`} class="card-discussion-link" title="View discussion and comments">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span class="discussion-label">Comments</span>
+        <span class="discussion-count" data-slug={entry.slug}>{entry.comments_count || 0}</span>
+      </a>
+
       <button
         type="button"
         class="card-share-trigger-btn"
@@ -520,6 +528,38 @@ const fpCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
     border-color: var(--google-blue-border);
   }
 
+  .card-discussion-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .card-discussion-link:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+    text-decoration: none;
+  }
+
+  .discussion-count {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    background-color: var(--border-subtle);
+    color: var(--text-primary);
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+
   .details-cta {
     display: inline-flex;
     align-items: center;
@@ -539,149 +579,84 @@ const fpCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
 
 <script>
   import {
-    getFirebaseAuth,
-    signInWithGoogle,
-    onAuthChange,
-    toggleUserReaction,
-    listenToChange,
-    listenToUserReactions,
-    type ReactionType,
-  } from '../lib/firebase';
+    $reactionsStore,
+    $commentCounts,
+    initReactionsForSlug,
+    initCommentsForSlug,
+    getSlugReactions,
+    toggleReaction,
+    autoCleanSubscribe,
+  } from '../lib/store';
+  import type { ReactionType } from '../lib/firebase';
 
   function initCardReactions() {
-    const cards = document.querySelectorAll<HTMLElement>('.change-card');
+    autoCleanSubscribe(() => {
+      const cards = document.querySelectorAll<HTMLElement>('.change-card');
+      const unsubs: Array<() => void> = [];
 
-    cards.forEach((card) => {
-      const slug = card.getAttribute('data-slug');
-      if (!slug) return;
-
-      const storageKey = `gcp_radar_reactions_${slug}`;
-      let userVotes: Record<string, boolean> = {};
-      try {
-        userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
-      } catch {}
-
-      const buttons = card.querySelectorAll<HTMLButtonElement>('.card-reaction-btn');
-
-      const updateButtonsActiveState = (votes: Record<string, boolean>) => {
-        userVotes = { ...votes };
-        buttons.forEach((btn) => {
-          const type = btn.getAttribute('data-type') as ReactionType;
-          if (type) {
-            const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
-            const count = parseInt(countBadge?.textContent || '0', 10);
-            if (userVotes[type]) {
-              btn.classList.add('active');
-              if (countBadge) countBadge.style.display = 'inline-block';
-            } else {
-              btn.classList.remove('active');
-              if (countBadge) countBadge.style.display = count > 0 ? 'inline-block' : 'none';
-            }
-          }
-        });
-      };
-
-      updateButtonsActiveState(userVotes);
-
-      // Subscribe to live change stats
-      listenToChange(slug, (changeData) => {
-        if (changeData?.reaction_counts) {
-          buttons.forEach((btn) => {
-            const type = btn.getAttribute('data-type') as ReactionType;
-            if (type && changeData.reaction_counts?.[type] !== undefined) {
-              const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
-              const val = Math.max(0, changeData.reaction_counts[type]);
-              if (countBadge) {
-                countBadge.textContent = String(val);
-                countBadge.style.display = (val > 0 || userVotes[type]) ? 'inline-block' : 'none';
-              }
-              if (val > 0) btn.classList.add('has-count');
-              else if (!userVotes[type]) btn.classList.remove('has-count');
-            }
-          });
-        }
-      });
-
-      buttons.forEach((btn) => {
-        const type = btn.getAttribute('data-type') as ReactionType;
-        if (!type) return;
-
-        if (btn.dataset.initialized) return;
-        btn.dataset.initialized = 'true';
-
-        btn.addEventListener('click', async (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-
-          const auth = getFirebaseAuth();
-          let user = auth.currentUser;
-          if (!user) {
-            try {
-              user = await signInWithGoogle();
-            } catch {
-              console.log('Sign in cancelled');
-              return;
-            }
-          }
-          if (!user) return;
-
-          const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
-          const currentCount = parseInt(countBadge?.textContent || '0', 10);
-          const isCurrent = Boolean(userVotes[type]);
-
-          // Optimistic UI update
-          if (isCurrent) {
-            userVotes[type] = false;
-            btn.classList.remove('active');
-            const newCount = Math.max(0, currentCount - 1);
-            if (countBadge) {
-              countBadge.textContent = String(newCount);
-              countBadge.style.display = newCount > 0 ? 'inline-block' : 'none';
-            }
-            if (newCount === 0) btn.classList.remove('has-count');
-          } else {
-            userVotes[type] = true;
-            btn.classList.add('active');
-            const newCount = currentCount + 1;
-            if (countBadge) {
-              countBadge.textContent = String(newCount);
-              countBadge.style.display = 'inline-block';
-            }
-            btn.classList.add('has-count');
-          }
-
-          try {
-            localStorage.setItem(storageKey, JSON.stringify(userVotes));
-          } catch {}
-
-          await toggleUserReaction(slug, user, type, isCurrent).catch(console.error);
-        });
-      });
-    });
-
-    onAuthChange((user) => {
       cards.forEach((card) => {
         const slug = card.getAttribute('data-slug');
         if (!slug) return;
-        const buttons = card.querySelectorAll<HTMLButtonElement>('.card-reaction-btn');
 
-        if (user) {
-          listenToUserReactions(slug, user.uid, (liveVotes) => {
-            buttons.forEach((btn) => {
-              const type = btn.getAttribute('data-type') as ReactionType;
-              if (type) {
-                if (liveVotes[type]) {
-                  btn.classList.add('active');
-                } else {
-                  btn.classList.remove('active');
-                }
+        initReactionsForSlug(slug);
+        initCommentsForSlug(slug);
+
+        const buttons = card.querySelectorAll<HTMLButtonElement>('.card-reaction-btn');
+        const commentBadge = card.querySelector<HTMLElement>(`.discussion-count[data-slug="${slug}"]`);
+
+        // Subscribe to reactions store
+        const unsubReactions = $reactionsStore.subscribe(() => {
+          const state = getSlugReactions(slug);
+          buttons.forEach((btn) => {
+            const type = btn.getAttribute('data-type') as ReactionType;
+            if (type) {
+              const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
+              const val = state.counts[type] || 0;
+              if (countBadge) {
+                countBadge.textContent = String(val);
+                countBadge.style.display = (val > 0 || state.userVotes[type]) ? 'inline-block' : 'none';
               }
-            });
+              if (state.userVotes[type]) {
+                btn.classList.add('active');
+                btn.classList.add('has-count');
+              } else {
+                btn.classList.remove('active');
+                if (val > 0) btn.classList.add('has-count');
+                else btn.classList.remove('has-count');
+              }
+            }
           });
-        } else {
-          buttons.forEach((btn) => btn.classList.remove('active'));
-        }
+        });
+
+        unsubs.push(unsubReactions);
+
+        // Subscribe to comment counts
+        const unsubComments = $commentCounts.subscribe((counts) => {
+          const count = counts[slug] ?? 0;
+          if (commentBadge) {
+            commentBadge.textContent = String(count);
+          }
+        });
+
+        unsubs.push(unsubComments);
+
+        // Button click handlers
+        buttons.forEach((btn) => {
+          const type = btn.getAttribute('data-type') as ReactionType;
+          if (!type) return;
+
+          const handleBtnClick = async (e: MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            await toggleReaction(slug, type);
+          };
+
+          btn.addEventListener('click', handleBtnClick);
+          unsubs.push(() => btn.removeEventListener('click', handleBtnClick));
+        });
       });
+
+      return unsubs;
     });
   }
 

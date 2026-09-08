@@ -142,149 +142,166 @@
 </div>
 
 <script>
-  interface SharePayload {
-    slug: string;
-    title: string;
-    service: string;
-    api: string;
-    summary: string;
-    methods?: string[];
-    isBreaking?: boolean;
-    leadTimeDays?: number;
-  }
+  import {
+    $shareModalData,
+    openShareModal,
+    closeShareModal,
+    autoCleanSubscribe,
+    type SharePayload,
+  } from '../lib/store';
 
   function initGlobalShareModal() {
-    const backdrop = document.getElementById('globalShareModalBackdrop');
-    const closeBtn = document.getElementById('globalShareModalCloseBtn');
-    if (!backdrop) return;
+    autoCleanSubscribe(() => {
+      const backdrop = document.getElementById('globalShareModalBackdrop');
+      const closeBtn = document.getElementById('globalShareModalCloseBtn');
+      if (!backdrop) return;
 
-    const twitterArea = document.getElementById('shareTwitterTextarea') as HTMLTextAreaElement;
-    const twitterCount = document.getElementById('shareTwitterCount');
-    const twitterIntent = document.getElementById('shareTwitterIntentBtn') as HTMLAnchorElement;
+      const twitterArea = document.getElementById('shareTwitterTextarea') as HTMLTextAreaElement;
+      const twitterCount = document.getElementById('shareTwitterCount');
+      const twitterIntent = document.getElementById('shareTwitterIntentBtn') as HTMLAnchorElement;
 
-    const linkedInArea = document.getElementById('shareLinkedInTextarea') as HTMLTextAreaElement;
-    const linkedInCount = document.getElementById('shareLinkedInCount');
-    const linkedInIntent = document.getElementById('shareLinkedInIntentBtn') as HTMLAnchorElement;
+      const linkedInArea = document.getElementById('shareLinkedInTextarea') as HTMLTextAreaElement;
+      const linkedInCount = document.getElementById('shareLinkedInCount');
+      const linkedInIntent = document.getElementById('shareLinkedInIntentBtn') as HTMLAnchorElement;
 
-    const slackArea = document.getElementById('shareSlackTextarea') as HTMLTextAreaElement;
-    const redditTitle = document.getElementById('shareRedditTitleInput') as HTMLInputElement;
-    const redditBody = document.getElementById('shareRedditBodyTextarea') as HTMLTextAreaElement;
-    const redditIntent = document.getElementById('shareRedditIntentBtn') as HTMLAnchorElement;
+      const slackArea = document.getElementById('shareSlackTextarea') as HTMLTextAreaElement;
+      const redditTitle = document.getElementById('shareRedditTitleInput') as HTMLInputElement;
+      const redditBody = document.getElementById('shareRedditBodyTextarea') as HTMLTextAreaElement;
+      const redditIntent = document.getElementById('shareRedditIntentBtn') as HTMLAnchorElement;
 
-    function openModal(data: SharePayload) {
-      const permalink = `https://google-cloud-radar.com/changes/${data.slug}`;
-      const methods = data.methods || [];
-      const methodHighlight = methods.length > 0 ? methods[0] : data.api;
-
-      const twitterText = `⚡ Google Cloud API Radar: Updates detected for ${data.service} (${data.api})${data.isBreaking ? ' [BREAKING]' : ''} ahead of official release notes!\n\n"${data.title}"\nTargeted Method: ${methodHighlight}\n\nTrack the pre-release diff on Google Cloud Radar:\n${permalink}\n\n#GCP #GoogleCloud #DevOps #CloudArchitecture`;
-
-      const linkedInText = `Google Cloud API Update Signal: ${data.service}\n\nUnreleased changes detected in ${data.service} Google Discovery APIs before official release documentation:\n\n📌 Key Details:\n• Update: ${data.title}\n• API: ${data.api}\n• Impact: ${data.isBreaking ? '⚠️ Breaking Change' : '✨ New Feature / Method Extensions'}\n${methods.length > 0 ? `• Key Methods: ${methods.slice(0, 3).join(', ')}\n` : ''}\nSummary:\n${data.summary}\n\nInspect the full schema diff and crowd-sourced impact signals on Google Cloud Radar:\n${permalink}\n\n#GoogleCloud #GCP #CloudArchitecture #SoftwareEngineering #DevOps`;
-
-      const slackText = `*Google Cloud API Update: ${data.service} (${data.api})* ${data.isBreaking ? ':warning: *[BREAKING]*' : ''}\n*${data.title}*\n>${data.summary}\n${methods.length > 0 ? `*Targeted Methods:* \`${methods.slice(0, 2).join('`, `')}\`\n` : ''}> *Radar Permalink:* <${permalink}|Inspect Schema Diff & Methods>`;
-
-      const rTitle = `[Google Cloud Radar] ${data.service}: ${data.title}${data.isBreaking ? ' [Breaking Change]' : ''}`;
-      const rBody = `New API changes detected for **${data.service}** (\`${data.api}\`) ahead of official release notes:\n\n**Summary:**\n${data.summary}\n\n${methods.length > 0 ? `**Methods Updated:**\n${methods.map((m) => `- \`${m}\``).join('\n')}\n` : ''}Tracked live on Google Cloud Radar:\n${permalink}`;
-
-      if (twitterArea) twitterArea.value = twitterText;
-      if (twitterCount) twitterCount.textContent = `${twitterText.length} chars`;
-      if (twitterIntent) twitterIntent.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}`;
-
-      if (linkedInArea) linkedInArea.value = linkedInText;
-      if (linkedInCount) linkedInCount.textContent = `${linkedInText.length} chars`;
-      if (linkedInIntent) linkedInIntent.href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(permalink)}`;
-
-      if (slackArea) slackArea.value = slackText;
-      if (redditTitle) redditTitle.value = rTitle;
-      if (redditBody) redditBody.value = rBody;
-      if (redditIntent) redditIntent.href = `https://www.reddit.com/r/googlecloud/submit?title=${encodeURIComponent(rTitle)}&text=${encodeURIComponent(rBody)}`;
-
-      backdrop.style.display = 'flex';
-      backdrop.setAttribute('aria-hidden', 'false');
-    }
-
-    function closeModal() {
-      backdrop.style.display = 'none';
-      backdrop.setAttribute('aria-hidden', 'true');
-    }
-
-    closeBtn?.addEventListener('click', closeModal);
-    backdrop?.addEventListener('click', (e) => {
-      if (e.target === backdrop) closeModal();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && backdrop.style.display === 'flex') {
-        closeModal();
-      }
-    });
-
-    // Listen to global open event
-    window.addEventListener('open_share_modal', (e: any) => {
-      if (e.detail) openModal(e.detail);
-    });
-
-    // Intercept clicks on any share trigger button across the document
-    document.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest('.card-share-trigger-btn') as HTMLElement;
-      if (!btn) return;
-      e.preventDefault();
-      e.stopPropagation();
-
-      const slug = btn.getAttribute('data-share-slug') || '';
-      const title = btn.getAttribute('data-share-title') || '';
-      const service = btn.getAttribute('data-share-service') || '';
-      const api = btn.getAttribute('data-share-api') || '';
-      const summary = btn.getAttribute('data-share-summary') || '';
-      let methods: string[] = [];
-      try {
-        methods = JSON.parse(btn.getAttribute('data-share-methods') || '[]');
-      } catch {}
-      const isBreaking = btn.getAttribute('data-share-breaking') === 'true';
-
-      openModal({ slug, title, service, api, summary, methods, isBreaking });
-    });
-
-    // Tabs
-    const tabs = backdrop.querySelectorAll('.tab-btn');
-    const panels = backdrop.querySelectorAll('.tab-panel');
-
-    tabs.forEach((tab) => {
-      tab.addEventListener('click', () => {
-        const targetTab = tab.getAttribute('data-tab');
-        tabs.forEach((t) => t.classList.remove('active'));
-        panels.forEach((p) => p.classList.remove('active'));
-
-        tab.classList.add('active');
-        const activePanel = backdrop.querySelector(`[data-panel="${targetTab}"]`);
-        if (activePanel) activePanel.classList.add('active');
-      });
-    });
-
-    // Copy Handlers
-    const setupCopyBtn = (btnId: string, getText: () => string) => {
-      const btn = document.getElementById(btnId);
-      btn?.addEventListener('click', async () => {
-        const text = getText();
-        if (!text) return;
-        try {
-          await navigator.clipboard.writeText(text);
-          const orig = btn.innerHTML;
-          btn.innerHTML = '<span>✅ Copied!</span>';
-          btn.classList.add('copied');
-          setTimeout(() => {
-            btn.innerHTML = orig;
-            btn.classList.remove('copied');
-          }, 1800);
-        } catch (err) {
-          console.error('Failed to copy', err);
+      function renderModalContent(data: SharePayload | null) {
+        if (!data) {
+          backdrop.style.display = 'none';
+          backdrop.setAttribute('aria-hidden', 'true');
+          return;
         }
-      });
-    };
 
-    setupCopyBtn('shareTwitterCopyBtn', () => twitterArea?.value || '');
-    setupCopyBtn('shareLinkedInCopyBtn', () => linkedInArea?.value || '');
-    setupCopyBtn('shareSlackCopyBtn', () => slackArea?.value || '');
-    setupCopyBtn('shareRedditCopyBtn', () => `${redditTitle?.value || ''}\n\n${redditBody?.value || ''}`);
+        const permalink = `https://google-cloud-radar.com/changes/${data.slug}`;
+        const methods = data.methods || [];
+        const methodHighlight = methods.length > 0 ? methods[0] : data.api;
+
+        const twitterText = `⚡ Google Cloud API Radar: Updates detected for ${data.service} (${data.api})${data.isBreaking ? ' [BREAKING]' : ''} ahead of official release notes!\n\n"${data.title}"\nTargeted Method: ${methodHighlight}\n\nTrack the pre-release diff on Google Cloud Radar:\n${permalink}\n\n#GCP #GoogleCloud #DevOps #CloudArchitecture`;
+
+        const linkedInText = `Google Cloud API Update Signal: ${data.service}\n\nUnreleased changes detected in ${data.service} Google Discovery APIs before official release documentation:\n\n📌 Key Details:\n• Update: ${data.title}\n• API: ${data.api}\n• Impact: ${data.isBreaking ? '⚠️ Breaking Change' : '✨ New Feature / Method Extensions'}\n${methods.length > 0 ? `• Key Methods: ${methods.slice(0, 3).join(', ')}\n` : ''}\nSummary:\n${data.summary}\n\nInspect the full schema diff and crowd-sourced impact signals on Google Cloud Radar:\n${permalink}\n\n#GoogleCloud #GCP #CloudArchitecture #SoftwareEngineering #DevOps`;
+
+        const slackText = `*Google Cloud API Update: ${data.service} (${data.api})* ${data.isBreaking ? ':warning: *[BREAKING]*' : ''}\n*${data.title}*\n>${data.summary}\n${methods.length > 0 ? `*Targeted Methods:* \`${methods.slice(0, 2).join('`, `')}\`\n` : ''}> *Radar Permalink:* <${permalink}|Inspect Schema Diff & Methods>`;
+
+        const rTitle = `[Google Cloud Radar] ${data.service}: ${data.title}${data.isBreaking ? ' [Breaking Change]' : ''}`;
+        const rBody = `New API changes detected for **${data.service}** (\`${data.api}\`) ahead of official release notes:\n\n**Summary:**\n${data.summary}\n\n${methods.length > 0 ? `**Methods Updated:**\n${methods.map((m) => `- \`${m}\``).join('\n')}\n` : ''}Tracked live on Google Cloud Radar:\n${permalink}`;
+
+        if (twitterArea) twitterArea.value = twitterText;
+        if (twitterCount) twitterCount.textContent = `${twitterText.length} chars`;
+        if (twitterIntent) twitterIntent.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}`;
+
+        if (linkedInArea) linkedInArea.value = linkedInText;
+        if (linkedInCount) linkedInCount.textContent = `${linkedInText.length} chars`;
+        if (linkedInIntent) linkedInIntent.href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(permalink)}`;
+
+        if (slackArea) slackArea.value = slackText;
+        if (redditTitle) redditTitle.value = rTitle;
+        if (redditBody) redditBody.value = rBody;
+        if (redditIntent) redditIntent.href = `https://www.reddit.com/r/googlecloud/submit?title=${encodeURIComponent(rTitle)}&text=${encodeURIComponent(rBody)}`;
+
+        backdrop.style.display = 'flex';
+        backdrop.setAttribute('aria-hidden', 'false');
+      }
+
+      const unsubModal = $shareModalData.subscribe((data) => {
+        renderModalContent(data);
+      });
+
+      const handleCloseClick = () => closeShareModal();
+      const handleBackdropClick = (e: MouseEvent) => {
+        if (e.target === backdrop) closeShareModal();
+      };
+      const handleKeydown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && backdrop.style.display === 'flex') {
+          closeShareModal();
+        }
+      };
+
+      closeBtn?.addEventListener('click', handleCloseClick);
+      backdrop?.addEventListener('click', handleBackdropClick);
+      document.addEventListener('keydown', handleKeydown);
+
+      const handleCustomOpen = (e: any) => {
+        if (e.detail) openShareModal(e.detail);
+      };
+      window.addEventListener('open_share_modal', handleCustomOpen);
+
+      const handleDocClick = (e: MouseEvent) => {
+        const btn = (e.target as HTMLElement).closest('.card-share-trigger-btn') as HTMLElement;
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        const slug = btn.getAttribute('data-share-slug') || '';
+        const title = btn.getAttribute('data-share-title') || '';
+        const service = btn.getAttribute('data-share-service') || '';
+        const api = btn.getAttribute('data-share-api') || '';
+        const summary = btn.getAttribute('data-share-summary') || '';
+        let methods: string[] = [];
+        try {
+          methods = JSON.parse(btn.getAttribute('data-share-methods') || '[]');
+        } catch {}
+        const isBreaking = btn.getAttribute('data-share-breaking') === 'true';
+
+        openShareModal({ slug, title, service, api, summary, methods, isBreaking });
+      };
+
+      document.addEventListener('click', handleDocClick);
+
+      // Tabs
+      const tabs = backdrop.querySelectorAll('.tab-btn');
+      const panels = backdrop.querySelectorAll('.tab-panel');
+
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          const targetTab = tab.getAttribute('data-tab');
+          tabs.forEach((t) => t.classList.remove('active'));
+          panels.forEach((p) => p.classList.remove('active'));
+
+          tab.classList.add('active');
+          const activePanel = backdrop.querySelector(`[data-panel="${targetTab}"]`);
+          if (activePanel) activePanel.classList.add('active');
+        });
+      });
+
+      // Copy Handlers
+      const setupCopyBtn = (btnId: string, getText: () => string) => {
+        const btn = document.getElementById(btnId);
+        btn?.addEventListener('click', async () => {
+          const text = getText();
+          if (!text) return;
+          try {
+            await navigator.clipboard.writeText(text);
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<span>✅ Copied!</span>';
+            btn.classList.add('copied');
+            setTimeout(() => {
+              btn.innerHTML = orig;
+              btn.classList.remove('copied');
+            }, 1800);
+          } catch (err) {
+            console.error('Failed to copy', err);
+          }
+        });
+      };
+
+      setupCopyBtn('shareTwitterCopyBtn', () => twitterArea?.value || '');
+      setupCopyBtn('shareLinkedInCopyBtn', () => linkedInArea?.value || '');
+      setupCopyBtn('shareSlackCopyBtn', () => slackArea?.value || '');
+      setupCopyBtn('shareRedditCopyBtn', () => `${redditTitle?.value || ''}\n\n${redditBody?.value || ''}`);
+
+      return [
+        unsubModal,
+        () => closeBtn?.removeEventListener('click', handleCloseClick),
+        () => backdrop?.removeEventListener('click', handleBackdropClick),
+        () => document.removeEventListener('keydown', handleKeydown),
+        () => window.removeEventListener('open_share_modal', handleCustomOpen),
+        () => document.removeEventListener('click', handleDocClick),
+      ];
+    });
   }
 
   initGlobalShareModal();

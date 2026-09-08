@@ -155,168 +155,201 @@ const sortedServices = [...services].sort((a, b) => {
 
 <script>
   import {
-    signInWithGoogle,
-    onAuthChange,
+    $authUser,
+    $alertsModalOpen,
+    openAlertsModal,
+    closeAlertsModal,
+    signIn,
+    autoCleanSubscribe,
+  } from '../lib/store';
+  import {
     getUserAlertPreferences,
     saveUserAlertPreferences,
     type UserAlertPreferences,
   } from '../lib/firebase';
 
   function initAlertsModal() {
-    const backdrop = document.getElementById('alertsModalBackdrop');
-    const closeBtn = document.getElementById('closeAlertsModalBtn');
-    const loggedOutSection = document.getElementById('alertsAuthLoggedOut');
-    const loggedInSection = document.getElementById('alertsAuthLoggedIn');
-    const googleSignInBtn = document.getElementById('alertsGoogleSignInBtn');
+    autoCleanSubscribe(() => {
+      const backdrop = document.getElementById('alertsModalBackdrop');
+      const closeBtn = document.getElementById('closeAlertsModalBtn');
+      const loggedOutSection = document.getElementById('alertsAuthLoggedOut');
+      const loggedInSection = document.getElementById('alertsAuthLoggedIn');
+      const googleSignInBtn = document.getElementById('alertsGoogleSignInBtn');
 
-    const userAvatar = document.getElementById('alertsUserAvatar') as HTMLImageElement;
-    const userName = document.getElementById('alertsUserName');
-    const userEmail = document.getElementById('alertsUserEmail');
+      const userAvatar = document.getElementById('alertsUserAvatar') as HTMLImageElement;
+      const userName = document.getElementById('alertsUserName');
+      const userEmail = document.getElementById('alertsUserEmail');
 
-    const prefBreaking = document.getElementById('prefBreakingAlerts') as HTMLInputElement;
-    const prefWeekly = document.getElementById('prefWeeklyDigest') as HTMLInputElement;
-    const scopeAll = document.getElementById('scopeAllServices') as HTMLInputElement;
-    const scopeCustom = document.getElementById('scopeCustomServices') as HTMLInputElement;
-    const customServicesGrid = document.getElementById('customServicesList');
-    const serviceCheckboxes = document.querySelectorAll('.service-pick-checkbox') as NodeListOf<HTMLInputElement>;
+      const prefBreaking = document.getElementById('prefBreakingAlerts') as HTMLInputElement;
+      const prefWeekly = document.getElementById('prefWeeklyDigest') as HTMLInputElement;
+      const scopeAll = document.getElementById('scopeAllServices') as HTMLInputElement;
+      const scopeCustom = document.getElementById('scopeCustomServices') as HTMLInputElement;
+      const customServicesGrid = document.getElementById('customServicesList');
+      const serviceCheckboxes = document.querySelectorAll('.service-pick-checkbox') as NodeListOf<HTMLInputElement>;
 
-    const saveBtn = document.getElementById('saveAlertPrefsBtn');
-    const saveBtnText = document.getElementById('savePrefsBtnText');
-    const turnOffBtn = document.getElementById('turnOffAlertsBtn');
+      const saveBtn = document.getElementById('saveAlertPrefsBtn');
+      const saveBtnText = document.getElementById('savePrefsBtnText');
+      const turnOffBtn = document.getElementById('turnOffAlertsBtn');
 
-    let currentUser: any = null;
+      let currentUser: any = null;
 
-    function openModal() {
-      if (backdrop) {
-        backdrop.style.display = 'flex';
-        backdrop.setAttribute('aria-hidden', 'false');
-      }
-    }
-
-    function closeModal() {
-      if (backdrop) {
-        backdrop.style.display = 'none';
-        backdrop.setAttribute('aria-hidden', 'true');
-      }
-    }
-
-    closeBtn?.addEventListener('click', closeModal);
-    backdrop?.addEventListener('click', (e) => {
-      if (e.target === backdrop) closeModal();
-    });
-
-    // Listen to global open trigger
-    window.addEventListener('open_alerts_modal', openModal);
-
-    // Auto-open modal if deep-linked via email (?action=alerts or ?modal=alerts)
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('action') === 'alerts' || urlParams.get('modal') === 'alerts') {
-      openModal();
-    }
-
-    // Toggle custom services list visibility
-    scopeAll?.addEventListener('change', () => {
-      if (customServicesGrid) customServicesGrid.style.display = 'none';
-    });
-    scopeCustom?.addEventListener('change', () => {
-      if (customServicesGrid) customServicesGrid.style.display = 'grid';
-    });
-
-    async function syncUserPrefs(user: any) {
-      currentUser = user;
-      if (!user) {
-        if (loggedOutSection) loggedOutSection.style.display = 'block';
-        if (loggedInSection) loggedInSection.style.display = 'none';
-        return;
-      }
-
-      if (loggedOutSection) loggedOutSection.style.display = 'none';
-      if (loggedInSection) loggedInSection.style.display = 'block';
-
-      if (userAvatar) userAvatar.src = user.photoURL || 'https://www.gstatic.com/images/branding/product/2x/avatar_square_blue_512dp.png';
-      if (userName) userName.textContent = user.displayName || 'Google Cloud Engineer';
-      if (userEmail) userEmail.textContent = user.email || '';
-
-      const prefs: UserAlertPreferences = await getUserAlertPreferences(user);
-      if (prefBreaking) prefBreaking.checked = prefs.breakingAlerts;
-      if (prefWeekly) prefWeekly.checked = prefs.weeklyDigest;
-
-      if (prefs.allServices) {
-        if (scopeAll) scopeAll.checked = true;
-        if (customServicesGrid) customServicesGrid.style.display = 'none';
-      } else {
-        if (scopeCustom) scopeCustom.checked = true;
-        if (customServicesGrid) customServicesGrid.style.display = 'grid';
-      }
-
-      const watchedSet = new Set(prefs.watchedServices || []);
-      serviceCheckboxes.forEach((cb) => {
-        cb.checked = watchedSet.has(cb.value);
-      });
-    }
-
-    onAuthChange((user) => {
-      syncUserPrefs(user);
-    });
-
-    googleSignInBtn?.addEventListener('click', async () => {
-      try {
-        const user = await signInWithGoogle();
-        if (user) {
-          await syncUserPrefs(user);
-          // Auto-save default alert subscription on first login
-          await saveUserAlertPreferences(user, {
-            breakingAlerts: true,
-            weeklyDigest: true,
-            allServices: true,
-          });
+      function renderModalState(isOpen: boolean) {
+        if (!backdrop) return;
+        if (isOpen) {
+          backdrop.style.display = 'flex';
+          backdrop.setAttribute('aria-hidden', 'false');
+        } else {
+          backdrop.style.display = 'none';
+          backdrop.setAttribute('aria-hidden', 'true');
         }
-      } catch (err) {
-        console.error('Failed to sign in', err);
       }
-    });
 
-    saveBtn?.addEventListener('click', async () => {
-      if (!currentUser) return;
-      const watched: string[] = [];
-      serviceCheckboxes.forEach((cb) => {
-        if (cb.checked) watched.push(cb.value);
+      const unsubModal = $alertsModalOpen.subscribe((isOpen) => {
+        renderModalState(isOpen);
       });
 
-      const updatedPrefs = {
-        breakingAlerts: prefBreaking?.checked ?? true,
-        weeklyDigest: prefWeekly?.checked ?? true,
-        allServices: scopeAll?.checked ?? true,
-        watchedServices: watched,
+      const handleCloseClick = () => closeAlertsModal();
+      const handleBackdropClick = (e: MouseEvent) => {
+        if (e.target === backdrop) closeAlertsModal();
       };
 
-      if (saveBtnText) saveBtnText.textContent = 'Saving...';
-      try {
-        await saveUserAlertPreferences(currentUser, updatedPrefs);
-        if (saveBtnText) saveBtnText.textContent = 'Preferences Saved! ✓';
+      closeBtn?.addEventListener('click', handleCloseClick);
+      backdrop?.addEventListener('click', handleBackdropClick);
+
+      // Support custom window event for backward compatibility
+      const handleCustomOpen = () => openAlertsModal();
+      window.addEventListener('open_alerts_modal', handleCustomOpen);
+
+      // Auto-open modal if deep-linked via URL parameter (?action=alerts or ?modal=alerts)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('action') === 'alerts' || urlParams.get('modal') === 'alerts') {
+        openAlertsModal();
+      }
+
+      const handleScopeAllChange = () => {
+        if (customServicesGrid) customServicesGrid.style.display = 'none';
+      };
+      const handleScopeCustomChange = () => {
+        if (customServicesGrid) customServicesGrid.style.display = 'grid';
+      };
+
+      scopeAll?.addEventListener('change', handleScopeAllChange);
+      scopeCustom?.addEventListener('change', handleScopeCustomChange);
+
+      async function syncUserPrefs(user: any) {
+        currentUser = user;
+        if (!user) {
+          if (loggedOutSection) loggedOutSection.style.display = 'block';
+          if (loggedInSection) loggedInSection.style.display = 'none';
+          return;
+        }
+
+        if (loggedOutSection) loggedOutSection.style.display = 'none';
+        if (loggedInSection) loggedInSection.style.display = 'block';
+
+        if (userAvatar) userAvatar.src = user.photoURL || 'https://www.gstatic.com/images/branding/product/2x/avatar_square_blue_512dp.png';
+        if (userName) userName.textContent = user.displayName || 'Google Cloud Engineer';
+        if (userEmail) userEmail.textContent = user.email || '';
+
+        const prefs: UserAlertPreferences = await getUserAlertPreferences(user);
+        if (prefBreaking) prefBreaking.checked = prefs.breakingAlerts;
+        if (prefWeekly) prefWeekly.checked = prefs.weeklyDigest;
+
+        if (prefs.allServices) {
+          if (scopeAll) scopeAll.checked = true;
+          if (customServicesGrid) customServicesGrid.style.display = 'none';
+        } else {
+          if (scopeCustom) scopeCustom.checked = true;
+          if (customServicesGrid) customServicesGrid.style.display = 'grid';
+        }
+
+        const watchedSet = new Set(prefs.watchedServices || []);
+        serviceCheckboxes.forEach((cb) => {
+          cb.checked = watchedSet.has(cb.value);
+        });
+      }
+
+      const unsubAuth = $authUser.subscribe((user) => {
+        syncUserPrefs(user);
+      });
+
+      const handleGoogleSignInClick = async () => {
+        try {
+          const user = await signIn();
+          if (user) {
+            await syncUserPrefs(user);
+            await saveUserAlertPreferences(user, {
+              breakingAlerts: true,
+              weeklyDigest: true,
+              allServices: true,
+            });
+          }
+        } catch (err) {
+          console.error('Failed to sign in', err);
+        }
+      };
+
+      googleSignInBtn?.addEventListener('click', handleGoogleSignInClick);
+
+      const handleSaveClick = async () => {
+        if (!currentUser) return;
+        const watched: string[] = [];
+        serviceCheckboxes.forEach((cb) => {
+          if (cb.checked) watched.push(cb.value);
+        });
+
+        const updatedPrefs = {
+          breakingAlerts: prefBreaking?.checked ?? true,
+          weeklyDigest: prefWeekly?.checked ?? true,
+          allServices: scopeAll?.checked ?? true,
+          watchedServices: watched,
+        };
+
+        if (saveBtnText) saveBtnText.textContent = 'Saving...';
+        try {
+          await saveUserAlertPreferences(currentUser, updatedPrefs);
+          if (saveBtnText) saveBtnText.textContent = 'Preferences Saved! ✓';
+          setTimeout(() => {
+            if (saveBtnText) saveBtnText.textContent = 'Save Preferences';
+            closeAlertsModal();
+          }, 1200);
+        } catch (err) {
+          console.error('Save failed', err);
+          if (saveBtnText) saveBtnText.textContent = 'Save Failed. Retry';
+        }
+      };
+
+      saveBtn?.addEventListener('click', handleSaveClick);
+
+      const handleTurnOffClick = async () => {
+        if (!currentUser) return;
+        if (prefBreaking) prefBreaking.checked = false;
+        if (prefWeekly) prefWeekly.checked = false;
+        await saveUserAlertPreferences(currentUser, {
+          breakingAlerts: false,
+          weeklyDigest: false,
+        });
+        if (saveBtnText) saveBtnText.textContent = 'Alerts Disabled ✓';
         setTimeout(() => {
           if (saveBtnText) saveBtnText.textContent = 'Save Preferences';
-          closeModal();
-        }, 1200);
-      } catch (err) {
-        console.error('Save failed', err);
-        if (saveBtnText) saveBtnText.textContent = 'Save Failed. Retry';
-      }
-    });
+          closeAlertsModal();
+        }, 1000);
+      };
 
-    turnOffBtn?.addEventListener('click', async () => {
-      if (!currentUser) return;
-      if (prefBreaking) prefBreaking.checked = false;
-      if (prefWeekly) prefWeekly.checked = false;
-      await saveUserAlertPreferences(currentUser, {
-        breakingAlerts: false,
-        weeklyDigest: false,
-      });
-      if (saveBtnText) saveBtnText.textContent = 'Alerts Disabled ✓';
-      setTimeout(() => {
-        if (saveBtnText) saveBtnText.textContent = 'Save Preferences';
-        closeModal();
-      }, 1000);
+      turnOffBtn?.addEventListener('click', handleTurnOffClick);
+
+      return [
+        unsubModal,
+        unsubAuth,
+        () => closeBtn?.removeEventListener('click', handleCloseClick),
+        () => backdrop?.removeEventListener('click', handleBackdropClick),
+        () => window.removeEventListener('open_alerts_modal', handleCustomOpen),
+        () => scopeAll?.removeEventListener('change', handleScopeAllChange),
+        () => scopeCustom?.removeEventListener('change', handleScopeCustomChange),
+        () => googleSignInBtn?.removeEventListener('click', handleGoogleSignInClick),
+        () => saveBtn?.removeEventListener('click', handleSaveClick),
+        () => turnOffBtn?.removeEventListener('click', handleTurnOffClick),
+      ];
     });
   }
 
