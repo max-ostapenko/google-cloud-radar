@@ -44,7 +44,12 @@ def is_duplicate_diff(diff: dict, recent_history: list[dict]) -> tuple[bool, str
     for cat in ("added", "modified"):
         for e in diff.get(cat, []):
             val = str(e.get("value") or e.get("new") or "").strip().lower()
-            if val and len(val) > 4 and not val.startswith("{") and not val.startswith("["):
+            if (
+                val
+                and len(val) > 4
+                and not val.startswith("{")
+                and not val.startswith("[")
+            ):
                 specific_values.add(val.split("/")[-1])
 
     for entry in recent_history:

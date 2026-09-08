@@ -14,6 +14,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import crypto from 'node:crypto';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SEED_FILE = path.resolve(__dirname, '../src/data/seed_data.json');
@@ -179,6 +180,76 @@ const server = http.createServer(async (req, res) => {
       status: 'ok',
       service: 'Google Cloud Radar Mock Firestore Server',
       changes_count: store.get('changes')?.size || 0,
+    });
+  }
+
+  // RFC 8058 One-Click Unsubscribe Endpoint
+  if (pathname === '/api/unsubscribe') {
+    let email = url.searchParams.get('email') || '';
+    let token = url.searchParams.get('token') || '';
+
+    if (!email || !token) {
+      const body = await readBody(req);
+      if (body.email) email = body.email;
+      if (body.token) token = body.token;
+    }
+
+    const secret =
+      process.env.UNSUBSCRIBE_SECRET ||
+      process.env.RESEND_API_KEY ||
+      'gcp-cloud-radar-unsubscribe-secret-v1';
+    const normEmail = email.toLowerCase().trim();
+    const expected = crypto.createHmac('sha256', secret).update(normEmail).digest('hex');
+
+    let isValid = false;
+    try {
+      if (
+        email &&
+        token &&
+        crypto.timingSafeEqual(
+          Buffer.from(expected.toLowerCase()),
+          Buffer.from(token.trim().toLowerCase())
+        )
+      ) {
+        isValid = true;
+      }
+    } catch {}
+
+    if (!isValid) {
+      return sendJson(res, 400, { error: 'Invalid or tampered unsubscribe token' });
+    }
+
+    // Update users collection in mock store
+    if (!store.has('users')) {
+      store.set('users', new Map());
+    }
+    const usersMap = store.get('users');
+    let found = false;
+    for (const [id, u] of usersMap.entries()) {
+      if ((u.email || '').toLowerCase().trim() === normEmail) {
+        usersMap.set(id, {
+          ...u,
+          breakingAlerts: false,
+          weeklyDigest: false,
+          updated_at: new Date().toISOString(),
+        });
+        found = true;
+      }
+    }
+    if (!found) {
+      const safeId = `unsub_${normEmail.replace(/[^a-z0-9]/g, '_')}`;
+      usersMap.set(safeId, {
+        id: safeId,
+        email,
+        breakingAlerts: false,
+        weeklyDigest: false,
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    return sendJson(res, 200, {
+      status: 'success',
+      message: `Successfully unsubscribed ${email}`,
     });
   }
 

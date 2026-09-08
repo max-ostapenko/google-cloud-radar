@@ -36,7 +36,9 @@ class TestDispatchWeeklyDigest(unittest.TestCase):
 
     def test_render_weekly_digest_html(self):
         html = dispatch_weekly_digest.render_weekly_digest_html(
-            self.sample_changes, week_label="Week of August 31, 2026"
+            self.sample_changes,
+            week_label="Week of August 31, 2026",
+            recipient_email="digest_user@example.com",
         )
         self.assertIn("Google Cloud", html)
         self.assertIn("Week of August 31, 2026", html)
@@ -46,6 +48,10 @@ class TestDispatchWeeklyDigest(unittest.TestCase):
         self.assertIn("BigQuery", html)
         self.assertIn(
             "https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1", html
+        )
+        self.assertIn(
+            "https://google-cloud-radar.com/unsubscribe?email=digest_user%40example.com&token=",
+            html,
         )
         self.assertIn("https://google-cloud-radar.com/?action=alerts", html)
 

@@ -22,11 +22,17 @@ class TestDispatchEmailAlerts(unittest.TestCase):
         }
 
     def test_render_breaking_email_html(self):
-        html = dispatch_email_alerts.render_breaking_email_html(self.sample_change)
+        html = dispatch_email_alerts.render_breaking_email_html(
+            self.sample_change, recipient_email="user@example.com"
+        )
         self.assertIn("Vertex AI", html)
         self.assertIn("Vertex AI: Breaking Changes &amp; Agent IAM Controls", html)
         self.assertIn(
             "https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1", html
+        )
+        self.assertIn(
+            "https://google-cloud-radar.com/unsubscribe?email=user%40example.com&token=",
+            html,
         )
         self.assertIn("https://google-cloud-radar.com/?action=alerts", html)
         self.assertIn("publishers.v1beta1.compact", html)
