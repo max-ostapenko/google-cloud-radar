@@ -44,7 +44,12 @@ def is_duplicate_diff(diff: dict, recent_history: list[dict]) -> tuple[bool, str
     for cat in ("added", "modified"):
         for e in diff.get(cat, []):
             val = str(e.get("value") or e.get("new") or "").strip().lower()
-            if val and len(val) > 4 and not val.startswith("{") and not val.startswith("["):
+            if (
+                val
+                and len(val) > 4
+                and not val.startswith("{")
+                and not val.startswith("[")
+            ):
                 specific_values.add(val.split("/")[-1])
 
     for entry in recent_history:
@@ -178,6 +183,10 @@ def main() -> None:
             # Deterministic ground truth override: ensure breaking flag always reflects AST schema analysis
             if diff.get("is_breaking") is not None:
                 insight["breaking"] = bool(diff.get("is_breaking"))
+            if diff.get("has_parameter_requirement_changes"):
+                insight["migration_required"] = True
+                if not insight.get("parameter_flags") and diff.get("parameter_flags"):
+                    insight["parameter_flags"] = diff.get("parameter_flags")
             insights.append(insight)
         else:
             logger.warning(

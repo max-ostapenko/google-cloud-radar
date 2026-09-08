@@ -282,6 +282,139 @@ def detect_breaking_changes(
     return is_breaking, reasons
 
 
+def detect_parameter_requirement_changes(
+    old_flat: dict[str, object],
+    new_flat: dict[str, object],
+    added_paths: list[str],
+    removed_paths: list[str],
+    modified_paths: list[str],
+) -> tuple[bool, list[dict], list[str]]:
+    """Evaluates whether changes involve required parameters or parameter requirement mutations.
+
+    Returns:
+        (has_parameter_requirement_changes: bool, parameter_changes: list[dict], parameter_flags: list[str])
+    """
+    param_changes: list[dict] = []
+    param_flags: list[str] = []
+
+    def _extract_context(parts: list[str]) -> tuple[str, str]:
+        method_name = "unknown_method"
+        param_name = "unknown_param"
+        if "parameters" in parts:
+            p_idx = parts.index("parameters")
+            if len(parts) > p_idx + 1:
+                param_name = parts[p_idx + 1]
+            if "methods" in parts:
+                m_idx = parts.index("methods")
+                if len(parts) > m_idx + 1:
+                    method_name = parts[m_idx + 1]
+                    if m_idx >= 2 and parts[m_idx - 2] == "resources":
+                        method_name = f"{parts[m_idx - 1]}.{method_name}"
+        elif "schemas" in parts:
+            s_idx = parts.index("schemas")
+            if len(parts) > s_idx + 1:
+                method_name = f"schema:{parts[s_idx + 1]}"
+            if "properties" in parts:
+                pr_idx = parts.index("properties")
+                if len(parts) > pr_idx + 1:
+                    param_name = parts[pr_idx + 1]
+        return method_name, param_name
+
+    # 1. Inspect Added Paths
+    for p in added_paths:
+        parts = p.split(".")
+        new_val = new_flat.get(p)
+        if "parameters" in parts:
+            method_name, param_name = _extract_context(parts)
+            if parts[-1] == "required" and new_val in (True, "true"):
+                item = {
+                    "param": param_name,
+                    "method": method_name,
+                    "change_type": "added_required",
+                    "details": f"Required parameter '{param_name}' added to method '{method_name}'",
+                }
+                if item not in param_changes:
+                    param_changes.append(item)
+                flag = f"required_param_added:{param_name}"
+                if flag not in param_flags:
+                    param_flags.append(flag)
+            elif (
+                parts[-1] in ("type", "location")
+                and len(parts) >= 2
+                and parts[-2] == param_name
+            ):
+                req_path = ".".join(parts[:-1] + ["required"])
+                if new_flat.get(req_path) in (True, "true"):
+                    item = {
+                        "param": param_name,
+                        "method": method_name,
+                        "change_type": "added_required",
+                        "details": f"Required parameter '{param_name}' added to method '{method_name}'",
+                    }
+                    if item not in param_changes:
+                        param_changes.append(item)
+                    flag = f"required_param_added:{param_name}"
+                    if flag not in param_flags:
+                        param_flags.append(flag)
+
+    # 2. Inspect Removed Paths
+    for p in removed_paths:
+        parts = p.split(".")
+        if "parameters" in parts:
+            method_name, param_name = _extract_context(parts)
+            p_idx = parts.index("parameters")
+            if len(parts) == p_idx + 2 or (
+                len(parts) == p_idx + 3
+                and parts[p_idx + 2] in ("type", "location", "format", "required")
+            ):
+                item = {
+                    "param": param_name,
+                    "method": method_name,
+                    "change_type": "removed_param",
+                    "details": f"Parameter '{param_name}' removed from method '{method_name}'",
+                }
+                if item not in param_changes:
+                    param_changes.append(item)
+                flag = f"parameter_removed:{param_name}"
+                if flag not in param_flags:
+                    param_flags.append(flag)
+
+    # 3. Inspect Modified Paths
+    for p in modified_paths:
+        parts = p.split(".")
+        old_val = old_flat.get(p)
+        new_val = new_flat.get(p)
+        if "parameters" in parts and parts[-1] == "required":
+            method_name, param_name = _extract_context(parts)
+            if old_val in (False, None, "false") and new_val in (True, "true"):
+                item = {
+                    "param": param_name,
+                    "method": method_name,
+                    "change_type": "made_required",
+                    "details": f"Parameter '{param_name}' changed to strictly required in method '{method_name}'",
+                }
+                if item not in param_changes:
+                    param_changes.append(item)
+                flag = f"required_param_modified:{param_name}"
+                if flag not in param_flags:
+                    param_flags.append(flag)
+            elif old_val in (True, "true") and new_val in (False, None, "false"):
+                item = {
+                    "param": param_name,
+                    "method": method_name,
+                    "change_type": "made_optional",
+                    "details": f"Required parameter '{param_name}' changed to optional in method '{method_name}'",
+                }
+                if item not in param_changes:
+                    param_changes.append(item)
+                flag = f"required_param_relaxed:{param_name}"
+                if flag not in param_flags:
+                    param_flags.append(flag)
+
+    has_param_changes = len(param_changes) > 0
+    return has_param_changes, param_changes, param_flags
+
+
 def build_structured_diff(
     filename: str, old_json_str: str, new_json_str: str
 ) -> Optional[dict]:
@@ -336,6 +469,15 @@ def build_structured_diff(
         old_flat, new_flat, added, removed, modified
     )
 
+    # Compute parameter requirement change analysis
+    (
+        has_param_changes,
+        param_changes,
+        param_flags,
+    ) = detect_parameter_requirement_changes(
+        old_flat, new_flat, added, removed, modified
+    )
+
     # Build structured entries (cap size to stay within token budget)
     def _added_entries(paths):
         out = []
@@ -368,6 +510,9 @@ def build_structured_diff(
         "api": api_name,
         "is_breaking": is_breaking,
         "breaking_reasons": breaking_reasons,
+        "has_parameter_requirement_changes": has_param_changes,
+        "parameter_requirement_changes": param_changes,
+        "parameter_flags": param_flags,
         "added": _added_entries(added),
         "removed": _removed_entries(removed),
         "modified": _modified_entries(modified),
@@ -381,6 +526,8 @@ def build_structured_diff(
             ),
             "is_breaking": is_breaking,
             "breaking_reasons": breaking_reasons,
+            "has_parameter_requirement_changes": has_param_changes,
+            "parameter_requirement_changes_count": len(param_changes),
         },
     }
 

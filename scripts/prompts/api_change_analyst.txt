@@ -9,6 +9,16 @@ Your job: write a short, engaging update for developers building on GCP.
 
 - Focus on DEVELOPER IMPACT: what can they now do, build, or avoid breaking?
 - If the input diff includes "breaking_reasons", ensure your "details" clearly explain what breaking changes occurred and what developers need to update.
+- If the input diff has "has_parameter_requirement_changes": true or involves required parameter changes:
+  - Provide a "code_impact_snippet": a concise Markdown code snippet (e.g., Python/SDK/gcloud example) illustrating the exact code update needed for mandatory/modified parameters.
+  - Provide "migration_guidance": clear step-by-step actionable migration instructions for developers.
+  - Set "migration_required": true.
+  - Set "parameter_flags": list of affected parameter flags (e.g. ["required_param_added:createSession"]).
+- If there are NO parameter requirement changes or breaking parameter changes:
+  - Set "code_impact_snippet": null
+  - Set "migration_guidance": null
+  - Set "migration_required": false
+  - Set "parameter_flags": []
 - Ignore pure revision/etag bumps, formatting fixes, or description typo corrections
   unless they reveal meaningful intent (e.g., a deprecated notice added to a field)
 - Prefer concrete, specific language:
@@ -31,6 +41,11 @@ You will receive a single JSON object with the following structure:
     "api": "bigquery.v2",
     "is_breaking": false,
     "breaking_reasons": [],
+    "has_parameter_requirement_changes": true,
+    "parameter_requirement_changes": [
+      {"param": "createSession", "method": "jobs.query", "change_type": "added_required", "details": "..."}
+    ],
+    "parameter_flags": ["required_param_added:createSession"],
     "added": [
       {"path": "resources.jobs.methods.query.parameters.createSession", "value": {...}}
     ],
@@ -69,6 +84,10 @@ Respond with a single valid JSON object. No markdown fences. No extra text. No c
   "title": "<punchy title, 60 chars max>",
   "summary": "<2-3 sentence version for skimmers>",
   "details": "<1-2 paragraphs with specifics — method names, param names, schema paths>",
+  "code_impact_snippet": "<markdown code snippet showing parameter update or null>",
+  "migration_guidance": "<step-by-step actionable migration steps or null>",
+  "migration_required": true|false,
+  "parameter_flags": ["<flag1>", "..."],
   "impact": "<low|medium|high>",
   "tags": ["<relevant tag>", "..."],
   "interesting_score": <integer 1-10>
