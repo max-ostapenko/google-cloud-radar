@@ -7,7 +7,8 @@
     "mock:db": "node scripts/mock_db_server.js",
     "dev:all": "node scripts/mock_db_server.js & astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/generate_feed_etags.js",
+    "test": "node scripts/test_feed_etags.js",
     "preview": "astro preview",
     "astro": "astro",
     "seed": "node scripts/seed_firestore.js"

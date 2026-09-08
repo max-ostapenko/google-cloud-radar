@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { createHash } from 'node:crypto';
 import { getAllFeedEntries } from '../lib/feed';
 
 export const GET: APIRoute = async () => {
@@ -31,10 +32,15 @@ export const GET: APIRoute = async () => {
     lines.push('');
   }
 
-  return new Response(lines.join('\n'), {
+  const body = lines.join('\n');
+  const etag = `"${createHash('sha256').update(body).digest('hex')}"`;
+
+  return new Response(body, {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'public, max-age=300, s-maxage=600',
+      'Access-Control-Allow-Origin': '*',
+      'ETag': etag,
     },
   });
 };

@@ -1,11 +1,12 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
+import { createHash } from 'node:crypto';
 import { getAllFeedEntries } from '../lib/feed';
 
 export async function GET(context: APIContext) {
   const entries = await getAllFeedEntries();
 
-  return rss({
+  const rssResponse = await rss({
     title: 'Google Cloud Radar — Real-Time Google API & Cloud Feed',
     description: 'Automated pre-release intelligence for Google APIs and Cloud services. Live API changes and breaking changes tracked from the Google Discovery Service.',
     site: context.site || 'https://google-cloud-radar.com',
@@ -24,5 +25,18 @@ export async function GET(context: APIContext) {
       `,
     })),
     customData: `<language>en-us</language>`,
+  });
+
+  const body = await rssResponse.text();
+  const etag = `"${createHash('sha256').update(body).digest('hex')}"`;
+
+  return new Response(body, {
+    status: rssResponse.status,
+    headers: {
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=300, s-maxage=600',
+      'Access-Control-Allow-Origin': '*',
+      'ETag': etag,
+    },
   });
 }
