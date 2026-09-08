@@ -1,0 +1,22 @@
+{
+  "id": "2026-09-08-androidpublisher-v3",
+  "slug": "2026-09-08-androidpublisher-v3",
+  "date": "2026-09-08",
+  "api": "androidpublisher.v3",
+  "service": "Android Publisher API",
+  "service_name": "Android Publisher API",
+  "title": "Clarification on AppStoreAppActiveApkSet versioning",
+  "summary": "The API documentation now explicitly states that all APKs within an AppStoreAppActiveApkSet must belong to the same app version.",
+  "details": "A minor update to the `AppStoreAppActiveApkSet` schema description clarifies that all APKs in a given set must share the same version code. This is a documentation-only change intended to clarify requirements for developers using multi-APK or app bundle publishing strategies to ensure installability consistency.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 2,
+  "tags": [
+    "documentation"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": null,
+  "generated_at": "2026-09-08T14:16:06.367531+00:00"
+}
