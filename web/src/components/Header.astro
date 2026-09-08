@@ -33,19 +33,23 @@ const { currentPath = '/' } = Astro.props;
   </div>
 
   <div class="header-center">
-    <div class="search-box">
-      <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-        <circle cx="11" cy="11" r="8"/>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input 
-        type="search" 
-        id="global-search-input" 
-        placeholder="Filter by API, method, or service (e.g. vertex, compact, bigquery)..." 
-        aria-label="Filter API changes"
-      />
-      <span class="search-kbd">/</span>
-    </div>
+    <form id="global-search-form" class="search-form" action="/" method="GET" role="search">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input 
+          type="search" 
+          id="global-search-input" 
+          name="q"
+          placeholder="Filter by API, method, or service (e.g. vertex, compact, bigquery)..." 
+          aria-label="Filter API changes"
+          autocomplete="off"
+        />
+        <span class="search-kbd">/</span>
+      </div>
+    </form>
   </div>
 
   <div class="header-right">
@@ -178,8 +182,32 @@ const { currentPath = '/' } = Astro.props;
     });
   }
 
+  function initHeaderSearch() {
+    const searchForm = document.getElementById('global-search-form') as HTMLFormElement;
+    const searchInput = document.getElementById('global-search-input') as HTMLInputElement;
+
+    if (!searchForm || !searchInput || searchForm.dataset.searchInited === 'true') return;
+    searchForm.dataset.searchInited = 'true';
+
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pathname = window.location.pathname;
+      const isMainFeed = pathname === '/' || pathname === '/index.html' || pathname === '';
+
+      if (!isMainFeed) {
+        const query = searchInput.value.trim();
+        const targetUrl = query ? `/?q=${encodeURIComponent(query)}` : '/';
+        window.location.href = targetUrl;
+      }
+    });
+  }
+
   initHeaderAuth();
-  document.addEventListener('astro:page-load', initHeaderAuth);
+  initHeaderSearch();
+  document.addEventListener('astro:page-load', () => {
+    initHeaderAuth();
+    initHeaderSearch();
+  });
 </script>
 
 <script is:inline>
@@ -280,6 +308,11 @@ const { currentPath = '/' } = Astro.props;
     max-width: 540px;
   }
 
+  .search-form {
+    width: 100%;
+    display: flex;
+  }
+
   .search-box {
     display: flex;
     align-items: center;
@@ -289,6 +322,7 @@ const { currentPath = '/' } = Astro.props;
     padding: 6px 14px;
     gap: 8px;
     transition: all 0.2s ease;
+    width: 100%;
   }
 
   .search-box:focus-within {
