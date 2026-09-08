@@ -23,62 +23,68 @@ from scripts.feed_writer import write_insights, get_recent_feed_entries
 from scripts.llm_client import analyze_api_diff
 
 
+def extract_method_and_path_metadata(diff: dict) -> tuple[set[str], set[str]]:
+    """Extract sets of lowercased method identifiers and target schema paths from a diff."""
+    methods: set[str] = set()
+    paths: set[str] = set()
+
+    if "extracted_methods" in diff:
+        methods.update(m.lower() for m in diff["extracted_methods"])
+    if "target_paths" in diff:
+        paths.update(p.lower() for p in diff["target_paths"])
+
+    if not methods or not paths:
+        raw_paths = set()
+        for cat in ("added", "removed", "modified"):
+            for entry in diff.get(cat, []):
+                p = entry.get("path")
+                if p:
+                    raw_paths.add(p.lower())
+        if not paths:
+            paths = raw_paths
+        if not methods:
+            from scripts.diff_preprocessor import (
+                extract_method_identifiers_from_paths,
+            )
+
+            methods = set(extract_method_identifiers_from_paths(raw_paths))
+
+    return methods, paths
+
+
 def is_duplicate_diff(diff: dict, recent_history: list[dict]) -> tuple[bool, str]:
-    """Check if the changes in diff are already documented in recent history for this API."""
+    """Check if the changes in diff are identical to structured metadata in recent history."""
     if not recent_history:
         return False, ""
 
-    # 1. Extract added / modified method names
-    diff_methods = set()
-    for cat in ("added", "modified", "removed"):
-        for e in diff.get(cat, []):
-            p = e.get("path", "")
-            if "methods." in p:
-                parts = p.split(".")
-                idx = parts.index("methods")
-                if len(parts) > idx + 1:
-                    diff_methods.add(parts[idx + 1].lower())
+    diff_methods, diff_paths = extract_method_and_path_metadata(diff)
 
-    # 2. Extract specific values added or modified (like scopes, new params, enum values)
-    specific_values = set()
-    for cat in ("added", "modified"):
-        for e in diff.get(cat, []):
-            val = str(e.get("value") or e.get("new") or "").strip().lower()
-            if val and len(val) > 4 and not val.startswith("{") and not val.startswith("["):
-                specific_values.add(val.split("/")[-1])
+    if not diff_methods and not diff_paths:
+        return False, ""
 
     for entry in recent_history:
         slug = entry.get("slug", "")
         date_str = entry.get("date", "")
-        entry_text = (
-            entry.get("title", "")
-            + " "
-            + entry.get("summary", "")
-            + " "
-            + entry.get("details", "")
-            + " "
-            + entry.get("content", "")
-        ).lower()
 
-        # If diff has specific methods, check if ALL of them are already covered
-        if diff_methods:
-            matched_methods = {m for m in diff_methods if m in entry_text}
-            if matched_methods == diff_methods:
-                methods_str = ", ".join(sorted(diff_methods))
-                return (
-                    True,
-                    f"All {len(diff_methods)} method(s) ({methods_str}) already documented in {slug} ({date_str})",
-                )
+        hist_methods = {m.lower() for m in entry.get("extracted_methods", [])}
+        hist_paths = {
+            p.lower()
+            for p in (
+                entry.get("target_paths")
+                or entry.get("extracted_paths")
+                or entry.get("target_schema_paths")
+                or []
+            )
+        }
 
-        # If diff has specific values (e.g. scopes, enums) and no methods
-        if specific_values and not diff_methods:
-            matched_values = {v for v in specific_values if v in entry_text}
-            if len(matched_values) == len(specific_values):
-                values_str = ", ".join(sorted(specific_values))
-                return (
-                    True,
-                    f"All key value(s) ({values_str}) already documented in {slug} ({date_str})",
-                )
+        if not hist_paths and not hist_methods:
+            continue
+
+        if diff_methods == hist_methods and diff_paths == hist_paths:
+            return (
+                True,
+                f"Identical method set ({sorted(diff_methods)}) and target path metadata ({sorted(diff_paths)}) match historical change {slug} ({date_str})",
+            )
 
     return False, ""
 
@@ -178,6 +184,9 @@ def main() -> None:
             # Deterministic ground truth override: ensure breaking flag always reflects AST schema analysis
             if diff.get("is_breaking") is not None:
                 insight["breaking"] = bool(diff.get("is_breaking"))
+            methods, paths = extract_method_and_path_metadata(diff)
+            insight["extracted_methods"] = sorted(list(methods))
+            insight["target_paths"] = sorted(list(paths))
             insights.append(insight)
         else:
             logger.warning(
