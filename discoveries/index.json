@@ -962,6 +962,21 @@
     },
     {
       "description": "",
+      "discoveryRestUrl": "https://backupdr.googleapis.com/$discovery/rest?version=v1beta",
+      "documentationLink": "https://cloud.google.com/backup-disaster-recovery",
+      "icons": {
+        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
+      },
+      "id": "backupdr:v1beta",
+      "kind": "discovery#directoryItem",
+      "name": "backupdr",
+      "preferred": false,
+      "title": "Backup and DR Service API",
+      "version": "v1beta"
+    },
+    {
+      "description": "",
       "discoveryRestUrl": "https://backupdr.googleapis.com/$discovery/rest?version=v1",
       "documentationLink": "https://cloud.google.com/backup-disaster-recovery",
       "icons": {
