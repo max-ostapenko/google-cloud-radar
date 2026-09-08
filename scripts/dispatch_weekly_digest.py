@@ -33,9 +33,14 @@ from typing import Optional, Any
 
 # Root path resolution
 REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 DATA_DIR = REPO_ROOT / "data"
 CHANGES_DIR = DATA_DIR / "changes"
 INDEX_PATH = DATA_DIR / "index.json"
+
+from scripts.resend_client import ResendClient, DispatchItem
 
 DEFAULT_GCP_PROJECT = "gcp-cloud-radar"
 DEFAULT_FIRESTORE_DB = "radar"
@@ -131,62 +136,16 @@ def send_resend_email(
     text_content: Optional[str] = None,
     allow_dev_fallback: bool = False,
 ) -> bool:
-    """Sends an email via Resend REST API."""
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-        "User-Agent": "Google-Cloud-Radar-Digest/1.0",
-    }
-
-    payload = {
-        "from": from_email,
-        "to": [to_email],
-        "subject": subject,
-        "html": html_content,
-    }
-    if text_content:
-        payload["text"] = text_content
-
-    data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        RESEND_API_URL, data=data, headers=headers, method="POST"
+    """Sends an email via Resend REST API using ResendClient."""
+    client = ResendClient(api_key=api_key, default_from_email=from_email)
+    return client.send_email(
+        to_email=to_email,
+        subject=subject,
+        html_content=html_content,
+        text_content=text_content,
+        from_email=from_email,
+        allow_dev_fallback=allow_dev_fallback,
     )
-
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            resp_body = resp.read().decode("utf-8")
-            result = json.loads(resp_body)
-            logger.info(
-                f"✓ Digest email successfully sent to {to_email} (Resend ID: {result.get('id', 'N/A')})"
-            )
-            return True
-    except urllib.error.HTTPError as e:
-        error_msg = e.read().decode("utf-8")
-        # Fallback to sandbox domain ONLY in development / test environment
-        if (
-            allow_dev_fallback
-            and ("domain" in error_msg.lower() or e.code == 403)
-            and from_email != FALLBACK_SANDBOX_FROM_EMAIL
-        ):
-            logger.warning(
-                f"[DEV ENV] Domain in '{from_email}' is not yet verified in Resend. Retrying with '{FALLBACK_SANDBOX_FROM_EMAIL}' sandbox domain..."
-            )
-            return send_resend_email(
-                api_key=api_key,
-                from_email=FALLBACK_SANDBOX_FROM_EMAIL,
-                to_email=to_email,
-                subject=subject,
-                html_content=html_content,
-                text_content=text_content,
-                allow_dev_fallback=False,
-            )
-        logger.error(
-            f"✗ Resend API HTTP error sending to {to_email} ({e.code}): {error_msg}"
-        )
-        return False
-    except Exception as e:
-        logger.error(f"✗ Failed to send digest email to {to_email}: {e}")
-        return False
 
 
 def load_recent_changes(days: int = 7) -> list[dict]:
@@ -687,8 +646,8 @@ def main():
         sys.exit(0)
 
     token = get_access_token()
-    total_sent = 0
     is_dev = is_dev_environment()
+    dispatch_items: list[DispatchItem] = []
 
     for sub in subscribers:
         email = sub["email"]
@@ -714,21 +673,33 @@ def main():
             continue
 
         html_body = render_weekly_digest_html(sub_changes, week_label=week_label)
-        sent = send_resend_email(
-            api_key=api_key,
-            from_email=args.from_email,
-            to_email=email,
-            subject=subject,
-            html_content=html_body,
-            allow_dev_fallback=is_dev,
-        )
-        if sent:
-            total_sent += 1
-            record_weekly_digest_sent(
-                args.project, args.database, dispatch_id, email, token
-            )
 
-    logger.info(f"Weekly digest dispatch complete. Sent {total_sent} digest email(s).")
+        def make_record_digest_fn(p_id: str, db_id: str, d_id: str, em: str, tok: str):
+            return lambda item: record_weekly_digest_sent(p_id, db_id, d_id, em, tok)
+
+        dispatch_items.append(
+            DispatchItem(
+                to_email=email,
+                subject=subject,
+                html_content=html_body,
+                from_email=args.from_email,
+                allow_dev_fallback=is_dev,
+                record_sent_fn=make_record_digest_fn(
+                    args.project, args.database, dispatch_id, email, token
+                ),
+            )
+        )
+
+    if args.dry_run:
+        logger.info(f"[DRY-RUN] Evaluated {len(dispatch_items)} digest item(s). Done.")
+        sys.exit(0)
+
+    client = ResendClient(api_key=api_key, default_from_email=args.from_email)
+    batch_result = client.dispatch_batch(dispatch_items)
+    logger.info(
+        f"Weekly digest dispatch complete. Sent {batch_result.total_sent} digest email(s) "
+        f"({batch_result.primary_sent} primary, {batch_result.secondary_sent} recovered secondary)."
+    )
 
 
 if __name__ == "__main__":
