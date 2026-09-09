@@ -139,6 +139,8 @@ def detect_breaking_changes(
     - Removal of an active method / RPC
     - Removal of a parameter from an active method
     - Changing an optional parameter to required (required: true)
+    - Removal of an existing enum value from a method parameter
+    - Modification or removal of an existing method parameter default value
     - Removal of an existing schema property
     - Changing property data type (type or $ref)
     - Making a mutable schema property read-only / immutable
@@ -206,6 +208,20 @@ def detect_breaking_changes(
                     if reason not in reasons:
                         reasons.append(reason)
 
+        # Removed default value from method parameter
+        if parts[-1] == "default" and "parameters" in parts and "schemas" not in parts:
+            p_idx = parts.index("parameters")
+            if len(parts) > p_idx + 1:
+                param_name = parts[p_idx + 1]
+                param_prefix = ".".join(parts[: p_idx + 2])
+                if any(
+                    k == param_prefix or k.startswith(f"{param_prefix}.")
+                    for k in new_flat
+                ):
+                    reason = f"Default value for parameter '{param_name}' was removed"
+                    if reason not in reasons:
+                        reasons.append(reason)
+
         # Removed schema property
         if "schemas" in parts and "properties" in parts:
             s_idx = parts.index("schemas")
@@ -234,6 +250,15 @@ def detect_breaking_changes(
             if old_val in (False, None, "false") and new_val in (True, "true"):
                 param_name = parts[-2] if len(parts) >= 2 else "parameter"
                 reason = f"Parameter '{param_name}' was changed to strictly required"
+                if reason not in reasons:
+                    reasons.append(reason)
+
+        # Parameter default value changed
+        if parts[-1] == "default" and "parameters" in parts and "schemas" not in parts:
+            p_idx = parts.index("parameters")
+            if len(parts) > p_idx + 1:
+                param_name = parts[p_idx + 1]
+                reason = f"Default value for parameter '{param_name}' changed from '{old_val}' to '{new_val}'"
                 if reason not in reasons:
                     reasons.append(reason)
 
@@ -277,6 +302,40 @@ def detect_breaking_changes(
                     reason = f"Method '{method_name}' URI path template changed from '{old_val}' to '{new_val}'"
                     if reason not in reasons:
                         reasons.append(reason)
+
+    # 4. Parameter Enum Value Removal
+    enum_param_prefixes: set[str] = set()
+    for k in old_flat:
+        if ".enum[" in k:
+            parts = k.split(".")
+            if "parameters" in parts and "schemas" not in parts:
+                p_idx = parts.index("parameters")
+                if len(parts) > p_idx + 1:
+                    param_prefix = ".".join(parts[: p_idx + 2])
+                    enum_param_prefixes.add(param_prefix)
+
+    for param_prefix in sorted(enum_param_prefixes):
+        if not any(
+            k == param_prefix or k.startswith(f"{param_prefix}.") for k in new_flat
+        ):
+            continue  # Parameter itself was removed; handled by parameter removal check
+
+        parts = param_prefix.split(".")
+        p_idx = parts.index("parameters")
+        param_name = parts[p_idx + 1]
+
+        old_enums = {
+            str(v) for k, v in old_flat.items() if k.startswith(f"{param_prefix}.enum[")
+        }
+        new_enums = {
+            str(v) for k, v in new_flat.items() if k.startswith(f"{param_prefix}.enum[")
+        }
+
+        removed_enums = old_enums - new_enums
+        for val in sorted(removed_enums):
+            reason = f"Removed enum value '{val}' from parameter '{param_name}'"
+            if reason not in reasons:
+                reasons.append(reason)
 
     is_breaking = len(reasons) > 0
     return is_breaking, reasons
