@@ -108,73 +108,92 @@ const { currentPath = '/' } = Astro.props;
 </header>
 
 <script>
-  import { signInWithGoogle, signOutUser, onAuthChange } from '../lib/firebase';
+  import {
+    $authUser,
+    initAuthStore,
+    signIn,
+    signOut,
+    openAlertsModal,
+    autoCleanSubscribe,
+  } from '../lib/store';
+
+  initAuthStore();
 
   function initHeaderAuth() {
-    const signInBtn = document.getElementById('headerSignInBtn');
-    const userMenu = document.getElementById('headerUserMenu');
-    const avatarBtn = document.getElementById('userAvatarBtn');
-    const avatarImg = document.getElementById('headerUserAvatar') as HTMLImageElement;
-    const dropdown = document.getElementById('userDropdown');
-    const dropdownName = document.getElementById('dropdownUserName');
-    const dropdownEmail = document.getElementById('dropdownUserEmail');
-    const signOutBtn = document.getElementById('headerSignOutBtn');
+    autoCleanSubscribe(() => {
+      const signInBtn = document.getElementById('headerSignInBtn');
+      const userMenu = document.getElementById('headerUserMenu');
+      const avatarBtn = document.getElementById('userAvatarBtn');
+      const avatarImg = document.getElementById('headerUserAvatar') as HTMLImageElement;
+      const dropdown = document.getElementById('userDropdown');
+      const dropdownName = document.getElementById('dropdownUserName');
+      const dropdownEmail = document.getElementById('dropdownUserEmail');
+      const signOutBtn = document.getElementById('headerSignOutBtn');
+      const alertsBtn = document.getElementById('headerAlertsBtn');
+      const dropdownAlertsBtn = document.getElementById('dropdownAlertsBtn');
 
-    function updateUI(user: any) {
-      if (user) {
-        if (signInBtn) signInBtn.style.display = 'none';
-        if (userMenu) userMenu.style.display = 'block';
-        if (avatarImg) avatarImg.src = user.photoURL || 'https://www.gstatic.com/images/branding/product/2x/avatar_square_blue_512dp.png';
-        if (dropdownName) dropdownName.textContent = user.displayName || 'Google User';
-        if (dropdownEmail) dropdownEmail.textContent = user.email || '';
-      } else {
-        if (signInBtn) signInBtn.style.display = 'inline-flex';
-        if (userMenu) userMenu.style.display = 'none';
-      }
-    }
-
-    const alertsBtn = document.getElementById('headerAlertsBtn');
-    const dropdownAlertsBtn = document.getElementById('dropdownAlertsBtn');
-
-    alertsBtn?.addEventListener('click', () => {
-      window.dispatchEvent(new CustomEvent('open_alerts_modal'));
-    });
-
-    dropdownAlertsBtn?.addEventListener('click', () => {
-      if (dropdown) dropdown.style.display = 'none';
-      window.dispatchEvent(new CustomEvent('open_alerts_modal'));
-    });
-
-    signInBtn?.addEventListener('click', async () => {
-      try {
-        const user = await signInWithGoogle();
+      function updateUI(user: any) {
         if (user) {
-          updateUI(user);
+          if (signInBtn) signInBtn.style.display = 'none';
+          if (userMenu) userMenu.style.display = 'block';
+          if (avatarImg) avatarImg.src = user.photoURL || 'https://www.gstatic.com/images/branding/product/2x/avatar_square_blue_512dp.png';
+          if (dropdownName) dropdownName.textContent = user.displayName || 'Google User';
+          if (dropdownEmail) dropdownEmail.textContent = user.email || '';
+        } else {
+          if (signInBtn) signInBtn.style.display = 'inline-flex';
+          if (userMenu) userMenu.style.display = 'none';
         }
-      } catch (err) {
-        console.error('Sign in error:', err);
       }
-    });
 
-    signOutBtn?.addEventListener('click', async () => {
-      await signOutUser();
-      updateUI(null);
-      if (dropdown) dropdown.style.display = 'none';
-    });
+      const unsubAuth = $authUser.subscribe((user) => {
+        updateUI(user);
+      });
 
-    avatarBtn?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (dropdown) {
-        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-      }
-    });
+      const handleAlertsClick = () => {
+        openAlertsModal();
+      };
 
-    document.addEventListener('click', () => {
-      if (dropdown) dropdown.style.display = 'none';
-    });
+      const handleDropdownAlertsClick = () => {
+        if (dropdown) dropdown.style.display = 'none';
+        openAlertsModal();
+      };
 
-    onAuthChange((user) => {
-      updateUI(user);
+      const handleSignInClick = async () => {
+        await signIn();
+      };
+
+      const handleSignOutClick = async () => {
+        await signOut();
+        if (dropdown) dropdown.style.display = 'none';
+      };
+
+      const handleAvatarClick = (e: MouseEvent) => {
+        e.stopPropagation();
+        if (dropdown) {
+          dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+      };
+
+      const handleDocClick = () => {
+        if (dropdown) dropdown.style.display = 'none';
+      };
+
+      alertsBtn?.addEventListener('click', handleAlertsClick);
+      dropdownAlertsBtn?.addEventListener('click', handleDropdownAlertsClick);
+      signInBtn?.addEventListener('click', handleSignInClick);
+      signOutBtn?.addEventListener('click', handleSignOutClick);
+      avatarBtn?.addEventListener('click', handleAvatarClick);
+      document.addEventListener('click', handleDocClick);
+
+      return [
+        unsubAuth,
+        () => alertsBtn?.removeEventListener('click', handleAlertsClick),
+        () => dropdownAlertsBtn?.removeEventListener('click', handleDropdownAlertsClick),
+        () => signInBtn?.removeEventListener('click', handleSignInClick),
+        () => signOutBtn?.removeEventListener('click', handleSignOutClick),
+        () => avatarBtn?.removeEventListener('click', handleAvatarClick),
+        () => document.removeEventListener('click', handleDocClick),
+      ];
     });
   }
 

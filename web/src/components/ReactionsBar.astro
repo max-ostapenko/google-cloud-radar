@@ -55,117 +55,66 @@ const defaultFpCount = 0;
 
 <script>
   import {
-    getFirebaseAuth,
-    signInWithGoogle,
-    onAuthChange,
-    toggleUserReaction,
-    listenToChange,
-    listenToUserReactions,
-    type ReactionType,
-  } from '../lib/firebase';
+    $reactionsStore,
+    initReactionsForSlug,
+    getSlugReactions,
+    toggleReaction,
+    autoCleanSubscribe,
+  } from '../lib/store';
+  import type { ReactionType } from '../lib/firebase';
 
   function initReactionsBar() {
-    const container = document.querySelector('.reactions-bar-container') as HTMLElement;
-    if (!container) return;
+    autoCleanSubscribe(() => {
+      const containers = document.querySelectorAll<HTMLElement>('.reactions-bar-container');
+      const unsubs: Array<() => void> = [];
 
-    const slug = container.dataset.slug;
-    if (!slug) return;
+      containers.forEach((container) => {
+        const slug = container.dataset.slug;
+        if (!slug) return;
 
-    const storageKey = `gcp_radar_reactions_${slug}`;
+        initReactionsForSlug(slug);
 
-    // Load local cached reactions
-    let userVotes: Record<string, boolean> = {};
-    try {
-      userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
-    } catch {}
+        const buttons = container.querySelectorAll<HTMLButtonElement>('.reaction-btn');
 
-    const buttons = container.querySelectorAll('.reaction-btn');
+        const unsub = $reactionsStore.subscribe(() => {
+          const state = getSlugReactions(slug);
+          buttons.forEach((btn) => {
+            const type = btn.getAttribute('data-type') as ReactionType;
+            if (type) {
+              const countBadge = btn.querySelector(`[data-count-type="${type}"]`);
+              if (countBadge) {
+                countBadge.textContent = String(state.counts[type] || 0);
+              }
+              if (state.userVotes[type]) {
+                btn.classList.add('active');
+              } else {
+                btn.classList.remove('active');
+              }
+            }
+          });
+        });
 
-    const updateButtonsActiveState = (votes: Record<string, boolean>) => {
-      userVotes = { ...votes };
-      buttons.forEach((btn) => {
-        const type = btn.getAttribute('data-type') as ReactionType;
-        if (type) {
-          if (userVotes[type]) {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
-          }
-        }
-      });
-    };
+        unsubs.push(unsub);
 
-    updateButtonsActiveState(userVotes);
-
-    // Subscribe to live change stats / counts
-    listenToChange(slug, (changeData) => {
-      if (changeData?.reaction_counts) {
         buttons.forEach((btn) => {
           const type = btn.getAttribute('data-type') as ReactionType;
-          if (type && changeData.reaction_counts?.[type] !== undefined) {
-            const countBadge = btn.querySelector(`[data-count-type="${type}"]`);
-            if (countBadge) {
-              countBadge.textContent = String(Math.max(0, changeData.reaction_counts[type]));
-            }
-          }
-        });
-      }
-    });
+          if (!type) return;
 
-    buttons.forEach((btn) => {
-      const type = btn.getAttribute('data-type') as ReactionType;
-      if (!type) return;
+          const handleBtnClick = async (e: MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            await toggleReaction(slug, type);
+          };
 
-      btn.addEventListener('click', async () => {
-        const auth = getFirebaseAuth();
-        let user = auth.currentUser;
-        if (!user) {
-          try {
-            user = await signInWithGoogle();
-          } catch (err) {
-            console.log('User cancelled or sign in failed');
-            return;
-          }
-        }
-
-        if (!user) return;
-
-        const countBadge = btn.querySelector(`[data-count-type="${type}"]`);
-        let currentCount = parseInt(countBadge?.textContent || '0', 10);
-        const isCurrent = Boolean(userVotes[type]);
-
-        // Optimistic UI toggle
-        if (isCurrent) {
-          userVotes[type] = false;
-          btn.classList.remove('active');
-          if (countBadge) countBadge.textContent = String(Math.max(0, currentCount - 1));
-        } else {
-          userVotes[type] = true;
-          btn.classList.add('active');
-          if (countBadge) countBadge.textContent = String(currentCount + 1);
-        }
-
-        localStorage.setItem(storageKey, JSON.stringify(userVotes));
-
-        // Sync with Cloud Firestore subcollection & atomic counter
-        await toggleUserReaction(slug, user, type, isCurrent).catch((err) => {
-          console.error('Failed to sync reaction to Firestore:', err);
+          btn.addEventListener('click', handleBtnClick);
+          unsubs.push(() => btn.removeEventListener('click', handleBtnClick));
         });
       });
-    });
 
-    onAuthChange((user) => {
-      if (user) {
-        listenToUserReactions(slug, user.uid, (liveVotes) => {
-          updateButtonsActiveState(liveVotes);
-        });
-      } else {
-        updateButtonsActiveState({});
-      }
+      return unsubs;
     });
   }
 
-  // Initialize on load and Astro page transitions
   initReactionsBar();
   document.addEventListener('astro:page-load', initReactionsBar);
 </script>
