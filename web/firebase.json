@@ -11,6 +11,57 @@
     "trailingSlash": false,
     "headers": [
       {
+        "source": "/llms.txt",
+        "headers": [
+          {
+            "key": "ETag",
+            "value": "\"21dc2ec6819050feac135896246f7ab7336e59cc2422a35dd4f71ca7dc16cf38\""
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=300, s-maxage=600"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          }
+        ]
+      },
+      {
+        "source": "/rss.xml",
+        "headers": [
+          {
+            "key": "ETag",
+            "value": "\"1317bb3967adafddd6552819f5960b7f4ac6585fd8701b641e13c9075a78d486\""
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=300, s-maxage=600"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          }
+        ]
+      },
+      {
+        "source": "/api/feed.json",
+        "headers": [
+          {
+            "key": "ETag",
+            "value": "\"0159eb5b1ea5266d45695e13ae3d784d4d3fae2802d2abd19cc3aafe6ec89747\""
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=300, s-maxage=600"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          }
+        ]
+      },
+      {
         "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|js|css|woff|woff2)",
         "headers": [
           {
