@@ -73,6 +73,8 @@ function initStore() {
       for (const item of seedItems) {
         if (!changesMap.has(item.id)) {
           changesMap.set(item.id, item);
+        } else {
+          changesMap.set(item.id, { ...changesMap.get(item.id), ...item });
         }
       }
       console.log(`✨ Layered seed fixtures from seed_data.json`);

@@ -254,16 +254,18 @@ export interface FeedEntry extends FeedEntryMeta {
 
 const DB_HOST = process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080';
 const PROJECT_ID = process.env.GCP_PROJECT || 'gcp-cloud-radar';
+const DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || 'radar';
 
 /**
  * Live Mock Firestore / Emulator REST Fetch
  */
 export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
   try {
+    const timeoutMs = parseInt(process.env.FIRESTORE_TIMEOUT_MS || process.env.DB_TIMEOUT_MS || '600', 10);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 600);
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
     const res = await fetch(
-      `http://${DB_HOST}/v1/projects/${PROJECT_ID}/databases/(default)/documents/changes`,
+      `http://${DB_HOST}/v1/projects/${PROJECT_ID}/databases/${DATABASE_ID}/documents/changes`,
       { signal: controller.signal }
     );
     clearTimeout(timeout);
@@ -288,7 +290,11 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       const breaking = Boolean(f.is_breaking?.booleanValue ?? f.breaking?.booleanValue);
       const interesting_score = parseInt(f.interesting_score?.integerValue || '5', 10);
       const status = (f.status?.stringValue || 'canary') as ChangeStatus;
-      const lead_time_days = f.lead_time_days ? parseInt(f.lead_time_days.integerValue, 10) : undefined;
+      const lead_time_days = f.lead_time_days?.integerValue !== undefined
+        ? parseInt(f.lead_time_days.integerValue, 10)
+        : f.lead_time_days?.doubleValue !== undefined
+        ? Math.round(f.lead_time_days.doubleValue)
+        : undefined;
       const official_release_date = f.official_release_date?.timestampValue || f.official_release_date?.stringValue;
       const official_release_notes_url = f.official_release_notes_url?.stringValue;
 
@@ -305,7 +311,24 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
           false_positive_or_duplicate: parseInt(rc.false_positive_or_duplicate?.integerValue || '0', 10),
         };
       }
-      const comments_count = parseInt(f.comments_count?.integerValue || '0', 10);
+
+      let stats = undefined;
+      if (f.stats?.stringValue) {
+        try {
+          stats = JSON.parse(f.stats.stringValue);
+        } catch {}
+      } else if (f.stats?.mapValue?.fields) {
+        const st = f.stats.mapValue.fields;
+        stats = {
+          upvotes: st.upvotes?.integerValue ? parseInt(st.upvotes.integerValue, 10) : undefined,
+          impacted_users_count: st.impacted_users_count?.integerValue ? parseInt(st.impacted_users_count.integerValue, 10) : undefined,
+          comments_count: st.comments_count?.integerValue ? parseInt(st.comments_count.integerValue, 10) : undefined,
+        };
+      }
+
+      const comments_count = f.comments_count?.integerValue
+        ? parseInt(f.comments_count.integerValue, 10)
+        : (stats?.comments_count ?? 0);
 
       let tags: string[] = [];
       if (f.tags?.arrayValue?.values) {
@@ -315,13 +338,6 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       let extractedMethods: string[] = [];
       if (f.extracted_methods?.arrayValue?.values) {
         extractedMethods = f.extracted_methods.arrayValue.values.map((v: any) => v.stringValue).filter(Boolean);
-      }
-
-      let stats = undefined;
-      if (f.stats?.stringValue) {
-        try {
-          stats = JSON.parse(f.stats.stringValue);
-        } catch {}
       }
 
       const htmlContent = safeMarkdownParser.parse(detailsMarkdown || summary, { async: false }) as string;
@@ -374,6 +390,7 @@ export function getDataChangesDir(): string {
   const candidates = [
     path.resolve(process.cwd(), '../data/changes'),
     path.resolve(process.cwd(), 'data/changes'),
+    path.resolve(process.cwd(), 'google-cloud-radar/data/changes'),
     path.resolve(process.cwd(), '../../data/changes'),
   ];
   for (const p of candidates) {
@@ -471,18 +488,53 @@ export function getLocalFeedEntries(): FeedEntry[] {
   });
 }
 
+export function overlayLiveMetadata(local: FeedEntry, db: FeedEntry): FeedEntry {
+  return {
+    ...local,
+    reaction_counts: db.reaction_counts ?? local.reaction_counts,
+    comments_count: db.comments_count ?? local.comments_count,
+    stats: db.stats ?? local.stats,
+    status: db.status || local.status,
+    lead_time_days: db.lead_time_days !== undefined ? db.lead_time_days : local.lead_time_days,
+    official_release_date: db.official_release_date || local.official_release_date,
+    official_release_notes_url: db.official_release_notes_url || local.official_release_notes_url,
+    radar_ring: db.radar_ring || local.radar_ring,
+    radar_quadrant: db.radar_quadrant || local.radar_quadrant,
+    radar_movement: db.radar_movement || local.radar_movement,
+  };
+}
+
 export async function getAllFeedEntries(): Promise<FeedEntry[]> {
   const localEntries = getLocalFeedEntries();
+  const dbEntriesPromise = fetchFromFirestore().catch(() => null);
+
+  const dbEntries = await dbEntriesPromise;
+
   if (localEntries && localEntries.length > 0) {
-    return localEntries;
+    if (!dbEntries || dbEntries.length === 0) {
+      return localEntries;
+    }
+
+    const dbMap = new Map<string, FeedEntry>();
+    for (const dbEntry of dbEntries) {
+      if (dbEntry.slug) {
+        dbMap.set(dbEntry.slug, dbEntry);
+      }
+    }
+
+    return localEntries.map((local) => {
+      const db = dbMap.get(local.slug);
+      return db ? overlayLiveMetadata(local, db) : local;
+    });
   }
-  const dbEntries = await fetchFromFirestore();
+
   if (dbEntries && dbEntries.length > 0) {
     return dbEntries.sort((a, b) => {
       if (b.date !== a.date) return b.date.localeCompare(a.date);
       return b.slug.localeCompare(a.slug);
     });
   }
+
   return [];
 }
 

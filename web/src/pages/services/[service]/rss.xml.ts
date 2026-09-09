@@ -40,6 +40,10 @@ export async function GET(context: APIContext) {
         <breaking>${entry.breaking}</breaking>
         <interesting_score>${entry.interesting_score}</interesting_score>
         <status>${entry.status}</status>
+        <comments_count>${entry.comments_count ?? 0}</comments_count>
+        <reactions_like_change>${entry.reaction_counts?.like_change ?? 0}</reactions_like_change>
+        <reactions_released>${entry.reaction_counts?.released ?? 0}</reactions_released>
+        <reactions_false_positive_or_duplicate>${entry.reaction_counts?.false_positive_or_duplicate ?? 0}</reactions_false_positive_or_duplicate>
       `,
     })),
     customData: `<language>en-us</language>`,
