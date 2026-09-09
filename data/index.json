@@ -65,6 +65,25 @@
     "generated_at": "2026-09-09T03:55:08.671600+00:00"
   },
   {
+    "id": "2026-09-09-androidpublisher-v3",
+    "slug": "2026-09-09-androidpublisher-v3",
+    "date": "2026-09-09",
+    "api": "androidpublisher.v3",
+    "service": "Google Play Developer API",
+    "service_name": "Google Play Developer API",
+    "title": "Deprecation of Public/Private App Visibility Permission",
+    "summary": "A specific developer account permission related to public/private app visibility has been deprecated and is no longer supported.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 4,
+    "tags": [
+      "permissions",
+      "deprecation"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-09T14:16:40.853970+00:00"
+  },
+  {
     "id": "2026-09-08-androidpublisher-v3",
     "slug": "2026-09-08-androidpublisher-v3",
     "date": "2026-09-08",
