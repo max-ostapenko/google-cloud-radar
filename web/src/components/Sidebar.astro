@@ -143,10 +143,51 @@ const ecosystemList: EcosystemGroup[] = [
 
     <div class="sidebar-divider"></div>
 
+    <!-- Sidebar Search & Quick Filter Pills -->
+    <div class="sidebar-search-container">
+      <div class="sidebar-search-wrapper">
+        <svg class="search-input-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          id="sidebar-search-input"
+          class="sidebar-search-input"
+          placeholder="Search services... (/)"
+          aria-label="Search sidebar services"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <kbd class="sidebar-search-kbd" id="sidebar-kbd-hint">/</kbd>
+        <button
+          type="button"
+          id="sidebar-clear-search"
+          class="sidebar-clear-btn"
+          aria-label="Clear sidebar search"
+          style="display: none;"
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="sidebar-filter-pills" role="tablist" aria-label="Category quick filters">
+        <button type="button" class="sidebar-pill-btn active" data-filter="all">All</button>
+        <button type="button" class="sidebar-pill-btn" data-filter="Google Cloud">GCP</button>
+        <button type="button" class="sidebar-pill-btn" data-filter="AI & ML">AI & ML</button>
+        <button type="button" class="sidebar-pill-btn" data-filter="Data Analytics">Data</button>
+        <button type="button" class="sidebar-pill-btn" data-filter="Workspace">Workspace</button>
+        <button type="button" class="sidebar-pill-btn pill-breaking" data-filter="breaking">⚠️ Breaking</button>
+      </div>
+    </div>
+
     <!-- Hierarchy: Top Level Ecosystems -->
-    <div class="ecosystem-container">
+    <div class="ecosystem-container" id="sidebarEcosystemContainer">
       {ecosystemList.map((eco) => (
-        <div class="ecosystem-section">
+        <div class="ecosystem-section" data-ecosystem={eco.id}>
           <div class="ecosystem-header">
             <div class="ecosystem-label">
               {eco.icon === 'cloud' && (
@@ -209,7 +250,7 @@ const ecosystemList: EcosystemGroup[] = [
           {eco.subgroups && (
             <div class="subgroup-container">
               {eco.subgroups.map((sub) => (
-                <div class="category-group">
+                <div class="category-group" data-category={sub.category}>
                   <div class="category-title">
                     <span>{sub.category}</span>
                     <div class="category-counts-group">
@@ -221,7 +262,14 @@ const ecosystemList: EcosystemGroup[] = [
                   </div>
                   <ul class="service-list">
                     {sub.items.map((item) => (
-                      <li>
+                      <li
+                        class="sidebar-service-item"
+                        data-slug={item.slug}
+                        data-service={item.service}
+                        data-category={item.category}
+                        data-ecosystem={eco.id}
+                        data-breaking={item.breakingCount > 0 ? 'true' : 'false'}
+                      >
                         <a
                           href={`/services/${item.slug}`}
                           class={`service-link ${activeServiceSlug === item.slug ? 'active' : ''}`}
@@ -247,7 +295,14 @@ const ecosystemList: EcosystemGroup[] = [
           {eco.directItems && eco.directItems.length > 0 && (
             <ul class="service-list direct-list">
               {eco.directItems.map((item) => (
-                <li>
+                <li
+                  class="sidebar-service-item"
+                  data-slug={item.slug}
+                  data-service={item.service}
+                  data-category={item.category}
+                  data-ecosystem={eco.id}
+                  data-breaking={item.breakingCount > 0 ? 'true' : 'false'}
+                >
                   <a
                     href={`/services/${item.slug}`}
                     class={`service-link ${activeServiceSlug === item.slug ? 'active' : ''}`}
@@ -271,6 +326,13 @@ const ecosystemList: EcosystemGroup[] = [
           )}
         </div>
       ))}
+    </div>
+
+    <!-- Empty Search Results State -->
+    <div id="sidebar-no-results" class="sidebar-no-results" style="display: none;">
+      <p class="no-results-title">No matching services</p>
+      <p class="no-results-sub">Try searching another service or reset active filters.</p>
+      <button type="button" id="sidebar-reset-btn" class="sidebar-reset-btn">Reset Filters</button>
     </div>
   </div>
 
@@ -404,6 +466,173 @@ const ecosystemList: EcosystemGroup[] = [
     height: 1px;
     background-color: var(--border-subtle);
     margin: 12px 4px;
+  }
+
+  /* Sidebar Search & Filter Box */
+  .sidebar-search-container {
+    margin-bottom: 12px;
+  }
+
+  .sidebar-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    transition: all 0.15s ease;
+  }
+
+  .sidebar-search-wrapper:focus-within {
+    border-color: var(--google-blue);
+    box-shadow: 0 0 0 2px var(--google-blue-subtle);
+    background-color: var(--bg-primary);
+  }
+
+  .sidebar-search-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--text-primary);
+    padding: 6px 26px 6px 28px;
+  }
+
+  .sidebar-search-input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .search-input-icon {
+    position: absolute;
+    left: 8px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+  }
+
+  .sidebar-search-kbd {
+    position: absolute;
+    right: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 3px;
+    padding: 0 4px;
+    line-height: 1.4;
+    pointer-events: none;
+  }
+
+  .sidebar-clear-btn {
+    position: absolute;
+    right: 6px;
+    background: transparent;
+    border: none;
+    padding: 2px;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease;
+  }
+
+  .sidebar-clear-btn:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-surface);
+  }
+
+  /* Quick Filter Pills */
+  .sidebar-filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    padding-top: 8px;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  .sidebar-filter-pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar-pill-btn {
+    font-size: 11px;
+    font-weight: 500;
+    font-family: inherit;
+    padding: 3px 8px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-subtle);
+    background-color: var(--bg-surface-hover);
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .sidebar-pill-btn:hover {
+    background-color: var(--border-subtle);
+    color: var(--text-primary);
+  }
+
+  .sidebar-pill-btn.active {
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue);
+    border-color: var(--google-blue);
+    font-weight: 600;
+  }
+
+  .sidebar-pill-btn.pill-breaking.active {
+    background-color: var(--google-red-subtle);
+    color: var(--google-red);
+    border-color: var(--google-red);
+  }
+
+  /* Empty Search Results */
+  .sidebar-no-results {
+    padding: 20px 12px;
+    text-align: center;
+    background-color: var(--bg-surface-hover);
+    border-radius: var(--radius-md);
+    margin-top: 12px;
+    border: 1px dashed var(--border-subtle);
+  }
+
+  .no-results-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+  }
+
+  .no-results-sub {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin: 0 0 10px 0;
+    line-height: 1.4;
+  }
+
+  .sidebar-reset-btn {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--google-blue);
+    background-color: var(--google-blue-subtle);
+    border: none;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .sidebar-reset-btn:hover {
+    background-color: var(--google-blue);
+    color: #ffffff;
   }
 
   /* Ecosystem Containers */
@@ -703,6 +932,8 @@ const ecosystemList: EcosystemGroup[] = [
 </style>
 
 <script>
+  import MiniSearch from 'minisearch';
+
   function initSidebarDrawer() {
     const sidebar = document.getElementById('gcpSidebar');
     const toggleBtn = document.getElementById('mobileSidebarToggle');
@@ -746,6 +977,310 @@ const ecosystemList: EcosystemGroup[] = [
     });
   }
 
+  function initSidebarSearch() {
+    const sidebar = document.getElementById('gcpSidebar');
+    if (!sidebar) return;
+
+    const searchInput = document.getElementById('sidebar-search-input') as HTMLInputElement | null;
+    const clearBtn = document.getElementById('sidebar-clear-search') as HTMLButtonElement | null;
+    const kbdHint = document.getElementById('sidebar-kbd-hint');
+    const pillBtns = sidebar.querySelectorAll('.sidebar-pill-btn') as NodeListOf<HTMLButtonElement>;
+    const serviceItems = sidebar.querySelectorAll('.sidebar-service-item') as NodeListOf<HTMLElement>;
+    const categoryGroups = sidebar.querySelectorAll('.category-group') as NodeListOf<HTMLElement>;
+    const ecosystemSections = sidebar.querySelectorAll('.ecosystem-section') as NodeListOf<HTMLElement>;
+    const noResultsEl = document.getElementById('sidebar-no-results');
+    const resetBtn = document.getElementById('sidebar-reset-btn');
+    const totalBadge = sidebar.querySelector('.total-services-badge');
+
+    if (!serviceItems.length) return;
+
+    // Build MiniSearch Index across rendered service items
+    const documents: Array<{ id: string; service: string; category: string; ecosystem: string; slug: string }> = [];
+    serviceItems.forEach((item) => {
+      const slug = item.getAttribute('data-slug') || '';
+      const service = item.getAttribute('data-service') || '';
+      const category = item.getAttribute('data-category') || '';
+      const ecosystem = item.getAttribute('data-ecosystem') || '';
+      documents.push({
+        id: slug,
+        slug,
+        service,
+        category,
+        ecosystem,
+      });
+    });
+
+    const miniSearch = new MiniSearch({
+      fields: ['service', 'category', 'ecosystem', 'slug'],
+      storeFields: ['id'],
+      searchOptions: {
+        boost: { service: 3.0, slug: 2.0, category: 1.5 },
+        fuzzy: 0.25,
+        prefix: true,
+        combineWith: 'AND',
+      },
+    });
+
+    miniSearch.addAll(documents);
+
+    let currentQuery = '';
+    let activeFilter = 'all';
+
+    // Read initial parameters from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialQ = urlParams.get('sq') || urlParams.get('sidebar_q') || urlParams.get('q') || '';
+    const initialCat = urlParams.get('category') || urlParams.get('scat') || urlParams.get('filter') || '';
+
+    if (initialQ && searchInput) {
+      searchInput.value = initialQ;
+      currentQuery = initialQ;
+    }
+
+    if (initialCat) {
+      const normalizedCat = initialCat.toLowerCase().trim();
+      pillBtns.forEach((btn) => {
+        const btnFilter = (btn.getAttribute('data-filter') || '').toLowerCase();
+        if (
+          btnFilter === normalizedCat ||
+          (btnFilter === 'google cloud' && (normalizedCat === 'cloud' || normalizedCat === 'gcp' || normalizedCat === 'google-cloud')) ||
+          (btnFilter === 'ai & ml' && (normalizedCat === 'ai' || normalizedCat === 'category-ai' || normalizedCat === 'ai_ml' || normalizedCat === 'ai & ml')) ||
+          (btnFilter === 'data analytics' && (normalizedCat === 'data' || normalizedCat === 'category-data' || normalizedCat === 'data_analytics' || normalizedCat === 'data analytics')) ||
+          (btnFilter === 'workspace' && normalizedCat === 'workspace') ||
+          (btnFilter === 'breaking' && normalizedCat === 'breaking')
+        ) {
+          activeFilter = btn.getAttribute('data-filter') || 'all';
+        }
+      });
+    }
+
+    // Update active class on pills
+    pillBtns.forEach((btn) => {
+      if (btn.getAttribute('data-filter') === activeFilter) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    function updateUrlState() {
+      const params = new URLSearchParams(window.location.search);
+      if (currentQuery.trim()) {
+        params.set('sq', currentQuery.trim());
+      } else {
+        params.delete('sq');
+        params.delete('sidebar_q');
+      }
+
+      if (activeFilter !== 'all') {
+        params.set('category', activeFilter);
+      } else {
+        params.delete('category');
+        params.delete('scat');
+      }
+
+      const queryString = params.toString();
+      const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+      history.replaceState(null, '', newUrl);
+    }
+
+    function applyFilters() {
+      const trimmedQ = currentQuery.trim().toLowerCase();
+      let matchingSlugs: Set<string> | null = null;
+
+      if (trimmedQ) {
+        const msResults = miniSearch.search(trimmedQ);
+        matchingSlugs = new Set(msResults.map((r) => r.id));
+
+        // Substring fallback matching for high precision
+        serviceItems.forEach((item) => {
+          const slug = item.getAttribute('data-slug') || '';
+          const service = (item.getAttribute('data-service') || '').toLowerCase();
+          const category = (item.getAttribute('data-category') || '').toLowerCase();
+          const ecosystem = (item.getAttribute('data-ecosystem') || '').toLowerCase();
+          if (service.includes(trimmedQ) || slug.includes(trimmedQ) || category.includes(trimmedQ) || ecosystem.includes(trimmedQ)) {
+            matchingSlugs!.add(slug);
+          }
+        });
+      }
+
+      let totalVisibleServices = 0;
+
+      // Filter service items
+      serviceItems.forEach((item) => {
+        const slug = item.getAttribute('data-slug') || '';
+        const ecosystem = item.getAttribute('data-ecosystem') || '';
+        const category = item.getAttribute('data-category') || '';
+        const isBreaking = item.getAttribute('data-breaking') === 'true';
+
+        const matchesSearch = matchingSlugs === null || matchingSlugs.has(slug);
+
+        let matchesFilter = true;
+        if (activeFilter === 'breaking') {
+          matchesFilter = isBreaking;
+        } else if (activeFilter === 'Google Cloud') {
+          matchesFilter = ecosystem === 'Google Cloud';
+        } else if (activeFilter === 'AI & ML') {
+          matchesFilter = category === 'AI & ML';
+        } else if (activeFilter === 'Data Analytics') {
+          matchesFilter = category === 'Data Analytics';
+        } else if (activeFilter === 'Workspace') {
+          matchesFilter = ecosystem === 'Workspace' || category === 'Workspace';
+        } else if (activeFilter !== 'all') {
+          matchesFilter = ecosystem === activeFilter || category === activeFilter;
+        }
+
+        const isVisible = matchesSearch && matchesFilter;
+        item.style.display = isVisible ? '' : 'none';
+        if (isVisible) totalVisibleServices++;
+      });
+
+      // Update category-group visibility and counts
+      categoryGroups.forEach((catGroup) => {
+        const visibleItemsInGroup = catGroup.querySelectorAll('.sidebar-service-item:not([style*="display: none"])');
+        catGroup.style.display = visibleItemsInGroup.length > 0 ? '' : 'none';
+
+        const countSpan = catGroup.querySelector('.category-count');
+        if (countSpan) {
+          countSpan.textContent = String(visibleItemsInGroup.length);
+        }
+      });
+
+      // Update ecosystem-section visibility and counts
+      ecosystemSections.forEach((ecoSection) => {
+        const visibleItemsInEco = ecoSection.querySelectorAll('.sidebar-service-item:not([style*="display: none"])');
+        ecoSection.style.display = visibleItemsInEco.length > 0 ? '' : 'none';
+
+        const badgeSpan = ecoSection.querySelector('.ecosystem-badge');
+        if (badgeSpan) {
+          badgeSpan.textContent = String(visibleItemsInEco.length);
+        }
+      });
+
+      // Update total badge / no results state
+      if (totalBadge) {
+        if (currentQuery.trim() || activeFilter !== 'all') {
+          totalBadge.textContent = `${totalVisibleServices} Found`;
+        } else {
+          totalBadge.textContent = `${serviceItems.length} Monitored`;
+        }
+      }
+
+      if (noResultsEl) {
+        noResultsEl.style.display = totalVisibleServices === 0 ? 'block' : 'none';
+      }
+
+      // Toggle clear button and kbd hint
+      if (clearBtn) {
+        clearBtn.style.display = currentQuery ? 'flex' : 'none';
+      }
+      if (kbdHint) {
+        kbdHint.style.display = currentQuery ? 'none' : 'inline-block';
+      }
+    }
+
+    // Initial filter application
+    applyFilters();
+
+    // Input listener
+    searchInput?.addEventListener('input', (e) => {
+      currentQuery = (e.target as HTMLInputElement).value;
+      applyFilters();
+      updateUrlState();
+    });
+
+    // Focus / blur hint visibility
+    searchInput?.addEventListener('focus', () => {
+      if (kbdHint) kbdHint.style.display = 'none';
+    });
+    searchInput?.addEventListener('blur', () => {
+      if (kbdHint && !currentQuery) kbdHint.style.display = 'inline-block';
+    });
+
+    // Clear button listener
+    clearBtn?.addEventListener('click', () => {
+      if (searchInput) {
+        searchInput.value = '';
+        currentQuery = '';
+        searchInput.focus();
+      }
+      applyFilters();
+      updateUrlState();
+    });
+
+    // Filter pill listeners
+    pillBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const targetFilter = btn.getAttribute('data-filter') || 'all';
+        if (activeFilter === targetFilter && targetFilter !== 'all') {
+          activeFilter = 'all';
+        } else {
+          activeFilter = targetFilter;
+        }
+
+        pillBtns.forEach((b) => {
+          if (b.getAttribute('data-filter') === activeFilter) {
+            b.classList.add('active');
+          } else {
+            b.classList.remove('active');
+          }
+        });
+
+        applyFilters();
+        updateUrlState();
+      });
+    });
+
+    // Reset button in empty state
+    resetBtn?.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      currentQuery = '';
+      activeFilter = 'all';
+
+      pillBtns.forEach((b) => {
+        if (b.getAttribute('data-filter') === 'all') b.classList.add('active');
+        else b.classList.remove('active');
+      });
+
+      applyFilters();
+      updateUrlState();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      const activeEl = document.activeElement;
+      const isEditingText = activeEl && (
+        activeEl.tagName === 'INPUT' ||
+        activeEl.tagName === 'TEXTAREA' ||
+        activeEl.tagName === 'SELECT' ||
+        (activeEl as HTMLElement).isContentEditable
+      );
+
+      if (e.key === '/' && !isEditingText) {
+        e.preventDefault();
+        searchInput?.focus();
+        searchInput?.select();
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k' && !isEditingText) {
+        e.preventDefault();
+        searchInput?.focus();
+        searchInput?.select();
+      } else if (e.key === 'Escape' && activeEl === searchInput) {
+        if (currentQuery) {
+          if (searchInput) searchInput.value = '';
+          currentQuery = '';
+          applyFilters();
+          updateUrlState();
+        } else {
+          searchInput?.blur();
+        }
+      }
+    });
+  }
+
   initSidebarDrawer();
-  document.addEventListener('astro:page-load', initSidebarDrawer);
+  initSidebarSearch();
+
+  document.addEventListener('astro:page-load', () => {
+    initSidebarDrawer();
+    initSidebarSearch();
+  });
 </script>
