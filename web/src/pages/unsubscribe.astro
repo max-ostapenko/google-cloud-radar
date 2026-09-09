@@ -1,0 +1,154 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Unsubscribe — Google Cloud Radar"
+  description="Opt out of Google Cloud Radar email alerts and weekly intelligence digests."
+  showSidebar={false}
+>
+  <div class="unsub-container">
+    <div class="unsub-card">
+      <div class="unsub-header">
+        <span class="unsub-icon">📬</span>
+        <h1>Email Unsubscribe</h1>
+      </div>
+
+      <div id="unsubStatus" class="unsub-status loading">
+        <div class="spinner"></div>
+        <p>Processing your unsubscribe request...</p>
+      </div>
+
+      <div id="unsubMessage" class="unsub-message" style="display: none;"></div>
+
+      <div class="unsub-actions">
+        <a href="/" class="btn-secondary">Return to Google Cloud Radar</a>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .unsub-container {
+      max-width: 540px;
+      margin: 60px auto;
+      padding: 0 16px;
+    }
+    .unsub-card {
+      background: var(--color-bg-card, #ffffff);
+      border: 1px solid var(--color-border, #dadce0);
+      border-radius: 12px;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    .unsub-header {
+      margin-bottom: 24px;
+    }
+    .unsub-icon {
+      font-size: 36px;
+      display: block;
+      margin-bottom: 12px;
+    }
+    .unsub-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--color-text, #202124);
+      margin: 0;
+    }
+    .unsub-status {
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      font-size: 14.5px;
+      line-height: 1.5;
+    }
+    .unsub-status.loading {
+      background: #f1f3f4;
+      color: #5f6368;
+    }
+    .unsub-status.success {
+      background: #e6f4ea;
+      color: #137333;
+      border: 1px solid #ceead6;
+    }
+    .unsub-status.error {
+      background: #fce8e6;
+      color: #c5221f;
+      border: 1px solid #fad2cf;
+    }
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #dadce0;
+      border-top-color: #1a73e8;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px auto;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .btn-secondary {
+      display: inline-block;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a73e8;
+      background: #e8f0fe;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-secondary:hover {
+      background: #d2e3fc;
+    }
+  </style>
+
+  <script>
+    async function processUnsubscribe() {
+      const statusEl = document.getElementById('unsubStatus');
+      const params = new URLSearchParams(window.location.search);
+      const email = params.get('email');
+      const token = params.get('token');
+
+      if (!email || !token) {
+        if (statusEl) {
+          statusEl.className = 'unsub-status error';
+          statusEl.innerHTML = '<strong>⚠️ Invalid Request</strong><p style="margin: 8px 0 0 0;">Missing email or token parameter in link.</p>';
+        }
+        return;
+      }
+
+      try {
+        const resp = await fetch(`/api/unsubscribe?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (resp.ok) {
+          if (statusEl) {
+            statusEl.className = 'unsub-status success';
+            statusEl.innerHTML = `<strong>✓ Successfully Unsubscribed</strong><p style="margin: 8px 0 0 0;">Preferences updated for <strong>${email}</strong>. You will no longer receive automated email dispatches.</p>`;
+          }
+        } else {
+          const errData = await resp.json().catch(() => ({}));
+          if (statusEl) {
+            statusEl.className = 'unsub-status error';
+            statusEl.innerHTML = `<strong>⚠️ Opt-Out Failed</strong><p style="margin: 8px 0 0 0;">${errData.error || 'The unsubscribe token is invalid or expired.'}</p>`;
+          }
+        }
+      } catch (err) {
+        if (statusEl) {
+          statusEl.className = 'unsub-status error';
+          statusEl.innerHTML = '<strong>⚠️ Connection Error</strong><p style="margin: 8px 0 0 0;">Could not reach backend service to update preferences.</p>';
+        }
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', processUnsubscribe);
+    } else {
+      processUnsubscribe();
+    }
+  </script>
+</BaseLayout>

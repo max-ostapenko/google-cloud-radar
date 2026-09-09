@@ -31,6 +31,8 @@ import urllib.error
 from pathlib import Path
 from typing import Optional, Any
 
+from scripts import email_helper
+
 # Root path resolution
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = REPO_ROOT / "data"
@@ -47,16 +49,7 @@ logger = logging.getLogger("dispatch_email_alerts")
 
 def load_env_file() -> None:
     """Loads key-value pairs from .env if present in root."""
-    env_path = REPO_ROOT / ".env"
-    if env_path.exists():
-        for line in env_path.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, v = line.split("=", 1)
-                k = k.strip()
-                v = v.strip().strip("'\"")
-                if k not in os.environ:
-                    os.environ[k] = v
+    email_helper.load_env_file()
 
 
 load_env_file()
@@ -64,61 +57,12 @@ load_env_file()
 
 def get_access_token() -> str:
     """Retrieves active OAuth2 access token via gcloud CLI or google-auth ADC."""
-    # When running locally, prefer active gcloud CLI credentials
-    if is_dev_environment():
-        try:
-            token = subprocess.check_output(
-                ["gcloud", "auth", "print-access-token", "--quiet"],
-                text=True,
-                stderr=subprocess.DEVNULL,
-            ).strip()
-            if token:
-                return token
-        except Exception:
-            pass
-
-    # In CI / production, use Application Default Credentials (ADC)
-    try:
-        import google.auth
-        import google.auth.transport.requests
-
-        credentials, _ = google.auth.default(
-            scopes=[
-                "https://www.googleapis.com/auth/cloud-platform",
-                "https://www.googleapis.com/auth/datastore",
-            ]
-        )
-        auth_req = google.auth.transport.requests.Request()
-        credentials.refresh(auth_req)
-        if credentials.token:
-            return credentials.token
-    except Exception:
-        pass
-
-    try:
-        token = subprocess.check_output(
-            ["gcloud", "auth", "print-access-token", "--quiet"],
-            text=True,
-            stderr=subprocess.DEVNULL,
-        ).strip()
-        if token:
-            return token
-    except Exception:
-        pass
-
-    return ""
+    return email_helper.get_access_token()
 
 
 def is_dev_environment() -> bool:
     """Returns True if running locally in development rather than production CI."""
-    if os.getenv("ENVIRONMENT", "").lower() in ("production", "prod"):
-        return False
-    if (
-        os.getenv("CI", "").lower() in ("true", "1")
-        or os.getenv("GITHUB_ACTIONS") == "true"
-    ):
-        return False
-    return True
+    return email_helper.is_dev_environment()
 
 
 def send_resend_email(
@@ -129,68 +73,28 @@ def send_resend_email(
     html_content: str,
     text_content: Optional[str] = None,
     allow_dev_fallback: bool = False,
+    headers: Optional[dict[str, str]] = None,
 ) -> bool:
-    """Sends an email via Resend REST API."""
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-        "User-Agent": "Google-Cloud-Radar-Dispatcher/1.0",
-    }
-
-    payload = {
-        "from": from_email,
-        "to": [to_email],
-        "subject": subject,
-        "html": html_content,
-    }
-    if text_content:
-        payload["text"] = text_content
-
-    data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        RESEND_API_URL, data=data, headers=headers, method="POST"
+    """Sends an email via Resend REST API using shared email helper."""
+    return email_helper.send_resend_email(
+        api_key=api_key,
+        from_email=from_email,
+        to_email=to_email,
+        subject=subject,
+        html_content=html_content,
+        text_content=text_content,
+        allow_dev_fallback=allow_dev_fallback,
+        headers=headers,
     )
 
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            resp_body = resp.read().decode("utf-8")
-            result = json.loads(resp_body)
-            logger.info(
-                f"✓ Email successfully sent to {to_email} (Resend ID: {result.get('id', 'N/A')})"
-            )
-            return True
-    except urllib.error.HTTPError as e:
-        error_msg = e.read().decode("utf-8")
-        # Fallback to sandbox domain ONLY in development / test environment
-        if (
-            allow_dev_fallback
-            and ("domain" in error_msg.lower() or e.code == 403)
-            and from_email != FALLBACK_SANDBOX_FROM_EMAIL
-        ):
-            logger.warning(
-                f"[DEV ENV] Domain in '{from_email}' is not yet verified in Resend. Retrying with '{FALLBACK_SANDBOX_FROM_EMAIL}' sandbox domain..."
-            )
-            return send_resend_email(
-                api_key=api_key,
-                from_email=FALLBACK_SANDBOX_FROM_EMAIL,
-                to_email=to_email,
-                subject=subject,
-                html_content=html_content,
-                text_content=text_content,
-                allow_dev_fallback=False,
-            )
-        logger.error(
-            f"✗ Resend API HTTP error sending to {to_email} ({e.code}): {error_msg}"
-        )
-        return False
-    except Exception as e:
-        logger.error(f"✗ Failed to send email to {to_email}: {e}")
-        return False
 
-
-def render_breaking_email_html(change: dict) -> str:
+def render_breaking_email_html(
+    change: dict, recipient_email: Optional[str] = None
+) -> str:
     """Renders a responsive, modern HTML email template for a breaking change alert."""
-    raw_service = change.get("service") or change.get("service_name") or "Google Cloud Service"
+    raw_service = (
+        change.get("service") or change.get("service_name") or "Google Cloud Service"
+    )
     raw_title = change.get("title") or f"{raw_service} Breaking Change Detected"
     raw_summary = change.get("summary") or ""
     raw_api = change.get("api") or ""
@@ -205,6 +109,12 @@ def render_breaking_email_html(change: dict) -> str:
     api = html.escape(str(raw_api))
     date_str = html.escape(str(raw_date))
     diff_url = f"https://google-cloud-radar.com/changes/{urllib.parse.quote(raw_slug)}"
+
+    unsub_url = (
+        email_helper.generate_unsubscribe_page_url(recipient_email)
+        if recipient_email
+        else "https://google-cloud-radar.com/?action=alerts"
+    )
 
     methods_html = ""
     if extracted_methods:
@@ -297,7 +207,7 @@ def render_breaking_email_html(change: dict) -> str:
           <tr>
             <td style="padding: 18px 24px; background-color: #f8f9fa; border-top: 1px solid #dadce0; text-align: center; font-size: 12px; color: #70757a;">
               You received this automated notification because you subscribed to instant breaking change alerts on <a href="https://google-cloud-radar.com" style="color: #1a73e8; text-decoration: none;">Google Cloud Radar</a>.<br><br>
-              <a href="https://google-cloud-radar.com/?action=alerts" style="color: #5f6368; text-decoration: underline;">Manage Alert Preferences</a> &nbsp;|&nbsp; <a href="https://google-cloud-radar.com/breaking" style="color: #5f6368; text-decoration: underline;">View All Breaking Alerts</a>
+              <a href="{unsub_url}" style="color: #5f6368; text-decoration: underline;">Unsubscribe</a> &nbsp;|&nbsp; <a href="https://google-cloud-radar.com/?action=alerts" style="color: #5f6368; text-decoration: underline;">Manage Alert Preferences</a> &nbsp;|&nbsp; <a href="https://google-cloud-radar.com/breaking" style="color: #5f6368; text-decoration: underline;">View All Breaking Alerts</a>
             </td>
           </tr>
         </table>
@@ -541,7 +451,9 @@ def main() -> None:
             or "Google Cloud"
         )
         subject = f"⚠️ [Breaking Alert] {service_name}: {test_change.get('title')}"
-        html_body = render_breaking_email_html(test_change)
+        html_body = render_breaking_email_html(
+            test_change, recipient_email=args.test_email
+        )
 
         logger.info(
             f"Dispatching TEST EMAIL to {args.test_email} for change: {test_change.get('slug')}"
@@ -595,7 +507,6 @@ def main() -> None:
             change.get("service") or change.get("service_name") or "Google Cloud"
         )
         subject = f"⚠️ [Breaking Alert] {service_name}: {change.get('title')}"
-        html_body = render_breaking_email_html(change)
 
         for sub in subscribers:
             email = sub["email"]
@@ -611,6 +522,7 @@ def main() -> None:
                 logger.info(f"[DRY-RUN] Would send alert for {slug} to {email}")
                 continue
 
+            html_body = render_breaking_email_html(change, recipient_email=email)
             sent = send_resend_email(
                 api_key=api_key,
                 from_email=args.from_email,

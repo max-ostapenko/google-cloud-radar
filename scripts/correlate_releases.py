@@ -39,10 +39,37 @@ _FEED_HEALTH: dict[str, dict] = {}
 
 SERVICE_AFFINITY_KEYWORDS = {
     "gmail": ["gmail", "mail", "email", "inbox", "message"],
-    "drive": ["drive", "google drive", "doc", "docs", "sheet", "sheets", "slide", "slides", "file", "folder"],
-    "admin": ["admin", "directory", "organization", "domain", "workspace", "user", "transfer"],
+    "drive": [
+        "drive",
+        "google drive",
+        "doc",
+        "docs",
+        "sheet",
+        "sheets",
+        "slide",
+        "slides",
+        "file",
+        "folder",
+    ],
+    "admin": [
+        "admin",
+        "directory",
+        "organization",
+        "domain",
+        "workspace",
+        "user",
+        "transfer",
+    ],
     "script": ["apps script", "script", "appsscript", "macro", "execution"],
-    "androidpublisher": ["play", "google play", "play store", "android", "developer console", "billing", "monetization"],
+    "androidpublisher": [
+        "play",
+        "google play",
+        "play store",
+        "android",
+        "developer console",
+        "billing",
+        "monetization",
+    ],
 }
 
 
@@ -62,12 +89,16 @@ def load_release_archive(archive_path: str) -> dict[str, list[dict]]:
 ARCHIVE_RETENTION_DAYS = 180
 
 
-def save_release_archive(archive_path: str, archive_data: dict[str, list[dict]]) -> None:
+def save_release_archive(
+    archive_path: str, archive_data: dict[str, list[dict]]
+) -> None:
     """Saves release notes archive to disk with a rolling retention window and lean bullets
     to prevent repository and cache bloat.
     """
     try:
-        cutoff_date = (datetime.date.today() - datetime.timedelta(days=ARCHIVE_RETENTION_DAYS)).isoformat()
+        cutoff_date = (
+            datetime.date.today() - datetime.timedelta(days=ARCHIVE_RETENTION_DAYS)
+        ).isoformat()
         lean_archive: dict[str, list[dict]] = {}
 
         for feed_url, entries in archive_data.items():
@@ -107,7 +138,11 @@ def log_feed_warning(service_key: str, feed_url: str, message: str) -> None:
     print(warn_text, file=sys.stderr)
     if os.environ.get("GITHUB_ACTIONS") == "true":
         # GitHub Actions workflow command to create an in-UI warning banner
-        title = f"Release Feed Warning ({service_key})" if service_key else "Release Feed Warning"
+        title = (
+            f"Release Feed Warning ({service_key})"
+            if service_key
+            else "Release Feed Warning"
+        )
         print(f"::warning title={title}::{message} at {feed_url}")
 
 
@@ -137,39 +172,60 @@ def fetch_feed_entries(
         with urllib.request.urlopen(req, timeout=12) as resp:
             status_code = resp.getcode()
             if status_code != 200:
-                log_feed_warning(service_key, feed_url, f"Unexpected HTTP status {status_code}")
-                _FEED_HEALTH[feed_url] = {"status": "error", "error": f"HTTP {status_code}", "services": [service_key]}
+                log_feed_warning(
+                    service_key, feed_url, f"Unexpected HTTP status {status_code}"
+                )
+                _FEED_HEALTH[feed_url] = {
+                    "status": "error",
+                    "error": f"HTTP {status_code}",
+                    "services": [service_key],
+                }
             else:
                 xml_text = resp.read().decode("utf-8")
                 live_entries = parse_feed_xml(xml_text)
                 if not live_entries:
-                    log_feed_warning(service_key, feed_url, "Feed returned 200 OK but contained 0 parseable entries")
-                    _FEED_HEALTH[feed_url] = {"status": "empty", "services": [service_key]}
+                    log_feed_warning(
+                        service_key,
+                        feed_url,
+                        "Feed returned 200 OK but contained 0 parseable entries",
+                    )
+                    _FEED_HEALTH[feed_url] = {
+                        "status": "empty",
+                        "services": [service_key],
+                    }
                 else:
-                    _FEED_HEALTH[feed_url] = {"status": "healthy", "count": len(live_entries), "services": [service_key]}
+                    _FEED_HEALTH[feed_url] = {
+                        "status": "healthy",
+                        "count": len(live_entries),
+                        "services": [service_key],
+                    }
     except Exception as e:
         err_msg = str(e)
         log_feed_warning(service_key, feed_url, f"Network/HTTP error: {err_msg}")
-        _FEED_HEALTH[feed_url] = {"status": "error", "error": err_msg, "services": [service_key]}
+        _FEED_HEALTH[feed_url] = {
+            "status": "error",
+            "error": err_msg,
+            "services": [service_key],
+        }
 
     # Merge with persistent archive
     combined_entries = []
     seen_ids = set()
 
     # Add live entries first
-    for e in live_entries:
-        uid = e.get("url") or f"{e.get('date')}:{e.get('title')}"
+    for item in live_entries:
+        uid = item.get("url") or f"{item.get('date')}:{item.get('title')}"
         if uid not in seen_ids:
             seen_ids.add(uid)
-            combined_entries.append(e)
+            combined_entries.append(item)
 
     # Add historical entries from archive
     if archive is not None and feed_url in archive:
-        for e in archive[feed_url]:
-            uid = e.get("url") or f"{e.get('date')}:{e.get('title')}"
+        for item in archive[feed_url]:
+            uid = item.get("url") or f"{item.get('date')}:{item.get('title')}"
             if uid not in seen_ids:
                 seen_ids.add(uid)
-                combined_entries.append(e)
+                combined_entries.append(item)
 
     if archive is not None and combined_entries:
         archive[feed_url] = combined_entries
@@ -192,7 +248,9 @@ def parse_feed_xml(xml_text: str) -> list:
         # 1. Look for Atom entries
         raw_entries = root.findall("atom:entry", ns) if ns else root.findall("entry")
         if not raw_entries:
-            raw_entries = root.findall(".//{http://www.w3.org/2005/Atom}entry") or root.findall(".//entry")
+            raw_entries = root.findall(
+                ".//{http://www.w3.org/2005/Atom}entry"
+            ) or root.findall(".//entry")
 
         # 2. If no Atom entries, check for RSS 2.0 <item> elements
         if not raw_entries:
@@ -202,7 +260,9 @@ def parse_feed_xml(xml_text: str) -> list:
             # Title
             title = entry.find("atom:title", ns) if ns else entry.find("title")
             if title is None:
-                title = entry.find(".//{http://www.w3.org/2005/Atom}title") or entry.find(".//title")
+                title = entry.find(
+                    ".//{http://www.w3.org/2005/Atom}title"
+                ) or entry.find(".//title")
             title_text = title.text.strip() if title is not None and title.text else ""
 
             # Link (prefer rel="alternate" or type="text/html")
@@ -230,23 +290,51 @@ def parse_feed_xml(xml_text: str) -> list:
 
             # Date (Atom updated/published or RSS pubDate/dc:date)
             pub_elem = None
-            for tag in ["atom:updated", "atom:published", "updated", "published", "pubDate", "dc:date"]:
-                candidate = entry.find(tag, ns) if (ns and tag.startswith("atom:")) else entry.find(tag)
+            for tag in [
+                "atom:updated",
+                "atom:published",
+                "updated",
+                "published",
+                "pubDate",
+                "dc:date",
+            ]:
+                candidate = (
+                    entry.find(tag, ns)
+                    if (ns and tag.startswith("atom:"))
+                    else entry.find(tag)
+                )
                 if candidate is not None and candidate.text:
                     pub_elem = candidate
                     break
-            raw_date = pub_elem.text.strip() if pub_elem is not None and pub_elem.text else ""
+            raw_date = (
+                pub_elem.text.strip() if pub_elem is not None and pub_elem.text else ""
+            )
             parsed_d = parse_date(raw_date)
             date_str = parsed_d.isoformat() if parsed_d else raw_date[:10]
 
             # Content
             content_elem = None
-            for tag in ["atom:content", "atom:summary", "content", "summary", "description", "{http://purl.org/rss/1.0/modules/content/}encoded"]:
-                candidate = entry.find(tag, ns) if (ns and tag.startswith("atom:")) else entry.find(tag)
+            for tag in [
+                "atom:content",
+                "atom:summary",
+                "content",
+                "summary",
+                "description",
+                "{http://purl.org/rss/1.0/modules/content/}encoded",
+            ]:
+                candidate = (
+                    entry.find(tag, ns)
+                    if (ns and tag.startswith("atom:"))
+                    else entry.find(tag)
+                )
                 if candidate is not None and candidate.text:
                     content_elem = candidate
                     break
-            content_text = content_elem.text.strip() if content_elem is not None and content_elem.text else ""
+            content_text = (
+                content_elem.text.strip()
+                if content_elem is not None and content_elem.text
+                else ""
+            )
 
             if title_text or content_text:
                 entries.append(
@@ -302,31 +390,149 @@ def calculate_lead_time(canary_date_str: str, release_date_str: str) -> int:
 
 
 GENERIC_DOMAIN_WORDS = {
-    "a", "an", "the", "and", "or", "in", "on", "for", "with", "to", "of", "at", "by", "from",
-    "api", "update", "updates", "new", "support", "supports", "supported",
-    "breaking", "change", "changes", "changed", "feature", "features",
-    "service", "services", "version", "beta", "alpha", "v1", "v2", "v3",
-    "google", "cloud", "platform", "field", "fields", "resource", "resources",
-    "method", "methods", "schema", "introduces", "adds", "added", "removes", "removed",
-    "deprecated", "deprecation", "deprecations", "clarified", "clarifies", "clarification",
-    "agent", "agents", "safety", "client", "runtime", "runtimes", "system", "systems",
-    "model", "models", "workflow", "workflows", "controls", "management",
-    "developer", "developers", "preview", "general", "availability", "ga",
-    "configuration", "config", "endpoint", "endpoints", "request", "requests", "response", "responses",
-    "data", "policy", "policies", "iam", "reports", "admin", "workspace", "organization", "project",
-    "user", "users", "group", "groups", "call", "calls", "parameters", "parameter", "properties", "property",
-    "query", "queries", "result", "results", "table", "tables", "file", "files", "item", "items", "code"
+    "a",
+    "an",
+    "the",
+    "and",
+    "or",
+    "in",
+    "on",
+    "for",
+    "with",
+    "to",
+    "of",
+    "at",
+    "by",
+    "from",
+    "api",
+    "update",
+    "updates",
+    "new",
+    "support",
+    "supports",
+    "supported",
+    "breaking",
+    "change",
+    "changes",
+    "changed",
+    "feature",
+    "features",
+    "service",
+    "services",
+    "version",
+    "beta",
+    "alpha",
+    "v1",
+    "v2",
+    "v3",
+    "google",
+    "cloud",
+    "platform",
+    "field",
+    "fields",
+    "resource",
+    "resources",
+    "method",
+    "methods",
+    "schema",
+    "introduces",
+    "adds",
+    "added",
+    "removes",
+    "removed",
+    "deprecated",
+    "deprecation",
+    "deprecations",
+    "clarified",
+    "clarifies",
+    "clarification",
+    "agent",
+    "agents",
+    "safety",
+    "client",
+    "runtime",
+    "runtimes",
+    "system",
+    "systems",
+    "model",
+    "models",
+    "workflow",
+    "workflows",
+    "controls",
+    "management",
+    "developer",
+    "developers",
+    "preview",
+    "general",
+    "availability",
+    "ga",
+    "configuration",
+    "config",
+    "endpoint",
+    "endpoints",
+    "request",
+    "requests",
+    "response",
+    "responses",
+    "data",
+    "policy",
+    "policies",
+    "iam",
+    "reports",
+    "admin",
+    "workspace",
+    "organization",
+    "project",
+    "user",
+    "users",
+    "group",
+    "groups",
+    "call",
+    "calls",
+    "parameters",
+    "parameter",
+    "properties",
+    "property",
+    "query",
+    "queries",
+    "result",
+    "results",
+    "table",
+    "tables",
+    "file",
+    "files",
+    "item",
+    "items",
+    "code",
 }
 
 GENERIC_METHOD_VERBS = {
-    "get", "set", "list", "create", "delete", "update", "patch", "search",
-    "export", "import", "batch", "cancel", "run", "read", "write", "call"
+    "get",
+    "set",
+    "list",
+    "create",
+    "delete",
+    "update",
+    "patch",
+    "search",
+    "export",
+    "import",
+    "batch",
+    "cancel",
+    "run",
+    "read",
+    "write",
+    "call",
 }
 
 
 def extract_bullets(content_html: str, title: str = "") -> list[str]:
     """Extracts individual release note bullets/paragraphs to prevent cross-bullet false matches."""
-    chunks = re.split(r"</?(?:li|p|h[2-4]|tr|section|article)\b[^>]*>", content_html, flags=re.IGNORECASE)
+    chunks = re.split(
+        r"</?(?:li|p|h[2-4]|tr|section|article)\b[^>]*>",
+        content_html,
+        flags=re.IGNORECASE,
+    )
     cleaned = []
     if title and len(title) > 10:
         cleaned.append(title.lower())
@@ -343,12 +549,19 @@ def extract_technical_phrases(title: str) -> list[str]:
     words = re.findall(r"[A-Za-z0-9_]+", title.lower())
     phrases = []
     for i in range(len(words) - 1):
-        w1, w2 = words[i], words[i+1]
-        if w1 not in GENERIC_DOMAIN_WORDS and w2 not in GENERIC_DOMAIN_WORDS and len(w1) >= 4 and len(w2) >= 4:
+        w1, w2 = words[i], words[i + 1]
+        if (
+            w1 not in GENERIC_DOMAIN_WORDS
+            and w2 not in GENERIC_DOMAIN_WORDS
+            and len(w1) >= 4
+            and len(w2) >= 4
+        ):
             phrases.append(f"{w1} {w2}")
     for i in range(len(words) - 2):
-        w1, w2, w3 = words[i], words[i+1], words[i+2]
-        if (w1 not in GENERIC_DOMAIN_WORDS or w2 not in GENERIC_DOMAIN_WORDS) and w3 not in GENERIC_DOMAIN_WORDS:
+        w1, w2, w3 = words[i], words[i + 1], words[i + 2]
+        if (
+            w1 not in GENERIC_DOMAIN_WORDS or w2 not in GENERIC_DOMAIN_WORDS
+        ) and w3 not in GENERIC_DOMAIN_WORDS:
             p = f"{w1} {w2} {w3}"
             if len(p) >= 12:
                 phrases.append(p)
@@ -356,7 +569,10 @@ def extract_technical_phrases(title: str) -> list[str]:
 
 
 def match_change_against_releases(
-    change_meta: dict, release_entries: list, max_lead_days: int = 120, service_key: str = ""
+    change_meta: dict,
+    release_entries: list,
+    max_lead_days: int = 120,
+    service_key: str = "",
 ) -> dict | None:
     """Matches a canary change entry against official release entries with strict confidence.
     Prioritizes high confidence:
@@ -373,7 +589,11 @@ def match_change_against_releases(
 
     title = change_meta.get("title", "").lower()
     technical_phrases = extract_technical_phrases(change_meta.get("title", ""))
-    rare_words = [w for w in re.findall(r"[a-z0-9_]+", title) if len(w) >= 5 and w not in GENERIC_DOMAIN_WORDS]
+    rare_words = [
+        w
+        for w in re.findall(r"[a-z0-9_]+", title)
+        if len(w) >= 5 and w not in GENERIC_DOMAIN_WORDS
+    ]
     methods = [m.lower() for m in change_meta.get("extracted_methods", [])]
 
     # Pre-qualify RPC methods
@@ -420,7 +640,9 @@ def match_change_against_releases(
                 break
 
             # 3. >= 3 rare domain words in this single bullet
-            b_words = [w for w in rare_words if re.search(r"\b" + re.escape(w) + r"\b", b)]
+            b_words = [
+                w for w in rare_words if re.search(r"\b" + re.escape(w) + r"\b", b)
+            ]
             if len(b_words) >= 3:
                 matched = True
                 break
@@ -516,7 +738,9 @@ def run_correlation(
     files = sorted(glob.glob(os.path.join(data_dir, "*.json")))
 
     if archive_path is None:
-        archive_path = os.path.join(os.path.dirname(data_dir), "release_notes_archive.json")
+        archive_path = os.path.join(
+            os.path.dirname(data_dir), "release_notes_archive.json"
+        )
 
     archive = load_release_archive(archive_path) if archive_path else {}
     matched_results = []
@@ -556,8 +780,12 @@ def run_correlation(
         elif feed_urls:
             seen_uids = set()
             for u in feed_urls:
-                for entry in fetch_feed_entries(u, service_key=service_key, archive=archive):
-                    uid = entry.get("url") or f"{entry.get('date')}:{entry.get('title')}"
+                for entry in fetch_feed_entries(
+                    u, service_key=service_key, archive=archive
+                ):
+                    uid = (
+                        entry.get("url") or f"{entry.get('date')}:{entry.get('title')}"
+                    )
                     if uid not in seen_uids:
                         seen_uids.add(uid)
                         release_entries.append(entry)
@@ -614,14 +842,20 @@ def run_correlation(
 
     # Summary of feed health
     total_feeds = len(_FEED_HEALTH)
-    healthy_feeds = sum(1 for h in _FEED_HEALTH.values() if h.get("status") == "healthy")
+    healthy_feeds = sum(
+        1 for h in _FEED_HEALTH.values() if h.get("status") == "healthy"
+    )
     warning_feeds = total_feeds - healthy_feeds
     if total_feeds > 0:
-        print(f"\n📊 Release Feed Health: {healthy_feeds}/{total_feeds} feeds active and healthy ({warning_feeds} warnings)")
+        print(
+            f"\n📊 Release Feed Health: {healthy_feeds}/{total_feeds} feeds active and healthy ({warning_feeds} warnings)"
+        )
         for url, h in _FEED_HEALTH.items():
             if h.get("status") != "healthy":
                 svcs = ", ".join(h.get("services", []))
-                print(f"   ⚠️ Warning [{svcs}]: {h.get('error', '0 entries parsed')} ({url})")
+                print(
+                    f"   ⚠️ Warning [{svcs}]: {h.get('error', '0 entries parsed')} ({url})"
+                )
 
     # Optionally write to GitHub Actions Step Summary if available
     step_summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
@@ -635,7 +869,9 @@ def run_correlation(
                     for url, h in _FEED_HEALTH.items():
                         if h.get("status") != "healthy":
                             svcs = ", ".join(h.get("services", []))
-                            f.write(f"| `{svcs}` | ⚠️ {h.get('error', 'Empty')} | `{url}` |\n")
+                            f.write(
+                                f"| `{svcs}` | ⚠️ {h.get('error', 'Empty')} | `{url}` |\n"
+                            )
         except Exception:
             pass
 
