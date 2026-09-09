@@ -130,7 +130,11 @@ def test_load_and_save_release_archive():
     try:
         data = {
             "https://feed.test/atom.xml": [
-                {"date": "2026-08-01", "title": "Test Note", "url": "https://test.com/1"}
+                {
+                    "date": "2026-08-01",
+                    "title": "Test Note",
+                    "url": "https://test.com/1",
+                }
             ]
         }
         correlate_releases.save_release_archive(tmp_path, data)
@@ -145,6 +149,7 @@ def test_load_and_save_release_archive():
 
 def test_taxonomy_multi_feed_urls():
     from scripts.taxonomy import get_release_feed_urls, get_release_feed_url
+
     urls = get_release_feed_urls("aiplatform")
     assert len(urls) >= 1
     assert any("gemini-enterprise-agent-platform" in u for u in urls)

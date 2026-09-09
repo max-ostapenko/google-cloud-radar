@@ -208,15 +208,6 @@ def load_recent_changes(days: int = 7) -> list[dict]:
         except Exception as e:
             logger.warning(f"Failed to read change document {file_path}: {e}")
 
-    # Fallback to latest changes if none in last N days (for dev preview / test runs)
-    if not changes and CHANGES_DIR.exists():
-        for file_path in sorted(CHANGES_DIR.glob("*.json"), reverse=True)[:10]:
-            try:
-                with open(file_path, "r", encoding="utf-8") as f:
-                    changes.append(json.load(f))
-            except Exception:
-                pass
-
     return changes
 
 
