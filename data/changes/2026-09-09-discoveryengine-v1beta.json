@@ -1,0 +1,25 @@
+{
+  "id": "2026-09-09-discoveryengine-v1beta",
+  "slug": "2026-09-09-discoveryengine-v1beta",
+  "date": "2026-09-09",
+  "api": "discoveryengine.v1beta",
+  "service": "Vertex AI Agent Builder",
+  "service_name": "Vertex AI Agent Builder",
+  "title": "Data Protection Policies and Session Management Controls",
+  "summary": "Vertex AI Agent Builder adds native Sensitive Data Protection integration for data stores and connectors, alongside new session management controls and model 'thinking' levels.",
+  "details": "A new DataProtectionPolicy schema allows developers to link Sensitive Data Protection (formerly DLP) content policies to DataStore and DataConnector resources for automatic sanitization of file uploads and source data. The Engine resource now supports SessionConfig, enabling control over session management (customer-managed vs. Vertex AI-managed) and a configurable sessionTtl (defaulting to 60 days). Additionally, the AlphaEvolveExperimentConfig now includes a thinkingLevel parameter, mapping to Vertex AI's reasoning capabilities for generative models, allowing for MINIMAL to HIGH thinking levels.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "AI",
+    "Security",
+    "Vertex AI",
+    "Data Protection"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": null,
+  "generated_at": "2026-09-09T03:55:08.676490+00:00"
+}
