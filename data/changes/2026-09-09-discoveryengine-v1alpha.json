@@ -1,0 +1,25 @@
+{
+  "id": "2026-09-09-discoveryengine-v1alpha",
+  "slug": "2026-09-09-discoveryengine-v1alpha",
+  "date": "2026-09-09",
+  "api": "discoveryengine.v1alpha",
+  "service": "Vertex AI Search and Conversation",
+  "service_name": "Vertex AI Search and Conversation",
+  "title": "NotebookLM Alpha Removed & New Data Protection Policies",
+  "summary": "This update includes a massive breaking change removing the NotebookLM alpha API surface while introducing new Sensitive Data Protection integrations and session management controls.",
+  "details": "The v1alpha discovery document has undergone a significant cleanup, effectively removing the entire NotebookLM resource surface, including methods for creating, getting, sharing, and batch deleting notebooks. Developers using these alpha endpoints will need to migrate or cease usage. \n\nOn the feature side, Discovery Engine introduces `DataProtectionPolicy` across `DataStore`, `DataConnector`, and `AssistantCustomerPolicy`. This allows for direct integration with Google Cloud Sensitive Data Protection (formerly DLP) to sanitize file uploads and connector sources. Additionally, a new `SessionConfig` has been added to the `Engine` resource, enabling developers to specify `sessionManagementPolicy` (e.g., `VERTEX_AI_MANAGED` for 1P/3P identity) and custom `sessionTtl` (defaulting to 60 days). Finally, `widgetConfigs` now support an `END_USER_MOBILE` view specifically for Gemini Enterprise mobile app integrations.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking",
+    "security",
+    "sessions",
+    "dlp"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": null,
+  "generated_at": "2026-09-09T03:55:08.674441+00:00"
+}

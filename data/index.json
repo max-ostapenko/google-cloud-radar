@@ -1,5 +1,70 @@
 [
   {
+    "id": "2026-09-09-discoveryengine-v1beta",
+    "slug": "2026-09-09-discoveryengine-v1beta",
+    "date": "2026-09-09",
+    "api": "discoveryengine.v1beta",
+    "service": "Vertex AI Agent Builder",
+    "service_name": "Vertex AI Agent Builder",
+    "title": "Data Protection Policies and Session Management Controls",
+    "summary": "Vertex AI Agent Builder adds native Sensitive Data Protection integration for data stores and connectors, alongside new session management controls and model 'thinking' levels.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 7,
+    "tags": [
+      "AI",
+      "Security",
+      "Vertex AI",
+      "Data Protection"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-09T03:55:08.676490+00:00"
+  },
+  {
+    "id": "2026-09-09-discoveryengine-v1alpha",
+    "slug": "2026-09-09-discoveryengine-v1alpha",
+    "date": "2026-09-09",
+    "api": "discoveryengine.v1alpha",
+    "service": "Vertex AI Search and Conversation",
+    "service_name": "Vertex AI Search and Conversation",
+    "title": "NotebookLM Alpha Removed & New Data Protection Policies",
+    "summary": "This update includes a massive breaking change removing the NotebookLM alpha API surface while introducing new Sensitive Data Protection integrations and session management controls.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking",
+      "security",
+      "sessions",
+      "dlp"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-09T03:55:08.674441+00:00"
+  },
+  {
+    "id": "2026-09-09-discoveryengine-v1",
+    "slug": "2026-09-09-discoveryengine-v1",
+    "date": "2026-09-09",
+    "api": "discoveryengine.v1",
+    "service": "Discovery Engine",
+    "service_name": "Discovery Engine",
+    "title": "Data Protection Policies and Session Management Controls",
+    "summary": "Discovery Engine introduces Sensitive Data Protection (DLP) integration, configurable session management for Engines, and a breaking change making icon URLs read-only.",
+    "impact": "medium",
+    "breaking": true,
+    "interesting_score": 8,
+    "tags": [
+      "breaking_change",
+      "security",
+      "generative_ai",
+      "sessions"
+    ],
+    "extracted_methods": [
+      "WidgetConfig.UiSettings.ModelConfigInfo.ResolvedModel"
+    ],
+    "generated_at": "2026-09-09T03:55:08.671600+00:00"
+  },
+  {
     "id": "2026-09-08-androidpublisher-v3",
     "slug": "2026-09-08-androidpublisher-v3",
     "date": "2026-09-08",

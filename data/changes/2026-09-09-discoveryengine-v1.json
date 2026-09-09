@@ -1,0 +1,27 @@
+{
+  "id": "2026-09-09-discoveryengine-v1",
+  "slug": "2026-09-09-discoveryengine-v1",
+  "date": "2026-09-09",
+  "api": "discoveryengine.v1",
+  "service": "Discovery Engine",
+  "service_name": "Discovery Engine",
+  "title": "Data Protection Policies and Session Management Controls",
+  "summary": "Discovery Engine introduces Sensitive Data Protection (DLP) integration, configurable session management for Engines, and a breaking change making icon URLs read-only.",
+  "details": "This update introduces `GoogleCloudDiscoveryengineV1DataProtectionPolicy` across DataStores, DataConnectors, and AssistantCustomerPolicies, allowing developers to link Sensitive Data Protection (DLP) content policies for sanitizing uploads. A new `SessionConfig` has been added to the `Engine` resource, enabling control over session TTL (defaulting to 60 days) and management policies (e.g., `VERTEX_AI_MANAGED`). Additionally, the `widgetConfigs.get` method now supports an `END_USER_MOBILE` view for Gemini Enterprise mobile app integrations. \n\n**Breaking Change:** The `iconUrl` field within `WidgetConfig.UiSettings.ModelConfigInfo.ResolvedModel` is now marked as `readOnly`. Developers who previously attempted to write to this field during configuration updates must now treat it as an output-only absolute URL for brand marks.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "breaking_change",
+    "security",
+    "generative_ai",
+    "sessions"
+  ],
+  "extracted_methods": [
+    "WidgetConfig.UiSettings.ModelConfigInfo.ResolvedModel"
+  ],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": null,
+  "generated_at": "2026-09-09T03:55:08.671600+00:00"
+}
