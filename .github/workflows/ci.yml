@@ -7,7 +7,7 @@ on:
     paths:
       - "scripts/**"
       - "tests/**"
-      - ".github/workflows/ci.yml"
+      - ".github/workflows/**"
       - "requirements.txt"
 permissions:
   contents: read

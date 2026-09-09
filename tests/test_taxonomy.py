@@ -69,7 +69,8 @@ class TestTaxonomy(unittest.TestCase):
             taxonomy.get_quadrant_for_service("Android Publisher"), "infra_compute"
         )
         self.assertEqual(
-            taxonomy.get_quadrant_for_service("Google Play Developer API"), "infra_compute"
+            taxonomy.get_quadrant_for_service("Google Play Developer API"),
+            "infra_compute",
         )
 
     def test_determine_radar_ring(self):
