@@ -139,6 +139,27 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
     if isinstance(tags, str):
         tags = [tags]
 
+    migration_required = bool(insight.get("migration_required", False))
+    parameter_flags = insight.get("parameter_flags", [])
+    if isinstance(parameter_flags, str):
+        parameter_flags = [parameter_flags]
+
+    code_impact_snippet = insight.get("code_impact_snippet")
+    migration_guidance = insight.get("migration_guidance")
+
+    # Render designated Code Impact & Migration Guidance sections into details markdown
+    sections_to_append = []
+    if code_impact_snippet and "### Code Impact" not in details:
+        snippet_text = str(code_impact_snippet).strip()
+        sections_to_append.append(f"### Code Impact\n\n{snippet_text}")
+
+    if migration_guidance and "### Migration Guidance" not in details:
+        guidance_text = str(migration_guidance).strip()
+        sections_to_append.append(f"### Migration Guidance\n\n{guidance_text}")
+
+    if sections_to_append:
+        details = f"{details.rstrip()}\n\n" + "\n\n".join(sections_to_append)
+
     # Extract RPC methods if present
     extracted_methods = insight.get("extracted_methods", [])
     if not extracted_methods:
@@ -159,6 +180,11 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
         "details": details,
         "impact": impact,
         "breaking": breaking,
+        "migration_required": migration_required,
+        "parameter_flags": parameter_flags,
+        "has_code_impact": bool(code_impact_snippet),
+        "code_impact_snippet": code_impact_snippet,
+        "migration_guidance": migration_guidance,
         "interesting_score": score,
         "tags": tags,
         "extracted_methods": extracted_methods,
@@ -191,6 +217,9 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
         "summary": summary,
         "impact": impact,
         "breaking": breaking,
+        "migration_required": migration_required,
+        "parameter_flags": parameter_flags,
+        "has_code_impact": bool(code_impact_snippet),
         "interesting_score": score,
         "tags": tags,
         "extracted_methods": extracted_methods,

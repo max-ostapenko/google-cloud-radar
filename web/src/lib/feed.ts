@@ -40,6 +40,11 @@ export interface FeedEntryMeta {
   title: string;
   impact: 'low' | 'medium' | 'high';
   breaking: boolean;
+  migration_required?: boolean;
+  parameter_flags?: string[];
+  has_code_impact?: boolean;
+  code_impact_snippet?: string;
+  migration_guidance?: string;
   tags: string[];
   interesting_score: number;
   generated_at?: string;

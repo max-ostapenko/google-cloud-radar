@@ -274,6 +274,59 @@ class TestDiffPreprocessor(unittest.TestCase):
         self.assertFalse(result["is_breaking"])
         self.assertEqual([], result["breaking_reasons"])
 
+    def test_build_structured_diff_flags_parameter_requirement_changes(self):
+        old = {
+            "resources": {
+                "jobs": {
+                    "methods": {
+                        "query": {
+                            "httpMethod": "POST",
+                            "parameters": {
+                                "projectId": {"type": "string", "required": True},
+                                "optionalFlag": {"type": "boolean", "required": False},
+                                "removedParam": {"type": "string"},
+                            },
+                        }
+                    }
+                }
+            }
+        }
+
+        new = {
+            "resources": {
+                "jobs": {
+                    "methods": {
+                        "query": {
+                            "httpMethod": "POST",
+                            "parameters": {
+                                "projectId": {"type": "string", "required": True},
+                                "optionalFlag": {"type": "boolean", "required": True},
+                                "newRequiredParam": {
+                                    "type": "string",
+                                    "required": True,
+                                },
+                            },
+                        }
+                    }
+                }
+            }
+        }
+
+        result = diff_preprocessor.build_structured_diff(
+            "bigquery.v2.json", json.dumps(old), json.dumps(new)
+        )
+
+        self.assertIsNotNone(result)
+        self.assertTrue(result["has_parameter_requirement_changes"])
+        flags = result["parameter_flags"]
+        self.assertIn("required_param_added:newRequiredParam", flags)
+        self.assertIn("required_param_modified:optionalFlag", flags)
+        self.assertIn("parameter_removed:removedParam", flags)
+        self.assertTrue(result["_stats"]["has_parameter_requirement_changes"])
+        self.assertGreaterEqual(
+            result["_stats"]["parameter_requirement_changes_count"], 3
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
