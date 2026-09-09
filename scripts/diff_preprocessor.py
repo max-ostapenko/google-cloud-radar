@@ -364,6 +364,10 @@ def build_structured_diff(
         return out
 
     api_name = filename.replace(".json", "")  # e.g. bigquery.v2
+    all_changed_paths = set(added) | set(removed) | set(modified)
+    extracted_methods = extract_method_identifiers_from_paths(all_changed_paths)
+    target_paths = sorted(list(all_changed_paths))
+
     return {
         "api": api_name,
         "is_breaking": is_breaking,
@@ -371,6 +375,8 @@ def build_structured_diff(
         "added": _added_entries(added),
         "removed": _removed_entries(removed),
         "modified": _modified_entries(modified),
+        "extracted_methods": extracted_methods,
+        "target_paths": target_paths,
         # Counts useful for prompt context
         "_stats": {
             "added_count": len(added),
@@ -383,6 +389,28 @@ def build_structured_diff(
             "breaking_reasons": breaking_reasons,
         },
     }
+
+
+def extract_method_identifiers_from_paths(
+    paths: set[str] | list[str],
+) -> list[str]:
+    """Extract structured method identifiers from a collection of discovery paths."""
+    methods = set()
+    for p in paths:
+        parts = p.split(".")
+        if "methods" in parts:
+            idx = parts.index("methods")
+            if len(parts) > idx + 1:
+                method_name = parts[idx + 1]
+                res_parts = [
+                    part for part in parts[:idx] if part not in ("resources", "methods")
+                ]
+                if res_parts:
+                    method_id = f"{'.'.join(res_parts)}.{method_name}"
+                else:
+                    method_id = method_name
+                methods.add(method_id.lower())
+    return sorted(list(methods))
 
 
 def extract_structured_diffs(

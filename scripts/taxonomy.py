@@ -58,7 +58,9 @@ def _find_service_meta(service_or_api: str) -> Optional[ServiceMeta]:
     # 1. Exact or substring match on key
     for key, meta in WATCHED_SERVICES.items():
         clean_key = re.sub(r"[^a-z0-9]", "", key.lower())
-        if key in lower or (clean and clean_key and (clean == clean_key or clean_key in clean)):
+        if key in lower or (
+            clean and clean_key and (clean == clean_key or clean_key in clean)
+        ):
             return meta
 
     # 2. Match on name
@@ -66,7 +68,11 @@ def _find_service_meta(service_or_api: str) -> Optional[ServiceMeta]:
         name = meta.get("name", "").lower()
         if name:
             clean_name = re.sub(r"[^a-z0-9]", "", name)
-            if name in lower or (clean and clean_name and (clean == clean_name or clean_name in clean or clean in clean_name)):
+            if name in lower or (
+                clean
+                and clean_name
+                and (clean == clean_name or clean_name in clean or clean in clean_name)
+            ):
                 return meta
 
     return None
