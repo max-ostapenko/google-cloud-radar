@@ -1,0 +1,25 @@
+{
+  "id": "2026-09-10-dataform-v1",
+  "slug": "2026-09-10-dataform-v1",
+  "date": "2026-09-10",
+  "api": "dataform.v1",
+  "service": "Dataform",
+  "service_name": "Dataform",
+  "title": "Dataform adds BigQuery Unit Testing and End-User Auth",
+  "summary": "Dataform introduces native support for BigQuery unit tests and granular execution modes. Several fields related to test results and authentication are now strictly read-only.",
+  "details": "Developers can now define and execute BigQuery unit tests directly within Dataform workflows. The new `BigQueryUnitTest` schema supports defining test queries and expected outputs, while `InvocationConfig` adds an `executionMode` to toggle between running standard actions or unit tests (e.g., `UNIT_TESTS_ONLY`). Additionally, new authentication schemas (`EndUserAuthConfig`) allow for repository access via OAuth, enabling workflows to run under specific user identities.\n\n**Breaking Change:** Several fields have been transitioned to `readOnly` (immutable). This includes test result metadata like `totalBilledBytes`, `actualResultsJobId`, and `expectedResultsSqlScript` in `BigQueryUnitTestAction`, as well as `userEmail` in `EndUserAuthenticationConfig`. Developers must ensure their automation scripts or API clients do not attempt to provide values for these fields in write operations, as they are now strictly output-only.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "dataform",
+    "bigquery",
+    "testing",
+    "breaking-change"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "hold",
+  "lead_time_days": null,
+  "generated_at": "2026-09-10T22:21:38.073400+00:00"
+}
