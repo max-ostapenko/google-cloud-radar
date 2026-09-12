@@ -1,0 +1,23 @@
+{
+  "id": "2026-09-12-aiplatform-v1",
+  "slug": "2026-09-12-aiplatform-v1",
+  "date": "2026-09-12",
+  "api": "aiplatform.v1",
+  "service": "Vertex AI",
+  "service_name": "Vertex AI",
+  "title": "Minor terminology update in AgentTool documentation",
+  "summary": "A minor documentation update for Vertex AI Agents changes references from 'GCP' to 'Google Cloud' in the AgentTool schema.",
+  "details": "The description for the 'name' field within the 'GoogleCloudAiplatformV1AgentTool' schema has been updated to refer to 'Google Cloud resource name' instead of 'GCP resource name'. This change is purely cosmetic and does not impact API functionality, parameters, or behavior.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 2,
+  "tags": [
+    "Vertex AI",
+    "Agents"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "radar_ring": "assess",
+  "lead_time_days": null,
+  "generated_at": "2026-09-12T03:53:08.650582+00:00"
+}
