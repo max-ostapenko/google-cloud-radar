@@ -61,41 +61,70 @@ export interface FeedEntryMeta {
   };
 }
 
-export const ECOSYSTEMS = taxonomyData.ecosystems;
-export type Ecosystem =
-  | 'Google Cloud'
-  | 'Workspace'
-  | 'Marketing Platform'
-  | 'Personal'
-  | 'Chrome'
-  | 'Android'
-  | 'More';
-
-export const CATEGORIES = taxonomyData.categories;
-export type ServiceCategory =
-  | 'AI & ML'
-  | 'Data Analytics'
-  | 'Application Development'
-  | 'FinOps & Billing'
-  | 'Security'
-  | 'Workspace'
-  | 'Marketing Platform'
-  | 'Chrome & Web'
-  | 'Personal'
-  | 'Android'
-  | 'More'
-  | string;
-
-export interface WatchedServiceConfig {
-  ecosystem: Ecosystem;
-  category: ServiceCategory;
-  quadrant?: string;
+export interface TaxonomyEcosystem {
+  id: string;
   name: string;
+  icon?: string;
+  categories: string[];
+}
+
+export interface TaxonomyCategory {
+  id: string;
+  name: string;
+  services: string[];
+}
+
+export interface TaxonomyService {
+  name: string;
+  aliases?: string[];
   release_feed_url?: string;
   release_feed_urls?: string[];
 }
 
-const watchedServices = taxonomyData.watched_services as Record<string, WatchedServiceConfig>;
+export const ECOSYSTEMS = (taxonomyData.ecosystems as TaxonomyEcosystem[]).map((e) => e.name);
+export type Ecosystem = string;
+
+export const CATEGORIES = (taxonomyData.categories as TaxonomyCategory[]).map((c) => c.name);
+export type ServiceCategory = string;
+
+export interface WatchedServiceConfig {
+  ecosystem: Ecosystem;
+  category: ServiceCategory;
+  name: string;
+  aliases?: string[];
+  release_feed_url?: string;
+  release_feed_urls?: string[];
+}
+
+const categoryToEcosystem = new Map<string, TaxonomyEcosystem>();
+for (const eco of taxonomyData.ecosystems as TaxonomyEcosystem[]) {
+  for (const catId of eco.categories) {
+    categoryToEcosystem.set(catId, eco);
+  }
+}
+
+const serviceToCategory = new Map<string, TaxonomyCategory>();
+for (const cat of taxonomyData.categories as TaxonomyCategory[]) {
+  for (const svcId of cat.services) {
+    serviceToCategory.set(svcId, cat);
+  }
+}
+
+const watchedServices: Record<string, WatchedServiceConfig> = {};
+const servicesRaw = taxonomyData.services as Record<string, TaxonomyService>;
+
+for (const [svcId, svc] of Object.entries(servicesRaw)) {
+  const cat = serviceToCategory.get(svcId);
+  const eco = cat ? categoryToEcosystem.get(cat.id) : undefined;
+  watchedServices[svcId] = {
+    name: svc.name || svcId,
+    ecosystem: eco?.name || 'More',
+    category: cat?.name || 'Data Analytics',
+    aliases: svc.aliases || [],
+    release_feed_url: svc.release_feed_url,
+    release_feed_urls: svc.release_feed_urls,
+  };
+}
 
 const SERVICE_META_MAP: Record<string, { ecosystem: Ecosystem; category: ServiceCategory; name: string }> = {};
 
@@ -114,6 +143,16 @@ for (const [key, meta] of Object.entries(watchedServices)) {
     const cleanName = meta.name.toLowerCase().replace(/[^a-z0-9]/g, '');
     if (cleanName) SERVICE_META_MAP[cleanName] = itemMeta;
   }
+
+  if (Array.isArray(meta.aliases)) {
+    for (const alias of meta.aliases) {
+      if (alias) {
+        SERVICE_META_MAP[alias.toLowerCase()] = itemMeta;
+        const cleanAlias = alias.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (cleanAlias) SERVICE_META_MAP[cleanAlias] = itemMeta;
+      }
+    }
+  }
 }
 
 export function findServiceMeta(serviceOrApi: string): { ecosystem: Ecosystem; category: ServiceCategory; name: string } | null {
@@ -121,15 +160,17 @@ export function findServiceMeta(serviceOrApi: string): { ecosystem: Ecosystem; c
   const lower = serviceOrApi.toLowerCase().trim();
   if (SERVICE_META_MAP[lower]) return SERVICE_META_MAP[lower];
 
+  const prefix = lower.split('.')[0].split(':')[0];
+  if (SERVICE_META_MAP[prefix]) return SERVICE_META_MAP[prefix];
+
   const clean = lower.replace(/[^a-z0-9]/g, '');
   if (clean && SERVICE_META_MAP[clean]) return SERVICE_META_MAP[clean];
 
+  const cleanPrefix = prefix.replace(/[^a-z0-9]/g, '');
+  if (cleanPrefix && SERVICE_META_MAP[cleanPrefix]) return SERVICE_META_MAP[cleanPrefix];
+
   for (const [key, meta] of Object.entries(SERVICE_META_MAP)) {
-    if (lower.includes(key)) {
-      return meta;
-    }
-    const cleanKey = key.replace(/[^a-z0-9]/g, '');
-    if (clean && cleanKey && cleanKey.length >= 4 && clean.includes(cleanKey)) {
+    if (lower.includes(key) || (clean && clean.includes(key))) {
       return meta;
     }
   }
@@ -138,7 +179,7 @@ export function findServiceMeta(serviceOrApi: string): { ecosystem: Ecosystem; c
 
 export function getEcosystemForService(serviceOrApi: string): Ecosystem {
   const meta = findServiceMeta(serviceOrApi);
-  return meta?.ecosystem || 'Google Cloud';
+  return meta?.ecosystem || 'More';
 }
 
 export function getCategoryForService(serviceOrApi: string): ServiceCategory {
@@ -275,9 +316,12 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
     return json.documents.map((doc: any) => {
       const f = doc.fields || {};
       const id = f.id?.stringValue || f.slug?.stringValue || '';
-      const service = f.service_name?.stringValue || f.service?.stringValue || 'Google Cloud';
-      const service_id = f.service_id?.stringValue || slugify(service);
       const api = f.api?.stringValue || '';
+      const rawService = f.service_name?.stringValue || f.service?.stringValue || '';
+      const apiPrefix = api ? api.split('.')[0].split(':')[0].toLowerCase() : '';
+      const canonicalMeta = (apiPrefix && findServiceMeta(apiPrefix)) || (rawService && findServiceMeta(rawService));
+      const service = canonicalMeta?.name || rawService || 'Google Cloud';
+      const service_id = slugify(service);
       const version = f.version?.stringValue || (api.includes('.') ? api.split('.').pop() : 'v1');
       const rawDate = f.first_detected_at?.timestampValue || f.first_detected_at?.stringValue || f.date?.stringValue || id.slice(0, 10);
       const dateStr = rawDate.slice(0, 10);
@@ -325,8 +369,8 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       }
 
       const htmlContent = safeMarkdownParser.parse(detailsMarkdown || summary, { async: false }) as string;
-      const ecosystem = (f.ecosystem?.stringValue as Ecosystem) || getEcosystemForService(service || api);
-      const category = (f.category?.stringValue as ServiceCategory) || getCategoryForService(service || api);
+      const ecosystem = canonicalMeta?.ecosystem || (f.ecosystem?.stringValue as Ecosystem) || getEcosystemForService(service || api);
+      const category = canonicalMeta?.category || (f.category?.stringValue as ServiceCategory) || getCategoryForService(service || api);
 
       const discoMeta = getDiscoveryMetaForApi(api || service);
       const discoveryRestUrl = f.discovery_rest_url?.stringValue || discoMeta.discoveryRestUrl;
@@ -397,10 +441,13 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const fileContent = fs.readFileSync(filePath, 'utf-8');
       const doc = JSON.parse(fileContent);
 
-      const slug = doc.slug || doc.id || file.replace(/\.json$/, '');
-      const service = doc.service || doc.service_name || doc.api || 'Google Cloud';
-      const service_id = slugify(service);
+      const slug = doc.id || doc.slug || file.replace(/\.json$/, '');
       const api = doc.api || slug.split('-').slice(3).join('-').replace(/_v\d+$/, '');
+      const rawService = doc.service || doc.service_name || '';
+      const apiPrefix = api ? api.split('.')[0].split(':')[0].toLowerCase() : '';
+      const canonicalMeta = (apiPrefix && findServiceMeta(apiPrefix)) || (rawService && findServiceMeta(rawService));
+      const service = canonicalMeta?.name || rawService || 'Google Cloud';
+      const service_id = slugify(service);
       const version = api.split('.').pop() || 'v1';
       const dateStr = String(doc.date || slug.slice(0, 10)).slice(0, 10);
       const impact = (doc.impact || 'medium').toLowerCase() as 'low' | 'medium' | 'high';
@@ -412,8 +459,8 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const extractedMethods = Array.isArray(doc.extracted_methods) ? doc.extracted_methods : [];
 
       const htmlContent = safeMarkdownParser.parse(details || summary, { async: false }) as string;
-      const ecosystem = (doc.ecosystem as Ecosystem) || getEcosystemForService(service || api);
-      const category = (doc.category as ServiceCategory) || getCategoryForService(service || api);
+      const ecosystem = canonicalMeta?.ecosystem || (doc.ecosystem as Ecosystem) || getEcosystemForService(service || api);
+      const category = canonicalMeta?.category || (doc.category as ServiceCategory) || getCategoryForService(service || api);
       const status = (doc.status || 'canary').toLowerCase() as ChangeStatus;
       const radar_ring = (doc.radar_ring || (breaking ? 'hold' : status === 'released' ? 'adopt' : 'assess')) as RadarRing;
       const radar_quadrant: RadarQuadrant = category.includes('AI') ? 'ai_ml' : category.includes('FinOps') ? 'security_finops' : 'data_platforms';

@@ -2,22 +2,13 @@
 """
 Taxonomy and Watchlist Configuration for Google Cloud Radar.
 
-Defines a two-level hierarchy:
-1. Top-Level Ecosystem:
-   - Google Cloud (includes Firebase)
-   - Google Workspace
-   - Google Marketing Platform
-   - Personal
-   - Chrome
-   - Android
-   - More (Discovery, Core, Security)
+Hierarchical 3-level taxonomy:
+1. Ecosystems: List of ecosystems with categories ID list
+2. Categories: List of categories with services ID list
+3. Services: Dictionary of services with canonical names, aliases, and release feeds
 
-2. Subcategory:
-   - For Google Cloud: AI & ML, Data Analytics, Application Development, FinOps & Billing, Security, Observability.
-   - For other ecosystems: Product-specific category.
-
-3. Thoughtworks Tech Radar Quadrant Mapping:
-   - ai_ml, data_platforms, infra_compute, security_finops
+Re-/moving service happens by updating the parent category's services list.
+Changing category/ecosystem metadata happens within their respective objects.
 """
 
 import json
@@ -28,9 +19,12 @@ from typing import TypedDict, Optional
 
 class ServiceMeta(TypedDict, total=False):
     ecosystem: str
+    ecosystem_id: str
     category: str
+    category_id: str
     quadrant: str
     name: str
+    aliases: list[str]
     release_feed_url: str
     release_feed_urls: list[str]
 
@@ -40,33 +34,100 @@ TAXONOMY_PATH = Path(__file__).resolve().parent.parent / "data" / "taxonomy.json
 with open(TAXONOMY_PATH, "r", encoding="utf-8") as _f:
     _TAXONOMY_DATA = json.load(_f)
 
-ECOSYSTEMS: list[str] = _TAXONOMY_DATA.get("ecosystems", [])
-QUADRANT_MAP: dict[str, str] = _TAXONOMY_DATA.get("quadrant_map", {})
-WATCHED_SERVICES: dict[str, ServiceMeta] = _TAXONOMY_DATA.get("watched_services", {})
+_ECOSYSTEMS_RAW: list[dict] = _TAXONOMY_DATA.get("ecosystems", [])
+_CATEGORIES_RAW: list[dict] = _TAXONOMY_DATA.get("categories", [])
+_SERVICES_RAW: dict[str, dict] = _TAXONOMY_DATA.get("services", {})
+
+ECOSYSTEMS_BY_ID: dict[str, dict] = {e["id"]: e for e in _ECOSYSTEMS_RAW}
+CATEGORIES_BY_ID: dict[str, dict] = {c["id"]: c for c in _CATEGORIES_RAW}
+
+# Parent mappings
+CATEGORY_TO_ECOSYSTEM: dict[str, dict] = {}
+for eco in _ECOSYSTEMS_RAW:
+    for cat_id in eco.get("categories", []):
+        CATEGORY_TO_ECOSYSTEM[cat_id] = eco
+
+SERVICE_TO_CATEGORY: dict[str, dict] = {}
+for cat in _CATEGORIES_RAW:
+    for svc_id in cat.get("services", []):
+        SERVICE_TO_CATEGORY[svc_id] = cat
+
+# Resolved ServiceMeta for all services
+WATCHED_SERVICES: dict[str, ServiceMeta] = {}
+for svc_id, svc_data in _SERVICES_RAW.items():
+    cat = SERVICE_TO_CATEGORY.get(svc_id, {})
+    eco = CATEGORY_TO_ECOSYSTEM.get(cat.get("id"), {})
+    WATCHED_SERVICES[svc_id] = {
+        "name": svc_data.get("name", svc_id),
+        "ecosystem": eco.get("name", "More"),
+        "ecosystem_id": eco.get("id", "more"),
+        "category": cat.get("name", "Data Analytics"),
+        "category_id": cat.get("id", "data_analytics"),
+        "aliases": svc_data.get("aliases", []),
+        "release_feed_url": svc_data.get("release_feed_url"),
+        "release_feed_urls": svc_data.get("release_feed_urls", []),
+    }
+
+# Backward compatibility lists
+ECOSYSTEMS: list[str] = [e["name"] for e in _ECOSYSTEMS_RAW]
+CATEGORIES: list[str] = [c["name"] for c in _CATEGORIES_RAW]
+
+
+def get_ecosystems() -> list[dict]:
+    """Returns the list of all ecosystem definitions with categories ID list."""
+    return _ECOSYSTEMS_RAW
+
+
+def get_categories() -> list[dict]:
+    """Returns the list of all category definitions with services ID list."""
+    return _CATEGORIES_RAW
+
+
+def get_services() -> dict[str, dict]:
+    """Returns the raw service definitions map."""
+    return _SERVICES_RAW
 
 
 def _find_service_meta(service_or_api: str) -> Optional[ServiceMeta]:
-    """Finds matching ServiceMeta using exact key, normalized key, or name."""
+    """Finds matching ServiceMeta using exact key, API prefix, aliases, or name."""
     if not service_or_api:
         return None
     lower = service_or_api.lower().strip()
     if lower in WATCHED_SERVICES:
         return WATCHED_SERVICES[lower]
 
+    # Check API prefix (e.g. "aiplatform.v1" -> "aiplatform", "discoveryengine:v1" -> "discoveryengine")
+    prefix = lower.split(".")[0].split(":")[0]
+    if prefix in WATCHED_SERVICES:
+        return WATCHED_SERVICES[prefix]
+
     clean = re.sub(r"[^a-z0-9]", "", lower)
+    if clean in WATCHED_SERVICES:
+        return WATCHED_SERVICES[clean]
 
-    # 1. Exact or substring match on key
-    for key, meta in WATCHED_SERVICES.items():
-        clean_key = re.sub(r"[^a-z0-9]", "", key.lower())
-        if key in lower or (clean and clean_key and (clean == clean_key or clean_key in clean)):
-            return meta
+    clean_prefix = re.sub(r"[^a-z0-9]", "", prefix)
+    if clean_prefix in WATCHED_SERVICES:
+        return WATCHED_SERVICES[clean_prefix]
 
-    # 2. Match on name
+    # Exact or alias/name matches
     for key, meta in WATCHED_SERVICES.items():
         name = meta.get("name", "").lower()
-        if name:
-            clean_name = re.sub(r"[^a-z0-9]", "", name)
-            if name in lower or (clean and clean_name and (clean == clean_name or clean_name in clean or clean in clean_name)):
+        aliases = [a.lower() for a in meta.get("aliases", []) if isinstance(a, str)]
+        for candidate in [name] + aliases:
+            if not candidate:
+                continue
+            if candidate == lower:
+                return meta
+            clean_cand = re.sub(r"[^a-z0-9]", "", candidate)
+            if clean and clean == clean_cand:
+                return meta
+
+    # Check if a full canonical name or alias is contained in the query string
+    for key, meta in WATCHED_SERVICES.items():
+        name = meta.get("name", "").lower()
+        aliases = [a.lower() for a in meta.get("aliases", []) if isinstance(a, str)]
+        for candidate in [name] + aliases:
+            if candidate and len(candidate) >= 4 and candidate in lower:
                 return meta
 
     return None
@@ -83,33 +144,35 @@ def get_watched_api_names() -> list[str]:
 
 
 def get_ecosystem_for_service(service_or_api: str) -> str:
-    """Returns top-level ecosystem (e.g. Google Cloud, Workspace, Marketing Platform, etc.)."""
+    """Returns top-level ecosystem name (e.g. AI/ML, Databases and analytics, etc.)."""
     meta = _find_service_meta(service_or_api)
     if meta:
-        return meta.get("ecosystem", "Google Cloud")
+        return meta.get("ecosystem", "More")
     return "More"
 
 
 def get_category_for_service(service_or_api: str) -> str:
-    """
-    Classifies a service or API name into a standardized category.
-    Performs exact match first, then substring matching.
-    """
+    """Classifies a service or API name into a standardized category."""
     meta = _find_service_meta(service_or_api)
     if meta:
         return meta.get("category", "Data Analytics")
-
     return "Data Analytics"
 
 
 def get_quadrant_for_service(service_or_api: str) -> str:
-    """Returns the Thoughtworks Tech Radar quadrant for a given service."""
+    """Returns the Thoughtworks Tech Radar quadrant for a given service if needed for backward compatibility."""
     meta = _find_service_meta(service_or_api)
-    if meta and "quadrant" in meta:
+    if meta and "quadrant" in meta and meta["quadrant"]:
         return meta["quadrant"]
 
     category = get_category_for_service(service_or_api)
-    return QUADRANT_MAP.get(category, "data_platforms")
+    if "AI" in category:
+        return "ai_ml"
+    if "FinOps" in category:
+        return "security_finops"
+    if any(k in category for k in ["Analytics", "Database", "Intelligence"]):
+        return "data_platforms"
+    return "infra_compute"
 
 
 def determine_radar_ring(status: str, is_breaking: bool, version: str) -> str:
@@ -138,15 +201,7 @@ def determine_radar_ring(status: str, is_breaking: bool, version: str) -> str:
 
 def get_release_feed_urls(service_or_api: str) -> list[str]:
     """Returns list of official Google release RSS/Atom feed URLs for a service if configured."""
-    lower = service_or_api.lower()
-    meta = None
-    if lower in WATCHED_SERVICES:
-        meta = WATCHED_SERVICES[lower]
-    else:
-        for key, candidate_meta in WATCHED_SERVICES.items():
-            if key in lower:
-                meta = candidate_meta
-                break
+    meta = _find_service_meta(service_or_api)
     if not meta:
         return []
 

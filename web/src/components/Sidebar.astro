@@ -28,82 +28,59 @@ interface EcosystemGroup {
   directItems?: ServiceInfo[];
 }
 
-const cloudSubcategories: ServiceCategory[] = [
-  'AI & ML',
-  'Data Analytics',
-  'Application Development',
-  'FinOps & Billing',
-];
+import taxonomyData from '../../../data/taxonomy.json';
 
-const cloudServices = services.filter((s) => s.ecosystem === 'Google Cloud');
-const cloudSubgroups = cloudSubcategories.map((category) => {
-  const items = cloudServices.filter((s) => s.category === category);
+interface EcosystemConfig {
+  id: Ecosystem;
+  label: string;
+  icon: string;
+  useSubgroups?: boolean;
+}
+
+const noSubgroups = new Set(['android', 'personal', 'more']);
+const ECOSYSTEM_CONFIGS: EcosystemConfig[] = (taxonomyData.ecosystems || []).map((eco: any) => ({
+  id: eco.name,
+  label: eco.name,
+  icon: eco.icon || 'grid',
+  useSubgroups: !noSubgroups.has(eco.id),
+}));
+
+const ecosystemList: EcosystemGroup[] = ECOSYSTEM_CONFIGS.map((cfg) => {
+  const ecoServices = services.filter((s) => s.ecosystem === cfg.id);
+  const totalCount = ecoServices.reduce((acc, curr) => acc + curr.count, 0);
+  const breakingCount = ecoServices.reduce((acc, curr) => acc + curr.breakingCount, 0);
+
+  if (cfg.useSubgroups) {
+    const categories = Array.from(new Set(ecoServices.map((s) => s.category)));
+    const subgroups = categories.map((category) => {
+      const items = ecoServices.filter((s) => s.category === category);
+      return {
+        category,
+        items,
+        totalCount: items.reduce((acc, curr) => acc + curr.count, 0),
+        breakingCount: items.reduce((acc, curr) => acc + curr.breakingCount, 0),
+      };
+    }).filter((g) => g.items.length > 0);
+
+    return {
+      id: cfg.id,
+      label: cfg.label,
+      icon: cfg.icon,
+      totalCount,
+      breakingCount,
+      subgroups,
+    };
+  }
+
   return {
-    category,
-    items,
-    totalCount: items.reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: items.reduce((acc, curr) => acc + curr.breakingCount, 0),
+    id: cfg.id,
+    label: cfg.label,
+    icon: cfg.icon,
+    totalCount,
+    breakingCount,
+    directItems: ecoServices,
   };
-}).filter((g) => g.items.length > 0);
-
-const ecosystemList: EcosystemGroup[] = [
-  {
-    id: 'Google Cloud',
-    label: 'Google Cloud',
-    icon: 'cloud',
-    totalCount: cloudServices.reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: cloudServices.reduce((acc, curr) => acc + curr.breakingCount, 0),
-    subgroups: cloudSubgroups,
-  },
-  {
-    id: 'Workspace',
-    label: 'Workspace',
-    icon: 'briefcase',
-    totalCount: services.filter((s) => s.ecosystem === 'Workspace').reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: services.filter((s) => s.ecosystem === 'Workspace').reduce((acc, curr) => acc + curr.breakingCount, 0),
-    directItems: services.filter((s) => s.ecosystem === 'Workspace'),
-  },
-  {
-    id: 'Marketing Platform',
-    label: 'Marketing Platform',
-    icon: 'trending-up',
-    totalCount: services.filter((s) => s.ecosystem === 'Marketing Platform').reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: services.filter((s) => s.ecosystem === 'Marketing Platform').reduce((acc, curr) => acc + curr.breakingCount, 0),
-    directItems: services.filter((s) => s.ecosystem === 'Marketing Platform'),
-  },
-  {
-    id: 'Chrome',
-    label: 'Chrome & Web',
-    icon: 'globe',
-    totalCount: services.filter((s) => s.ecosystem === 'Chrome').reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: services.filter((s) => s.ecosystem === 'Chrome').reduce((acc, curr) => acc + curr.breakingCount, 0),
-    directItems: services.filter((s) => s.ecosystem === 'Chrome'),
-  },
-  {
-    id: 'Personal',
-    label: 'Personal',
-    icon: 'user',
-    totalCount: services.filter((s) => s.ecosystem === 'Personal').reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: 0,
-    directItems: services.filter((s) => s.ecosystem === 'Personal'),
-  },
-  {
-    id: 'Android',
-    label: 'Android & Play',
-    icon: 'smartphone',
-    totalCount: services.filter((s) => s.ecosystem === 'Android').reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: 0,
-    directItems: services.filter((s) => s.ecosystem === 'Android'),
-  },
-  {
-    id: 'More',
-    label: 'More / Core',
-    icon: 'grid',
-    totalCount: services.filter((s) => s.ecosystem === 'More').reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: services.filter((s) => s.ecosystem === 'More').reduce((acc, curr) => acc + curr.breakingCount, 0),
-    directItems: services.filter((s) => s.ecosystem === 'More'),
-  },
-];
+}).filter((eco) => (eco.subgroups && eco.subgroups.length > 0) || (eco.directItems && eco.directItems.length > 0));
 ---
 
 <aside class="gcp-sidebar" id="gcpSidebar">
@@ -143,12 +120,68 @@ const ecosystemList: EcosystemGroup[] = [
 
     <div class="sidebar-divider"></div>
 
-    <!-- Hierarchy: Top Level Ecosystems -->
+    <!-- Hierarchy: Top Level Ecosystems (Collapsible) -->
     <div class="ecosystem-container">
       {ecosystemList.map((eco) => (
-        <div class="ecosystem-section">
-          <div class="ecosystem-header">
+        <details class="ecosystem-section" data-eco-id={eco.id} open>
+          <summary class="ecosystem-header" title={`Toggle ${eco.label}`}>
             <div class="ecosystem-label">
+              <svg class="ecosystem-chevron" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+              {eco.icon === 'cpu' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="4" y="4" width="16" height="16" rx="2"/>
+                  <rect x="9" y="9" width="6" height="6"/>
+                  <line x1="9" y1="1" x2="9" y2="4"/>
+                  <line x1="15" y1="1" x2="15" y2="4"/>
+                  <line x1="9" y1="20" x2="9" y2="23"/>
+                  <line x1="15" y1="20" x2="15" y2="23"/>
+                  <line x1="20" y1="9" x2="23" y2="9"/>
+                  <line x1="20" y1="14" x2="23" y2="14"/>
+                  <line x1="1" y1="9" x2="4" y2="9"/>
+                  <line x1="1" y1="14" x2="4" y2="14"/>
+                </svg>
+              )}
+              {eco.icon === 'database' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                  <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                  <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                </svg>
+              )}
+              {eco.icon === 'server' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                  <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                  <line x1="6" y1="6" x2="6.01" y2="6"/>
+                  <line x1="6" y1="18" x2="6.01" y2="18"/>
+                </svg>
+              )}
+              {eco.icon === 'link' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+              )}
+              {eco.icon === 'sliders' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="4" y1="21" x2="4" y2="14"/>
+                  <line x1="4" y1="10" x2="4" y2="3"/>
+                  <line x1="12" y1="21" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12" y2="3"/>
+                  <line x1="20" y1="21" x2="20" y2="16"/>
+                  <line x1="20" y1="12" x2="20" y2="3"/>
+                  <line x1="1" y1="14" x2="7" y2="14"/>
+                  <line x1="9" y1="8" x2="15" y2="8"/>
+                  <line x1="17" y1="16" x2="23" y2="16"/>
+                </svg>
+              )}
+              {eco.icon === 'shield' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              )}
               {eco.icon === 'cloud' && (
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
@@ -203,7 +236,7 @@ const ecosystemList: EcosystemGroup[] = [
                 {eco.totalCount}
               </span>
             </div>
-          </div>
+          </summary>
 
           <!-- Second Level: Google Cloud Subcategories (Visible by Default) -->
           {eco.subgroups && (
@@ -269,7 +302,7 @@ const ecosystemList: EcosystemGroup[] = [
           {(!eco.directItems || eco.directItems.length === 0) && (!eco.subgroups || eco.subgroups.length === 0) && (
             <div class="empty-ecosystem-msg">No monitored APIs</div>
           )}
-        </div>
+        </details>
       ))}
     </div>
   </div>
@@ -406,25 +439,60 @@ const ecosystemList: EcosystemGroup[] = [
     margin: 12px 4px;
   }
 
-  /* Ecosystem Containers */
+  /* Ecosystem Containers (Collapsible) */
   .ecosystem-container {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 10px;
   }
 
-  .ecosystem-section {
+  details.ecosystem-section {
     border-radius: var(--radius-sm);
   }
 
-  .ecosystem-header {
+  summary.ecosystem-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 6px 10px;
     background-color: var(--bg-surface-hover);
     border-radius: var(--radius-sm);
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  summary.ecosystem-header::-webkit-details-marker,
+  summary.ecosystem-header::marker {
+    display: none;
+  }
+
+  summary.ecosystem-header:hover {
+    background-color: var(--border-subtle);
+  }
+
+  summary.ecosystem-header:focus-visible {
+    outline: 2px solid var(--google-blue);
+    outline-offset: 1px;
+  }
+
+  details.ecosystem-section[open] summary.ecosystem-header {
     margin-bottom: 6px;
+  }
+
+  .ecosystem-chevron {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+
+  details.ecosystem-section[open] > summary .ecosystem-chevron {
+    transform: rotate(90deg);
+  }
+
+  details.ecosystem-section:not([open]) summary.ecosystem-header:hover .ecosystem-chevron {
+    color: var(--text-primary);
   }
 
   .ecosystem-label {
@@ -746,6 +814,46 @@ const ecosystemList: EcosystemGroup[] = [
     });
   }
 
-  initSidebarDrawer();
-  document.addEventListener('astro:page-load', initSidebarDrawer);
+  function initEcosystemCollapse() {
+    const STORAGE_KEY = 'gcr_collapsed_ecosystems';
+    let collapsedSet = new Set<string>();
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        collapsedSet = new Set(JSON.parse(saved));
+      }
+    } catch {}
+
+    const detailsList = document.querySelectorAll<HTMLDetailsElement>('details.ecosystem-section');
+    detailsList.forEach((details) => {
+      const ecoId = details.getAttribute('data-eco-id');
+      if (!ecoId) return;
+
+      const hasActiveLink = details.querySelector('.service-link.active') !== null;
+      if (hasActiveLink) {
+        details.open = true;
+      } else if (collapsedSet.has(ecoId)) {
+        details.open = false;
+      }
+
+      details.addEventListener('toggle', () => {
+        if (details.open) {
+          collapsedSet.delete(ecoId);
+        } else {
+          collapsedSet.add(ecoId);
+        }
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(collapsedSet)));
+        } catch {}
+      });
+    });
+  }
+
+  function initSidebar() {
+    initSidebarDrawer();
+    initEcosystemCollapse();
+  }
+
+  initSidebar();
+  document.addEventListener('astro:page-load', initSidebar);
 </script>
