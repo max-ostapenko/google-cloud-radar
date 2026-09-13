@@ -52,21 +52,37 @@ for cat in _CATEGORIES_RAW:
     for svc_id in cat.get("services", []):
         SERVICE_TO_CATEGORY[svc_id] = cat
 
+SERVICE_TO_ECOSYSTEM: dict[str, dict] = {}
+for eco in _ECOSYSTEMS_RAW:
+    for svc_id in eco.get("services", []):
+        SERVICE_TO_ECOSYSTEM[svc_id] = eco
+
 # Resolved ServiceMeta for all services
 WATCHED_SERVICES: dict[str, ServiceMeta] = {}
 for svc_id, svc_data in _SERVICES_RAW.items():
-    cat = SERVICE_TO_CATEGORY.get(svc_id, {})
-    eco = CATEGORY_TO_ECOSYSTEM.get(cat.get("id"), {})
-    WATCHED_SERVICES[svc_id] = {
+    cat = SERVICE_TO_CATEGORY.get(svc_id)
+    if cat:
+        eco = CATEGORY_TO_ECOSYSTEM.get(cat.get("id"), {})
+        category_name = cat.get("name", "")
+        category_id = cat.get("id", "")
+    else:
+        eco = SERVICE_TO_ECOSYSTEM.get(svc_id, {})
+        category_name = ""
+        category_id = ""
+
+    meta: ServiceMeta = {
         "name": svc_data.get("name", svc_id),
         "ecosystem": eco.get("name", "More"),
         "ecosystem_id": eco.get("id", "more"),
-        "category": cat.get("name", "Data Analytics"),
-        "category_id": cat.get("id", "data_analytics"),
         "aliases": svc_data.get("aliases", []),
         "release_feed_url": svc_data.get("release_feed_url"),
         "release_feed_urls": svc_data.get("release_feed_urls", []),
     }
+    if category_name:
+        meta["category"] = category_name
+        meta["category_id"] = category_id
+
+    WATCHED_SERVICES[svc_id] = meta
 
 # Backward compatibility lists
 ECOSYSTEMS: list[str] = [e["name"] for e in _ECOSYSTEMS_RAW]
@@ -151,12 +167,12 @@ def get_ecosystem_for_service(service_or_api: str) -> str:
     return "More"
 
 
-def get_category_for_service(service_or_api: str) -> str:
-    """Classifies a service or API name into a standardized category."""
+def get_category_for_service(service_or_api: str) -> Optional[str]:
+    """Classifies a service or API name into a standardized category if one exists."""
     meta = _find_service_meta(service_or_api)
     if meta:
-        return meta.get("category", "Data Analytics")
-    return "Data Analytics"
+        return meta.get("category")
+    return None
 
 
 def get_quadrant_for_service(service_or_api: str) -> str:
@@ -165,12 +181,13 @@ def get_quadrant_for_service(service_or_api: str) -> str:
     if meta and "quadrant" in meta and meta["quadrant"]:
         return meta["quadrant"]
 
-    category = get_category_for_service(service_or_api)
-    if "AI" in category:
+    category = get_category_for_service(service_or_api) or ""
+    eco = get_ecosystem_for_service(service_or_api) or ""
+    if "AI" in category or "AI" in eco:
         return "ai_ml"
-    if "FinOps" in category:
+    if "FinOps" in category or "Management" in eco:
         return "security_finops"
-    if any(k in category for k in ["Analytics", "Database", "Intelligence"]):
+    if any(k in category or k in eco for k in ["Analytics", "Database", "Intelligence", "Marketing"]):
         return "data_platforms"
     return "infra_compute"
 

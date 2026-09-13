@@ -35,36 +35,49 @@ class TestTaxonomy(unittest.TestCase):
                 cls.discovery_by_name.setdefault(name, []).append(item)
 
     def test_hierarchical_schema_integrity(self):
-        """Verify the 3-level hierarchical structure and reference integrity."""
-        # 1. Ecosystems list with categories ID list
+        """Verify the hierarchical structure and reference integrity."""
+        # 1. Ecosystems list
         self.assertIsInstance(self.ecosystems_raw, list, "ecosystems should be a list")
         self.assertGreater(len(self.ecosystems_raw), 0)
         eco_ids = set()
         referenced_cat_ids = set()
+        direct_service_ids = set()
 
         for eco in self.ecosystems_raw:
             self.assertIn("id", eco)
             self.assertIn("name", eco)
-            self.assertIn("categories", eco)
-            self.assertIsInstance(eco["categories"], list)
-            self.assertGreater(len(eco["categories"]), 0, f"Ecosystem {eco['id']} has no categories")
             self.assertNotIn(eco["id"], eco_ids, f"Duplicate ecosystem id: {eco['id']}")
             eco_ids.add(eco["id"])
-            for cat_id in eco["categories"]:
+
+            cats = eco.get("categories", [])
+            direct_svcs = eco.get("services", [])
+            self.assertTrue(
+                len(cats) > 0 or len(direct_svcs) > 0,
+                f"Ecosystem {eco['id']} has neither categories nor direct services",
+            )
+
+            for cat_id in cats:
                 self.assertNotIn(cat_id, referenced_cat_ids, f"Category {cat_id} assigned to multiple ecosystems")
                 referenced_cat_ids.add(cat_id)
 
-        # 2. Categories list with services ID list
+            for svc_id in direct_svcs:
+                self.assertNotIn(svc_id, direct_service_ids, f"Service {svc_id} assigned to multiple ecosystems directly")
+                direct_service_ids.add(svc_id)
+
+        # 2. Categories list with services ID list (categories must have 2+ services)
         self.assertIsInstance(self.categories_raw, list, "categories should be a list")
         self.assertGreater(len(self.categories_raw), 0)
         cat_ids = set()
-        referenced_service_ids = set()
+        categorized_service_ids = set()
 
         for cat in self.categories_raw:
             self.assertIn("id", cat)
             self.assertIn("name", cat)
             self.assertIn("services", cat)
             self.assertIsInstance(cat["services"], list)
+            self.assertGreaterEqual(
+                len(cat["services"]), 2, f"Category {cat['id']} must contain at least 2 services"
+            )
             self.assertNotIn(cat["id"], cat_ids, f"Duplicate category id: {cat['id']}")
             cat_ids.add(cat["id"])
 
@@ -72,20 +85,129 @@ class TestTaxonomy(unittest.TestCase):
             self.assertIn(cat["id"], referenced_cat_ids, f"Category {cat['id']} not in any ecosystem")
 
             for svc_id in cat["services"]:
-                self.assertNotIn(svc_id, referenced_service_ids, f"Service {svc_id} assigned to multiple categories")
-                referenced_service_ids.add(svc_id)
+                self.assertNotIn(svc_id, categorized_service_ids, f"Service {svc_id} assigned to multiple categories")
+                self.assertNotIn(svc_id, direct_service_ids, f"Service {svc_id} in both category and direct ecosystem list")
+                categorized_service_ids.add(svc_id)
 
         # 3. Services dictionary
         self.assertIsInstance(self.services_raw, dict, "services should be a dictionary")
         self.assertGreater(len(self.services_raw), 0)
 
-        # Every service in services dict must be referenced in exactly one category
-        for svc_id in self.services_raw:
-            self.assertIn(svc_id, referenced_service_ids, f"Service {svc_id} not referenced in any category")
+        all_assigned_services = categorized_service_ids | direct_service_ids
 
-        # Every service referenced in a category must exist in services dict
-        for svc_id in referenced_service_ids:
+        # Every service in services dict must be referenced in either a category or an ecosystem
+        for svc_id in self.services_raw:
+            self.assertIn(svc_id, all_assigned_services, f"Service {svc_id} not referenced anywhere")
+
+        # Every referenced service must exist in services dict
+        for svc_id in all_assigned_services:
             self.assertIn(svc_id, self.services_raw, f"Referenced service {svc_id} missing from services dict")
+
+    def test_no_orphaned_records_and_single_hierarchical_link(self):
+        """
+        Verify that:
+        1. There are NO orphaned records:
+           - Every category defined is referenced in an ecosystem.
+           - Every service defined is referenced in the taxonomy.
+           - Every category contains >= 2 services.
+           - All referenced IDs exist in their respective entity collections.
+        2. There is ONLY A SINGLE hierarchical link between taxonomy entities:
+           - Each service has either a service-category link OR a service-ecosystem link, never both.
+           - No service is referenced multiple times across categories or direct ecosystems.
+           - Each category has exactly one parent ecosystem.
+        """
+        cat_by_id = {c["id"]: c for c in self.categories_raw}
+        svc_dict = self.services_raw
+
+        # --- A. Orphan Verification ---
+        # 1. Categories orphan checks
+        referenced_cats_in_ecos = set()
+        for eco in self.ecosystems_raw:
+            for cat_id in eco.get("categories", []):
+                self.assertIn(
+                    cat_id,
+                    cat_by_id,
+                    f"Orphaned category reference: Ecosystem '{eco['id']}' references category '{cat_id}' which does not exist in 'categories'",
+                )
+                referenced_cats_in_ecos.add(cat_id)
+
+        for cat_id in cat_by_id:
+            self.assertIn(
+                cat_id,
+                referenced_cats_in_ecos,
+                f"Orphaned category record: Category '{cat_id}' is defined in 'categories' but not assigned to any ecosystem",
+            )
+            # Ensure category has at least 2 services
+            self.assertGreaterEqual(
+                len(cat_by_id[cat_id].get("services", [])),
+                2,
+                f"Sub-threshold category: Category '{cat_id}' must contain >= 2 services",
+            )
+
+        # 2. Services orphan checks
+        for cat in self.categories_raw:
+            for svc_id in cat.get("services", []):
+                self.assertIn(
+                    svc_id,
+                    svc_dict,
+                    f"Orphaned service reference: Category '{cat['id']}' references service '{svc_id}' which does not exist in 'services'",
+                )
+
+        for eco in self.ecosystems_raw:
+            for svc_id in eco.get("services", []):
+                self.assertIn(
+                    svc_id,
+                    svc_dict,
+                    f"Orphaned service reference: Ecosystem '{eco['id']}' directly references service '{svc_id}' which does not exist in 'services'",
+                )
+
+        # --- B. Single Hierarchical Link Verification ---
+        # Map each service to its incoming links
+        service_category_links: dict[str, list[str]] = {svc_id: [] for svc_id in svc_dict}
+        service_ecosystem_links: dict[str, list[str]] = {svc_id: [] for svc_id in svc_dict}
+
+        for cat in self.categories_raw:
+            for svc_id in cat.get("services", []):
+                service_category_links.setdefault(svc_id, []).append(cat["id"])
+
+        for eco in self.ecosystems_raw:
+            for svc_id in eco.get("services", []):
+                service_ecosystem_links.setdefault(svc_id, []).append(eco["id"])
+
+        for svc_id in svc_dict:
+            cat_links = service_category_links[svc_id]
+            eco_links = service_ecosystem_links[svc_id]
+            total_links = len(cat_links) + len(eco_links)
+
+            # Must have at least 1 link (no orphan service)
+            self.assertGreater(
+                total_links,
+                0,
+                f"Orphaned service: Service '{svc_id}' has 0 hierarchical links (neither service-category nor service-ecosystem)",
+            )
+
+            # Must have exactly 1 link (single hierarchical link)
+            self.assertEqual(
+                total_links,
+                1,
+                f"Multiple hierarchical links for service '{svc_id}': "
+                f"found {len(cat_links)} category link(s) {cat_links} and "
+                f"{len(eco_links)} direct ecosystem link(s) {eco_links}. "
+                "Each service must have only a single link (either service-category or service-ecosystem, never both).",
+            )
+
+        # 3. Verify single category-ecosystem link
+        category_eco_links: dict[str, list[str]] = {cat_id: [] for cat_id in cat_by_id}
+        for eco in self.ecosystems_raw:
+            for cat_id in eco.get("categories", []):
+                category_eco_links.setdefault(cat_id, []).append(eco["id"])
+
+        for cat_id, parents in category_eco_links.items():
+            self.assertEqual(
+                len(parents),
+                1,
+                f"Category '{cat_id}' must belong to exactly 1 ecosystem, but linked to {parents}",
+            )
 
     def test_all_watched_services_exist_in_discovery_index(self):
         """Verify that every watched service in taxonomy.json matches a valid API in discoveries/index.json."""
@@ -156,11 +278,12 @@ class TestTaxonomy(unittest.TestCase):
                     self.ecosystems,
                     f"Invalid ecosystem '{meta.get('ecosystem')}' for '{api_name}'",
                 )
-                self.assertIn(
-                    meta.get("category"),
-                    self.categories,
-                    f"Invalid category '{meta.get('category')}' for '{api_name}'",
-                )
+                if meta.get("category"):
+                    self.assertIn(
+                        meta.get("category"),
+                        self.categories,
+                        f"Invalid category '{meta.get('category')}' for '{api_name}'",
+                    )
 
                 # Verify feed URLs if present
                 for url in taxonomy.get_release_feed_urls(api_name):
@@ -264,7 +387,7 @@ class TestTaxonomy(unittest.TestCase):
 
         # Fallback for unknown service
         self.assertEqual(taxonomy.get_ecosystem_for_service("unknown_service_xyz"), "More")
-        self.assertEqual(taxonomy.get_category_for_service("unknown_service_xyz"), "Data Analytics")
+        self.assertIsNone(taxonomy.get_category_for_service("unknown_service_xyz"))
 
     def test_determine_radar_ring(self):
         """Test Thoughtworks Tech Radar ring classification logic."""

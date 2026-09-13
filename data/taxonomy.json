@@ -14,8 +14,10 @@
       "icon": "database",
       "categories": [
         "data_analytics",
-        "databases",
-        "business_intelligence"
+        "databases"
+      ],
+      "services": [
+        "looker"
       ]
     },
     {
@@ -23,8 +25,10 @@
       "name": "Infrastructure",
       "icon": "server",
       "categories": [
-        "storage",
-        "hybrid_multicloud"
+        "storage"
+      ],
+      "services": [
+        "composer"
       ]
     },
     {
@@ -47,11 +51,11 @@
       "id": "productivity_and_collaboration",
       "name": "Productivity and collaboration",
       "icon": "briefcase",
-      "categories": [
-        "admin_sdk",
-        "apps_script",
-        "drive_api",
-        "gmail_api"
+      "services": [
+        "admin",
+        "script",
+        "drive",
+        "gmail"
       ]
     },
     {
@@ -59,48 +63,43 @@
       "name": "Marketing Platform",
       "icon": "trending-up",
       "categories": [
-        "google_analytics",
-        "tag_manager",
-        "search_console",
-        "pagespeed_insights",
-        "chrome_ux_report"
+        "google_analytics"
+      ],
+      "services": [
+        "tagmanager",
+        "searchconsole",
+        "pagespeedonline",
+        "chromeuxreport",
+        "youtube"
       ]
     },
     {
       "id": "chrome_and_web",
       "name": "Chrome & Web",
       "icon": "globe",
-      "categories": [
-        "safe_browsing",
-        "web_risk",
-        "abusive_experience",
-        "ad_experience",
-        "version_history"
+      "services": [
+        "safebrowsing",
+        "webrisk",
+        "abusiveexperiencereport",
+        "adexperiencereport",
+        "versionhistory"
       ]
     },
     {
       "id": "android",
       "name": "Android",
       "icon": "smartphone",
-      "categories": [
-        "android"
-      ]
-    },
-    {
-      "id": "personal",
-      "name": "Personal",
-      "icon": "user",
-      "categories": [
-        "youtube_data_api"
+      "services": [
+        "androidpublisher"
       ]
     },
     {
       "id": "more",
       "name": "More",
       "icon": "grid",
-      "categories": [
-        "discovery_service",
-        "sample_apis"
+      "services": [
+        "discovery",
+        "libraryagent"
       ]
     }
   ],
@@ -138,13 +137,6 @@
       ]
     },
     {
-      "id": "business_intelligence",
-      "name": "Business Intelligence",
-      "services": [
-        "looker"
-      ]
-    },
-    {
       "id": "databases",
       "name": "Databases",
       "services": [
@@ -158,13 +150,6 @@
       "services": [
         "storage",
         "storagetransfer"
-      ]
-    },
-    {
-      "id": "hybrid_multicloud",
-      "name": "Hybrid & Multicloud",
-      "services": [
-        "composer"
       ]
     },
     {
@@ -184,130 +169,11 @@
       ]
     },
     {
-      "id": "apps_script",
-      "name": "Apps Script",
-      "services": [
-        "script"
-      ]
-    },
-    {
-      "id": "admin_sdk",
-      "name": "Admin SDK",
-      "services": [
-        "admin"
-      ]
-    },
-    {
-      "id": "gmail_api",
-      "name": "Gmail API",
-      "services": [
-        "gmail"
-      ]
-    },
-    {
-      "id": "drive_api",
-      "name": "Drive API",
-      "services": [
-        "drive"
-      ]
-    },
-    {
-      "id": "tag_manager",
-      "name": "Tag Manager",
-      "services": [
-        "tagmanager"
-      ]
-    },
-    {
-      "id": "search_console",
-      "name": "Search Console",
-      "services": [
-        "searchconsole"
-      ]
-    },
-    {
-      "id": "pagespeed_insights",
-      "name": "PageSpeed Insights",
-      "services": [
-        "pagespeedonline"
-      ]
-    },
-    {
-      "id": "chrome_ux_report",
-      "name": "Chrome UX Report",
-      "services": [
-        "chromeuxreport"
-      ]
-    },
-    {
       "id": "google_analytics",
       "name": "Google Analytics",
       "services": [
         "analyticsdata",
         "analyticsadmin"
-      ]
-    },
-    {
-      "id": "youtube_data_api",
-      "name": "YouTube Data API",
-      "services": [
-        "youtube"
-      ]
-    },
-    {
-      "id": "abusive_experience",
-      "name": "Abusive Experience",
-      "services": [
-        "abusiveexperiencereport"
-      ]
-    },
-    {
-      "id": "ad_experience",
-      "name": "Ad Experience",
-      "services": [
-        "adexperiencereport"
-      ]
-    },
-    {
-      "id": "version_history",
-      "name": "Version History",
-      "services": [
-        "versionhistory"
-      ]
-    },
-    {
-      "id": "safe_browsing",
-      "name": "Safe Browsing",
-      "services": [
-        "safebrowsing"
-      ]
-    },
-    {
-      "id": "web_risk",
-      "name": "Web Risk",
-      "services": [
-        "webrisk"
-      ]
-    },
-    {
-      "id": "android",
-      "name": "Android",
-      "services": [
-        "androidpublisher"
-      ]
-    },
-    {
-      "id": "discovery_service",
-      "name": "Discovery Service",
-      "services": [
-        "discovery"
-      ]
-    },
-    {
-      "id": "sample_apis",
-      "name": "Sample APIs",
-      "services": [
-        "libraryagent"
       ]
     }
   ],

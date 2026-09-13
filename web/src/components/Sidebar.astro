@@ -30,57 +30,41 @@ interface EcosystemGroup {
 
 import taxonomyData from '../../../data/taxonomy.json';
 
-interface EcosystemConfig {
-  id: Ecosystem;
-  label: string;
-  icon: string;
-  useSubgroups?: boolean;
-}
-
-const noSubgroups = new Set(['android', 'personal', 'more']);
-const ECOSYSTEM_CONFIGS: EcosystemConfig[] = (taxonomyData.ecosystems || []).map((eco: any) => ({
-  id: eco.name,
-  label: eco.name,
-  icon: eco.icon || 'grid',
-  useSubgroups: !noSubgroups.has(eco.id),
-}));
-
-const ecosystemList: EcosystemGroup[] = ECOSYSTEM_CONFIGS.map((cfg) => {
-  const ecoServices = services.filter((s) => s.ecosystem === cfg.id);
+const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco: any) => {
+  const ecoServices = services.filter((s) => s.ecosystem === eco.name);
   const totalCount = ecoServices.reduce((acc, curr) => acc + curr.count, 0);
   const breakingCount = ecoServices.reduce((acc, curr) => acc + curr.breakingCount, 0);
 
-  if (cfg.useSubgroups) {
-    const categories = Array.from(new Set(ecoServices.map((s) => s.category)));
-    const subgroups = categories.map((category) => {
-      const items = ecoServices.filter((s) => s.category === category);
-      return {
-        category,
-        items,
-        totalCount: items.reduce((acc, curr) => acc + curr.count, 0),
-        breakingCount: items.reduce((acc, curr) => acc + curr.breakingCount, 0),
-      };
-    }).filter((g) => g.items.length > 0);
+  // Subgroups for explicit categories in eco.categories (categories with 2+ services)
+  const ecoCatIds: string[] = eco.categories || [];
+  const categorizedServices = new Set<ServiceInfo>();
 
+  const subgroups = ecoCatIds.map((catId: string) => {
+    const catDef = (taxonomyData.categories || []).find((c: any) => c.id === catId);
+    const catName = catDef ? catDef.name : catId;
+    const items = ecoServices.filter((s) => s.category === catName);
+    items.forEach((item) => categorizedServices.add(item));
     return {
-      id: cfg.id,
-      label: cfg.label,
-      icon: cfg.icon,
-      totalCount,
-      breakingCount,
-      subgroups,
+      category: catName,
+      items,
+      totalCount: items.reduce((acc, curr) => acc + curr.count, 0),
+      breakingCount: items.reduce((acc, curr) => acc + curr.breakingCount, 0),
     };
-  }
+  }).filter((g) => g.items.length > 0);
+
+  // Direct items: services in this ecosystem not under any category
+  const directItems = ecoServices.filter((s) => !categorizedServices.has(s));
 
   return {
-    id: cfg.id,
-    label: cfg.label,
-    icon: cfg.icon,
+    id: eco.name,
+    label: eco.name,
+    icon: eco.icon || 'grid',
     totalCount,
     breakingCount,
-    directItems: ecoServices,
+    subgroups: subgroups.length > 0 ? subgroups : undefined,
+    directItems: directItems.length > 0 ? directItems : undefined,
   };
-}).filter((eco) => (eco.subgroups && eco.subgroups.length > 0) || (eco.directItems && eco.directItems.length > 0));
+}).filter((eco: any) => (eco.subgroups && eco.subgroups.length > 0) || (eco.directItems && eco.directItems.length > 0));
 ---
 
 <aside class="gcp-sidebar" id="gcpSidebar">

@@ -65,7 +65,8 @@ export interface TaxonomyEcosystem {
   id: string;
   name: string;
   icon?: string;
-  categories: string[];
+  categories?: string[];
+  services?: string[];
 }
 
 export interface TaxonomyCategory {
@@ -90,6 +91,7 @@ export type ServiceCategory = string;
 export interface WatchedServiceConfig {
   ecosystem: Ecosystem;
   category: ServiceCategory;
+  category_id?: string;
   name: string;
   aliases?: string[];
   release_feed_url?: string;
@@ -97,16 +99,23 @@ export interface WatchedServiceConfig {
 }
 
 const categoryToEcosystem = new Map<string, TaxonomyEcosystem>();
-for (const eco of taxonomyData.ecosystems as TaxonomyEcosystem[]) {
-  for (const catId of eco.categories) {
+for (const eco of (taxonomyData.ecosystems || []) as TaxonomyEcosystem[]) {
+  for (const catId of eco.categories || []) {
     categoryToEcosystem.set(catId, eco);
   }
 }
 
 const serviceToCategory = new Map<string, TaxonomyCategory>();
-for (const cat of taxonomyData.categories as TaxonomyCategory[]) {
-  for (const svcId of cat.services) {
+for (const cat of (taxonomyData.categories || []) as TaxonomyCategory[]) {
+  for (const svcId of cat.services || []) {
     serviceToCategory.set(svcId, cat);
+  }
+}
+
+const serviceToEcosystem = new Map<string, TaxonomyEcosystem>();
+for (const eco of (taxonomyData.ecosystems || []) as TaxonomyEcosystem[]) {
+  for (const svcId of eco.services || []) {
+    serviceToEcosystem.set(svcId, eco);
   }
 }
 
@@ -115,11 +124,12 @@ const servicesRaw = taxonomyData.services as Record<string, TaxonomyService>;
 
 for (const [svcId, svc] of Object.entries(servicesRaw)) {
   const cat = serviceToCategory.get(svcId);
-  const eco = cat ? categoryToEcosystem.get(cat.id) : undefined;
+  const eco = cat ? categoryToEcosystem.get(cat.id) : serviceToEcosystem.get(svcId);
   watchedServices[svcId] = {
     name: svc.name || svcId,
     ecosystem: eco?.name || 'More',
-    category: cat?.name || 'Data Analytics',
+    category: cat?.name || '',
+    category_id: cat?.id || '',
     aliases: svc.aliases || [],
     release_feed_url: svc.release_feed_url,
     release_feed_urls: svc.release_feed_urls,
