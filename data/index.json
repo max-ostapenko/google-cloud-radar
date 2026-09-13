@@ -1,5 +1,26 @@
 [
   {
+    "id": "2026-09-13-bigquery-v2",
+    "slug": "2026-09-13-bigquery-v2",
+    "date": "2026-09-13",
+    "api": "bigquery.v2",
+    "service": "BigQuery",
+    "service_name": "BigQuery",
+    "title": "BigQuery adds GCS mounts for Python UDFs and native UUIDs",
+    "summary": "BigQuery now supports mounting GCS buckets as volumes for Python UDFs and introduces a native UUID data type for SQL schemas.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 7,
+    "tags": [
+      "bigquery",
+      "python-udf",
+      "storage",
+      "sql-types"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-13T18:00:13.327179+00:00"
+  },
+  {
     "id": "2026-09-12-aiplatform-v1",
     "slug": "2026-09-12-aiplatform-v1",
     "date": "2026-09-12",
