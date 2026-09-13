@@ -51,6 +51,15 @@ const isService = variant === 'service';
     type UserAlertPreferences,
   } from '../lib/firebase';
 
+  function escapeHtml(str: string): string {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function initSubscriptionCards() {
     const cards = document.querySelectorAll<HTMLElement>('.subscription-email-card');
 
@@ -71,17 +80,20 @@ const isService = variant === 'service';
         currentUser = user;
         currentPrefs = prefs;
 
+        const safeServiceName = escapeHtml(serviceName);
+        const safeEmail = escapeHtml(user?.email || 'your account');
+
         if (!user || !prefs) {
           card.classList.remove('is-active-subscriber');
           if (textContainer) {
             if (variant === 'service') {
-              textContainer.innerHTML = `<strong>Get Instant Alerts for ${serviceName}</strong><p>Never miss an API update, method deprecation, or breaking change in ${serviceName}.</p>`;
+              textContainer.innerHTML = `<strong>Get Instant Alerts for ${safeServiceName}</strong><p>Never miss an API update, method deprecation, or breaking change in ${safeServiceName}.</p>`;
             } else {
               textContainer.innerHTML = `<strong>Get Google Cloud Radar Email Alerts</strong><p>Instant alerts on breaking changes and Monday digests across all monitored GCP services.</p>`;
             }
           }
           if (actionBtn) {
-            actionBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><span>${variant === 'service' ? `Subscribe to ${serviceName}` : 'Enable Free Alerts'}</span>`;
+            actionBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><span>${variant === 'service' ? `Subscribe to ${safeServiceName}` : 'Enable Free Alerts'}</span>`;
           }
           return;
         }
@@ -97,10 +109,10 @@ const isService = variant === 'service';
           card.classList.add('is-active-subscriber');
           if (textContainer) {
             if (variant === 'service') {
-              textContainer.innerHTML = `<strong>✓ Watching ${serviceName} Alerts for ${user.email || 'your account'}</strong><p>You will be notified of any API changes, schema diffs, or deprecations for ${serviceName}.</p>`;
+              textContainer.innerHTML = `<strong>✓ Watching ${safeServiceName} Alerts for ${safeEmail}</strong><p>You will be notified of any API changes, schema diffs, or deprecations for ${safeServiceName}.</p>`;
             } else {
               const scopeDesc = prefs.allServices ? 'all GCP services' : `${prefs.watchedServices?.length || 0} watched services`;
-              textContainer.innerHTML = `<strong>✓ Radar Email Alerts Active for ${user.email || 'your account'}</strong><p>Subscribed to ${scopeDesc}${prefs.breakingAlerts ? ' (breaking alerts)' : ''}${prefs.weeklyDigest ? ' + Monday digest' : ''}.</p>`;
+              textContainer.innerHTML = `<strong>✓ Radar Email Alerts Active for ${safeEmail}</strong><p>Subscribed to ${scopeDesc}${prefs.breakingAlerts ? ' (breaking alerts)' : ''}${prefs.weeklyDigest ? ' + Monday digest' : ''}.</p>`;
             }
           }
           if (actionBtn) {
@@ -110,13 +122,13 @@ const isService = variant === 'service';
           card.classList.remove('is-active-subscriber');
           if (textContainer) {
             if (variant === 'service') {
-              textContainer.innerHTML = `<strong>Get Instant Alerts for ${serviceName}</strong><p>Never miss an API update, method deprecation, or breaking change in ${serviceName}.</p>`;
+              textContainer.innerHTML = `<strong>Get Instant Alerts for ${safeServiceName}</strong><p>Never miss an API update, method deprecation, or breaking change in ${safeServiceName}.</p>`;
             } else {
               textContainer.innerHTML = `<strong>Get Google Cloud Radar Email Alerts</strong><p>Instant alerts on breaking changes and Monday digests across all monitored GCP services.</p>`;
             }
           }
           if (actionBtn) {
-            actionBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><span>${variant === 'service' ? `Subscribe to ${serviceName}` : 'Enable Free Alerts'}</span>`;
+            actionBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><span>${variant === 'service' ? `Subscribe to ${safeServiceName}` : 'Enable Free Alerts'}</span>`;
           }
         }
       };

@@ -471,9 +471,10 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const htmlContent = safeMarkdownParser.parse(details || summary, { async: false }) as string;
       const ecosystem = canonicalMeta?.ecosystem || (doc.ecosystem as Ecosystem) || getEcosystemForService(service || api);
       const category = canonicalMeta?.category || (doc.category as ServiceCategory) || getCategoryForService(service || api);
+      const safeCategory = category || '';
       const status = (doc.status || 'canary').toLowerCase() as ChangeStatus;
       const radar_ring = (doc.radar_ring || (breaking ? 'hold' : status === 'released' ? 'adopt' : 'assess')) as RadarRing;
-      const radar_quadrant: RadarQuadrant = category.includes('AI') ? 'ai_ml' : category.includes('FinOps') ? 'security_finops' : 'data_platforms';
+      const radar_quadrant: RadarQuadrant = safeCategory.includes('AI') ? 'ai_ml' : safeCategory.includes('FinOps') ? 'security_finops' : 'data_platforms';
       const lead_time_days = doc.lead_time_days ? Number(doc.lead_time_days) : undefined;
       const official_release_date = doc.official_release_date ? String(doc.official_release_date) : undefined;
       const official_release_notes_url = doc.official_release_notes_url ? String(doc.official_release_notes_url) : undefined;
