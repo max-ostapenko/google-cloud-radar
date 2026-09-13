@@ -506,6 +506,8 @@ def main() -> None:
         "--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"]
     )
     args = parser.parse_args()
+    raw_from = (args.from_email or "").strip() or (os.getenv("RESEND_FROM_EMAIL") or "").strip()
+    args.from_email = raw_from if raw_from else DEFAULT_FROM_EMAIL
 
     logging.basicConfig(
         level=getattr(logging, args.log_level),
