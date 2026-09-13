@@ -91,7 +91,6 @@
       "name": "Personal",
       "icon": "user",
       "categories": [
-        "photos_library",
         "youtube_data_api"
       ]
     },
@@ -246,13 +245,6 @@
       "services": [
         "analyticsdata",
         "analyticsadmin"
-      ]
-    },
-    {
-      "id": "photos_library",
-      "name": "Photos Library",
-      "services": [
-        "photoslibrary"
       ]
     },
     {
@@ -490,9 +482,6 @@
     },
     "analyticsadmin": {
       "name": "Google Analytics Admin API"
-    },
-    "photoslibrary": {
-      "name": "Photos Library"
     },
     "youtube": {
       "name": "YouTube Data API"
