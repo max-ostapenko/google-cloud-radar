@@ -1,5 +1,41 @@
 [
   {
+    "id": "2026-09-14-storage-v1",
+    "date": "2026-09-14",
+    "api": "storage.v1",
+    "service": "Cloud Storage",
+    "title": "New extended data type URL for Object Custom Context",
+    "summary": "Cloud Storage has added an extendedDataTypeUrl field to the ObjectCustomContextPayload schema to better identify custom context data.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 4,
+    "tags": [
+      "storage",
+      "metadata",
+      "events"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-14T19:46:36.819600+00:00"
+  },
+  {
+    "id": "2026-09-14-discoveryengine-v1alpha",
+    "date": "2026-09-14",
+    "api": "discoveryengine.v1alpha",
+    "service": "Vertex AI Agent Builder",
+    "title": "NotebookLM API Restored with Stricter Schema Constraints",
+    "summary": "The NotebookLM alpha API surface has been reinstated after a recent removal, now featuring stricter parameter requirements and immutable fields.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "NotebookLM",
+      "Breaking Change",
+      "Restoration"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-14T19:46:36.817312+00:00"
+  },
+  {
     "id": "2026-09-13-bigquery-v2",
     "date": "2026-09-13",
     "api": "bigquery.v2",

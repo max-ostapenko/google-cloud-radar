@@ -1,0 +1,21 @@
+{
+  "id": "2026-09-14-storage-v1",
+  "date": "2026-09-14",
+  "api": "storage.v1",
+  "service": "Cloud Storage",
+  "title": "New extended data type URL for Object Custom Context",
+  "summary": "Cloud Storage has added an extendedDataTypeUrl field to the ObjectCustomContextPayload schema to better identify custom context data.",
+  "details": "The ObjectCustomContextPayload schema now includes a new string property: extendedDataTypeUrl. This field allows developers to specify the type URL of the object context's extended data, which is useful for applications that rely on structured custom metadata or specific event payloads within Cloud Storage.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 4,
+  "tags": [
+    "storage",
+    "metadata",
+    "events"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-14T19:46:36.819600+00:00"
+}
