@@ -1,5 +1,23 @@
 [
   {
+    "id": "2026-09-15-dataproc-v1",
+    "date": "2026-09-15",
+    "api": "dataproc.v1",
+    "service": "Cloud Dataproc",
+    "title": "Dataproc deprecates diskType in favor of type for Hyperdisks",
+    "summary": "Dataproc's AttachedDiskConfig schema has deprecated the diskType field, introducing a new type field for specifying Hyperdisk configurations.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "dataproc",
+      "storage",
+      "deprecation"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-15T09:51:24.710972+00:00"
+  },
+  {
     "id": "2026-09-14-storage-v1",
     "date": "2026-09-14",
     "api": "storage.v1",
