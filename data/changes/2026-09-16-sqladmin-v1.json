@@ -1,0 +1,21 @@
+{
+  "id": "2026-09-16-sqladmin-v1",
+  "date": "2026-09-16",
+  "api": "sqladmin.v1",
+  "service": "Cloud SQL",
+  "title": "Strict schema rules and new methods for Workload Capture",
+  "summary": "The Cloud SQL Admin API introduces strict validation and immutability rules for Workload Capture schemas, alongside new methods to list, start, stop, and replay database workloads.",
+  "details": "Several fields within the `WorkloadCapture`, `StartWorkloadReplayContext`, and `StopWorkloadReplayContext` schemas (such as `workloadId`, `startTime`, `endTime`, and `sourceInstance`) have transitioned to read-only or immutable status. Additionally, parameters like `project`, `instance`, and `workloadId` are now strictly required across related endpoints. On the feature side, new endpoints under `resources.workloadCaptures` (`list`, `start`, `stop`, `startReplay`) have been formally added, enabling developers to capture production query traffic and safely replay it on test instances to evaluate performance impacts or database upgrades.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "Cloud SQL",
+    "Databases",
+    "Breaking Change"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-16T14:43:25.707948+00:00"
+}
