@@ -1,5 +1,6 @@
 ---
 import type { FeedEntry } from '../lib/feed';
+import ReactionsBar from './ReactionsBar.astro';
 
 interface Props {
   entry: FeedEntry;
@@ -15,9 +16,8 @@ const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en
   timeZone: 'UTC',
 });
 // Reactions & Community Signals (progressive disclosure: counts hidden when 0)
-const likeChangeCount = entry.reaction_counts?.like_change ?? 0;
-const releasedCount = entry.reaction_counts?.released ?? 0;
-const fpCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
+const helpfulCount = entry.reaction_counts?.like_change ?? 0;
+const notHelpfulCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
 ---
 
 <article 
@@ -28,6 +28,7 @@ const fpCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
   data-category={entry.category.toLowerCase()}
   data-breaking={entry.breaking ? 'true' : 'false'}
   data-impact={entry.impact}
+  data-date={entry.date}
   data-score={entry.interesting_score}
   data-text={`${entry.title} ${entry.summary} ${entry.api} ${entry.service} ${entry.tags.join(' ')}`.toLowerCase()}
 >
@@ -80,69 +81,33 @@ const fpCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
 
   {entry.extractedMethods && entry.extractedMethods.length > 0 && (
     <div class="methods-section">
-      <span class="methods-label">Methods / Resources:</span>
+      <span class="methods-label">Methods:</span>
       <div class="methods-list">
         {entry.extractedMethods.map((method) => (
-          <div class="method-chip" title="Click to copy method">
+          <button class="method-chip copy-method-btn" data-copy={method} title="Click to copy method" type="button">
             <span class="method-rpc-tag">RPC</span>
             <code class="method-name">{method}</code>
-            <button class="copy-method-btn" data-copy={method} aria-label="Copy method identifier" title="Copy method">
-              <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-              </svg>
-            </button>
-          </div>
+          </button>
         ))}
       </div>
     </div>
   )}
 
-  {entry.tags && entry.tags.length > 0 && (
-    <div class="card-tags">
-      {entry.tags.map((tag) => (
-        <span class="tag-chip">#{tag}</span>
-      ))}
-    </div>
-  )}
+  <div class="card-footer-row" data-slug={entry.slug}>
+    <div class="card-footer-left">
+      <ReactionsBar
+        slug={entry.slug}
+        helpfulCount={helpfulCount}
+        notHelpfulCount={notHelpfulCount}
+      />
 
-  <div class="card-social-bar" data-slug={entry.slug}>
-    <div class="card-reactions-group">
-      <button 
-        class={`card-reaction-btn ${likeChangeCount > 0 ? 'has-count' : ''}`}
-        data-type="like_change" 
-        data-slug={entry.slug}
-        title="Like the change"
-        type="button"
-      >
-        <span class="reaction-icon">👍</span>
-        <span class="reaction-label">Like</span>
-        <span class="reaction-count" data-count-type="like_change" style={likeChangeCount > 0 ? '' : 'display: none;'}>{likeChangeCount}</span>
-      </button>
-
-      <button 
-        class={`card-reaction-btn ${releasedCount > 0 ? 'has-count' : ''}`}
-        data-type="released" 
-        data-slug={entry.slug}
-        title="Mark as Released in official notes/docs"
-        type="button"
-      >
-        <span class="reaction-icon">🚀</span>
-        <span class="reaction-label">Released</span>
-        <span class="reaction-count" data-count-type="released" style={releasedCount > 0 ? '' : 'display: none;'}>{releasedCount}</span>
-      </button>
-
-      <button 
-        class={`card-reaction-btn ${fpCount > 0 ? 'has-count' : ''}`}
-        data-type="false_positive_or_duplicate" 
-        data-slug={entry.slug}
-        title="Flag as false-positive or duplicate"
-        type="button"
-      >
-        <span class="reaction-icon">🚩</span>
-        <span class="reaction-label">Noise / FP</span>
-        <span class="reaction-count" data-count-type="false_positive_or_duplicate" style={fpCount > 0 ? '' : 'display: none;'}>{fpCount}</span>
-      </button>
+      {entry.tags && entry.tags.length > 0 && (
+        <div class="card-tags">
+          {entry.tags.map((tag) => (
+            <span class="tag-chip">#{tag}</span>
+          ))}
+        </div>
+      )}
     </div>
 
     <div class="card-actions-right">
@@ -156,7 +121,7 @@ const fpCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
         data-share-summary={entry.summary}
         data-share-methods={JSON.stringify(entry.extractedMethods || [])}
         data-share-breaking={entry.breaking ? 'true' : 'false'}
-        title="Share this API update on Twitter/X, LinkedIn, Slack, or Reddit"
+        title="Share"
         aria-label="Share API Update"
       >
         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -204,6 +169,20 @@ const fpCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
   .change-card.is-breaking:hover {
     border-color: var(--google-red);
     box-shadow: 0 1px 3px 0 rgba(217, 48, 37, 0.2), 0 4px 12px 2px rgba(217, 48, 37, 0.1);
+  }
+
+  .change-card.keyboard-focused {
+    outline: 2px solid var(--google-blue);
+    outline-offset: 2px;
+    border-color: var(--google-blue);
+    box-shadow: 0 0 0 4px var(--google-blue-subtle);
+  }
+
+  .change-card.is-breaking.keyboard-focused {
+    outline: 2px solid var(--google-red);
+    outline-offset: 2px;
+    border-color: var(--google-red);
+    box-shadow: 0 0 0 4px var(--google-red-subtle);
   }
 
   .card-top {
@@ -333,8 +312,16 @@ const fpCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
     background-color: var(--bg-surface);
     border: 1px solid var(--border-subtle);
     border-radius: 4px;
-    padding: 2px 6px;
+    padding: 3px 8px;
     font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .method-chip:hover {
+    border-color: var(--google-blue-border);
+    background-color: var(--google-blue-subtle);
   }
 
   .method-rpc-tag {
@@ -352,40 +339,7 @@ const fpCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
     color: var(--text-primary);
   }
 
-  .copy-method-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--text-tertiary);
-    padding: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 2px;
-  }
-
-  .copy-method-btn:hover {
-    color: var(--google-blue);
-    background-color: var(--bg-surface-hover);
-  }
-
-  .card-tags {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-  }
-
-  .tag-chip {
-    font-size: 11px;
-    color: var(--text-tertiary);
-    background-color: var(--bg-surface-hover);
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
-
-  .card-social-bar {
+  .card-footer-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -395,101 +349,26 @@ const fpCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
     gap: 12px;
   }
 
-  .card-reactions-group {
+  .card-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .card-tags {
     display: flex;
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
   }
 
-  .card-reaction-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11.5px;
-    font-weight: 500;
-    font-family: inherit;
-    color: var(--text-tertiary);
-    background-color: transparent;
-    border: 1px solid transparent;
-    padding: 3px 7px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all 0.15s ease;
-    user-select: none;
-  }
-
-  .card-reaction-btn:hover {
-    background-color: var(--bg-surface-hover);
-    border-color: var(--border-subtle);
-    color: var(--text-primary);
-  }
-
-  .card-reaction-btn.has-count,
-  .card-reaction-btn.active {
-    background-color: var(--bg-surface);
-    border-color: var(--border-subtle);
-    color: var(--text-secondary);
-  }
-
-  .card-reaction-btn.active,
-  .card-reaction-btn[data-type="like_change"].active {
-    background-color: var(--google-blue-subtle);
-    border-color: var(--google-blue-border);
-    color: var(--google-blue);
-    font-weight: 600;
-  }
-
-  .card-reaction-btn[data-type="released"].active {
-    background-color: var(--google-green-subtle);
-    border-color: var(--google-green-border);
-    color: var(--google-green);
-    font-weight: 600;
-  }
-
-  .card-reaction-btn[data-type="false_positive_or_duplicate"].active {
-    background-color: var(--google-red-subtle);
-    border-color: var(--google-red-border);
-    color: var(--google-red);
-    font-weight: 600;
-  }
-
-  .reaction-icon {
-    font-size: 12px;
-    line-height: 1;
-  }
-
-  .reaction-label {
+  .tag-chip {
     font-size: 11px;
-  }
-
-  .reaction-count {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 700;
+    color: var(--text-tertiary);
     background-color: var(--bg-surface-hover);
-    padding: 1px 5px;
-    border-radius: 3px;
-    border: 1px solid var(--border-subtle);
-  }
-
-  .card-reaction-btn.active .reaction-count,
-  .card-reaction-btn[data-type="like_change"].active .reaction-count {
-    background-color: #ffffff;
-    border-color: var(--google-blue-border);
-    color: var(--google-blue);
-  }
-
-  .card-reaction-btn[data-type="released"].active .reaction-count {
-    background-color: #ffffff;
-    border-color: var(--google-green-border);
-    color: var(--google-green);
-  }
-
-  .card-reaction-btn[data-type="false_positive_or_duplicate"].active .reaction-count {
-    background-color: #ffffff;
-    border-color: var(--google-red-border);
-    color: var(--google-red);
+    padding: 2px 6px;
+    border-radius: 4px;
   }
 
   .card-actions-right {
@@ -536,155 +415,3 @@ const fpCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
     text-decoration: none;
   }
 </style>
-
-<script>
-  import {
-    getFirebaseAuth,
-    signInWithGoogle,
-    onAuthChange,
-    toggleUserReaction,
-    listenToChange,
-    listenToUserReactions,
-    type ReactionType,
-  } from '../lib/firebase';
-
-  function initCardReactions() {
-    const cards = document.querySelectorAll<HTMLElement>('.change-card');
-
-    cards.forEach((card) => {
-      const slug = card.getAttribute('data-slug');
-      if (!slug) return;
-
-      const storageKey = `gcp_radar_reactions_${slug}`;
-      let userVotes: Record<string, boolean> = {};
-      try {
-        userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
-      } catch {}
-
-      const buttons = card.querySelectorAll<HTMLButtonElement>('.card-reaction-btn');
-
-      const updateButtonsActiveState = (votes: Record<string, boolean>) => {
-        userVotes = { ...votes };
-        buttons.forEach((btn) => {
-          const type = btn.getAttribute('data-type') as ReactionType;
-          if (type) {
-            const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
-            const count = parseInt(countBadge?.textContent || '0', 10);
-            if (userVotes[type]) {
-              btn.classList.add('active');
-              if (countBadge) countBadge.style.display = 'inline-block';
-            } else {
-              btn.classList.remove('active');
-              if (countBadge) countBadge.style.display = count > 0 ? 'inline-block' : 'none';
-            }
-          }
-        });
-      };
-
-      updateButtonsActiveState(userVotes);
-
-      // Subscribe to live change stats
-      listenToChange(slug, (changeData) => {
-        if (changeData?.reaction_counts) {
-          buttons.forEach((btn) => {
-            const type = btn.getAttribute('data-type') as ReactionType;
-            if (type && changeData.reaction_counts?.[type] !== undefined) {
-              const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
-              const val = Math.max(0, changeData.reaction_counts[type]);
-              if (countBadge) {
-                countBadge.textContent = String(val);
-                countBadge.style.display = (val > 0 || userVotes[type]) ? 'inline-block' : 'none';
-              }
-              if (val > 0) btn.classList.add('has-count');
-              else if (!userVotes[type]) btn.classList.remove('has-count');
-            }
-          });
-        }
-      });
-
-      buttons.forEach((btn) => {
-        const type = btn.getAttribute('data-type') as ReactionType;
-        if (!type) return;
-
-        if (btn.dataset.initialized) return;
-        btn.dataset.initialized = 'true';
-
-        btn.addEventListener('click', async (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-
-          const auth = getFirebaseAuth();
-          let user = auth.currentUser;
-          if (!user) {
-            try {
-              user = await signInWithGoogle();
-            } catch {
-              console.log('Sign in cancelled');
-              return;
-            }
-          }
-          if (!user) return;
-
-          const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
-          const currentCount = parseInt(countBadge?.textContent || '0', 10);
-          const isCurrent = Boolean(userVotes[type]);
-
-          // Optimistic UI update
-          if (isCurrent) {
-            userVotes[type] = false;
-            btn.classList.remove('active');
-            const newCount = Math.max(0, currentCount - 1);
-            if (countBadge) {
-              countBadge.textContent = String(newCount);
-              countBadge.style.display = newCount > 0 ? 'inline-block' : 'none';
-            }
-            if (newCount === 0) btn.classList.remove('has-count');
-          } else {
-            userVotes[type] = true;
-            btn.classList.add('active');
-            const newCount = currentCount + 1;
-            if (countBadge) {
-              countBadge.textContent = String(newCount);
-              countBadge.style.display = 'inline-block';
-            }
-            btn.classList.add('has-count');
-          }
-
-          try {
-            localStorage.setItem(storageKey, JSON.stringify(userVotes));
-          } catch {}
-
-          await toggleUserReaction(slug, user, type, isCurrent).catch(console.error);
-        });
-      });
-    });
-
-    onAuthChange((user) => {
-      cards.forEach((card) => {
-        const slug = card.getAttribute('data-slug');
-        if (!slug) return;
-        const buttons = card.querySelectorAll<HTMLButtonElement>('.card-reaction-btn');
-
-        if (user) {
-          listenToUserReactions(slug, user.uid, (liveVotes) => {
-            buttons.forEach((btn) => {
-              const type = btn.getAttribute('data-type') as ReactionType;
-              if (type) {
-                if (liveVotes[type]) {
-                  btn.classList.add('active');
-                } else {
-                  btn.classList.remove('active');
-                }
-              }
-            });
-          });
-        } else {
-          buttons.forEach((btn) => btn.classList.remove('active'));
-        }
-      });
-    });
-  }
-
-  initCardReactions();
-  document.addEventListener('astro:page-load', initCardReactions);
-</script>

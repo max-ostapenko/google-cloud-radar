@@ -1,0 +1,137 @@
+---
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+  isCode?: boolean;
+}
+
+interface Props {
+  items: BreadcrumbItem[];
+  class?: string;
+}
+
+const { items, class: className = '' } = Astro.props;
+---
+
+<nav class={`breadcrumb-nav ${className}`} aria-label="Breadcrumb">
+  <ol class="breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+    {items.map((item, index) => {
+      const isLast = index === items.length - 1;
+      const position = index + 1;
+      return (
+        <li 
+          class={`breadcrumb-item ${isLast ? 'current' : ''} ${!item.href && !isLast ? 'crumb-dim' : ''}`}
+          itemprop="itemListElement"
+          itemscope
+          itemtype="https://schema.org/ListItem"
+          aria-current={isLast ? 'page' : undefined}
+        >
+          {isLast ? (
+            item.isCode ? (
+              <code class="crumb-code" itemprop="name">{item.label}</code>
+            ) : (
+              <span class="crumb-text" title={item.label} itemprop="name">{item.label}</span>
+            )
+          ) : item.href ? (
+            <a href={item.href} class="crumb-link" itemprop="item">
+              {item.isCode ? (
+                <code class="crumb-code" itemprop="name">{item.label}</code>
+              ) : (
+                <span itemprop="name">{item.label}</span>
+              )}
+            </a>
+          ) : item.isCode ? (
+            <code class="crumb-code" itemprop="name">{item.label}</code>
+          ) : (
+            <span class="crumb-text" itemprop="name">{item.label}</span>
+          )}
+          <meta itemprop="position" content={String(position)} />
+        </li>
+      );
+    })}
+  </ol>
+</nav>
+
+<style>
+  .breadcrumb-nav {
+    margin-bottom: 16px;
+  }
+
+  .breadcrumb-list {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-tertiary);
+    flex-wrap: wrap;
+    line-height: 1.5;
+  }
+
+  .breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    max-width: 320px;
+  }
+
+  .breadcrumb-item + .breadcrumb-item::before {
+    content: '/';
+    margin: 0 8px;
+    color: var(--border-strong);
+    user-select: none;
+    font-size: 12px;
+  }
+
+  .breadcrumb-item.current {
+    max-width: 420px;
+  }
+
+  .crumb-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .crumb-link:hover {
+    color: var(--google-blue);
+    text-decoration: underline;
+  }
+
+  .crumb-dim {
+    color: var(--text-tertiary);
+    white-space: nowrap;
+  }
+
+  .crumb-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .current .crumb-text {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .crumb-code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background-color: var(--bg-surface-hover);
+    padding: 1px 5px;
+    border-radius: var(--radius-xs, 3px);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  .current .crumb-code {
+    background-color: var(--google-blue-subtle);
+    border-color: var(--google-blue-border);
+    color: var(--google-blue);
+    font-weight: 600;
+  }
+</style>

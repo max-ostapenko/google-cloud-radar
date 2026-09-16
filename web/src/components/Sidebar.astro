@@ -9,8 +9,6 @@ interface Props {
 const { activeServiceSlug = '', activeCategory = '' } = Astro.props;
 
 const services: ServiceInfo[] = await getServicesList();
-const totalUpdates = services.reduce((a, b) => a + b.count, 0);
-const totalBreaking = services.reduce((a, b) => a + b.breakingCount, 0);
 
 // Top-Level Ecosystems configuration
 interface EcosystemGroup {
@@ -69,14 +67,13 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
 
 <aside class="gcp-sidebar" id="gcpSidebar">
   <div class="sidebar-header">
-    <div class="sidebar-title">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M4 6h16M4 12h16M4 18h7"/>
-      </svg>
-      <span>APIs & Services</span>
-    </div>
-    <div class="sidebar-header-right">
-      <span class="total-services-badge">{services.length} Monitored</span>
+    <div class="sidebar-header-top">
+      <div class="sidebar-title">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 6h16M4 12h16M4 18h7"/>
+        </svg>
+        <span>APIs & Services</span>
+      </div>
       <button id="sidebarCloseBtn" class="sidebar-close-btn" aria-label="Close APIs & Services Drawer" type="button">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -84,26 +81,29 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
         </svg>
       </button>
     </div>
+    <div class="sidebar-status-row">
+      <span class="total-services-badge" title={`${services.length} Google Cloud services currently monitored`}>
+        <span class="status-pulse-dot" aria-hidden="true"></span>
+        <span class="badge-count">{services.length}</span>
+        <span class="badge-text">Monitored</span>
+      </span>
+      <a
+        class="sidebar-request-link"
+        href="https://github.com/max-ostapenko/google-cloud-radar/issues/new?template=api_request.yml"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Open a GitHub issue to request monitoring for a new API"
+      >
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Request API</span>
+      </a>
+    </div>
   </div>
 
   <div class="sidebar-menu">
-    <a href="/" class={`sidebar-item all-item ${!activeServiceSlug && !activeCategory ? 'active' : ''}`}>
-      <span class="item-name">All Updates</span>
-      <span class="item-count-group">
-        <span class="item-count">{totalUpdates}</span>
-        {totalBreaking > 0 && (
-          <span class="item-breaking-pill" title={`${totalBreaking} breaking changes`}>⚠️ {totalBreaking}</span>
-        )}
-      </span>
-    </a>
-
-    <a href="/breaking" class={`sidebar-item breaking-item ${activeCategory === 'breaking' ? 'active' : ''}`}>
-      <span class="item-name">⚠️ Breaking Changes</span>
-      <span class="item-badge-breaking">{totalBreaking} Alerts</span>
-    </a>
-
-    <div class="sidebar-divider"></div>
-
     <!-- Hierarchy: Top Level Ecosystems (Collapsible) -->
     <div class="ecosystem-container">
       {ecosystemList.map((eco) => (
@@ -214,7 +214,10 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
             </div>
             <div class="ecosystem-badge-group">
               {eco.breakingCount > 0 && (
-                <span class="badge-breaking-micro" title={`${eco.breakingCount} breaking`}>⚠️{eco.breakingCount}</span>
+                <span class="badge-breaking-micro" title={`${eco.breakingCount} breaking`}>
+                  <svg viewBox="0 0 24 24" width="8.5" height="8.5" fill="currentColor" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                  <span>{eco.breakingCount}</span>
+                </span>
               )}
               <span class={`ecosystem-badge ${eco.totalCount === 0 ? 'empty-badge' : ''}`}>
                 {eco.totalCount}
@@ -231,7 +234,10 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
                     <span>{sub.category}</span>
                     <div class="category-counts-group">
                       {sub.breakingCount > 0 && (
-                        <span class="category-breaking" title={`${sub.breakingCount} breaking`}>⚠️{sub.breakingCount}</span>
+                        <span class="category-breaking" title={`${sub.breakingCount} breaking`}>
+                          <svg viewBox="0 0 24 24" width="8.5" height="8.5" fill="currentColor" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                          <span>{sub.breakingCount}</span>
+                        </span>
                       )}
                       <span class="category-count">{sub.totalCount}</span>
                     </div>
@@ -247,7 +253,10 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
                           <span class="service-name">{item.service}</span>
                           <span class="service-counts-group">
                             {item.breakingCount > 0 && (
-                              <span class="service-breaking-inline" title={`${item.breakingCount} breaking changes`}>⚠️ {item.breakingCount}</span>
+                              <span class="service-breaking-inline" title={`${item.breakingCount} breaking changes`}>
+                                <svg viewBox="0 0 24 24" width="8.5" height="8.5" fill="currentColor" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                                <span>{item.breakingCount}</span>
+                              </span>
                             )}
                             <span class="service-count">{item.count}</span>
                           </span>
@@ -273,7 +282,10 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
                     <span class="service-name">{item.service}</span>
                     <span class="service-counts-group">
                       {item.breakingCount > 0 && (
-                        <span class="service-breaking-inline" title={`${item.breakingCount} breaking changes`}>⚠️ {item.breakingCount}</span>
+                        <span class="service-breaking-inline" title={`${item.breakingCount} breaking changes`}>
+                          <svg viewBox="0 0 24 24" width="8.5" height="8.5" fill="currentColor" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                          <span>{item.breakingCount}</span>
+                        </span>
                       )}
                       <span class="service-count">{item.count}</span>
                     </span>
@@ -320,8 +332,14 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
   }
 
   .sidebar-header {
-    padding: 16px;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sidebar-header-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -331,96 +349,75 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
     color: var(--text-secondary);
   }
 
+  .sidebar-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
   .total-services-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     font-size: 11px;
-    background-color: var(--google-blue-subtle);
-    color: var(--google-blue);
-    padding: 2px 6px;
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 2px 7px;
     border-radius: var(--radius-full);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .status-pulse-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--google-green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+  }
+
+  .badge-count {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .sidebar-request-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
     font-weight: 600;
+    color: var(--google-blue);
+    background-color: var(--google-blue-subtle);
+    border: 1px solid var(--google-blue-border);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .sidebar-request-link:hover {
+    background-color: var(--google-blue);
+    color: #ffffff;
+    border-color: var(--google-blue);
+    text-decoration: none;
   }
 
   .sidebar-menu {
     padding: 12px 8px;
     flex: 1;
-  }
-
-  .sidebar-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 12px;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-primary);
-    text-decoration: none;
-    margin-bottom: 2px;
-    transition: all 0.15s ease;
-  }
-
-  .sidebar-item:hover {
-    background-color: var(--bg-surface-hover);
-    text-decoration: none;
-  }
-
-  .sidebar-item.active {
-    background-color: var(--google-blue-subtle);
-    color: var(--google-blue);
-    font-weight: 600;
-  }
-
-  .item-count-group {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .item-count {
-    font-size: 11px;
-    color: var(--text-tertiary);
-    font-family: var(--font-mono);
-  }
-
-  .item-breaking-pill {
-    font-size: 10px;
-    font-weight: 700;
-    background-color: var(--google-red-subtle);
-    color: var(--google-red);
-    padding: 1px 5px;
-    border-radius: 4px;
-  }
-
-  .breaking-item {
-    color: var(--google-red);
-  }
-
-  .breaking-item.active {
-    background-color: var(--google-red-subtle);
-    color: var(--google-red);
-  }
-
-  .item-badge-breaking {
-    font-size: 10px;
-    font-weight: 700;
-    background-color: var(--google-red);
-    color: #ffffff;
-    padding: 1px 6px;
-    border-radius: 4px;
-    text-transform: uppercase;
-  }
-
-  .sidebar-divider {
-    height: 1px;
-    background-color: var(--border-subtle);
-    margin: 12px 4px;
   }
 
   /* Ecosystem Containers (Collapsible) */
@@ -497,6 +494,9 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
   }
 
   .badge-breaking-micro {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
     font-size: 9px;
     font-weight: 700;
     color: var(--google-red);
@@ -550,6 +550,9 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
   }
 
   .category-breaking {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
     font-size: 9px;
     color: var(--google-red);
     font-weight: 700;
@@ -613,11 +616,14 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
   }
 
   .service-breaking-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
     font-size: 10px;
     font-weight: 700;
     color: var(--google-red);
     background-color: var(--google-red-subtle);
-    padding: 0 4px;
+    padding: 1px 4px;
     border-radius: 3px;
     font-family: var(--font-mono);
   }

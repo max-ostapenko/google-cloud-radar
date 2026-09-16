@@ -33,27 +33,28 @@ const { currentPath = '/' } = Astro.props;
   </div>
 
   <div class="header-center">
-    <div class="search-box">
-      <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-        <circle cx="11" cy="11" r="8"/>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input 
-        type="search" 
-        id="global-search-input" 
-        placeholder="Filter by API, method, or service (e.g. vertex, compact, bigquery)..." 
-        aria-label="Filter API changes"
-      />
-      <span class="search-kbd">/</span>
-    </div>
+    <form id="global-search-form" class="search-form" action="/" method="GET" role="search">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input 
+          type="search" 
+          name="q"
+          id="global-search-input" 
+          placeholder="Filter by API, method, or service (e.g. vertex, compact, bigquery)..." 
+          aria-label="Filter API changes"
+          autocomplete="off"
+        />
+        <span class="search-kbd">/</span>
+      </div>
+    </form>
   </div>
 
   <div class="header-right">
     <nav class="nav-links">
       <a href="/" class={currentPath === '/' ? 'active' : ''}>Feed</a>
-      <a href="/breaking" class={currentPath === '/breaking' ? 'active breaking-nav' : 'breaking-nav'}>
-        <span class="breaking-dot"></span> Breaking
-      </a>
       <a href="/stats" class={currentPath === '/stats' ? 'active' : ''}>Stats</a>
     </nav>
 
@@ -183,22 +184,6 @@ const { currentPath = '/' } = Astro.props;
 </script>
 
 <script is:inline>
-  // Theme handling
-  const themeToggle = document.getElementById('theme-toggle');
-  const storedTheme = localStorage.getItem('gcp-radar-theme') || 
-    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  
-  document.documentElement.setAttribute('data-theme', storedTheme);
-
-  if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('gcp-radar-theme', next);
-    });
-  }
-
   // Keyboard shortcut '/' to search
   window.addEventListener('keydown', (e) => {
     if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
@@ -209,6 +194,27 @@ const { currentPath = '/' } = Astro.props;
       }
     }
   });
+
+  // Cross-page search form navigation
+  function setupSearchForm() {
+    const searchForm = document.getElementById('global-search-form');
+    const searchInput = document.getElementById('global-search-input');
+    if (!searchForm || !searchInput) return;
+
+    searchForm.addEventListener('submit', (e) => {
+      const q = searchInput.value.trim();
+      const isHome = window.location.pathname === '/' || window.location.pathname === '';
+      if (isHome) {
+        e.preventDefault();
+      } else if (q) {
+        e.preventDefault();
+        window.location.href = `/?q=${encodeURIComponent(q)}`;
+      }
+    });
+  }
+
+  setupSearchForm();
+  document.addEventListener('astro:page-load', setupSearchForm);
 </script>
 
 <style>
@@ -278,6 +284,11 @@ const { currentPath = '/' } = Astro.props;
   .header-center {
     flex: 1;
     max-width: 540px;
+  }
+
+  .search-form {
+    width: 100%;
+    margin: 0;
   }
 
   .search-box {
@@ -356,26 +367,6 @@ const { currentPath = '/' } = Astro.props;
     text-decoration: none;
   }
 
-  .breaking-nav {
-    color: var(--google-red) !important;
-  }
-
-  .breaking-nav:hover, .breaking-nav.active {
-    background-color: var(--google-red-subtle) !important;
-  }
-
-  .breaking-dot {
-    width: 6px;
-    height: 6px;
-    background-color: var(--google-red);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
 
   .json-tag {
     font-family: var(--font-mono);
@@ -558,38 +549,6 @@ const { currentPath = '/' } = Astro.props;
     background-color: var(--google-red-subtle);
   }
 
-  .theme-btn {
-    background: transparent;
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-full);
-    width: 34px;
-    height: 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: all 0.2s ease;
-  }
-
-  .theme-btn:hover {
-    background-color: var(--bg-surface-hover);
-    color: var(--text-primary);
-  }
-
-  .sun-icon {
-    display: block;
-  }
-  .moon-icon {
-    display: none;
-  }
-
-  [data-theme='dark'] .sun-icon {
-    display: none;
-  }
-  [data-theme='dark'] .moon-icon {
-    display: block;
-  }
 
   .mobile-sidebar-toggle {
     display: none;
