@@ -1,0 +1,21 @@
+{
+  "id": "2026-09-16-sqladmin-v1beta4",
+  "date": "2026-09-16",
+  "api": "sqladmin.v1beta4",
+  "service": "Cloud SQL",
+  "title": "Cloud SQL introduces Workload Capture and Replay",
+  "summary": "Cloud SQL adds a new suite of methods to capture production database traffic and replay it on test instances for performance and upgrade validation.",
+  "details": "The API now includes a comprehensive `workloadCaptures` resource with methods for `list`, `start`, `stop`, and `startReplay`. This allows developers to securely store SQL queries and transactions from a primary instance and execute them on a separate instance to simulate production loads. \n\nThis update includes several breaking changes to the beta schema: fields such as `workloadId`, `workloadCaptureState`, `startTime`, `endTime`, and `sourceInstance` within the `WorkloadCapture` schema are now read-only/immutable. Furthermore, the `project`, `instance`, and `workloadId` parameters have been promoted to strictly required across these new methods.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking_change",
+    "databases",
+    "testing"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-16T22:45:55.043235+00:00"
+}
