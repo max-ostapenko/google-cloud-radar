@@ -16,7 +16,10 @@
     "workspace"
   ],
   "extracted_methods": [],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-08-25T03:00:00Z"
+  "status": "released",
+  "lead_time_days": 22,
+  "generated_at": "2026-08-25T03:00:00Z",
+  "radar_ring": "adopt",
+  "official_release_date": "2026-09-16",
+  "official_release_notes_url": "http://workspaceupdates.googleblog.com/2026/09/data-regions-support-for-google-apps-script-now-generally-available.html"
 }

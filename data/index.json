@@ -1,5 +1,77 @@
 [
   {
+    "id": "2026-09-16-sqladmin-v1",
+    "date": "2026-09-16",
+    "api": "sqladmin.v1",
+    "service": "Cloud SQL",
+    "title": "Strict schema rules and new methods for Workload Capture",
+    "summary": "The Cloud SQL Admin API introduces strict validation and immutability rules for Workload Capture schemas, alongside new methods to list, start, stop, and replay database workloads.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 8,
+    "tags": [
+      "Cloud SQL",
+      "Databases",
+      "Breaking Change"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-16T14:43:25.707948+00:00"
+  },
+  {
+    "id": "2026-09-16-metastore-v1beta",
+    "date": "2026-09-16",
+    "api": "metastore.v1beta",
+    "service": "Dataproc Metastore",
+    "title": "MigrationSummary endTime is now read-only",
+    "summary": "A breaking change in the Metastore v1beta API marks the MigrationSummary endTime field as read-only. The createTime field description has also been updated to clarify its role in the migration process.",
+    "impact": "medium",
+    "breaking": true,
+    "interesting_score": 6,
+    "tags": [
+      "Dataproc Metastore",
+      "Migrations",
+      "Breaking Change"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-16T14:43:25.706091+00:00"
+  },
+  {
+    "id": "2026-09-16-metastore-v1alpha",
+    "date": "2026-09-16",
+    "api": "metastore.v1alpha",
+    "service": "Dataproc Metastore",
+    "title": "MigrationSummary timestamps updated in Metastore v1alpha",
+    "summary": "The MigrationSummary schema now marks endTime as read-only and redefines createTime to reflect the start of metadata reads.",
+    "impact": "medium",
+    "breaking": true,
+    "interesting_score": 6,
+    "tags": [
+      "Dataproc Metastore",
+      "Migrations",
+      "Breaking Change"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-16T14:43:25.704132+00:00"
+  },
+  {
+    "id": "2026-09-16-metastore-v1",
+    "date": "2026-09-16",
+    "api": "metastore.v1",
+    "service": "Dataproc Metastore",
+    "title": "MigrationSummary schema updates and breaking changes",
+    "summary": "The MigrationSummary schema has been updated with a new read-only endTime field and revised semantics for createTime.",
+    "impact": "medium",
+    "breaking": true,
+    "interesting_score": 6,
+    "tags": [
+      "Dataproc Metastore",
+      "Migrations",
+      "Breaking Change"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-16T14:43:25.701619+00:00"
+  },
+  {
     "id": "2026-09-15-dataproc-v1",
     "date": "2026-09-15",
     "api": "dataproc.v1",
