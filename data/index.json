@@ -1,5 +1,23 @@
 [
   {
+    "id": "2026-09-17-androidpublisher-v3",
+    "date": "2026-09-17",
+    "api": "androidpublisher.v3",
+    "service": "Android Publisher",
+    "title": "Track Play Store status in AppStoreAppActiveApkSet",
+    "summary": "Developers can now explicitly flag if APK sets are already published on Google Play and provide a corresponding version code.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 5,
+    "tags": [
+      "Google Play",
+      "APK Management",
+      "Publishing"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-17T14:47:05.664764+00:00"
+  },
+  {
     "id": "2026-09-16-sqladmin-v1beta4",
     "date": "2026-09-16",
     "api": "sqladmin.v1beta4",
