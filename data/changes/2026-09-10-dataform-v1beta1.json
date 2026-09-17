@@ -16,7 +16,10 @@
     "authentication"
   ],
   "extracted_methods": [],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-09-10T22:21:38.076788+00:00"
+  "status": "released",
+  "lead_time_days": 7,
+  "generated_at": "2026-09-10T22:21:38.076788+00:00",
+  "radar_ring": "adopt",
+  "official_release_date": "2026-09-17",
+  "official_release_notes_url": "https://docs.cloud.google.com/dataform/docs/release-notes#September_17_2026"
 }

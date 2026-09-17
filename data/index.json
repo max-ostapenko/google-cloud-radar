@@ -1,5 +1,66 @@
 [
   {
+    "id": "2026-09-17-discoveryengine-v1beta",
+    "date": "2026-09-17",
+    "api": "discoveryengine.v1beta",
+    "service": "Vertex AI Agent Builder",
+    "title": "Granular IAM Filtering and Search-As-You-Type Tuning",
+    "summary": "Discovery Engine adds resource-level IAM filtering for Gemini Enterprise and dynamic search-as-you-type scoring overrides. Alpha users also gain support for file attachments in long-running agent tasks.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 7,
+    "tags": [
+      "discoveryengine",
+      "vertex-ai",
+      "iam",
+      "search",
+      "gemini"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-17T22:45:08.503519+00:00"
+  },
+  {
+    "id": "2026-09-17-discoveryengine-v1alpha",
+    "date": "2026-09-17",
+    "api": "discoveryengine.v1alpha",
+    "service": "Vertex AI Agent Builder",
+    "title": "Gemini Access Controls and Search-As-You-Type Tuning",
+    "summary": "This update introduces resource-level access controls for Gemini Enterprise, per-request Search-As-You-Type overrides, and a breaking change to widget model configurations.",
+    "impact": "medium",
+    "breaking": true,
+    "interesting_score": 8,
+    "tags": [
+      "AI",
+      "Search",
+      "IAM",
+      "Breaking Change"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-17T22:45:08.501579+00:00"
+  },
+  {
+    "id": "2026-09-17-discoveryengine-v1",
+    "date": "2026-09-17",
+    "api": "discoveryengine.v1",
+    "service": "Vertex AI Agent Builder",
+    "title": "Search-as-you-type tuning and IAM-based resource filtering",
+    "summary": "Discovery Engine adds granular scoring controls for Search-as-you-type and resource-level IAM filtering for Gemini Enterprise. A breaking change makes the widget 'family' field read-only.",
+    "impact": "medium",
+    "breaking": true,
+    "interesting_score": 7,
+    "tags": [
+      "discoveryengine",
+      "search",
+      "iam",
+      "gemini",
+      "breaking_change"
+    ],
+    "extracted_methods": [
+      "WidgetConfig.UiSettings.ModelConfigInfo.ResolvedModel"
+    ],
+    "generated_at": "2026-09-17T22:45:08.499638+00:00"
+  },
+  {
     "id": "2026-09-17-androidpublisher-v3",
     "date": "2026-09-17",
     "api": "androidpublisher.v3",
@@ -16,6 +77,25 @@
     ],
     "extracted_methods": [],
     "generated_at": "2026-09-17T14:47:05.664764+00:00"
+  },
+  {
+    "id": "2026-09-17-analyticshub-v1",
+    "date": "2026-09-17",
+    "api": "analyticshub.v1",
+    "service": "Analytics Hub",
+    "title": "CMEK support for Query Templates",
+    "summary": "Analytics Hub now supports Customer-Managed Encryption Keys (CMEK) for Query Templates, allowing developers to encrypt template definitions using their own KMS keys.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "security",
+      "encryption",
+      "kms",
+      "analytics"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-17T22:45:08.497430+00:00"
   },
   {
     "id": "2026-09-16-sqladmin-v1beta4",
