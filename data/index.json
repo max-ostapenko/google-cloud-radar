@@ -1,5 +1,23 @@
 [
   {
+    "id": "2026-09-18-admin-directory-v1",
+    "date": "2026-09-18",
+    "api": "admin.directory_v1",
+    "service": "Admin SDK",
+    "title": "Clarified Unmanaged Account Resolution Logic",
+    "summary": "The Directory API documentation now explicitly details the HTTP response codes returned when resolving unmanaged user account conflicts during user creation.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 3,
+    "tags": [
+      "Users",
+      "Provisioning",
+      "Documentation"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-18T03:57:19.403256+00:00"
+  },
+  {
     "id": "2026-09-17-discoveryengine-v1beta",
     "date": "2026-09-17",
     "api": "discoveryengine.v1beta",
