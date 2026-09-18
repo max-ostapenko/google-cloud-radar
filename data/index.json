@@ -1,5 +1,41 @@
 [
   {
+    "id": "2026-09-18-alloydb-v1beta",
+    "date": "2026-09-18",
+    "api": "alloydb.v1beta",
+    "service": "AlloyDB",
+    "title": "AlloyDB adds Postgres 19 support and Cluster Editions",
+    "summary": "AlloyDB v1beta introduces support for PostgreSQL 19 and a new Edition classification for clusters, including a Developer edition. Note that the edition field on Backups is now read-only.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 8,
+    "tags": [
+      "alloydb",
+      "postgresql",
+      "breaking-change"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-18T09:29:55.042955+00:00"
+  },
+  {
+    "id": "2026-09-18-alloydb-v1alpha",
+    "date": "2026-09-18",
+    "api": "alloydb.v1alpha",
+    "service": "AlloyDB",
+    "title": "AlloyDB adds Postgres 19 support and Cluster Editions",
+    "summary": "AlloyDB v1alpha introduces support for Postgres 19 and a new edition classification for clusters, while making the edition field read-only on backups.",
+    "impact": "medium",
+    "breaking": true,
+    "interesting_score": 7,
+    "tags": [
+      "alloydb",
+      "postgres",
+      "breaking-change"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-18T09:29:55.040623+00:00"
+  },
+  {
     "id": "2026-09-18-admin-directory-v1",
     "date": "2026-09-18",
     "api": "admin.directory_v1",

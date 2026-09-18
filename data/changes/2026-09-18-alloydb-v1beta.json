@@ -1,0 +1,21 @@
+{
+  "id": "2026-09-18-alloydb-v1beta",
+  "date": "2026-09-18",
+  "api": "alloydb.v1beta",
+  "service": "AlloyDB",
+  "title": "AlloyDB adds Postgres 19 support and Cluster Editions",
+  "summary": "AlloyDB v1beta introduces support for PostgreSQL 19 and a new Edition classification for clusters, including a Developer edition. Note that the edition field on Backups is now read-only.",
+  "details": "The databaseVersion enum has been updated to include POSTGRES_19 across multiple schemas, including Cluster, Backup, and UpgradeClusterRequest. A new edition field is now available for Clusters, allowing selection between EDITION_ALLOYDB (Standard) and EDITION_ALLOYDB_DEVELOPER. Developers should be aware of a breaking change: the edition field in the Backup schema is now marked as readOnly. This means the edition is inherited from the source cluster and cannot be manually set or modified during backup operations.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "alloydb",
+    "postgresql",
+    "breaking-change"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-18T09:29:55.042955+00:00"
+}
