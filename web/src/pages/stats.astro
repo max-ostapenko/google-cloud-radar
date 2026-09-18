@@ -5,7 +5,7 @@ import { computeRadarStats } from "../lib/stats";
 
 const stats = await computeRadarStats();
 
-// Dataset & TechArticle JSON-LD for rich SEO and citations
+// Dataset JSON-LD for rich SEO and Google Dataset Search
 const schemaData = {
   "@context": "https://schema.org",
   "@type": "Dataset",
@@ -13,6 +13,8 @@ const schemaData = {
   description:
     "Rolling 90-day empirical benchmark analyzing pre-release Canary lead times, breaking change ratios, and shipping velocity across Google Cloud APIs.",
   url: "https://google-cloud-radar.com/stats",
+  license: "https://www.apache.org/licenses/LICENSE-2.0",
+  isAccessibleForFree: true,
   creator: {
     "@type": "Organization",
     name: "Google Cloud Radar",

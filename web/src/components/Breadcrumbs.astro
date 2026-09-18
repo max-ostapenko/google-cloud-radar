@@ -11,46 +11,91 @@ interface Props {
 }
 
 const { items, class: className = '' } = Astro.props;
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://google-cloud-radar.com';
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
+
+// Build Google-compliant BreadcrumbList structured data (JSON-LD).
+// Google Search Console requires that every intermediate breadcrumb item has a valid, absolute URL ('item').
+// Non-navigable visual tags (e.g. ecosystem or category labels without dedicated index pages)
+// remain visible in the human UI trail, but are omitted from the Search Engine hierarchy to prevent
+// "Missing field 'item' (in 'itemListElement')" errors in Google Search Console.
+// The final breadcrumb represents the current page and resolves to the canonical URL if href is omitted.
+const schemaBreadcrumbItems = items
+  .map((item, index) => {
+    const isLast = index === items.length - 1;
+    let url: string | null = null;
+
+    if (item.href) {
+      url = new URL(item.href, siteUrl).href;
+    } else if (isLast) {
+      url = canonicalUrl;
+    }
+
+    if (!url) return null;
+
+    return {
+      name: item.label,
+      url,
+    };
+  })
+  .filter((item): item is { name: string; url: string } => item !== null);
+
+// Only output schema if there is a meaningful multi-level hierarchy (2+ items with URLs).
+// Google guidelines advise against emitting BreadcrumbList for single root/home items.
+const shouldEmitSchema = schemaBreadcrumbItems.length >= 2;
+
+const breadcrumbSchema = shouldEmitSchema
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: schemaBreadcrumbItems.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        item: item.url,
+      })),
+    }
+  : null;
 ---
 
 <nav class={`breadcrumb-nav ${className}`} aria-label="Breadcrumb">
-  <ol class="breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+  <ol class="breadcrumb-list">
     {items.map((item, index) => {
       const isLast = index === items.length - 1;
-      const position = index + 1;
       return (
         <li 
           class={`breadcrumb-item ${isLast ? 'current' : ''} ${!item.href && !isLast ? 'crumb-dim' : ''}`}
-          itemprop="itemListElement"
-          itemscope
-          itemtype="https://schema.org/ListItem"
           aria-current={isLast ? 'page' : undefined}
         >
           {isLast ? (
             item.isCode ? (
-              <code class="crumb-code" itemprop="name">{item.label}</code>
+              <code class="crumb-code">{item.label}</code>
             ) : (
-              <span class="crumb-text" title={item.label} itemprop="name">{item.label}</span>
+              <span class="crumb-text" title={item.label}>{item.label}</span>
             )
           ) : item.href ? (
-            <a href={item.href} class="crumb-link" itemprop="item">
+            <a href={item.href} class="crumb-link">
               {item.isCode ? (
-                <code class="crumb-code" itemprop="name">{item.label}</code>
+                <code class="crumb-code">{item.label}</code>
               ) : (
-                <span itemprop="name">{item.label}</span>
+                <span>{item.label}</span>
               )}
             </a>
           ) : item.isCode ? (
-            <code class="crumb-code" itemprop="name">{item.label}</code>
+            <code class="crumb-code">{item.label}</code>
           ) : (
-            <span class="crumb-text" itemprop="name">{item.label}</span>
+            <span class="crumb-text">{item.label}</span>
           )}
-          <meta itemprop="position" content={String(position)} />
         </li>
       );
     })}
   </ol>
 </nav>
+
+{breadcrumbSchema && (
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+)}
 
 <style>
   .breadcrumb-nav {
