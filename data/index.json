@@ -1,5 +1,24 @@
 [
   {
+    "id": "2026-09-19-dataplex-v1",
+    "date": "2026-09-19",
+    "api": "dataplex.v1",
+    "service": "Dataplex",
+    "title": "Dataplex adds LLM token tracking for Data Documentation",
+    "summary": "Dataplex now provides granular observability for LLM-powered data documentation scans, including detailed token usage and compute unit consumption.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 7,
+    "tags": [
+      "Dataplex",
+      "LLM",
+      "Observability",
+      "FinOps"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-19T03:54:43.383271+00:00"
+  },
+  {
     "id": "2026-09-18-alloydb-v1beta",
     "date": "2026-09-18",
     "api": "alloydb.v1beta",
