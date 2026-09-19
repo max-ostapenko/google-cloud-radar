@@ -19,6 +19,48 @@
     "generated_at": "2026-09-19T03:54:43.383271+00:00"
   },
   {
+    "id": "2026-09-19-aiplatform-v1beta1",
+    "date": "2026-09-19",
+    "api": "aiplatform.v1beta1",
+    "service": "Vertex AI",
+    "title": "Agent Patching goes Async and Video 'Pro Edit' arrives",
+    "summary": "Vertex AI v1beta1 shifts Agent updates to Long Running Operations and introduces experimental 'Pro Edit' video capabilities. New observability features and Reasoning Engine garbage collection also debut.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "vertex-ai",
+      "agents",
+      "video-gen",
+      "breaking-change",
+      "lro"
+    ],
+    "extracted_methods": [
+      "projects.locations.agents.patch"
+    ],
+    "generated_at": "2026-09-19T13:47:25.442932+00:00"
+  },
+  {
+    "id": "2026-09-19-aiplatform-v1",
+    "date": "2026-09-19",
+    "api": "aiplatform.v1",
+    "service": "Vertex AI",
+    "title": "Vertex AI adds Video 'Pro Edit' and Agent Observability",
+    "summary": "Vertex AI introduces experimental video editing capabilities and OpenTelemetry-based observability for Agents. Notably, updating an Agent via patch is now a long-running operation.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 7,
+    "tags": [
+      "AI",
+      "Vertex AI",
+      "Video Generation",
+      "Observability",
+      "Agents"
+    ],
+    "extracted_methods": [],
+    "generated_at": "2026-09-19T13:47:25.440453+00:00"
+  },
+  {
     "id": "2026-09-18-alloydb-v1beta",
     "date": "2026-09-18",
     "api": "alloydb.v1beta",
