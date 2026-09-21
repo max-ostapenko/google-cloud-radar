@@ -1879,7 +1879,7 @@
       }
     }
   },
-  "revision": "20260826",
+  "revision": "20260904",
   "rootUrl": "https://alloydb.googleapis.com/",
   "schemas": {
     "AuthorizedNetwork": {

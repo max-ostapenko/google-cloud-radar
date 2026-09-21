@@ -2921,7 +2921,7 @@
       }
     }
   },
-  "revision": "20260617",
+  "revision": "20260907",
   "rootUrl": "https://connectors.googleapis.com/",
   "schemas": {
     "AdminFilters": {

@@ -4193,7 +4193,7 @@
       }
     }
   },
-  "revision": "20260902",
+  "revision": "20260914",
   "rootUrl": "https://youtube.googleapis.com/",
   "schemas": {
     "AbuseReport": {
@@ -6228,7 +6228,7 @@
           "type": "string"
         },
         "agcomRating": {
-          "description": "The video's rating from Italy's Autorit\u00e0 per le Garanzie nelle Comunicazioni (AGCOM).",
+          "description": "The video's rating from Italy's Autorità per le Garanzie nelle Comunicazioni (AGCOM).",
           "enum": [
             "agcomUnspecified",
             "agcomT",
@@ -6246,7 +6246,7 @@
           "type": "string"
         },
         "anatelRating": {
-          "description": "The video's Anatel (Asociaci\u00f3n Nacional de Televisi\u00f3n) rating for Chilean television.",
+          "description": "The video's Anatel (Asociación Nacional de Televisión) rating for Chilean television.",
           "enum": [
             "anatelUnspecified",
             "anatelF",
@@ -6324,7 +6324,7 @@
           "type": "string"
         },
         "bmukkRating": {
-          "description": "The video's rating from the Austrian Board of Media Classification (Bundesministerium f\u00fcr Unterricht, Kunst und Kultur).",
+          "description": "The video's rating from the Austrian Board of Media Classification (Bundesministerium für Unterricht, Kunst und Kultur).",
           "enum": [
             "bmukkUnspecified",
             "bmukkAa",
@@ -6426,7 +6426,7 @@
           "type": "string"
         },
         "cccRating": {
-          "description": "The video's Consejo de Calificaci\u00f3n Cinematogr\u00e1fica (Chile) rating.",
+          "description": "The video's Consejo de Calificación Cinematográfica (Chile) rating.",
           "enum": [
             "cccUnspecified",
             "cccTe",
@@ -6440,17 +6440,17 @@
           "enumDescriptions": [
             "",
             "Todo espectador",
-            "6+ - Inconveniente para menores de 7 a\u00f1os",
+            "6+ - Inconveniente para menores de 7 años",
             "14+",
             "18+",
             "18+ - contenido excesivamente violento",
-            "18+ - contenido pornogr\u00e1fico",
+            "18+ - contenido pornográfico",
             ""
           ],
           "type": "string"
         },
         "cceRating": {
-          "description": "The video's rating from Portugal's Comiss\u00e3o de Classifica\u00e7\u00e3o de Espect\u00b4culos.",
+          "description": "The video's rating from Portugal's Comissão de Classificação de Espect´culos.",
           "enum": [
             "cceUnspecified",
             "cceM4",
@@ -6520,7 +6520,7 @@
           "type": "string"
         },
         "cicfRating": {
-          "description": "The video's rating from the Commission de Contr\u00f4le des Films (Belgium).",
+          "description": "The video's rating from the Commission de Contrôle des Films (Belgium).",
           "enum": [
             "cicfUnspecified",
             "cicfE",
@@ -6586,7 +6586,7 @@
           "type": "string"
         },
         "csaRating": {
-          "description": "The video's rating from France's Conseil sup\u00e9rieur de l\u2019audiovisuel, which rates broadcast content.",
+          "description": "The video's rating from France's Conseil supérieur de l’audiovisuel, which rates broadcast content.",
           "enum": [
             "csaUnspecified",
             "csaT",
@@ -6656,7 +6656,7 @@
           "type": "string"
         },
         "djctqRating": {
-          "description": "The video's Departamento de Justi\u00e7a, Classifica\u00e7\u00e3o, Qualifica\u00e7\u00e3o e T\u00edtulos (DJCQT - Brazil) rating.",
+          "description": "The video's Departamento de Justiça, Classificação, Qualificação e Títulos (DJCQT - Brazil) rating.",
           "enum": [
             "djctqUnspecified",
             "djctqL",
@@ -6735,22 +6735,22 @@
             ],
             "enumDescriptions": [
               "",
-              "Brazil rating content descriptors. See http://go/brazilratings section F. Viol\u00eancia (Violence)",
-              "Viol\u00eancia extrema (Extreme violence)",
-              "Conte\u00fado sexual (Sexual content)",
+              "Brazil rating content descriptors. See http://go/brazilratings section F. Violência (Violence)",
+              "Violência extrema (Extreme violence)",
+              "Conteúdo sexual (Sexual content)",
               "Nudez (Nudity)",
               "Sexo (Sex)",
-              "Sexo Expl\u00edcito (Explicit sex)",
+              "Sexo Explícito (Explicit sex)",
               "Drogas (Drugs)",
-              "Drogas L\u00edcitas (Legal drugs)",
-              "Drogas Il\u00edcitas (Illegal drugs)",
-              "Linguagem Impr\u00f3pria (Inappropriate language)",
+              "Drogas Lícitas (Legal drugs)",
+              "Drogas Ilícitas (Illegal drugs)",
+              "Linguagem Imprópria (Inappropriate language)",
               "Atos Criminosos (Criminal Acts)",
-              "Conte\u00fado Impactante (Impacting content)",
+              "Conteúdo Impactante (Impacting content)",
               "Temer (Fear)",
-              "Procedimentos m\u00e9dicos (Medical Procedures)",
-              "T\u00f3picos sens\u00edveis (Sensitive Topics)",
-              "Fantasia Viol\u00eancia (Fantasy Violence)"
+              "Procedimentos médicos (Medical Procedures)",
+              "Tópicos sensíveis (Sensitive Topics)",
+              "Fantasia Violência (Fantasy Violence)"
             ],
             "type": "string"
           },
@@ -6831,7 +6831,7 @@
           "type": "string"
         },
         "eirinRating": {
-          "description": "The video's Eirin (\u6620\u502b) rating. Eirin is the Japanese rating system.",
+          "description": "The video's Eirin (映倫) rating. Eirin is the Japanese rating system.",
           "enum": [
             "eirinUnspecified",
             "eirinG",
@@ -7041,7 +7041,7 @@
           "type": "string"
         },
         "icaaRating": {
-          "description": "The video's Instituto de la Cinematograf\u00eda y de las Artes Audiovisuales (ICAA - Spain) rating.",
+          "description": "The video's Instituto de la Cinematografía y de las Artes Audiovisuales (ICAA - Spain) rating.",
           "enum": [
             "icaaUnspecified",
             "icaaApta",
@@ -7130,10 +7130,10 @@
           "enumDescriptions": [
             "",
             "ATP (Apta para todo publico)",
-            "13 (Solo apta para mayores de 13 a\u00f1os)",
-            "16 (Solo apta para mayores de 16 a\u00f1os)",
-            "18 (Solo apta para mayores de 18 a\u00f1os)",
-            "X (Solo apta para mayores de 18 a\u00f1os, de exhibici\u00f3n condicionada)",
+            "13 (Solo apta para mayores de 13 años)",
+            "16 (Solo apta para mayores de 16 años)",
+            "18 (Solo apta para mayores de 18 años)",
+            "X (Solo apta para mayores de 18 años, de exhibición condicionada)",
             ""
           ],
           "type": "string"
@@ -7183,7 +7183,7 @@
           "type": "string"
         },
         "kmrbRating": {
-          "description": "The video's Korea Media Rating Board (\uc601\uc0c1\ubb3c\ub4f1\uae09\uc704\uc6d0\ud68c) rating. The KMRB rates videos in South Korea.",
+          "description": "The video's Korea Media Rating Board (영상물등급위원회) rating. The KMRB rates videos in South Korea.",
           "enum": [
             "kmrbUnspecified",
             "kmrbAll",
@@ -7195,11 +7195,11 @@
           ],
           "enumDescriptions": [
             "",
-            "\uc804\uccb4\uad00\ub78c\uac00",
-            "12\uc138 \uc774\uc0c1 \uad00\ub78c\uac00",
-            "15\uc138 \uc774\uc0c1 \uad00\ub78c\uac00",
+            "전체관람가",
+            "12세 이상 관람가",
+            "15세 이상 관람가",
             "",
-            "\uccad\uc18c\ub144 \uad00\ub78c\ubd88\uac00",
+            "청소년 관람불가",
             ""
           ],
           "type": "string"
@@ -7413,7 +7413,7 @@
           "type": "string"
         },
         "mibacRating": {
-          "description": "The video's rating from the Ministero dei Beni e delle Attivit\u00e0 Culturali e del Turismo (Italy).",
+          "description": "The video's rating from the Ministero dei Beni e delle Attività Culturali e del Turismo (Italy).",
           "enum": [
             "mibacUnspecified",
             "mibacT",
@@ -7467,7 +7467,7 @@
           "type": "string"
         },
         "moctwRating": {
-          "description": "The video's rating from Taiwan's Ministry of Culture (\u6587\u5316\u90e8).",
+          "description": "The video's rating from Taiwan's Ministry of Culture (文化部).",
           "enum": [
             "moctwUnspecified",
             "moctwG",
@@ -7649,7 +7649,7 @@
           "type": "string"
         },
         "nkclvRating": {
-          "description": "The video's rating from the Nacion\u00e3lais Kino centrs (National Film Centre of Latvia).",
+          "description": "The video's rating from the Nacionãlais Kino centrs (National Film Centre of Latvia).",
           "enum": [
             "nkclvUnspecified",
             "nkclvU",
@@ -7819,7 +7819,7 @@
           "type": "string"
         },
         "rteRating": {
-          "description": "The video's rating from Ireland's Raidi\u00f3 Teilif\u00eds \u00c9ireann.",
+          "description": "The video's rating from Ireland's Raidió Teilifís Éireann.",
           "enum": [
             "rteUnspecified",
             "rteGa",
@@ -7905,7 +7905,7 @@
           "type": "string"
         },
         "smsaRating": {
-          "description": "The video's rating from Statens medier\u00e5d (Sweden's National Media Council).",
+          "description": "The video's rating from Statens medieråd (Sweden's National Media Council).",
           "enum": [
             "smsaUnspecified",
             "smsaA",

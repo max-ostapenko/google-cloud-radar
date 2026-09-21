@@ -5146,7 +5146,7 @@
       }
     }
   },
-  "revision": "20260908",
+  "revision": "20260920",
   "rootUrl": "https://analyticsadmin.googleapis.com/",
   "schemas": {
     "GoogleAnalyticsAdminV1alphaAccessBetweenFilter": {
@@ -5791,7 +5791,7 @@
           "type": "string"
         },
         "filterClauses": {
-          "description": "Required. Immutable. Unordered list. Filter clauses that define the Audience. All clauses will be AND\u2019ed together.",
+          "description": "Required. Immutable. Unordered list. Filter clauses that define the Audience. All clauses will be AND’ed together.",
           "items": {
             "$ref": "GoogleAnalyticsAdminV1alphaAudienceFilterClause"
           },
@@ -6033,7 +6033,7 @@
       "properties": {
         "andGroup": {
           "$ref": "GoogleAnalyticsAdminV1alphaAudienceFilterExpressionList",
-          "description": "A list of expressions to be AND\u2019ed together. It can only contain AudienceFilterExpressions with or_group. This must be set for the top level AudienceFilterExpression."
+          "description": "A list of expressions to be AND’ed together. It can only contain AudienceFilterExpressions with or_group. This must be set for the top level AudienceFilterExpression."
         },
         "dimensionOrMetricFilter": {
           "$ref": "GoogleAnalyticsAdminV1alphaAudienceDimensionOrMetricFilter",
@@ -6049,7 +6049,7 @@
         },
         "orGroup": {
           "$ref": "GoogleAnalyticsAdminV1alphaAudienceFilterExpressionList",
-          "description": "A list of expressions to OR\u2019ed together. It cannot contain AudienceFilterExpressions with and_group or or_group."
+          "description": "A list of expressions to OR’ed together. It cannot contain AudienceFilterExpressions with and_group or or_group."
         }
       },
       "type": "object"
@@ -6663,7 +6663,7 @@
       "properties": {
         "andGroup": {
           "$ref": "GoogleAnalyticsAdminV1alphaChannelGroupFilterExpressionList",
-          "description": "A list of expressions to be AND\u2019ed together. It can only contain ChannelGroupFilterExpressions with or_group. This must be set for the top level ChannelGroupFilterExpression."
+          "description": "A list of expressions to be AND’ed together. It can only contain ChannelGroupFilterExpressions with or_group. This must be set for the top level ChannelGroupFilterExpression."
         },
         "filter": {
           "$ref": "GoogleAnalyticsAdminV1alphaChannelGroupFilter",
@@ -6675,7 +6675,7 @@
         },
         "orGroup": {
           "$ref": "GoogleAnalyticsAdminV1alphaChannelGroupFilterExpressionList",
-          "description": "A list of expressions to OR\u2019ed together. It cannot contain ChannelGroupFilterExpressions with and_group or or_group."
+          "description": "A list of expressions to OR’ed together. It cannot contain ChannelGroupFilterExpressions with and_group or or_group."
         }
       },
       "type": "object"
@@ -7552,7 +7552,7 @@
       "properties": {
         "andGroup": {
           "$ref": "GoogleAnalyticsAdminV1alphaExpandedDataSetFilterExpressionList",
-          "description": "A list of expressions to be AND\u2019ed together. It must contain a ExpandedDataSetFilterExpression with either not_expression or dimension_filter. This must be set for the top level ExpandedDataSetFilterExpression."
+          "description": "A list of expressions to be AND’ed together. It must contain a ExpandedDataSetFilterExpression with either not_expression or dimension_filter. This must be set for the top level ExpandedDataSetFilterExpression."
         },
         "filter": {
           "$ref": "GoogleAnalyticsAdminV1alphaExpandedDataSetFilter",
@@ -9361,7 +9361,7 @@
         },
         "orGroup": {
           "$ref": "GoogleAnalyticsAdminV1alphaSubpropertyEventFilterExpressionList",
-          "description": "A list of expressions to OR\u2019ed together. Must only contain not_expression or filter_condition expressions."
+          "description": "A list of expressions to OR’ed together. Must only contain not_expression or filter_condition expressions."
         }
       },
       "type": "object"

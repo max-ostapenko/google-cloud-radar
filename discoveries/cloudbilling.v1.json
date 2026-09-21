@@ -1079,7 +1079,7 @@
       }
     }
   },
-  "revision": "20260901",
+  "revision": "20260918",
   "rootUrl": "https://cloudbilling.googleapis.com/",
   "schemas": {
     "APIKeySecurityScheme": {

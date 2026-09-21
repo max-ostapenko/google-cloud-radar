@@ -429,7 +429,7 @@
       }
     }
   },
-  "revision": "20260722",
+  "revision": "20260826",
   "rootUrl": "https://bigquerydatapolicy.googleapis.com/",
   "schemas": {
     "AddGranteesRequest": {

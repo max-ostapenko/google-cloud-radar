@@ -2344,7 +2344,7 @@
       }
     }
   },
-  "revision": "20260706",
+  "revision": "20260826",
   "rootUrl": "https://datacatalog.googleapis.com/",
   "schemas": {
     "Binding": {

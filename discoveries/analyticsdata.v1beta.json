@@ -440,7 +440,7 @@
       }
     }
   },
-  "revision": "20260909",
+  "revision": "20260920",
   "rootUrl": "https://analyticsdata.googleapis.com/",
   "schemas": {
     "ActiveMetricRestriction": {
@@ -646,7 +646,7 @@
       "id": "CheckCompatibilityRequest",
       "properties": {
         "compatibilityFilter": {
-          "description": "Filters the dimensions and metrics in the response to just this compatibility. Commonly used as `\u201dcompatibilityFilter\u201d: \u201cCOMPATIBLE\u201d` to only return compatible dimensions & metrics.",
+          "description": "Filters the dimensions and metrics in the response to just this compatibility. Commonly used as `”compatibilityFilter”: “COMPATIBLE”` to only return compatible dimensions & metrics.",
           "enum": [
             "COMPATIBILITY_UNSPECIFIED",
             "COMPATIBLE",
