@@ -1788,7 +1788,7 @@
       }
     }
   },
-  "revision": "20260908",
+  "revision": "20260920",
   "rootUrl": "https://analyticsadmin.googleapis.com/",
   "schemas": {
     "GoogleAnalyticsAdminV1betaAccessBetweenFilter": {

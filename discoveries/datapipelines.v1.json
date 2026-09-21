@@ -369,7 +369,7 @@
       }
     }
   },
-  "revision": "20260614",
+  "revision": "20260913",
   "rootUrl": "https://datapipelines.googleapis.com/",
   "schemas": {
     "GoogleCloudDatapipelinesV1DataflowJobDetails": {

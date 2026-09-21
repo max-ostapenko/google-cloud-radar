@@ -1462,7 +1462,7 @@
       }
     }
   },
-  "revision": "20260902",
+  "revision": "20260911",
   "rootUrl": "https://datastream.googleapis.com/",
   "schemas": {
     "AvroFileFormat": {

@@ -1066,7 +1066,7 @@
       "version": "v1"
     },
     {
-      "description": "The Lakehouse API (formerly BigLake API) provides access to a serverless, fully managed, and highly available metastore that provides a single source of truth for your data lakehouse. It lets multiple engines\u2014including Apache Spark, Google Managed Spark, Apache Flink, Trino and BigQuery\u2014share tables and metadata for key open formats (Apache Iceberg, Apache Hive), and query the same copy of data. Plus, through the Lakehouse runtime catalog federation seamlessly unite your lakehouse ecosystem, letting Iceberg compatible engines on Google Cloud (BigQuery, Google Managed Spark) discover and analyze enterprise data across Snowflake, Databricks, and AWS Glue.",
+      "description": "The Lakehouse API (formerly BigLake API) provides access to a serverless, fully managed, and highly available metastore that provides a single source of truth for your data lakehouse. It lets multiple engines—including Apache Spark, Google Managed Spark, Apache Flink, Trino and BigQuery—share tables and metadata for key open formats (Apache Iceberg, Apache Hive), and query the same copy of data. Plus, through the Lakehouse runtime catalog federation seamlessly unite your lakehouse ecosystem, letting Iceberg compatible engines on Google Cloud (BigQuery, Google Managed Spark) discover and analyze enterprise data across Snowflake, Databricks, and AWS Glue.",
       "discoveryRestUrl": "https://biglake.googleapis.com/$discovery/rest?version=v1",
       "documentationLink": "https://cloud.google.com/products/lakehouse",
       "icons": {
@@ -6517,7 +6517,7 @@
       "version": "v1"
     },
     {
-      "description": "Enables client applications to check web resources (most commonly URLs) against Google-generated lists of unsafe web resources. The Safe Browsing APIs are for non-commercial use only. If you need to use APIs to detect malicious URLs for commercial purposes \u2013 meaning \u201cfor sale or revenue-generating purposes\u201d \u2013 please refer to the Web Risk API.",
+      "description": "Enables client applications to check web resources (most commonly URLs) against Google-generated lists of unsafe web resources. The Safe Browsing APIs are for non-commercial use only. If you need to use APIs to detect malicious URLs for commercial purposes – meaning “for sale or revenue-generating purposes” – please refer to the Web Risk API.",
       "discoveryRestUrl": "https://safebrowsing.googleapis.com/$discovery/rest?version=v4",
       "documentationLink": "https://developers.google.com/safe-browsing/",
       "icons": {
@@ -6532,7 +6532,7 @@
       "version": "v4"
     },
     {
-      "description": "Enables client applications to check web resources (most commonly URLs) against Google-generated lists of unsafe web resources. The Safe Browsing APIs are for non-commercial use only. If you need to use APIs to detect malicious URLs for commercial purposes \u2013 meaning \u201cfor sale or revenue-generating purposes\u201d \u2013 please refer to the Web Risk API.",
+      "description": "Enables client applications to check web resources (most commonly URLs) against Google-generated lists of unsafe web resources. The Safe Browsing APIs are for non-commercial use only. If you need to use APIs to detect malicious URLs for commercial purposes – meaning “for sale or revenue-generating purposes” – please refer to the Web Risk API.",
       "discoveryRestUrl": "https://safebrowsing.googleapis.com/$discovery/rest?version=v5",
       "documentationLink": "https://developers.google.com/safe-browsing/",
       "icons": {
