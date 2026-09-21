@@ -362,7 +362,7 @@ const { currentPath = '/' } = Astro.props;
   }
 
   .nav-links a:hover, .nav-links a.active {
-    color: var(--google-blue);
+    color: var(--google-blue-text);
     background-color: var(--google-blue-subtle);
     text-decoration: none;
   }
@@ -393,13 +393,13 @@ const { currentPath = '/' } = Astro.props;
   }
 
   .creator-link:hover {
-    color: var(--google-blue);
+    color: var(--google-blue-text);
     border-color: var(--google-blue-border);
     text-decoration: none;
   }
 
   .creator-label {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
   }
 
   .creator-name {
@@ -418,7 +418,7 @@ const { currentPath = '/' } = Astro.props;
     align-items: center;
     gap: 6px;
     background-color: var(--google-blue-subtle);
-    color: var(--google-blue);
+    color: var(--google-blue-text);
     border: 1px solid var(--google-blue-border);
     padding: 6px 12px;
     border-radius: var(--radius-sm);

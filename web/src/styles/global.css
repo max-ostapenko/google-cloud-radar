@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap');
-
 :root {
   /* Google Developer Theme Tokens (Light Mode Default) */
   --bg-page: #f8f9fa;
@@ -12,27 +10,33 @@
   
   --text-primary: #202124;
   --text-secondary: #5f6368;
-  --text-tertiary: #80868b;
+  --text-tertiary: #5f6368;
+  --text-muted: #5f6368;
   --text-on-accent: #ffffff;
 
   --google-blue: #1a73e8;
+  --google-blue-text: #174ea6;
   --google-blue-hover: #1557d0;
   --google-blue-subtle: #e8f0fe;
   --google-blue-border: #aecbfa;
 
   --google-red: #d93025;
+  --google-red-text: #b31412;
   --google-red-subtle: #fce8e6;
   --google-red-border: #f5c2c7;
 
   --google-green: #188038;
+  --google-green-text: #137333;
   --google-green-subtle: #e6f4ea;
   --google-green-border: #a8dab5;
 
   --google-yellow: #e37400;
+  --google-yellow-text: #8a4200;
   --google-yellow-subtle: #fef7e0;
   --google-yellow-border: #fdd663;
 
   --google-purple: #9334e6;
+  --google-purple-text: #7627ba;
   --google-purple-subtle: #f3e8fd;
   --google-purple-border: #d7aefb;
 
@@ -128,13 +132,13 @@ code, pre {
 
 .badge-canary {
   background-color: var(--google-yellow-subtle);
-  color: var(--google-yellow);
+  color: var(--google-yellow-text);
   border: 1px solid var(--google-yellow-border);
 }
 
 .badge-released {
   background-color: var(--google-green-subtle);
-  color: var(--google-green);
+  color: var(--google-green-text);
   border: 1px solid var(--google-green-border);
 }
 
@@ -154,37 +158,37 @@ code, pre {
 
 .badge-breaking {
   background-color: var(--google-red-subtle);
-  color: var(--google-red);
+  color: var(--google-red-text);
   border: 1px solid var(--google-red-border);
 }
 
 .badge-impact-high {
   background-color: var(--google-red-subtle);
-  color: var(--google-red);
+  color: var(--google-red-text);
   border: 1px solid var(--google-red-border);
 }
 
 .badge-impact-medium {
   background-color: var(--google-yellow-subtle);
-  color: var(--google-yellow);
+  color: var(--google-yellow-text);
   border: 1px solid var(--google-yellow-border);
 }
 
 .badge-impact-low {
   background-color: var(--google-green-subtle);
-  color: var(--google-green);
+  color: var(--google-green-text);
   border: 1px solid var(--google-green-border);
 }
 
 .badge-service {
   background-color: var(--google-blue-subtle);
-  color: var(--google-blue);
+  color: var(--google-blue-text);
   border: 1px solid var(--google-blue-border);
 }
 
 .badge-score {
   background-color: var(--google-purple-subtle);
-  color: var(--google-purple);
+  color: var(--google-purple-text);
   border: 1px solid var(--google-purple-border);
 }
 
@@ -192,13 +196,26 @@ code, pre {
   font-family: var(--font-mono);
   font-size: 12px;
   background-color: var(--bg-surface-hover);
-  color: var(--google-blue);
+  color: var(--google-blue-text);
   padding: 3px 8px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-subtle);
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* Container & Layout */

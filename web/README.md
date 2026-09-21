@@ -25,9 +25,9 @@ npm run dev:all
 ## 🔍 Instant Client-Side Search Engine
 
 The web app includes an in-browser **MiniSearch** engine running locally on the user's device with 0 cloud server calls:
-* **Fuzzy typo tolerance**: Matches misspellings (e.g. `platfrm` $\to$ `Agent Platform API`).
-* **Prefix matching**: Live as-you-type autocomplete.
-* **Field boosting**: RPC methods (3.0x), title (2.5x), service (2.0x), tags (1.5x), summary (1.0x).
+* **Fuzzy typo tolerance**
+* **Prefix matching**
+* **Field boosting**
 
 ---
 
@@ -35,14 +35,12 @@ The web app includes an in-browser **MiniSearch** engine running locally on the 
 
 | Route | Purpose |
 |---|---|
-| `/` | Live Radar feed with interactive category filters, impact pills, and instant MiniSearch (`/`). Supports `?action=alerts` to open preferences modal. |
+| `/` | Live Radar feed with interactive category filters, impact pills, and instant MiniSearch (`/`). Supports `?impact=breaking` for breaking changes and `?action=alerts` to open preferences modal. |
 | `/stats` | Trailing 90-day rolling benchmark with velocity rankings, lead times, and breaking change rates. |
-| `/breaking` | Dedicated triage radar for backwards-incompatible API changes with active subscription status. |
+| `/breaking` | Legacy route redirecting to `/?impact=breaking` with active subscription status. |
 | `/timeline/[month]` | Month-specific timeline streams (e.g. `/timeline/2026-08/`). |
 | `/services/[service]` | Service hub with historical change timeline, official docs, and raw Discovery REST endpoints. |
 | `/changes/[slug]` | Deep permalinks with visual AST diffs, copyable RPC chips, social sharing, and impact reactions. |
-| `/rss.xml` | Global RSS 2.0 feed for feed readers. |
-| `/api/feed.json` | JSON Feed 1.1 REST API for programmatic consumption. |
 | `/llms.txt` | Context-optimized feed for AI agents and LLMs. |
 
 ---

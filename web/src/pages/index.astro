@@ -198,7 +198,9 @@ const count90d = entries.filter((e) => e.date >= min90d).length;
         class={`month-section ${index === 0 ? 'is-latest' : ''}`}
         data-month={group.key}
         id={`month-${group.key}`}
+        aria-label={`${group.label} Updates`}
       >
+        <h2 class="sr-only">{group.label} Updates</h2>
         <div class="month-cards-list">
           {group.entries.map((entry) => (
             <ChangeCard entry={entry} />
@@ -991,7 +993,7 @@ const count90d = entries.filter((e) => e.date >= min90d).length;
   .dropdown-count-badge {
     font-size: 11px;
     font-family: var(--font-mono);
-    color: var(--text-tertiary);
+    color: var(--text-primary);
     background-color: var(--bg-surface-hover);
     padding: 1px 6px;
     border-radius: 9999px;
@@ -1033,7 +1035,7 @@ const count90d = entries.filter((e) => e.date >= min90d).length;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.6px;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     padding: 6px 10px 4px 10px;
   }
 
@@ -1061,7 +1063,7 @@ const count90d = entries.filter((e) => e.date >= min90d).length;
 
   .menu-option.active {
     background-color: var(--google-blue-subtle);
-    color: var(--google-blue);
+    color: var(--google-blue-text);
     font-weight: 600;
   }
 
@@ -1072,7 +1074,7 @@ const count90d = entries.filter((e) => e.date >= min90d).length;
     width: 14px;
     font-size: 12px;
     opacity: 0;
-    color: var(--google-blue);
+    color: var(--google-blue-text);
     flex-shrink: 0;
   }
 
@@ -1086,15 +1088,15 @@ const count90d = entries.filter((e) => e.date >= min90d).length;
 
   .option-sub {
     font-size: 11px;
-    font-weight: 400;
-    color: var(--text-tertiary);
+    font-weight: 500;
+    color: var(--text-secondary);
     margin-left: auto;
   }
 
   .option-badge {
     font-size: 11px;
     font-family: var(--font-mono);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     background-color: var(--bg-surface-hover);
     padding: 1px 6px;
     border-radius: 9999px;
@@ -1102,7 +1104,7 @@ const count90d = entries.filter((e) => e.date >= min90d).length;
   }
 
   .option-badge.breaking-badge {
-    color: var(--google-red);
+    color: var(--google-red-text);
     background-color: var(--google-red-subtle);
     font-weight: 700;
   }
@@ -1205,7 +1207,7 @@ const count90d = entries.filter((e) => e.date >= min90d).length;
     gap: 6px;
     font-size: 12px;
     font-weight: 600;
-    color: var(--google-blue);
+    color: var(--google-blue-text);
     background-color: var(--google-blue-subtle);
     border: 1px solid var(--google-blue-border);
     padding: 5px 12px;
@@ -1220,7 +1222,7 @@ const count90d = entries.filter((e) => e.date >= min90d).length;
   }
 
   .feed-alerts-cta-btn.is-subscribed {
-    color: var(--google-green);
+    color: var(--google-green-text);
     background-color: rgba(52, 168, 83, 0.1);
     border-color: rgba(52, 168, 83, 0.35);
   }

@@ -297,7 +297,7 @@ def render_breaking_email_html(change: dict) -> str:
           <tr>
             <td style="padding: 18px 24px; background-color: #f8f9fa; border-top: 1px solid #dadce0; text-align: center; font-size: 12px; color: #70757a;">
               You received this automated notification because you subscribed to instant breaking change alerts on <a href="https://google-cloud-radar.com" style="color: #1a73e8; text-decoration: none;">Google Cloud Radar</a>.<br><br>
-              <a href="https://google-cloud-radar.com/?action=alerts" style="color: #5f6368; text-decoration: underline;">Manage Alert Preferences</a> &nbsp;|&nbsp; <a href="https://google-cloud-radar.com/breaking" style="color: #5f6368; text-decoration: underline;">View All Breaking Alerts</a>
+              <a href="https://google-cloud-radar.com/?action=alerts" style="color: #5f6368; text-decoration: underline;">Manage Alert Preferences</a> &nbsp;|&nbsp; <a href="https://google-cloud-radar.com/?impact=breaking" style="color: #5f6368; text-decoration: underline;">View All Breaking Alerts</a>
             </td>
           </tr>
         </table>

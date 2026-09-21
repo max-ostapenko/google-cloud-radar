@@ -1,5 +1,5 @@
 ---
-return Astro.redirect('/?filter=breaking');
+return Astro.redirect('/?impact=breaking');
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -10,10 +10,10 @@ return Astro.redirect('/?filter=breaking');
     <link rel="canonical" href="https://google-cloud-radar.com/" />
     <title>Redirecting to Breaking Changes Feed...</title>
     <script is:inline>
-      window.location.replace('/?filter=breaking');
+      window.location.replace('/?impact=breaking');
     </script>
   </head>
   <body>
-    <p>Redirecting to <a href="/?filter=breaking">Breaking Changes Feed</a>...</p>
+    <p>Redirecting to <a href="/?impact=breaking">Breaking Changes Feed</a>...</p>
   </body>
 </html>
