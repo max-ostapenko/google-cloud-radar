@@ -274,6 +274,232 @@ class TestDiffPreprocessor(unittest.TestCase):
         self.assertFalse(result["is_breaking"])
         self.assertEqual([], result["breaking_reasons"])
 
+    def test_parameter_enum_removal_flags_breaking_change(self):
+        old = {
+            "resources": {
+                "jobs": {
+                    "methods": {
+                        "list": {
+                            "httpMethod": "GET",
+                            "parameters": {
+                                "projection": {
+                                    "type": "string",
+                                    "enum": ["full", "minimal"],
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+        }
+        new = {
+            "resources": {
+                "jobs": {
+                    "methods": {
+                        "list": {
+                            "httpMethod": "GET",
+                            "parameters": {
+                                "projection": {
+                                    "type": "string",
+                                    "enum": ["full"],
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+        }
+
+        result = diff_preprocessor.build_structured_diff(
+            "bigquery.v2.json", json.dumps(old), json.dumps(new)
+        )
+
+        self.assertIsNotNone(result)
+        self.assertTrue(result["is_breaking"])
+        self.assertTrue(result["_stats"]["is_breaking"])
+        expected_reason = "Removed enum value 'minimal' from parameter 'projection'"
+        self.assertIn(expected_reason, result["breaking_reasons"])
+        self.assertIn(expected_reason, result["_stats"]["breaking_reasons"])
+
+    def test_parameter_enum_addition_is_non_breaking(self):
+        old = {
+            "resources": {
+                "jobs": {
+                    "methods": {
+                        "list": {
+                            "httpMethod": "GET",
+                            "parameters": {
+                                "projection": {
+                                    "type": "string",
+                                    "enum": ["full"],
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+        }
+        new = {
+            "resources": {
+                "jobs": {
+                    "methods": {
+                        "list": {
+                            "httpMethod": "GET",
+                            "parameters": {
+                                "projection": {
+                                    "type": "string",
+                                    "enum": ["full", "minimal"],
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+        }
+
+        result = diff_preprocessor.build_structured_diff(
+            "bigquery.v2.json", json.dumps(old), json.dumps(new)
+        )
+
+        self.assertIsNotNone(result)
+        self.assertFalse(result["is_breaking"])
+        self.assertEqual([], result["breaking_reasons"])
+
+    def test_parameter_default_modification_flags_breaking_change(self):
+        old = {
+            "resources": {
+                "jobs": {
+                    "methods": {
+                        "list": {
+                            "httpMethod": "GET",
+                            "parameters": {
+                                "maxResults": {
+                                    "type": "integer",
+                                    "default": "100",
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+        }
+        new = {
+            "resources": {
+                "jobs": {
+                    "methods": {
+                        "list": {
+                            "httpMethod": "GET",
+                            "parameters": {
+                                "maxResults": {
+                                    "type": "integer",
+                                    "default": "50",
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+        }
+
+        result = diff_preprocessor.build_structured_diff(
+            "bigquery.v2.json", json.dumps(old), json.dumps(new)
+        )
+
+        self.assertIsNotNone(result)
+        self.assertTrue(result["is_breaking"])
+        expected_reason = (
+            "Default value for parameter 'maxResults' changed from '100' to '50'"
+        )
+        self.assertIn(expected_reason, result["breaking_reasons"])
+
+    def test_parameter_default_removal_flags_breaking_change(self):
+        old = {
+            "resources": {
+                "jobs": {
+                    "methods": {
+                        "list": {
+                            "httpMethod": "GET",
+                            "parameters": {
+                                "maxResults": {
+                                    "type": "integer",
+                                    "default": "100",
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+        }
+        new = {
+            "resources": {
+                "jobs": {
+                    "methods": {
+                        "list": {
+                            "httpMethod": "GET",
+                            "parameters": {
+                                "maxResults": {
+                                    "type": "integer",
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+        }
+
+        result = diff_preprocessor.build_structured_diff(
+            "bigquery.v2.json", json.dumps(old), json.dumps(new)
+        )
+
+        self.assertIsNotNone(result)
+        self.assertTrue(result["is_breaking"])
+        expected_reason = "Default value for parameter 'maxResults' was removed"
+        self.assertIn(expected_reason, result["breaking_reasons"])
+
+    def test_schema_property_enum_or_default_change_does_not_trigger_parameter_breaking(
+        self,
+    ):
+        old = {
+            "schemas": {
+                "JobConfig": {
+                    "properties": {
+                        "state": {
+                            "type": "string",
+                            "enum": ["PENDING", "RUNNING"],
+                            "default": "PENDING",
+                        }
+                    }
+                }
+            }
+        }
+        new = {
+            "schemas": {
+                "JobConfig": {
+                    "properties": {
+                        "state": {
+                            "type": "string",
+                            "enum": ["PENDING"],
+                            "default": "RUNNING",
+                        }
+                    }
+                }
+            }
+        }
+
+        result = diff_preprocessor.build_structured_diff(
+            "bigquery.v2.json", json.dumps(old), json.dumps(new)
+        )
+
+        # Schema property default/enum changes are excluded from method parameter breaking rules
+        if result is not None:
+            self.assertNotIn(
+                "Removed enum value 'RUNNING' from parameter 'state'",
+                result["breaking_reasons"],
+            )
+            self.assertFalse(
+                any("parameter 'state'" in r for r in result["breaking_reasons"])
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

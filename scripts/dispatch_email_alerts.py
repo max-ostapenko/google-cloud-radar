@@ -190,7 +190,9 @@ def send_resend_email(
 
 def render_breaking_email_html(change: dict) -> str:
     """Renders a responsive, modern HTML email template for a breaking change alert."""
-    raw_service = change.get("service") or change.get("service_name") or "Google Cloud Service"
+    raw_service = (
+        change.get("service") or change.get("service_name") or "Google Cloud Service"
+    )
     raw_title = change.get("title") or f"{raw_service} Breaking Change Detected"
     raw_summary = change.get("summary") or ""
     raw_api = change.get("api") or ""
