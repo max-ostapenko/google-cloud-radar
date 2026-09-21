@@ -436,7 +436,12 @@ export function getDataChangesDir(): string {
   return candidates[0];
 }
 
+let cachedLocalEntries: FeedEntry[] | null = null;
+
 export function getLocalFeedEntries(): FeedEntry[] {
+  if (cachedLocalEntries) {
+    return cachedLocalEntries;
+  }
   const changesDir = getDataChangesDir();
   if (!fs.existsSync(changesDir)) {
     return [];
@@ -521,12 +526,13 @@ export function getLocalFeedEntries(): FeedEntry[] {
     }
   }
 
-  return entries.sort((a, b) => {
+  cachedLocalEntries = entries.sort((a, b) => {
     if (b.date !== a.date) {
       return b.date.localeCompare(a.date);
     }
     return b.slug.localeCompare(a.slug);
   });
+  return cachedLocalEntries;
 }
 
 export async function getAllFeedEntries(): Promise<FeedEntry[]> {

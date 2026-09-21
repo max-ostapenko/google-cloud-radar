@@ -1,4 +1,8 @@
 ---
+import { getAllFeedEntries, groupEntriesByMonth } from '../lib/feed';
+
+const entries = await getAllFeedEntries();
+const monthGroups = groupEntriesByMonth(entries);
 ---
 
 <footer class="gcp-footer">
@@ -29,11 +33,26 @@
       </nav>
     </div>
 
+    <!-- Monthly Archives Navigation -->
+    {monthGroups && monthGroups.length > 0 && (
+      <div class="footer-archives">
+        <span class="archives-heading">Monthly Archives:</span>
+        <nav class="archives-nav" aria-label="Monthly timeline archives">
+          {monthGroups.map((g) => (
+            <a href={`/timeline/${g.key}`} class="archive-pill" title={`Browse Google Cloud API changes for ${g.label}`}>
+              <span class="archive-name">{g.monthName} '{String(g.year).slice(2)}</span>
+              <span class="archive-badge">{g.totalCount}</span>
+            </a>
+          ))}
+        </nav>
+      </div>
+    )}
+
     <div class="footer-bottom">
       <p class="disclaimer">
         Google, Google Cloud, GCP, and Vertex AI are trademarks of Google LLC.
       </p>
-      <div class="copyright">© {new Date().getFullYear()} Google Cloud Radar · Apache 2.0</div>
+      <div class="copyright">© {new Date().getFullYear()} Google Cloud Radar</div>
     </div>
   </div>
 </footer>
@@ -110,6 +129,65 @@
   }
 
   .footer-icon-link:hover {
+    color: var(--google-blue);
+  }
+
+  .footer-archives {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-top: 1px solid var(--border-subtle);
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .archives-heading {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+
+  .archives-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .archive-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .archive-pill:hover {
+    color: var(--google-blue);
+    border-color: var(--google-blue-border);
+    background-color: var(--google-blue-subtle);
+  }
+
+  .archive-badge {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+    background-color: var(--bg-surface);
+    padding: 1px 5px;
+    border-radius: var(--radius-full);
+  }
+
+  .archive-pill:hover .archive-badge {
     color: var(--google-blue);
   }
 
