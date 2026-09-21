@@ -1,0 +1,22 @@
+{
+  "id": "2026-09-17-analyticshub-v1",
+  "date": "2026-09-17",
+  "api": "analyticshub.v1",
+  "service": "Analytics Hub",
+  "title": "CMEK support for Query Templates",
+  "summary": "Analytics Hub now supports Customer-Managed Encryption Keys (CMEK) for Query Templates, allowing developers to encrypt template definitions using their own KMS keys.",
+  "details": "A new 'EncryptionConfig' schema has been added, which includes a 'kmsKeyName' field for specifying a Cloud KMS key. This configuration is now available via the 'encryptionConfiguration' property on the 'QueryTemplate' resource. When set, the specified key is used to encrypt the query template definition body, providing an extra layer of security for sensitive query logic. Additionally, documentation for service account usage in AI Inference and Bigtable configurations was updated to fix broken reference links.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "security",
+    "encryption",
+    "kms",
+    "analytics"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-17T22:45:08.497430+00:00"
+}

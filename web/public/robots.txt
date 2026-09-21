@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://google-cloud-radar.com/sitemap-index.xml

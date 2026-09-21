@@ -1,56 +1,43 @@
 ---
 interface Props {
   slug: string;
-  title: string;
-  initialStats?: {
-    upvotes?: number;
-    impacted_users_count?: number;
-    comments_count?: number;
-  };
-  inHero?: boolean;
+  helpfulCount?: number;
+  notHelpfulCount?: number;
 }
 
-const { slug, title, initialStats = {}, inHero = false } = Astro.props;
-const defaultLikeCount = initialStats.upvotes || 0;
-const defaultReleasedCount = 0;
-const defaultFpCount = 0;
+const { slug, helpfulCount = 0, notHelpfulCount = 0 } = Astro.props;
 ---
 
-<div class={`reactions-bar-container ${inHero ? 'in-hero' : ''}`} data-slug={slug}>
-  <div class="reactions-buttons">
-    <button
-      class="reaction-btn"
-      data-type="like_change"
-      title="Like this API change"
-      aria-label="Like the change"
-    >
-      <span class="btn-icon">👍</span>
-      <span class="btn-label">Like the change</span>
-      <span class="count-badge" data-count-type="like_change">{defaultLikeCount}</span>
-    </button>
+<div class="card-reactions-group reactions-bar-container" data-slug={slug}>
+  <button 
+    class={`card-reaction-btn reaction-btn ${helpfulCount > 0 ? 'has-count' : ''}`}
+    data-type="like_change" 
+    data-slug={slug}
+    title="Helpful"
+    aria-label="Helpful"
+    type="button"
+  >
+    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M7 10v12"></path>
+      <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h3"></path>
+    </svg>
+    <span class="reaction-count" data-count-type="like_change" style={helpfulCount > 0 ? '' : 'display: none;'}>{helpfulCount}</span>
+  </button>
 
-    <button
-      class="reaction-btn"
-      data-type="released"
-      title="Mark that this change has been confirmed in official release notes or documentation"
-      aria-label="Released"
-    >
-      <span class="btn-icon">🚀</span>
-      <span class="btn-label">Released</span>
-      <span class="count-badge" data-count-type="released">{defaultReleasedCount}</span>
-    </button>
-
-    <button
-      class="reaction-btn"
-      data-type="false_positive_or_duplicate"
-      title="Flag this change as a false-positive detection or duplicate entry"
-      aria-label="False-positive or duplicate"
-    >
-      <span class="btn-icon">🚩</span>
-      <span class="btn-label">False-positive or duplicate</span>
-      <span class="count-badge" data-count-type="false_positive_or_duplicate">{defaultFpCount}</span>
-    </button>
-  </div>
+  <button 
+    class={`card-reaction-btn reaction-btn ${notHelpfulCount > 0 ? 'has-count' : ''}`}
+    data-type="false_positive_or_duplicate" 
+    data-slug={slug}
+    title="Not helpful"
+    aria-label="Not helpful"
+    type="button"
+  >
+    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M17 14V2"></path>
+      <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3"></path>
+    </svg>
+    <span class="reaction-count" data-count-type="false_positive_or_duplicate" style={notHelpfulCount > 0 ? '' : 'display: none;'}>{notHelpfulCount}</span>
+  </button>
 </div>
 
 <script>
@@ -64,211 +51,225 @@ const defaultFpCount = 0;
     type ReactionType,
   } from '../lib/firebase';
 
-  function initReactionsBar() {
-    const container = document.querySelector('.reactions-bar-container') as HTMLElement;
-    if (!container) return;
-
-    const slug = container.dataset.slug;
-    if (!slug) return;
-
-    const storageKey = `gcp_radar_reactions_${slug}`;
-
-    // Load local cached reactions
-    let userVotes: Record<string, boolean> = {};
-    try {
-      userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
-    } catch {}
-
-    const buttons = container.querySelectorAll('.reaction-btn');
-
-    const updateButtonsActiveState = (votes: Record<string, boolean>) => {
-      userVotes = { ...votes };
-      buttons.forEach((btn) => {
-        const type = btn.getAttribute('data-type') as ReactionType;
-        if (type) {
-          if (userVotes[type]) {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
-          }
-        }
-      });
-    };
-
-    updateButtonsActiveState(userVotes);
-
-    // Subscribe to live change stats / counts
-    listenToChange(slug, (changeData) => {
-      if (changeData?.reaction_counts) {
-        buttons.forEach((btn) => {
-          const type = btn.getAttribute('data-type') as ReactionType;
-          if (type && changeData.reaction_counts?.[type] !== undefined) {
-            const countBadge = btn.querySelector(`[data-count-type="${type}"]`);
-            if (countBadge) {
-              countBadge.textContent = String(Math.max(0, changeData.reaction_counts[type]));
-            }
-          }
-        });
-      }
-    });
-
+  function updateButtons(container: HTMLElement, userVotes: Record<string, boolean>) {
+    const buttons = container.querySelectorAll<HTMLButtonElement>('.reaction-btn');
     buttons.forEach((btn) => {
       const type = btn.getAttribute('data-type') as ReactionType;
-      if (!type) return;
-
-      btn.addEventListener('click', async () => {
-        const auth = getFirebaseAuth();
-        let user = auth.currentUser;
-        if (!user) {
-          try {
-            user = await signInWithGoogle();
-          } catch (err) {
-            console.log('User cancelled or sign in failed');
-            return;
-          }
-        }
-
-        if (!user) return;
-
-        const countBadge = btn.querySelector(`[data-count-type="${type}"]`);
-        let currentCount = parseInt(countBadge?.textContent || '0', 10);
-        const isCurrent = Boolean(userVotes[type]);
-
-        // Optimistic UI toggle
-        if (isCurrent) {
-          userVotes[type] = false;
-          btn.classList.remove('active');
-          if (countBadge) countBadge.textContent = String(Math.max(0, currentCount - 1));
-        } else {
-          userVotes[type] = true;
+      if (type) {
+        const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
+        const count = parseInt(countBadge?.textContent || '0', 10);
+        if (userVotes[type]) {
           btn.classList.add('active');
-          if (countBadge) countBadge.textContent = String(currentCount + 1);
+          if (countBadge) countBadge.style.display = 'inline-block';
+        } else {
+          btn.classList.remove('active');
+          if (countBadge) countBadge.style.display = count > 0 ? 'inline-block' : 'none';
         }
-
-        localStorage.setItem(storageKey, JSON.stringify(userVotes));
-
-        // Sync with Cloud Firestore subcollection & atomic counter
-        await toggleUserReaction(slug, user, type, isCurrent).catch((err) => {
-          console.error('Failed to sync reaction to Firestore:', err);
-        });
-      });
-    });
-
-    onAuthChange((user) => {
-      if (user) {
-        listenToUserReactions(slug, user.uid, (liveVotes) => {
-          updateButtonsActiveState(liveVotes);
-        });
-      } else {
-        updateButtonsActiveState({});
       }
     });
   }
 
-  // Initialize on load and Astro page transitions
+  function initReactionsBar() {
+    const containers = document.querySelectorAll<HTMLElement>('.reactions-bar-container');
+    if (!containers.length) return;
+
+    containers.forEach((container) => {
+      if (container.dataset.initialized) return;
+      container.dataset.initialized = 'true';
+
+      const slug = container.dataset.slug;
+      if (!slug) return;
+
+      const storageKey = `gcp_radar_reactions_${slug}`;
+      let userVotes: Record<string, boolean> = {};
+      try {
+        userVotes = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      } catch {}
+
+      updateButtons(container, userVotes);
+
+      // Listen to live total change counts from Firestore
+      listenToChange(slug, (changeData) => {
+        if (changeData?.reaction_counts) {
+          const buttons = container.querySelectorAll<HTMLButtonElement>('.reaction-btn');
+          buttons.forEach((btn) => {
+            const type = btn.getAttribute('data-type') as ReactionType;
+            if (type && changeData.reaction_counts?.[type] !== undefined) {
+              const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
+              const val = Math.max(0, changeData.reaction_counts[type]);
+              if (countBadge) {
+                countBadge.textContent = String(val);
+                countBadge.style.display = (val > 0 || userVotes[type]) ? 'inline-block' : 'none';
+              }
+              if (val > 0) btn.classList.add('has-count');
+              else if (!userVotes[type]) btn.classList.remove('has-count');
+            }
+          });
+        }
+      });
+
+      const buttons = container.querySelectorAll<HTMLButtonElement>('.reaction-btn');
+      buttons.forEach((btn) => {
+        const type = btn.getAttribute('data-type') as ReactionType;
+        if (!type) return;
+
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const auth = getFirebaseAuth();
+          let user = auth.currentUser;
+          if (!user) {
+            try {
+              user = await signInWithGoogle();
+            } catch {
+              console.log('Sign in cancelled');
+              return;
+            }
+          }
+          if (!user) return;
+
+          const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
+          const currentCount = parseInt(countBadge?.textContent || '0', 10);
+          const isCurrent = Boolean(userVotes[type]);
+
+          if (isCurrent) {
+            userVotes[type] = false;
+            btn.classList.remove('active');
+            const newCount = Math.max(0, currentCount - 1);
+            if (countBadge) {
+              countBadge.textContent = String(newCount);
+              countBadge.style.display = newCount > 0 ? 'inline-block' : 'none';
+            }
+            if (newCount === 0) btn.classList.remove('has-count');
+          } else {
+            userVotes[type] = true;
+            btn.classList.add('active');
+            const newCount = currentCount + 1;
+            if (countBadge) {
+              countBadge.textContent = String(newCount);
+              countBadge.style.display = 'inline-block';
+            }
+            btn.classList.add('has-count');
+          }
+
+          try {
+            localStorage.setItem(storageKey, JSON.stringify(userVotes));
+          } catch {}
+
+          await toggleUserReaction(slug, user, type, isCurrent).catch((err) => {
+            console.error('Failed to sync reaction to Firestore:', err);
+          });
+        });
+      });
+    });
+  }
+
+  // Register onAuthChange listener once globally across all reaction containers
+  let authListenerRegistered = false;
+  if (!authListenerRegistered) {
+    authListenerRegistered = true;
+    onAuthChange((user) => {
+      const containers = document.querySelectorAll<HTMLElement>('.reactions-bar-container');
+      containers.forEach((container) => {
+        const slug = container.dataset.slug;
+        if (!slug) return;
+        if (user) {
+          listenToUserReactions(slug, user.uid, (liveVotes) => {
+            const storageKey = `gcp_radar_reactions_${slug}`;
+            try {
+              localStorage.setItem(storageKey, JSON.stringify(liveVotes));
+            } catch {}
+            updateButtons(container, liveVotes);
+          });
+        } else {
+          updateButtons(container, {});
+        }
+      });
+    });
+  }
+
   initReactionsBar();
   document.addEventListener('astro:page-load', initReactionsBar);
 </script>
 
 <style>
-  .reactions-bar-container {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    padding: 16px 20px;
-    margin: 24px 0;
-  }
-
-  .reactions-bar-container.in-hero {
-    background-color: transparent;
-    border: none;
-    border-top: 1px solid var(--border-subtle);
-    border-radius: 0;
-    padding: 18px 0 0 0;
-    margin: 20px 0 0 0;
-  }
-
-  .reactions-buttons {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .reaction-btn {
+  .card-reactions-group {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    background-color: var(--bg-page);
-    border: 1px solid var(--border-subtle);
-    padding: 8px 14px;
-    border-radius: var(--radius-full);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary);
+    gap: 4px;
+  }
+
+  .card-reaction-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    color: var(--text-tertiary);
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 3px 7px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all 0.15s ease;
     user-select: none;
   }
 
-  .reaction-btn:hover {
+  .card-reaction-btn:hover {
     background-color: var(--bg-surface-hover);
-    border-color: var(--border-strong);
+    border-color: var(--border-subtle);
     color: var(--text-primary);
-    transform: translateY(-1px);
   }
 
-  .reaction-btn.active,
-  .reaction-btn[data-type="like_change"].active {
+  .card-reaction-btn.has-count,
+  .card-reaction-btn.active {
+    background-color: var(--bg-surface);
+    border-color: var(--border-subtle);
+    color: var(--text-secondary);
+  }
+
+  .card-reaction-btn.active,
+  .card-reaction-btn[data-type="like_change"].active {
     background-color: var(--google-blue-subtle);
-    border-color: var(--google-blue);
+    border-color: var(--google-blue-border);
+    color: var(--google-blue);
+    font-weight: 600;
+  }
+
+  .card-reaction-btn[data-type="false_positive_or_duplicate"].active {
+    background-color: var(--google-red-subtle);
+    border-color: var(--google-red-border);
+    color: var(--google-red);
+    font-weight: 600;
+  }
+
+  .reaction-icon {
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .reaction-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    background-color: var(--bg-surface-hover);
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  .card-reaction-btn.active .reaction-count,
+  .card-reaction-btn[data-type="like_change"].active .reaction-count {
+    background-color: #ffffff;
+    border-color: var(--google-blue-border);
     color: var(--google-blue);
   }
 
-  .reaction-btn[data-type="released"].active {
-    background-color: var(--google-green-subtle);
-    border-color: var(--google-green);
-    color: var(--google-green);
-  }
-
-  .reaction-btn[data-type="false_positive_or_duplicate"].active {
-    background-color: var(--google-red-subtle);
-    border-color: var(--google-red);
+  .card-reaction-btn[data-type="false_positive_or_duplicate"].active .reaction-count {
+    background-color: #ffffff;
+    border-color: var(--google-red-border);
     color: var(--google-red);
-  }
-
-  .count-badge {
-    font-size: 11px;
-    font-family: var(--font-mono);
-    background-color: var(--border-subtle);
-    color: var(--text-primary);
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-    font-weight: 700;
-  }
-
-  .reaction-btn.active .count-badge,
-  .reaction-btn[data-type="like_change"].active .count-badge {
-    background-color: var(--google-blue);
-    color: #ffffff;
-  }
-
-  .reaction-btn[data-type="released"].active .count-badge {
-    background-color: var(--google-green);
-    color: #ffffff;
-  }
-
-  .reaction-btn[data-type="false_positive_or_duplicate"].active .count-badge {
-    background-color: var(--google-red);
-    color: #ffffff;
-  }
-
-  @media (max-width: 600px) {
-    .reactions-buttons {
-      flex-direction: column;
-    }
-    .reaction-btn {
-      width: 100%;
-      justify-content: space-between;
-    }
   }
 </style>

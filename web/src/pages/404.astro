@@ -1,0 +1,129 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+---
+
+<BaseLayout
+  title="Page Not Found (404) — Google Cloud Radar"
+  description="The requested page or API change could not be found on Google Cloud Radar."
+  showSidebar={false}
+>
+  <div class="not-found-container">
+    <Breadcrumbs items={[
+      { label: "Radar Feed", href: "/" },
+      { label: "404 Not Found" },
+    ]} />
+
+    <div class="not-found-card">
+      <div class="not-found-code">404</div>
+      <h1 class="not-found-title">Page Not Found</h1>
+      <p class="not-found-desc">
+        The API change, discovery snapshot, or page you are looking for may have been updated, relocated, or purged during automated discovery sync.
+      </p>
+
+      <div class="not-found-actions">
+        <a href="/" class="btn-primary">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Explore Live Feed</span>
+        </a>
+        <a href="/stats" class="btn-secondary">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span>View API Velocity Stats</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .not-found-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 32px 16px 64px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .not-found-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 64px 32px;
+    text-align: center;
+    margin-top: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .not-found-code {
+    font-size: 72px;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    color: var(--google-blue);
+    line-height: 1;
+    margin-bottom: 16px;
+    letter-spacing: -2px;
+  }
+
+  .not-found-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 12px;
+  }
+
+  .not-found-desc {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    max-width: 520px;
+    margin: 0 auto 32px;
+  }
+
+  .not-found-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary, .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .btn-primary {
+    background-color: var(--google-blue);
+    color: #ffffff;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary:hover {
+    background-color: #1a73e8;
+    color: #ffffff;
+  }
+
+  .btn-secondary {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--border-strong);
+  }
+</style>

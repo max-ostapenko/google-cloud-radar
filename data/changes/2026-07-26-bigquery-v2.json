@@ -1,10 +1,8 @@
 {
   "id": "2026-07-26-bigquery-v2",
-  "slug": "2026-07-26-bigquery-v2",
   "date": "2026-07-26",
   "api": "bigquery.v2",
   "service": "BigQuery",
-  "service_name": "BigQuery",
   "title": "Explicit statement types and new data skew metrics",
   "summary": "BigQuery now explicitly identifies the SQL statement type in query responses and provides new percentile-based metrics for detecting data skew in query stages.",
   "details": "The QueryResponse object now includes a statementType field, allowing developers to programmatically determine if a query was a SELECT, MERGE, CREATE_TABLE_AS_SELECT, or one of many other DDL/DML operations without manual parsing. Additionally, the SkewSource schema adds outputBytesMax, outputBytesMedian, and outputBytesP95. These metrics provide a granular look at partition output sizes within a query stage, making it significantly easier to identify and debug performance issues caused by uneven data distribution (skew).",
@@ -19,7 +17,6 @@
   ],
   "extracted_methods": [],
   "status": "released",
-  "radar_ring": "adopt",
   "lead_time_days": 4,
   "generated_at": "2026-07-26T03:00:00Z",
   "official_release_date": "2026-07-30",

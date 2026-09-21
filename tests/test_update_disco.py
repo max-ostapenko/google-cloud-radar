@@ -249,6 +249,32 @@ class TestUpdateDisco(unittest.TestCase):
         docs = update_disco.load_documents(index_doc)
         self.assertEqual(0, len(docs))
 
+    def test_is_safe_discovery_url(self):
+        # Valid URLs
+        self.assertTrue(update_disco.is_safe_discovery_url("https://discovery.googleapis.com/discovery/v1/apis"))
+        self.assertTrue(update_disco.is_safe_discovery_url("https://aiplatform.googleapis.com/$discovery/rest?version=v1"))
+        self.assertTrue(update_disco.is_safe_discovery_url("https://example.com/api.json"))
+
+        # Insecure or SSRF schemes
+        self.assertFalse(update_disco.is_safe_discovery_url("http://discovery.googleapis.com/test"))
+        self.assertFalse(update_disco.is_safe_discovery_url("file:///etc/passwd"))
+        self.assertFalse(update_disco.is_safe_discovery_url("ftp://example.com/test"))
+        self.assertFalse(update_disco.is_safe_discovery_url("http://169.254.169.254/computeMetadata/v1/"))
+        self.assertFalse(update_disco.is_safe_discovery_url("https://malicious-site.attacker.com/disco.json"))
+
+    def test_is_safe_filename(self):
+        # Valid names
+        self.assertTrue(update_disco.is_safe_filename("aiplatform", "v1"))
+        self.assertTrue(update_disco.is_safe_filename("bigquery", "v2"))
+        self.assertTrue(update_disco.is_safe_filename("admin-directory", "v1"))
+
+        # Path traversal attempts
+        self.assertFalse(update_disco.is_safe_filename("../evil", "v1"))
+        self.assertFalse(update_disco.is_safe_filename("aiplatform", "../evil"))
+        self.assertFalse(update_disco.is_safe_filename("service/nested", "v1"))
+        self.assertFalse(update_disco.is_safe_filename("service", "v1/../../cron.d"))
+
 
 if __name__ == "__main__":
     unittest.main()
+

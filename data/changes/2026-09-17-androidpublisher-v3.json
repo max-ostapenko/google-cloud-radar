@@ -1,0 +1,21 @@
+{
+  "id": "2026-09-17-androidpublisher-v3",
+  "date": "2026-09-17",
+  "api": "androidpublisher.v3",
+  "service": "Android Publisher",
+  "title": "Track Play Store status in AppStoreAppActiveApkSet",
+  "summary": "Developers can now explicitly flag if APK sets are already published on Google Play and provide a corresponding version code.",
+  "details": "The AppStoreAppActiveApkSet schema has been updated with two new fields: `alreadyPublishedOnPlay` (boolean) and `versionCode` (int64). These fields allow developers to specify if the APKs in a set are already published on or derived from the Play Store. This formalizes the version consistency requirements previously mentioned in documentation updates; specifically, if `alreadyPublishedOnPlay` is set to true, the `versionCode` must be provided.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 5,
+  "tags": [
+    "Google Play",
+    "APK Management",
+    "Publishing"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-17T14:47:05.664764+00:00"
+}

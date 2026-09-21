@@ -5,5 +5,10 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://google-cloud-radar.com',
   output: 'static',
-  integrations: [sitemap()],
+  trailingSlash: 'never',
+  integrations: [
+    sitemap({
+      filter: (page) => !page.includes('/breaking') && !page.includes('/404'),
+    }),
+  ],
 });

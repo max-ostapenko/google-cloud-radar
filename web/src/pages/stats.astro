@@ -1,10 +1,11 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { computeRadarStats } from "../lib/stats";
 
 const stats = await computeRadarStats();
 
-// Dataset & TechArticle JSON-LD for rich SEO and citations
+// Dataset JSON-LD for rich SEO and Google Dataset Search
 const schemaData = {
   "@context": "https://schema.org",
   "@type": "Dataset",
@@ -12,6 +13,8 @@ const schemaData = {
   description:
     "Rolling 90-day empirical benchmark analyzing pre-release Canary lead times, breaking change ratios, and shipping velocity across Google Cloud APIs.",
   url: "https://google-cloud-radar.com/stats",
+  license: "https://www.apache.org/licenses/LICENSE-2.0",
+  isAccessibleForFree: true,
   creator: {
     "@type": "Organization",
     name: "Google Cloud Radar",
@@ -32,6 +35,11 @@ const schemaData = {
   showSidebar={false}
 >
   <div class="stats-page-container">
+    <Breadcrumbs items={[
+      { label: "Radar Feed", href: "/" },
+      { label: "Statistics & Benchmark" },
+    ]} />
+
     <!-- Header Hero -->
     <header class="stats-hero">
       <div class="hero-badge">
@@ -751,34 +759,16 @@ const schemaData = {
     border: 1px solid #fdd663;
   }
 
-  [data-theme="dark"] .rank-gold {
-    background-color: rgba(253, 214, 99, 0.2);
-    color: #fdd663;
-    border-color: rgba(253, 214, 99, 0.4);
-  }
-
   .rank-silver {
     background-color: #f1f3f4;
     color: #5f6368;
     border: 1px solid #dadce0;
   }
 
-  [data-theme="dark"] .rank-silver {
-    background-color: rgba(232, 234, 237, 0.15);
-    color: #e8eaed;
-    border-color: rgba(232, 234, 237, 0.3);
-  }
-
   .rank-bronze {
     background-color: #fce8e6;
     color: #c5221f;
     border: 1px solid #f5c2c7;
-  }
-
-  [data-theme="dark"] .rank-bronze {
-    background-color: rgba(242, 139, 130, 0.2);
-    color: #f28b82;
-    border-color: rgba(242, 139, 130, 0.4);
   }
 
   .rank-normal {

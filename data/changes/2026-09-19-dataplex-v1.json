@@ -1,0 +1,22 @@
+{
+  "id": "2026-09-19-dataplex-v1",
+  "date": "2026-09-19",
+  "api": "dataplex.v1",
+  "service": "Dataplex",
+  "title": "Dataplex adds LLM token tracking for Data Documentation",
+  "summary": "Dataplex now provides granular observability for LLM-powered data documentation scans, including detailed token usage and compute unit consumption.",
+  "details": "The `GoogleCloudDataplexV1DataScanEvent` has been expanded to include a `dataDocumentation` result object. This object contains a comprehensive `billableTokenUsage` breakdown, covering `inputTokenCount`, `outputTokenCount`, `cachedContentTokenCount`, and even `thoughtsTokenCount` for reasoning-heavy (Chain-of-Thought) scans. Additionally, `GoogleCloudDataplexV1DataScanEventDataProfileResult` now reports `dcuConsumed`, allowing for precise monitoring of Dataplex Compute Units (DCUs) used during data profiling. These changes enable developers to better monitor the costs and performance of AI-driven metadata insights.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "Dataplex",
+    "LLM",
+    "Observability",
+    "FinOps"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-19T03:54:43.383271+00:00"
+}

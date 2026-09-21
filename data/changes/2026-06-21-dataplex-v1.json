@@ -1,10 +1,8 @@
 {
   "id": "2026-06-21-dataplex-v1",
-  "slug": "2026-06-21-dataplex-v1",
   "date": "2026-06-21",
   "api": "dataplex.v1",
   "service": "Dataplex",
-  "service_name": "Dataplex",
   "title": "Dataplex adds Unstructured Data Profiling and Graph Profiles",
   "summary": "Dataplex expands its scanning capabilities with support for unstructured data profiling and a new graph-based profiling schema for semantic inference.",
   "details": "The DataScan and DataScanJob resources now support a new UNSTRUCTURED_DATA_PROFILE type, accompanied by specific Spec and Result fields for managing scans on non-tabular data. Additionally, a comprehensive set of GraphProfile schemas has been introduced (including EdgeType and NodeType), enabling semantic inference scans that map relationships and entities within data lakes. Finally, LookupContextRequest now supports an all_schema_fields boolean to prevent truncation of schema metadata in the response.",
@@ -19,7 +17,6 @@
   ],
   "extracted_methods": [],
   "status": "released",
-  "radar_ring": "adopt",
   "lead_time_days": 66,
   "generated_at": "2026-06-21T03:00:00Z",
   "official_release_date": "2026-08-26",
