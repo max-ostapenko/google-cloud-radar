@@ -7,6 +7,9 @@ on:
     paths:
       - "web/**"
       - "data/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/deploy-web.yml"
   workflow_run:
     workflows: ["Update Discoveries Directory"]
     types:
@@ -37,21 +40,18 @@ jobs:
           workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v6
         with:
-          node-version: 26
+          node-version: 22
           cache: "npm"
-          cache-dependency-path: "web/package-lock.json"
 
       - name: Install dependencies
-        working-directory: web
-        run: npm install
+        run: npm ci
 
       - name: Build Astro static site
-        working-directory: web
-        run: npm run build
+        run: npm run build --prefix web
 
       - name: Deploy to Firebase Hosting and Firestore Rules
         working-directory: web
-        run: npx -y firebase-tools deploy --only hosting,firestore:rules --project gcp-cloud-radar
+        run: npx -y firebase-tools@latest deploy --only hosting,firestore:rules --project gcp-cloud-radar
