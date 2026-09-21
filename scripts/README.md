@@ -1,51 +1,59 @@
 # Discovery & Analysis Scripts
 
-Python tools for synchronizing Google Discovery documents, extracting AST diffs, performing Gemini impact analysis, and correlating public release notes.
+TypeScript tools for synchronizing Google Discovery documents, extracting AST diffs, performing Gemini impact analysis, and correlating public release notes.
 
 ---
 
 ## 🛠️ CLI Quick Reference
 
-### 1. Diff Extraction & Feed Generation
+All scripts are written in TypeScript and executed seamlessly via `tsx` or npm lifecycle scripts.
+
+### 1. Discovery Sync & AST Diff Pipeline
 ```bash
-# Preview AST diffs without calling Gemini or writing files
-python scripts/diff_to_feed.py --dry-run
+# Download and normalize latest Google API Discovery documents
+npm run update:disco
 
-# Run against specific git refs
-python scripts/diff_to_feed.py --base HEAD~2 --head HEAD
+# Extract AST diffs, detect AIP-180 breaking changes, and generate feed entries
+npm run diff:feed
 
-# Full run with Application Default Credentials (ADC)
-python scripts/diff_to_feed.py
+# Dry run: preview AST diffs without writing files or calling LLM
+npx tsx scripts/diff_to_feed.ts --dry-run
 ```
 
 ### 2. Release Note Correlation
 ```bash
 # Correlate pre-release signals with official GCP release notes
-python scripts/correlate_releases.py --project gcp-cloud-radar --database radar
+npm run correlate -- --database radar
 ```
 
-### 3. Firestore Production Sync
+### 3. Cloud Firestore Production Sync
 ```bash
-# Sync data/changes/*.json entries into Cloud Firestore
-python scripts/seed_prod_firestore.py --project gcp-cloud-radar --database radar
+# Sync data/changes/*.json entries into Cloud Firestore via official @google-cloud/firestore SDK
+npm run seed:firestore -- --project gcp-cloud-radar --database radar
 ```
 
 ### 4. Transactional Breaking Alert Dispatcher
 ```bash
 # Test alert dispatch to a specific email
-python scripts/dispatch_email_alerts.py --test-email user@example.com --slug 2026-08-29-aiplatform-v1beta1
+npm run alerts:email -- --test-email user@example.com --slug 2026-08-29-aiplatform-v1beta1
 
 # Production run with Firestore subscriber query and deduplication
-python scripts/dispatch_email_alerts.py --project gcp-cloud-radar --database radar
+npm run alerts:email -- --project gcp-cloud-radar --database radar
 ```
 
 ### 5. Monday Weekly Intelligence Digest
 ```bash
 # Test weekly digest dispatch for the last 7 days
-python scripts/dispatch_weekly_digest.py --test-email user@example.com
+npm run digest:weekly -- --test-email user@example.com
 
 # Production scheduled run
-python scripts/dispatch_weekly_digest.py --project gcp-cloud-radar --database radar
+npm run digest:weekly -- --project gcp-cloud-radar --database radar
+```
+
+### 6. Pull Request Automation
+```bash
+# Check git status, commit updates, push to fork, and open/automerge PR
+npm run pr:open
 ```
 
 ---
@@ -54,32 +62,39 @@ python scripts/dispatch_weekly_digest.py --project gcp-cloud-radar --database ra
 
 | Script | Purpose |
 |---|---|
-| [`update_disco.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/update_disco.py) | Downloads and normalizes tracked Discovery documents from Google Discovery API. |
-| [`diff_preprocessor.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/diff_preprocessor.py) | Flattens JSON schemas, strips metadata noise, and deterministically evaluates AIP-180 breaking rules. |
-| [`diff_to_feed.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/diff_to_feed.py) | Pipeline orchestrator: extracts diffs, queries Vertex AI Gemini, and formats feed updates. |
-| [`llm_client.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/llm_client.py) | Calls Vertex AI Gemini (`google-genai` SDK) using ADC / WIF credentials. |
-| [`feed_writer.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/feed_writer.py) | Writes structured JSON change records to `data/changes/` and updates `data/index.json`. |
-| [`correlate_releases.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/correlate_releases.py) | Scrapes public GCP release notes and computes empirical canary lead-time deltas. |
-| [`seed_prod_firestore.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/seed_prod_firestore.py) | Upserts JSON change documents into Cloud Firestore. |
-| [`dispatch_email_alerts.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/dispatch_email_alerts.py) | Dispatches personalized transactional breaking alerts via Resend API (`alerts@google-cloud-radar.com`). |
-| [`dispatch_weekly_digest.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/dispatch_weekly_digest.py) | Dispatches weekly Monday roundup of all new APIs, methods, and schema diffs. |
-| [`taxonomy.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/taxonomy.py) | Curated GCP service categories, taxonomy groupings, and official documentation links. |
-| [`open_pr.py`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/open_pr.py) | Automated pull request creation via GitHub CLI (`gh`). |
+| [`update_disco.ts`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/update_disco.ts) | Downloads and normalizes tracked Discovery documents from Google Discovery API. |
+| [`diff_preprocessor.ts`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/diff_preprocessor.ts) | Flattens JSON schemas, strips metadata noise, and deterministically evaluates AIP-180 breaking rules. |
+| [`diff_to_feed.ts`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/diff_to_feed.ts) | Pipeline orchestrator: extracts diffs, queries Vertex AI Gemini, and formats feed updates. |
+| [`llm_client.ts`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/llm_client.ts) | Calls Vertex AI Gemini (`@google/genai` SDK) using ADC / WIF credentials. |
+| [`feed_writer.ts`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/feed_writer.ts) | Writes structured JSON change records to `data/changes/` and updates `data/index.json`. |
+| [`correlate_releases.ts`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/correlate_releases.ts) | Parses public GCP RSS/Atom release notes and computes empirical canary lead-time deltas. |
+| [`seed_prod_firestore.ts`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/seed_prod_firestore.ts) | Upserts JSON change documents into Cloud Firestore with batching. |
+| [`dispatch_email_alerts.ts`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/dispatch_email_alerts.ts) | Dispatches personalized transactional breaking alerts via Resend API (`alerts@google-cloud-radar.com`). |
+| [`dispatch_weekly_digest.ts`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/dispatch_weekly_digest.ts) | Dispatches weekly Monday roundup of all new APIs, methods, and schema diffs. |
+| [`taxonomy.ts`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/taxonomy.ts) | Curated GCP service categories, taxonomy groupings, and official documentation links. |
+| [`normalize_discovery.ts`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/normalize_discovery.ts) | Stable key sorting and formatting utility for Discovery schemas. |
+| [`open_pr.ts`](file:///Users/maxostapenko/GitHub/google-cloud-radar/scripts/open_pr.ts) | Automated pull request creation via GitHub CLI (`gh`). |
 
 ---
 
 ## 📄 Output Artifacts (`data/`)
 
-`feed_writer.py` generates structured JSON documents in [`data/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/data):
+`feed_writer.ts` generates structured JSON documents in [`data/`](file:///Users/maxostapenko/GitHub/google-cloud-radar/data):
 
 - `data/changes/YYYY-MM-DD-{service-api}.json`: Type-safe JSON record (`title`, `service`, `category`, `impact`, `breaking`, `extracted_methods`, `lead_time_days`, `summary`, `details`).
 - `data/index.json`: Chronological, newest-first catalog consumed by the Astro web build, RSS generation, and API endpoints.
 
 ---
 
-## 🧪 Testing
+## 🧪 Testing & Quality Gates
 
 ```bash
-pytest tests/
-python -m unittest discover tests
+# Run Vitest test suite across all scripts
+npm test
+
+# Watch mode during development
+npm run test:watch
+
+# TypeScript strict type checking
+npm run typecheck
 ```

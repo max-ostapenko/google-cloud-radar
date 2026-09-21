@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   update-discoveries:
-    if: ${{ github.repository == 'max-ostapenko/google-cloud-radar' || github.repository == 'max-ostapenko/google-cloud-radar' }}
+    if: ${{ github.repository == 'max-ostapenko/google-cloud-radar' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write # push feed commits
@@ -34,13 +34,14 @@ jobs:
           workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
 
-      - name: Install Python 3.13
-        uses: actions/setup-python@v7
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v6
         with:
-          python-version: "3.13"
+          node-version: 22
+          cache: "npm"
 
       - name: Install dependencies
-        run: pip install google-genai google-auth
+        run: npm ci
 
       - name: Restore and cache release notes archive
         uses: actions/cache@v6
@@ -53,4 +54,4 @@ jobs:
 
       - name: Update discoveries, extract diffs, correlate releases, sync Firestore DB, dispatch email alerts, and open PR
         run: |
-          python scripts/update_disco.py && python scripts/diff_to_feed.py && python scripts/correlate_releases.py --database radar && python scripts/seed_prod_firestore.py --project gcp-cloud-radar --database radar && python scripts/dispatch_email_alerts.py --project gcp-cloud-radar --database radar && python scripts/open_pr.py
+          npm run update:disco && npm run diff:feed && npm run correlate -- --database radar && npm run seed:firestore -- --project gcp-cloud-radar --database radar && npm run alerts:email -- --project gcp-cloud-radar --database radar && npm run pr:open

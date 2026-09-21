@@ -31,14 +31,15 @@ jobs:
           workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
 
-      - name: Install Python
-        uses: actions/setup-python@v7
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v6
         with:
-          python-version: "3.13"
+          node-version: 22
+          cache: "npm"
 
       - name: Install dependencies
-        run: pip install google-auth
+        run: npm ci
 
       - name: Dispatch weekly intelligence digest
         run: |
-          python scripts/dispatch_weekly_digest.py --database radar
+          npm run digest:weekly -- --database radar
