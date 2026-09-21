@@ -1,5 +1,5 @@
 ---
-import type { FeedEntry } from '../lib/feed';
+import { slugify, type FeedEntry } from '../lib/feed';
 import ReactionsBar from './ReactionsBar.astro';
 
 interface Props {
@@ -34,7 +34,7 @@ const notHelpfulCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
 >
   <div class="card-top">
     <div class="card-meta-left">
-      <a href={`/services/${entry.service.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} class="service-pill" title={`View all ${entry.service} updates`}>
+      <a href={`/services/${slugify(entry.service)}`} class="service-pill" title={`View all ${entry.service} updates`}>
         <span class="service-icon-dot"></span>
         <span class="service-name">{entry.service}</span>
       </a>

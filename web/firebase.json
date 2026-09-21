@@ -9,6 +9,78 @@
     ],
     "cleanUrls": true,
     "trailingSlash": false,
+    "redirects": [
+      {
+        "source": "/breaking",
+        "destination": "/?impact=breaking",
+        "type": 302
+      },
+      {
+        "source": "/services/looker",
+        "destination": "/services/looker-core",
+        "type": 301
+      },
+      {
+        "source": "/services/biglake-lakehouse-api*",
+        "destination": "/services/biglake",
+        "type": 301
+      },
+      {
+        "source": "/services/application-integration-connectors",
+        "destination": "/services/integration-connectors",
+        "type": 301
+      },
+      {
+        "source": "/services/application-integration-connectors/feed.json",
+        "destination": "/services/integration-connectors/feed.json",
+        "type": 301
+      },
+      {
+        "source": "/services/google-drive",
+        "destination": "/services/google-drive-api",
+        "type": 301
+      },
+      {
+        "source": "/services/google-drive/feed.json",
+        "destination": "/services/google-drive-api/feed.json",
+        "type": 301
+      },
+      {
+        "source": "/services/admin-sdk-directory*",
+        "destination": "/services/admin-sdk",
+        "type": 301
+      },
+      {
+        "source": "/services/youtube",
+        "destination": "/services/youtube-data-api",
+        "type": 301
+      },
+      {
+        "source": "/services/vertex-ai-search-and-conversation*",
+        "destination": "/services/vertex-ai-agent-builder",
+        "type": 301
+      },
+      {
+        "source": "/services/discovery-engine*",
+        "destination": "/services/vertex-ai-agent-builder",
+        "type": 301
+      },
+      {
+        "source": "/services/google-play-android-developer-api*",
+        "destination": "/services/android-publisher",
+        "type": 301
+      },
+      {
+        "source": "/services/photos-library*",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/changes/2026-08-30-aiplatform-v1*",
+        "destination": "/services/vertex-ai",
+        "type": 301
+      }
+    ],
     "headers": [
       {
         "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|js|css|woff|woff2)",

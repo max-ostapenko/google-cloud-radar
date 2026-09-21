@@ -34,7 +34,6 @@ const highImpactCount = group.entries.filter((e) => e.impact === 'high').length;
 
 const pageTitle = `Google Cloud API Changes — ${group.label} (${group.totalCount} Updates, ${breakingCount} Breaking Alerts)`;
 const pageDesc = `Detailed Google Cloud and Google API changelog for ${group.label}. Tracking ${group.totalCount} method additions, schema updates, and ${breakingCount} breaking alerts across ${services.length} monitored APIs.`;
-const canonicalUrl = `https://google-cloud-radar.com/timeline/${group.key}/`;
 ---
 
 <BaseLayout 
@@ -137,7 +136,7 @@ const canonicalUrl = `https://google-cloud-radar.com/timeline/${group.key}/`;
           const isCurrent = g.key === group.key;
           return (
             <a
-              href={`/timeline/${g.key}/`}
+              href={`/timeline/${g.key}`}
               class={`month-chip ${isCurrent ? 'active' : ''}`}
             >
               <span>{g.monthName} '{String(g.year).slice(2)}</span>

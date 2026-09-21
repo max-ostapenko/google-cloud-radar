@@ -28,8 +28,9 @@ const {
   showSidebar = true,
 } = Astro.props;
 
+const rawPath = Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\/+$/, '');
 const canonicalURL = new URL(
-  Astro.url.pathname,
+  rawPath,
   Astro.site || "https://google-cloud-radar.com",
 );
 
