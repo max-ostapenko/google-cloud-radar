@@ -50,7 +50,6 @@ function initStore() {
           is_breaking: Boolean(doc.breaking),
           interesting_score: Number(doc.interesting_score ?? 5),
           status: doc.status || 'canary',
-          radar_ring: doc.radar_ring || (doc.breaking ? 'hold' : 'assess'),
           tags: doc.tags || ['Google Cloud'],
           extracted_methods: doc.extracted_methods || [],
           lead_time_days: doc.lead_time_days,

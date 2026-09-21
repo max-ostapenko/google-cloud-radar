@@ -21,8 +21,6 @@ const safeMarkdownParser = new Marked({
 });
 
 export type ChangeStatus = 'canary' | 'released' | 'retracted' | 'deprecated';
-export type RadarRing = 'assess' | 'trial' | 'adopt' | 'hold';
-export type RadarQuadrant = 'ai_ml' | 'data_platforms' | 'infra_compute' | 'security_finops';
 
 export interface ReactionCounts {
   like_change: number;
@@ -44,9 +42,6 @@ export interface FeedEntryMeta {
   interesting_score: number;
   generated_at?: string;
   status?: ChangeStatus;
-  radar_ring?: RadarRing;
-  radar_quadrant?: RadarQuadrant;
-  radar_movement?: 'new' | 'promoted' | 'demoted' | 'unchanged';
   lead_time_days?: number;
   official_release_date?: string;
   official_release_notes_url?: string;
@@ -290,8 +285,6 @@ export function getDiscoveryMetaForApi(apiOrService: string): { discoveryRestUrl
 
 export interface FeedEntry extends FeedEntryMeta {
   status: ChangeStatus;
-  radar_ring: RadarRing;
-  radar_quadrant: RadarQuadrant;
   reaction_counts: ReactionCounts;
   comments_count: number;
   rawContent: string;
@@ -346,10 +339,6 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       const official_release_date = f.official_release_date?.timestampValue || f.official_release_date?.stringValue;
       const official_release_notes_url = f.official_release_notes_url?.stringValue;
 
-      const radar_ring = (f.radar_ring?.stringValue || (breaking ? 'hold' : status === 'released' ? 'adopt' : 'assess')) as RadarRing;
-      const radar_quadrant = (f.radar_quadrant?.stringValue || 'infra_compute') as RadarQuadrant;
-      const radar_movement = (f.radar_movement?.stringValue || 'new') as 'new' | 'promoted' | 'demoted' | 'unchanged';
-
       let reaction_counts: ReactionCounts = { like_change: 0, released: 0, false_positive_or_duplicate: 0 };
       if (f.reaction_counts?.mapValue?.fields) {
         const rc = f.reaction_counts.mapValue.fields;
@@ -399,9 +388,6 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         tags,
         interesting_score,
         status,
-        radar_ring,
-        radar_quadrant,
-        radar_movement,
         lead_time_days,
         official_release_date,
         official_release_notes_url,
@@ -478,8 +464,6 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const category = canonicalMeta?.category || (doc.category as ServiceCategory) || getCategoryForService(service || api);
       const safeCategory = category || '';
       const status = (doc.status || 'canary').toLowerCase() as ChangeStatus;
-      const radar_ring = (doc.radar_ring || (breaking ? 'hold' : status === 'released' ? 'adopt' : 'assess')) as RadarRing;
-      const radar_quadrant: RadarQuadrant = safeCategory.includes('AI') ? 'ai_ml' : safeCategory.includes('FinOps') ? 'security_finops' : 'data_platforms';
       const lead_time_days = doc.lead_time_days ? Number(doc.lead_time_days) : undefined;
       const official_release_date = doc.official_release_date ? String(doc.official_release_date) : undefined;
       const official_release_notes_url = doc.official_release_notes_url ? String(doc.official_release_notes_url) : undefined;
@@ -502,9 +486,6 @@ export function getLocalFeedEntries(): FeedEntry[] {
         tags,
         interesting_score,
         status,
-        radar_ring,
-        radar_quadrant,
-        radar_movement: 'new',
         lead_time_days,
         official_release_date,
         official_release_notes_url,

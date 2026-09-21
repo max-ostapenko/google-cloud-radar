@@ -22,7 +22,6 @@ class ServiceMeta(TypedDict, total=False):
     ecosystem_id: str
     category: str
     category_id: str
-    quadrant: str
     name: str
     aliases: list[str]
     release_feed_url: str
@@ -174,46 +173,6 @@ def get_category_for_service(service_or_api: str) -> Optional[str]:
         return meta.get("category")
     return None
 
-
-def get_quadrant_for_service(service_or_api: str) -> str:
-    """Returns the Thoughtworks Tech Radar quadrant for a given service if needed for backward compatibility."""
-    meta = _find_service_meta(service_or_api)
-    if meta and "quadrant" in meta and meta["quadrant"]:
-        return meta["quadrant"]
-
-    category = get_category_for_service(service_or_api) or ""
-    eco = get_ecosystem_for_service(service_or_api) or ""
-    if "AI" in category or "AI" in eco:
-        return "ai_ml"
-    if "FinOps" in category or "Management" in eco:
-        return "security_finops"
-    if any(k in category or k in eco for k in ["Analytics", "Database", "Intelligence", "Marketing"]):
-        return "data_platforms"
-    return "infra_compute"
-
-
-def determine_radar_ring(status: str, is_breaking: bool, version: str) -> str:
-    """
-    Maps API change attributes to Thoughtworks Tech Radar rings:
-    - hold: deprecated / heavy breaking risk
-    - adopt: stable GA / released
-    - trial: public beta / preview / v1beta1
-    - assess: early canary pre-release signal
-    """
-    status_lower = status.lower()
-    version_lower = version.lower()
-
-    if "deprecat" in status_lower or is_breaking:
-        return "hold"
-    if status_lower in ("released", "ga") or (
-        "v1" in version_lower
-        and "beta" not in version_lower
-        and "alpha" not in version_lower
-    ):
-        return "adopt"
-    if "beta" in version_lower or "preview" in status_lower or "trial" in status_lower:
-        return "trial"
-    return "assess"
 
 
 def get_release_feed_urls(service_or_api: str) -> list[str]:

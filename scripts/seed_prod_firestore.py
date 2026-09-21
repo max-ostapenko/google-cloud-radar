@@ -20,15 +20,11 @@ import urllib.error
 try:
     from scripts.taxonomy import (
         get_category_for_service,
-        get_quadrant_for_service,
-        determine_radar_ring,
         WATCHED_SERVICES,
     )
 except ImportError:
     from taxonomy import (  # type: ignore[import-not-found, no-redef]
         get_category_for_service,
-        get_quadrant_for_service,
-        determine_radar_ring,
         WATCHED_SERVICES,
     )
 
@@ -103,12 +99,6 @@ def parse_json_change_file(file_path: str) -> dict:
     )
     status = str(data.get("status", "canary")).lower()
     category = data.get("category") or get_category_for_service(service_name)
-    radar_ring = data.get("radar_ring") or determine_radar_ring(
-        status, breaking, version
-    )
-    radar_quadrant = data.get("radar_quadrant") or get_quadrant_for_service(
-        service_name
-    )
     lead_time_days = data.get("lead_time_days") if status == "released" else None
     summary = data.get("summary", "")
     details = data.get("details", summary)
@@ -134,9 +124,6 @@ def parse_json_change_file(file_path: str) -> dict:
         "is_breaking": breaking,
         "interesting_score": interesting_score,
         "status": status,
-        "radar_ring": radar_ring,
-        "radar_quadrant": radar_quadrant,
-        "radar_movement": "new",
         "lead_time_days": lead_time_days,
         "first_detected_at": created_iso,
         "last_updated_at": now_iso,
@@ -271,9 +258,8 @@ def main():
             if ok:
                 success_count += 1
                 status_icon = "⚠️" if doc["is_breaking"] else "✨"
-                ring_badge = f"[{doc['radar_ring'].upper()}]"
                 print(
-                    f"[{idx:02d}/{len(change_files):02d}] {status_icon} {ring_badge} Upserted: {doc['slug']} ({doc['service_name']})"
+                    f"[{idx:02d}/{len(change_files):02d}] {status_icon} Upserted: {doc['slug']} ({doc['service_name']})"
                 )
         except Exception as e:
             print(f"[{idx:02d}/{len(change_files):02d}] ❌ Failed {file_path}: {e}")

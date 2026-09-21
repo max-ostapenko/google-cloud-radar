@@ -665,7 +665,6 @@ def update_json_file(file_path: str, release_info: dict, lead_time_days: int) ->
             data = json.load(f)
 
         data["status"] = "released"
-        data["radar_ring"] = "adopt"
         data["lead_time_days"] = lead_time_days
         data["official_release_date"] = release_info["date"]
         data["official_release_notes_url"] = release_info.get("url", "")
@@ -691,7 +690,7 @@ def update_firestore_release(
     if not token or not project_id or not database_id:
         return False
 
-    url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/{database_id}/documents/changes/{slug}?updateMask.fieldPaths=status&updateMask.fieldPaths=radar_ring&updateMask.fieldPaths=lead_time_days&updateMask.fieldPaths=official_release_date&updateMask.fieldPaths=official_release_notes_url&updateMask.fieldPaths=last_updated_at"
+    url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/{database_id}/documents/changes/{slug}?updateMask.fieldPaths=status&updateMask.fieldPaths=lead_time_days&updateMask.fieldPaths=official_release_date&updateMask.fieldPaths=official_release_notes_url&updateMask.fieldPaths=last_updated_at"
 
     rel_date = f"{release_info['date'][:10]}T00:00:00.000Z"
     now_iso = (
@@ -700,7 +699,6 @@ def update_firestore_release(
 
     fields = {
         "status": {"stringValue": "released"},
-        "radar_ring": {"stringValue": "adopt"},
         "lead_time_days": {"integerValue": str(lead_time_days)},
         "official_release_date": {"timestampValue": rel_date},
         "official_release_notes_url": {"stringValue": release_info.get("url", "")},
@@ -826,7 +824,6 @@ def run_correlation(
                     if slug in matched_dict:
                         m = matched_dict[slug]
                         entry["status"] = "released"
-                        entry["radar_ring"] = "adopt"
                         entry["lead_time_days"] = m["lead_time_days"]
                         entry["official_release_date"] = m["official_release_date"]
                         entry["official_release_notes_url"] = m["official_url"]

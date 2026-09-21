@@ -25,7 +25,6 @@ class TestTaxonomy(unittest.TestCase):
         cls.watched_services = taxonomy.WATCHED_SERVICES
         cls.ecosystems = taxonomy.ECOSYSTEMS
         cls.categories = taxonomy.CATEGORIES
-        cls.valid_quadrants = {"ai_ml", "data_platforms", "infra_compute", "security_finops"}
 
         # Index discovery items by API name (e.g. 'aiplatform', 'discoveryengine', 'bigquery')
         cls.discovery_by_name: dict[str, list[dict]] = {}
@@ -339,7 +338,6 @@ class TestTaxonomy(unittest.TestCase):
                 self.assertEqual(meta.get("category"), "Generative AI")
                 self.assertEqual(taxonomy.get_ecosystem_for_service(q), "AI/ML")
                 self.assertEqual(taxonomy.get_category_for_service(q), "Generative AI")
-                self.assertEqual(taxonomy.get_quadrant_for_service(q), "ai_ml")
 
         # 2. discoveryengine variations and renames must resolve to Vertex AI Agent Builder
         discoveryengine_queries = [
@@ -362,20 +360,17 @@ class TestTaxonomy(unittest.TestCase):
                 self.assertEqual(meta.get("category"), "Generative AI")
                 self.assertEqual(taxonomy.get_ecosystem_for_service(q), "AI/ML")
                 self.assertEqual(taxonomy.get_category_for_service(q), "Generative AI")
-                self.assertEqual(taxonomy.get_quadrant_for_service(q), "ai_ml")
 
     def test_dynamic_ecosystem_and_category_resolution(self):
         """Dynamically test that all watched services resolve to their taxonomy definitions."""
         for api_name, meta in self.watched_services.items():
             expected_eco = meta.get("ecosystem")
             expected_cat = meta.get("category")
-            expected_quad = meta.get("quadrant")
             canonical_name = meta.get("name")
 
             # Resolve by API key
             self.assertEqual(taxonomy.get_ecosystem_for_service(api_name), expected_eco)
             self.assertEqual(taxonomy.get_category_for_service(api_name), expected_cat)
-            self.assertIn(taxonomy.get_quadrant_for_service(api_name), self.valid_quadrants)
 
             # Resolve by versioned API
             self.assertEqual(taxonomy.get_ecosystem_for_service(f"{api_name}.v1"), expected_eco)
@@ -388,48 +383,6 @@ class TestTaxonomy(unittest.TestCase):
         # Fallback for unknown service
         self.assertEqual(taxonomy.get_ecosystem_for_service("unknown_service_xyz"), "More")
         self.assertIsNone(taxonomy.get_category_for_service("unknown_service_xyz"))
-
-    def test_determine_radar_ring(self):
-        """Test Thoughtworks Tech Radar ring classification logic."""
-        # Breaking or deprecated -> hold
-        self.assertEqual(
-            taxonomy.determine_radar_ring("canary", is_breaking=True, version="v1"),
-            "hold",
-        )
-        self.assertEqual(
-            taxonomy.determine_radar_ring("deprecated", is_breaking=False, version="v1"),
-            "hold",
-        )
-
-        # Stable released GA -> adopt
-        self.assertEqual(
-            taxonomy.determine_radar_ring("released", is_breaking=False, version="v1"),
-            "adopt",
-        )
-        self.assertEqual(
-            taxonomy.determine_radar_ring("ga", is_breaking=False, version="v1"),
-            "adopt",
-        )
-        self.assertEqual(
-            taxonomy.determine_radar_ring("canary", is_breaking=False, version="v1"),
-            "adopt",
-        )
-
-        # Beta / preview -> trial
-        self.assertEqual(
-            taxonomy.determine_radar_ring("canary", is_breaking=False, version="v1beta1"),
-            "trial",
-        )
-        self.assertEqual(
-            taxonomy.determine_radar_ring("preview", is_breaking=False, version="v1alpha"),
-            "trial",
-        )
-
-        # Early canary signal -> assess
-        self.assertEqual(
-            taxonomy.determine_radar_ring("canary", is_breaking=False, version="v2alpha"),
-            "assess",
-        )
 
     def test_watched_api_names_list(self):
         """Verify get_watched_api_names returns a sorted list of all watched service keys."""

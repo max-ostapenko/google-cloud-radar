@@ -95,7 +95,6 @@ def test_update_json_file():
             "api": "aiplatform.v1beta1",
             "title": "Session Compaction",
             "status": "canary",
-            "radar_ring": "assess",
         }
         json.dump(doc, tmp)
         tmp_path = tmp.name
@@ -112,7 +111,6 @@ def test_update_json_file():
             updated = json.load(f)
 
         assert updated["status"] == "released"
-        assert updated["radar_ring"] == "adopt"
         assert updated["lead_time_days"] == 19
         assert updated["official_release_date"] == "2026-08-20"
         assert (
