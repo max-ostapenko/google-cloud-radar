@@ -91,6 +91,13 @@ def get_recent_feed_entries(
             summary = doc.get("summary", "")
             details = doc.get("details", "")
             content_str = f"Summary: {summary}\n\nDetails: {details}"
+            extracted_methods = doc.get("extracted_methods", [])
+            target_paths = (
+                doc.get("target_paths")
+                or doc.get("extracted_paths")
+                or doc.get("target_schema_paths")
+                or []
+            )
         except Exception as e:
             logger.warning(f"Failed to read data file {json_path}: {e}")
             continue
@@ -100,7 +107,13 @@ def get_recent_feed_entries(
         else:
             if len(recent_history) < max_entries:
                 recent_history.append(
-                    {"date": entry_date, "slug": slug, "content": content_str}
+                    {
+                        "date": entry_date,
+                        "slug": slug,
+                        "content": content_str,
+                        "extracted_methods": extracted_methods,
+                        "target_paths": target_paths,
+                    }
                 )
 
     return existing_today_content, recent_history
@@ -146,13 +159,15 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
     if isinstance(tags, str):
         tags = [tags]
 
-    # Extract RPC methods if present
+    # Extract RPC methods and target paths if present
     extracted_methods = insight.get("extracted_methods", [])
     if not extracted_methods:
         method_matches = re.findall(
             r"`([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+){2,})`", f"{summary} {details}"
         )
         extracted_methods = list(dict.fromkeys(method_matches))[:6]
+
+    target_paths = insight.get("target_paths") or insight.get("extracted_paths") or []
 
     entry = {
         "id": final_slug,
@@ -167,6 +182,7 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
         "interesting_score": score,
         "tags": tags,
         "extracted_methods": extracted_methods,
+        "target_paths": target_paths,
         "status": "canary",
         "lead_time_days": None,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -196,6 +212,7 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
         "interesting_score": score,
         "tags": tags,
         "extracted_methods": extracted_methods,
+        "target_paths": target_paths,
         "generated_at": entry["generated_at"],
     }
 
