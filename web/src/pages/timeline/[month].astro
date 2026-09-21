@@ -1,12 +1,13 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ChangeCard from '../../components/ChangeCard.astro';
-import { getAllFeedEntries, getServicesList, groupEntriesByMonth, type MonthGroup, type FeedEntry } from '../../lib/feed';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { getAllFeedEntries, groupEntriesByMonth, type FeedEntry, type MonthGroup } from '../../lib/feed';
 
 export async function getStaticPaths() {
   const entries = await getAllFeedEntries();
-  const services = await getServicesList();
   const monthGroups = groupEntriesByMonth(entries);
+  const services = Array.from(new Set(entries.map((e) => e.service)));
 
   return monthGroups.map((group) => ({
     params: { month: group.key },
@@ -14,7 +15,7 @@ export async function getStaticPaths() {
       group,
       monthGroups,
       services,
-      entries,
+      entries: group.entries,
     },
   }));
 }
@@ -22,7 +23,7 @@ export async function getStaticPaths() {
 interface Props {
   group: MonthGroup;
   monthGroups: MonthGroup[];
-  services: any[];
+  services: string[];
   entries: FeedEntry[];
 }
 
@@ -30,12 +31,9 @@ const { group, monthGroups, services, entries } = Astro.props;
 
 const breakingCount = group.entries.filter((e) => e.breaking).length;
 const highImpactCount = group.entries.filter((e) => e.impact === 'high').length;
-const aiCount = group.entries.filter((e) => e.category === 'AI & ML' || e.category.toLowerCase().includes('ai')).length;
-const dataCount = group.entries.filter((e) => e.category === 'Data Analytics' || e.category.toLowerCase().includes('data')).length;
 
 const pageTitle = `Google Cloud API Changes — ${group.label} (${group.totalCount} Updates, ${breakingCount} Breaking Alerts)`;
 const pageDesc = `Detailed Google Cloud and Google API changelog for ${group.label}. Tracking ${group.totalCount} method additions, schema updates, and ${breakingCount} breaking alerts across ${services.length} monitored APIs.`;
-const canonicalUrl = `https://google-cloud-radar.com/timeline/${group.key}/`;
 ---
 
 <BaseLayout 
@@ -44,17 +42,12 @@ const canonicalUrl = `https://google-cloud-radar.com/timeline/${group.key}/`;
   image="https://google-cloud-radar.com/og-image.png"
 >
   <div class="timeline-page-container">
-    <!-- Breadcrumb -->
-    <nav class="timeline-breadcrumbs" aria-label="Breadcrumb">
-      <a href="/" class="crumb-link">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-        </svg>
-        Feed
-      </a>
-      <span class="crumb-separator">/</span>
-      <span class="crumb-current">Timeline: {group.label}</span>
-    </nav>
+    <!-- Breadcrumbs -->
+    <Breadcrumbs items={[
+      { label: 'Radar Feed', href: '/' },
+      { label: 'Timeline Archive' },
+      { label: group.label },
+    ]} />
 
     <!-- Month Hero -->
     <div class="month-hero-banner">
@@ -99,20 +92,16 @@ const canonicalUrl = `https://google-cloud-radar.com/timeline/${group.key}/`;
           <span class="pill-count">{group.totalCount}</span>
         </button>
         <button class="pill-btn pill-breaking" data-filter="breaking">
-          <span>⚠️ Breaking Only</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+          <span>Breaking Only</span>
           <span class="pill-count">{breakingCount}</span>
         </button>
         <button class="pill-btn" data-filter="high-impact">
-          <span>🔥 High Impact</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          <span>High Impact</span>
           <span class="pill-count">{highImpactCount}</span>
-        </button>
-        <button class="pill-btn" data-filter="category-ai">
-          <span>🧠 AI & ML</span>
-          <span class="pill-count">{aiCount}</span>
-        </button>
-        <button class="pill-btn" data-filter="category-data">
-          <span>📊 Data Analytics</span>
-          <span class="pill-count">{dataCount}</span>
         </button>
       </div>
 
@@ -147,12 +136,17 @@ const canonicalUrl = `https://google-cloud-radar.com/timeline/${group.key}/`;
           const isCurrent = g.key === group.key;
           return (
             <a
-              href={`/timeline/${g.key}/`}
+              href={`/timeline/${g.key}`}
               class={`month-chip ${isCurrent ? 'active' : ''}`}
             >
               <span>{g.monthName} '{String(g.year).slice(2)}</span>
               <span class="month-chip-count">{g.totalCount}</span>
-              {g.breakingCount > 0 && <span class="month-chip-breaking">⚠️ {g.breakingCount}</span>}
+              {g.breakingCount > 0 && (
+                <span class="month-chip-breaking">
+                  <svg viewBox="0 0 24 24" width="9" height="9" fill="currentColor" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                  <span>{g.breakingCount}</span>
+                </span>
+              )}
             </a>
           );
         })}
@@ -161,9 +155,10 @@ const canonicalUrl = `https://google-cloud-radar.com/timeline/${group.key}/`;
 
     <!-- Month Cards Stream -->
     <div class="month-cards-stream" id="cards-container">
+      <h2 class="sr-only">{group.label} Updates Stream</h2>
       <div class="in-month-empty-state" id="in-month-empty" style="display: none;">
-        <p>No <strong>{group.label}</strong> updates match the active category filter.</p>
-        <button class="in-month-reset-btn" id="reset-in-month-btn" type="button">Reset Category Filter</button>
+        <p>No <strong>{group.label}</strong> updates match the active filter.</p>
+        <button class="in-month-reset-btn" id="reset-in-month-btn" type="button">Reset Filters</button>
       </div>
 
       <div class="cards-list">
@@ -193,8 +188,6 @@ const canonicalUrl = `https://google-cloud-radar.com/timeline/${group.key}/`;
     all: 'updates',
     breaking: 'breaking alerts',
     'high-impact': 'high-impact updates',
-    'category-ai': 'AI & ML updates',
-    'category-data': 'Data Analytics updates',
   };
 
   function updateUrlState() {
@@ -209,28 +202,23 @@ const canonicalUrl = `https://google-cloud-radar.com/timeline/${group.key}/`;
     activeFilter = filter;
     let visibleCount = 0;
 
-    pillButtons.forEach((b) => {
-      if (b.getAttribute('data-filter') === filter) {
-        b.classList.add('active');
+    pillButtons.forEach((btn) => {
+      if (btn.getAttribute('data-filter') === filter) {
+        btn.classList.add('active');
       } else {
-        b.classList.remove('active');
+        btn.classList.remove('active');
       }
     });
 
     cards.forEach((card) => {
       const cardBreaking = card.getAttribute('data-breaking') === 'true';
       const cardImpact = card.getAttribute('data-impact');
-      const cardCategory = (card.getAttribute('data-category') || '').toLowerCase();
 
       let matches = true;
       if (filter === 'breaking') {
         matches = cardBreaking;
       } else if (filter === 'high-impact') {
         matches = cardImpact === 'high';
-      } else if (filter === 'category-ai') {
-        matches = cardCategory.includes('ai') || cardCategory.includes('machine learning');
-      } else if (filter === 'category-data') {
-        matches = cardCategory.includes('data') || cardCategory.includes('platform') || cardCategory.includes('analytics');
       }
 
       if (matches) {
@@ -275,7 +263,7 @@ const canonicalUrl = `https://google-cloud-radar.com/timeline/${group.key}/`;
       const url = window.location.href;
       try {
         await navigator.clipboard.writeText(url);
-        if (shareBtnText) shareBtnText.textContent = 'Link Copied! ✓';
+        if (shareBtnText) shareBtnText.textContent = 'Link Copied!';
         shareBtn.classList.add('copied');
         setTimeout(() => {
           if (shareBtnText) shareBtnText.textContent = 'Share Month';
@@ -296,36 +284,6 @@ const canonicalUrl = `https://google-cloud-radar.com/timeline/${group.key}/`;
     display: flex;
     flex-direction: column;
     gap: 20px;
-  }
-
-  .timeline-breadcrumbs {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--text-tertiary);
-  }
-
-  .crumb-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: color 0.15s ease;
-  }
-
-  .crumb-link:hover {
-    color: var(--google-blue);
-  }
-
-  .crumb-separator {
-    color: var(--border-subtle);
-  }
-
-  .crumb-current {
-    color: var(--text-primary);
-    font-weight: 500;
   }
 
   .month-hero-banner {

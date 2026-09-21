@@ -1,0 +1,23 @@
+{
+  "id": "2026-09-17-discoveryengine-v1beta",
+  "date": "2026-09-17",
+  "api": "discoveryengine.v1beta",
+  "service": "Vertex AI Agent Builder",
+  "title": "Granular IAM Filtering and Search-As-You-Type Tuning",
+  "summary": "Discovery Engine adds resource-level IAM filtering for Gemini Enterprise and dynamic search-as-you-type scoring overrides. Alpha users also gain support for file attachments in long-running agent tasks.",
+  "details": "A new `resourceAccessControlConfig` has been added to `ProjectCustomerProvidedConfig`. When `dataStoreAccessControlEnabled` is set to true, Gemini Enterprise users will only see data stores and connectors for which they have explicit resource-level `.get` IAM permissions. For search optimization, `SearchRequest` now supports `SearchAsYouTypeSpec`, allowing developers to override data-store-level configurations per request. This includes specifying which `fields` to score, assigning them custom `weight` values, and setting a `scoreThreshold` for real-time result filtering. Additionally, the `v1alpha` API now supports `userSuppliedSobiArtifactReference` within `QueryPart`, enabling file attachments for long-running agent (Sobi) tasks with metadata for filenames and MIME types.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "discoveryengine",
+    "vertex-ai",
+    "iam",
+    "search",
+    "gemini"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-17T22:45:08.503519+00:00"
+}

@@ -19,7 +19,7 @@ jobs:
 
     env:
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      RESEND_FROM_EMAIL: ${{ vars.RESEND_FROM_EMAIL }}
+      RESEND_FROM_EMAIL: ${{ vars.RESEND_FROM_EMAIL || 'Google Cloud Radar <alerts@google-cloud-radar.com>' }}
 
     steps:
       - name: Checkout repository

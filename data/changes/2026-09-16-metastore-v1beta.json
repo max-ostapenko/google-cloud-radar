@@ -1,0 +1,21 @@
+{
+  "id": "2026-09-16-metastore-v1beta",
+  "date": "2026-09-16",
+  "api": "metastore.v1beta",
+  "service": "Dataproc Metastore",
+  "title": "MigrationSummary endTime is now read-only",
+  "summary": "A breaking change in the Metastore v1beta API marks the MigrationSummary endTime field as read-only. The createTime field description has also been updated to clarify its role in the migration process.",
+  "details": "The MigrationSummary schema has been updated to enforce readOnly status on the endTime field, which tracks when a migration report was written. Any client code attempting to provide this value in a request will now find it ignored or rejected. Additionally, the createTime field description was modified to indicate it represents the start of the source metadata read, providing better visibility into the migration timeline.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 6,
+  "tags": [
+    "Dataproc Metastore",
+    "Migrations",
+    "Breaking Change"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-16T14:43:25.706091+00:00"
+}

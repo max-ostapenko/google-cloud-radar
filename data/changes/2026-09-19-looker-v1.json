@@ -1,0 +1,22 @@
+{
+  "id": "2026-09-19-looker-v1",
+  "date": "2026-09-19",
+  "api": "looker.v1",
+  "service": "Looker Core",
+  "title": "Detailed Export Telemetry and Self-Hosted Source Support",
+  "summary": "Looker's export process now provides granular telemetry via new ExportMetrics and ComponentMetrics schemas, alongside support for self-hosted instance sources.",
+  "details": "The ExportMetadata schema has been expanded to include an `exportMetrics` field, which provides deep visibility into the export lifecycle. This includes a new `ExportMetrics` object containing an array of `ComponentMetrics`. These metrics track performance and reliability data—such as `duration`, `startTime`, `endTime`, `retryCount`, and `sizeGb`—for specific export components including the Database (`DB`), File System (`FS`), and BigQuery Elite System Activity (`BQ_ESA`). \n\nAdditionally, the `source` field in `ExportMetadata` now includes a `LOOKER_SELF_HOSTED` enum value, allowing developers to explicitly identify and handle migrations or backups originating from self-managed Looker environments.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "looker",
+    "telemetry",
+    "migration",
+    "observability"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-19T22:14:47.249310+00:00"
+}
