@@ -5,6 +5,10 @@ on:
     - cron: "0 9 * * 1"
   workflow_dispatch:
 
+concurrency:
+  group: weekly-digest
+  cancel-in-progress: false
+
 jobs:
   dispatch-weekly-digest:
     if: ${{ github.repository == 'max-ostapenko/google-cloud-radar' }}
