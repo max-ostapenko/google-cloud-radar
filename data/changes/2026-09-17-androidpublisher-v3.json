@@ -15,7 +15,10 @@
     "Publishing"
   ],
   "extracted_methods": [],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-09-17T14:47:05.664764+00:00"
+  "status": "released",
+  "lead_time_days": 4,
+  "generated_at": "2026-09-17T14:47:05.664764+00:00",
+  "radar_ring": "adopt",
+  "official_release_date": "2026-09-21",
+  "official_release_notes_url": "https://android-developers.googleblog.com/2026/09/bring-android-game-to-car-screen.html"
 }

@@ -199,8 +199,8 @@ def fetch_feed_entries(
                         "count": len(live_entries),
                         "services": [service_key],
                     }
-    except Exception as err:
-        err_msg = str(err)
+    except Exception as e:
+        err_msg = str(e)
         log_feed_warning(service_key, feed_url, f"Network/HTTP error: {err_msg}")
         _FEED_HEALTH[feed_url] = {
             "status": "error",
