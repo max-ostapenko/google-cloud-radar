@@ -1,0 +1,25 @@
+{
+  "id": "2026-09-17-discoveryengine-v1",
+  "date": "2026-09-17",
+  "api": "discoveryengine.v1",
+  "service": "Vertex AI Agent Builder",
+  "title": "Search-as-you-type tuning and IAM-based resource filtering",
+  "summary": "Discovery Engine adds granular scoring controls for Search-as-you-type and resource-level IAM filtering for Gemini Enterprise. A breaking change makes the widget 'family' field read-only.",
+  "details": "Developers can now fine-tune real-time search behavior using the new `SearchAsYouTypeSpec` fields. By specifying a list of `fields` (with individual `key` and `weight` overrides) and a `scoreThreshold`, you can control which indexed fields influence scoring and filter out low-relevance results on a per-request basis. Additionally, the new `resourceAccessControlConfig` allows projects to enforce resource-level IAM permissions for Gemini Enterprise users, ensuring they only interact with data stores they are explicitly authorized to access.\n\n**Breaking Change:** The `family` field within `WidgetConfig.UiSettings.ModelConfigInfo.ResolvedModel` is now marked as `readOnly`. This field, used to group models in the UI selector, is now immutable for API consumers. In the v1alpha surface, support was also added for `UserSuppliedSobiArtifactReference` to handle file attachments linked to long-running agent tasks.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 7,
+  "tags": [
+    "discoveryengine",
+    "search",
+    "iam",
+    "gemini",
+    "breaking_change"
+  ],
+  "extracted_methods": [
+    "WidgetConfig.UiSettings.ModelConfigInfo.ResolvedModel"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-17T22:45:08.499638+00:00"
+}

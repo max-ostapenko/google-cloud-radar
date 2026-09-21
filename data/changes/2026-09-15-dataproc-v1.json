@@ -1,0 +1,21 @@
+{
+  "id": "2026-09-15-dataproc-v1",
+  "date": "2026-09-15",
+  "api": "dataproc.v1",
+  "service": "Cloud Dataproc",
+  "title": "Dataproc deprecates diskType in favor of type for Hyperdisks",
+  "summary": "Dataproc's AttachedDiskConfig schema has deprecated the diskType field, introducing a new type field for specifying Hyperdisk configurations.",
+  "details": "The AttachedDiskConfig schema now includes a new `type` string field, which is the preferred way to specify disk types. It currently supports various Hyperdisk flavors including `hyperdisk-balanced`, `hyperdisk-extreme`, `hyperdisk-ml`, and `hyperdisk-throughput`. The existing `diskType` field is now explicitly marked as deprecated and its description has been updated to point developers toward the new field. Note that Hyperdisk Balanced High Availability is explicitly listed as not supported in this configuration.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "dataproc",
+    "storage",
+    "deprecation"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-15T09:51:24.710972+00:00"
+}

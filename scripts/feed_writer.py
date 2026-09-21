@@ -10,6 +10,11 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+try:
+    from scripts.taxonomy import _find_service_meta
+except ImportError:
+    from taxonomy import _find_service_meta  # type: ignore[import-not-found, no-redef]
+
 logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -142,7 +147,9 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
     file_path = CHANGES_DIR / f"{base_slug}.json"
     final_slug = base_slug
 
-    service_name = insight.get("service_name") or insight.get("service", "Google Cloud")
+    api_id = api.split(".")[0].lower() if api else ""
+    canonical_meta = _find_service_meta(api_id) or _find_service_meta(insight.get("service_name") or insight.get("service", ""))
+    service_name = canonical_meta.get("name") if canonical_meta else (insight.get("service_name") or insight.get("service", "Google Cloud"))
     title = insight.get("title") or f"{service_name} API Update"
     summary = insight.get("summary", "")
     details = insight.get("details", summary)
@@ -164,11 +171,9 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
 
     entry = {
         "id": final_slug,
-        "slug": final_slug,
         "date": insight_date,
         "api": api,
         "service": service_name,
-        "service_name": service_name,
         "title": title,
         "summary": summary,
         "details": details,
@@ -179,7 +184,6 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
         "extracted_methods": extracted_methods,
         "target_paths": target_paths,
         "status": "canary",
-        "radar_ring": "hold" if breaking else "assess",
         "lead_time_days": None,
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -198,11 +202,9 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
     index = _load_index()
     index_entry = {
         "id": final_slug,
-        "slug": final_slug,
         "date": insight_date,
         "api": api,
         "service": service_name,
-        "service_name": service_name,
         "title": title,
         "summary": summary,
         "impact": impact,
@@ -217,7 +219,7 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
     # In case of update, replace existing entry in-place
     replaced = False
     for i, existing in enumerate(index):
-        if existing.get("slug") == final_slug or existing.get("id") == final_slug:
+        if existing.get("id") == final_slug or existing.get("slug") == final_slug:
             index[i] = index_entry
             replaced = True
             break
@@ -226,7 +228,7 @@ def write_insight(insight: dict, insight_date: Optional[str] = None) -> Optional
         index.append(index_entry)
 
     # Keep sorted newest-first
-    index.sort(key=lambda e: (e["date"], e["slug"]), reverse=True)
+    index.sort(key=lambda e: (e.get("date", ""), e.get("id", "") or e.get("slug", "")), reverse=True)
     _save_index(index)
 
     return final_slug

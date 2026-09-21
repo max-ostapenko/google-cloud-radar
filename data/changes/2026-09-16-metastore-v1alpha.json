@@ -1,0 +1,21 @@
+{
+  "id": "2026-09-16-metastore-v1alpha",
+  "date": "2026-09-16",
+  "api": "metastore.v1alpha",
+  "service": "Dataproc Metastore",
+  "title": "MigrationSummary timestamps updated in Metastore v1alpha",
+  "summary": "The MigrationSummary schema now marks endTime as read-only and redefines createTime to reflect the start of metadata reads.",
+  "details": "In the metastore.v1alpha API, the MigrationSummary resource has received schema updates. The endTime field is now explicitly marked as readOnly (output-only), which is a breaking change for any clients attempting to provide this value in write requests. Furthermore, the createTime field's semantic meaning has changed: it now represents the UTC time when the source metadata read was initiated, rather than when the report was finalized. Developers should update their logic if they were relying on createTime as a completion marker.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 6,
+  "tags": [
+    "Dataproc Metastore",
+    "Migrations",
+    "Breaking Change"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-16T14:43:25.704132+00:00"
+}

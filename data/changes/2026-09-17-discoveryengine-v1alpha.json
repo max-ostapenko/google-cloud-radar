@@ -1,0 +1,22 @@
+{
+  "id": "2026-09-17-discoveryengine-v1alpha",
+  "date": "2026-09-17",
+  "api": "discoveryengine.v1alpha",
+  "service": "Vertex AI Agent Builder",
+  "title": "Gemini Access Controls and Search-As-You-Type Tuning",
+  "summary": "This update introduces resource-level access controls for Gemini Enterprise, per-request Search-As-You-Type overrides, and a breaking change to widget model configurations.",
+  "details": "A breaking change has been introduced in the v1alpha surface: the `family` property within `WidgetConfigUiSettingsModelConfigInfoResolvedModel` is now marked as `readOnly` and immutable. Developers should ensure their write requests do not depend on modifying this field. \n\nOn the feature side, Discovery Engine now supports `resourceAccessControlConfig` across v1, v1beta, and v1alpha. By enabling `dataStoreAccessControlEnabled`, Gemini Enterprise users will only see data stores and connectors for which they possess the required IAM `.get` permissions. Additionally, `SearchRequest` now includes a `SearchAsYouTypeSpec` (v1alpha/v1beta), allowing developers to override data-store-level scoring by specifying custom field weights and a `scoreThreshold` on a per-query basis. Finally, v1alpha adds `userSuppliedSobiArtifactReference` to `QueryPart` for better integration with file attachments in long-running agent tasks.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "AI",
+    "Search",
+    "IAM",
+    "Breaking Change"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-17T22:45:08.501579+00:00"
+}

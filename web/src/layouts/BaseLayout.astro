@@ -28,8 +28,9 @@ const {
   showSidebar = true,
 } = Astro.props;
 
+const rawPath = Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\/+$/, '');
 const canonicalURL = new URL(
-  Astro.url.pathname,
+  rawPath,
   Astro.site || "https://google-cloud-radar.com",
 );
 
@@ -61,6 +62,27 @@ const jsonLd = schemaData
     <link rel="canonical" href={canonicalURL} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate icon" href="/favicon.ico" />
+
+    <!-- Google Fonts Preconnect & Async Load -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap"
+      />
+    </noscript>
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content={ogType} />
@@ -134,23 +156,36 @@ const jsonLd = schemaData
         display: block;
         opacity: 1;
       }
+
+      .copy-method-btn.copied {
+        border-color: var(--google-green-border) !important;
+        background-color: var(--google-green-subtle) !important;
+      }
+      .copy-method-btn.copied .method-rpc-tag {
+        background-color: var(--google-green) !important;
+        color: #ffffff !important;
+      }
+      .copy-method-btn.copied .method-name {
+        color: var(--google-green) !important;
+      }
     </style>
 
     <script is:inline>
-      // Global copy-to-clipboard handler for method buttons
+      // Global copy-to-clipboard handler for method buttons without layout shift
       document.addEventListener("click", (e) => {
         const target = e.target.closest(".copy-method-btn");
         if (!target) return;
         const textToCopy = target.getAttribute("data-copy");
         if (textToCopy) {
           navigator.clipboard.writeText(textToCopy).then(() => {
-            const originalHtml = target.innerHTML;
-            target.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#188038" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
-            target.style.color = "#188038";
+            target.classList.add("copied");
+            const tag = target.querySelector(".method-rpc-tag");
+            const originalTagText = tag ? tag.textContent : "";
+            if (tag) tag.textContent = "COPIED";
             setTimeout(() => {
-              target.innerHTML = originalHtml;
-              target.style.color = "";
-            }, 1800);
+              target.classList.remove("copied");
+              if (tag) tag.textContent = originalTagText;
+            }, 1500);
           });
         }
       });

@@ -1,0 +1,21 @@
+{
+  "id": "2026-09-14-discoveryengine-v1alpha",
+  "date": "2026-09-14",
+  "api": "discoveryengine.v1alpha",
+  "service": "Vertex AI Agent Builder",
+  "title": "NotebookLM API Restored with Stricter Schema Constraints",
+  "summary": "The NotebookLM alpha API surface has been reinstated after a recent removal, now featuring stricter parameter requirements and immutable fields.",
+  "details": "The `notebooks` resource is back with `create`, `get`, `batchDelete`, and `listRecentlyViewed` methods. This re-rollout includes significant breaking changes: numerous fields across `GoogleCloudNotebooklmV1alphaNotebook`, `GoogleCloudNotebooklmV1alphaSource`, and metadata schemas (Youtube, Google Docs, Agentspace) have been marked as read-only or immutable. Furthermore, `name` and `parent` parameters are now strictly required for these methods, necessitating updates to existing client implementations to ensure these fields are provided in requests.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "NotebookLM",
+    "Breaking Change",
+    "Restoration"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-14T19:46:36.817312+00:00"
+}
