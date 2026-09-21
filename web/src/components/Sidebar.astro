@@ -9,8 +9,6 @@ interface Props {
 const { activeServiceSlug = '', activeCategory = '' } = Astro.props;
 
 const services: ServiceInfo[] = await getServicesList();
-const totalUpdates = services.reduce((a, b) => a + b.count, 0);
-const totalBreaking = services.reduce((a, b) => a + b.breakingCount, 0);
 
 // Top-Level Ecosystems configuration
 interface EcosystemGroup {
@@ -28,94 +26,54 @@ interface EcosystemGroup {
   directItems?: ServiceInfo[];
 }
 
-const cloudSubcategories: ServiceCategory[] = [
-  'AI & ML',
-  'Data Analytics',
-  'Application Development',
-  'FinOps & Billing',
-];
+import taxonomyData from '../../../data/taxonomy.json';
 
-const cloudServices = services.filter((s) => s.ecosystem === 'Google Cloud');
-const cloudSubgroups = cloudSubcategories.map((category) => {
-  const items = cloudServices.filter((s) => s.category === category);
+const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco: any) => {
+  const ecoServices = services.filter((s) => s.ecosystem === eco.name);
+  const totalCount = ecoServices.reduce((acc, curr) => acc + curr.count, 0);
+  const breakingCount = ecoServices.reduce((acc, curr) => acc + curr.breakingCount, 0);
+
+  // Subgroups for explicit categories in eco.categories (categories with 2+ services)
+  const ecoCatIds: string[] = eco.categories || [];
+  const categorizedServices = new Set<ServiceInfo>();
+
+  const subgroups = ecoCatIds.map((catId: string) => {
+    const catDef = (taxonomyData.categories || []).find((c: any) => c.id === catId);
+    const catName = catDef ? catDef.name : catId;
+    const items = ecoServices.filter((s) => s.category === catName);
+    items.forEach((item) => categorizedServices.add(item));
+    return {
+      category: catName,
+      items,
+      totalCount: items.reduce((acc, curr) => acc + curr.count, 0),
+      breakingCount: items.reduce((acc, curr) => acc + curr.breakingCount, 0),
+    };
+  }).filter((g) => g.items.length > 0);
+
+  // Direct items: services in this ecosystem not under any category
+  const directItems = ecoServices.filter((s) => !categorizedServices.has(s));
+
   return {
-    category,
-    items,
-    totalCount: items.reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: items.reduce((acc, curr) => acc + curr.breakingCount, 0),
+    id: eco.name,
+    label: eco.name,
+    icon: eco.icon || 'grid',
+    totalCount,
+    breakingCount,
+    subgroups: subgroups.length > 0 ? subgroups : undefined,
+    directItems: directItems.length > 0 ? directItems : undefined,
   };
-}).filter((g) => g.items.length > 0);
-
-const ecosystemList: EcosystemGroup[] = [
-  {
-    id: 'Google Cloud',
-    label: 'Google Cloud',
-    icon: 'cloud',
-    totalCount: cloudServices.reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: cloudServices.reduce((acc, curr) => acc + curr.breakingCount, 0),
-    subgroups: cloudSubgroups,
-  },
-  {
-    id: 'Workspace',
-    label: 'Workspace',
-    icon: 'briefcase',
-    totalCount: services.filter((s) => s.ecosystem === 'Workspace').reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: services.filter((s) => s.ecosystem === 'Workspace').reduce((acc, curr) => acc + curr.breakingCount, 0),
-    directItems: services.filter((s) => s.ecosystem === 'Workspace'),
-  },
-  {
-    id: 'Marketing Platform',
-    label: 'Marketing Platform',
-    icon: 'trending-up',
-    totalCount: services.filter((s) => s.ecosystem === 'Marketing Platform').reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: services.filter((s) => s.ecosystem === 'Marketing Platform').reduce((acc, curr) => acc + curr.breakingCount, 0),
-    directItems: services.filter((s) => s.ecosystem === 'Marketing Platform'),
-  },
-  {
-    id: 'Chrome',
-    label: 'Chrome & Web',
-    icon: 'globe',
-    totalCount: services.filter((s) => s.ecosystem === 'Chrome').reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: services.filter((s) => s.ecosystem === 'Chrome').reduce((acc, curr) => acc + curr.breakingCount, 0),
-    directItems: services.filter((s) => s.ecosystem === 'Chrome'),
-  },
-  {
-    id: 'Personal',
-    label: 'Personal',
-    icon: 'user',
-    totalCount: services.filter((s) => s.ecosystem === 'Personal').reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: 0,
-    directItems: services.filter((s) => s.ecosystem === 'Personal'),
-  },
-  {
-    id: 'Android',
-    label: 'Android & Play',
-    icon: 'smartphone',
-    totalCount: services.filter((s) => s.ecosystem === 'Android').reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: 0,
-    directItems: services.filter((s) => s.ecosystem === 'Android'),
-  },
-  {
-    id: 'More',
-    label: 'More / Core',
-    icon: 'grid',
-    totalCount: services.filter((s) => s.ecosystem === 'More').reduce((acc, curr) => acc + curr.count, 0),
-    breakingCount: services.filter((s) => s.ecosystem === 'More').reduce((acc, curr) => acc + curr.breakingCount, 0),
-    directItems: services.filter((s) => s.ecosystem === 'More'),
-  },
-];
+}).filter((eco: any) => (eco.subgroups && eco.subgroups.length > 0) || (eco.directItems && eco.directItems.length > 0));
 ---
 
 <aside class="gcp-sidebar" id="gcpSidebar">
   <div class="sidebar-header">
-    <div class="sidebar-title">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M4 6h16M4 12h16M4 18h7"/>
-      </svg>
-      <span>APIs & Services</span>
-    </div>
-    <div class="sidebar-header-right">
-      <span class="total-services-badge">{services.length} Monitored</span>
+    <div class="sidebar-header-top">
+      <div class="sidebar-title">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 6h16M4 12h16M4 18h7"/>
+        </svg>
+        <span>APIs & Services</span>
+      </div>
       <button id="sidebarCloseBtn" class="sidebar-close-btn" aria-label="Close APIs & Services Drawer" type="button">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -123,32 +81,91 @@ const ecosystemList: EcosystemGroup[] = [
         </svg>
       </button>
     </div>
+    <div class="sidebar-status-row">
+      <span class="total-services-badge" title={`${services.length} Google Cloud services currently monitored`}>
+        <span class="status-pulse-dot" aria-hidden="true"></span>
+        <span class="badge-count">{services.length}</span>
+        <span class="badge-text">Monitored</span>
+      </span>
+      <a
+        class="sidebar-request-link"
+        href="https://github.com/max-ostapenko/google-cloud-radar/issues/new?template=api_request.yml"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Open a GitHub issue to request monitoring for a new API"
+      >
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Request API</span>
+      </a>
+    </div>
   </div>
 
   <div class="sidebar-menu">
-    <a href="/" class={`sidebar-item all-item ${!activeServiceSlug && !activeCategory ? 'active' : ''}`}>
-      <span class="item-name">All Updates</span>
-      <span class="item-count-group">
-        <span class="item-count">{totalUpdates}</span>
-        {totalBreaking > 0 && (
-          <span class="item-breaking-pill" title={`${totalBreaking} breaking changes`}>⚠️ {totalBreaking}</span>
-        )}
-      </span>
-    </a>
-
-    <a href="/breaking" class={`sidebar-item breaking-item ${activeCategory === 'breaking' ? 'active' : ''}`}>
-      <span class="item-name">⚠️ Breaking Changes</span>
-      <span class="item-badge-breaking">{totalBreaking} Alerts</span>
-    </a>
-
-    <div class="sidebar-divider"></div>
-
-    <!-- Hierarchy: Top Level Ecosystems -->
+    <!-- Hierarchy: Top Level Ecosystems (Collapsible) -->
     <div class="ecosystem-container">
       {ecosystemList.map((eco) => (
-        <div class="ecosystem-section">
-          <div class="ecosystem-header">
+        <details class="ecosystem-section" data-eco-id={eco.id} open>
+          <summary class="ecosystem-header" title={`Toggle ${eco.label}`}>
             <div class="ecosystem-label">
+              <svg class="ecosystem-chevron" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+              {eco.icon === 'cpu' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="4" y="4" width="16" height="16" rx="2"/>
+                  <rect x="9" y="9" width="6" height="6"/>
+                  <line x1="9" y1="1" x2="9" y2="4"/>
+                  <line x1="15" y1="1" x2="15" y2="4"/>
+                  <line x1="9" y1="20" x2="9" y2="23"/>
+                  <line x1="15" y1="20" x2="15" y2="23"/>
+                  <line x1="20" y1="9" x2="23" y2="9"/>
+                  <line x1="20" y1="14" x2="23" y2="14"/>
+                  <line x1="1" y1="9" x2="4" y2="9"/>
+                  <line x1="1" y1="14" x2="4" y2="14"/>
+                </svg>
+              )}
+              {eco.icon === 'database' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                  <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                  <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                </svg>
+              )}
+              {eco.icon === 'server' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                  <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                  <line x1="6" y1="6" x2="6.01" y2="6"/>
+                  <line x1="6" y1="18" x2="6.01" y2="18"/>
+                </svg>
+              )}
+              {eco.icon === 'link' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+              )}
+              {eco.icon === 'sliders' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="4" y1="21" x2="4" y2="14"/>
+                  <line x1="4" y1="10" x2="4" y2="3"/>
+                  <line x1="12" y1="21" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12" y2="3"/>
+                  <line x1="20" y1="21" x2="20" y2="16"/>
+                  <line x1="20" y1="12" x2="20" y2="3"/>
+                  <line x1="1" y1="14" x2="7" y2="14"/>
+                  <line x1="9" y1="8" x2="15" y2="8"/>
+                  <line x1="17" y1="16" x2="23" y2="16"/>
+                </svg>
+              )}
+              {eco.icon === 'shield' && (
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              )}
               {eco.icon === 'cloud' && (
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
@@ -197,13 +214,16 @@ const ecosystemList: EcosystemGroup[] = [
             </div>
             <div class="ecosystem-badge-group">
               {eco.breakingCount > 0 && (
-                <span class="badge-breaking-micro" title={`${eco.breakingCount} breaking`}>⚠️{eco.breakingCount}</span>
+                <span class="badge-breaking-micro" title={`${eco.breakingCount} breaking`}>
+                  <svg viewBox="0 0 24 24" width="8.5" height="8.5" fill="currentColor" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                  <span>{eco.breakingCount}</span>
+                </span>
               )}
               <span class={`ecosystem-badge ${eco.totalCount === 0 ? 'empty-badge' : ''}`}>
                 {eco.totalCount}
               </span>
             </div>
-          </div>
+          </summary>
 
           <!-- Second Level: Google Cloud Subcategories (Visible by Default) -->
           {eco.subgroups && (
@@ -214,7 +234,10 @@ const ecosystemList: EcosystemGroup[] = [
                     <span>{sub.category}</span>
                     <div class="category-counts-group">
                       {sub.breakingCount > 0 && (
-                        <span class="category-breaking" title={`${sub.breakingCount} breaking`}>⚠️{sub.breakingCount}</span>
+                        <span class="category-breaking" title={`${sub.breakingCount} breaking`}>
+                          <svg viewBox="0 0 24 24" width="8.5" height="8.5" fill="currentColor" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                          <span>{sub.breakingCount}</span>
+                        </span>
                       )}
                       <span class="category-count">{sub.totalCount}</span>
                     </div>
@@ -230,7 +253,10 @@ const ecosystemList: EcosystemGroup[] = [
                           <span class="service-name">{item.service}</span>
                           <span class="service-counts-group">
                             {item.breakingCount > 0 && (
-                              <span class="service-breaking-inline" title={`${item.breakingCount} breaking changes`}>⚠️ {item.breakingCount}</span>
+                              <span class="service-breaking-inline" title={`${item.breakingCount} breaking changes`}>
+                                <svg viewBox="0 0 24 24" width="8.5" height="8.5" fill="currentColor" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                                <span>{item.breakingCount}</span>
+                              </span>
                             )}
                             <span class="service-count">{item.count}</span>
                           </span>
@@ -256,7 +282,10 @@ const ecosystemList: EcosystemGroup[] = [
                     <span class="service-name">{item.service}</span>
                     <span class="service-counts-group">
                       {item.breakingCount > 0 && (
-                        <span class="service-breaking-inline" title={`${item.breakingCount} breaking changes`}>⚠️ {item.breakingCount}</span>
+                        <span class="service-breaking-inline" title={`${item.breakingCount} breaking changes`}>
+                          <svg viewBox="0 0 24 24" width="8.5" height="8.5" fill="currentColor" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                          <span>{item.breakingCount}</span>
+                        </span>
                       )}
                       <span class="service-count">{item.count}</span>
                     </span>
@@ -269,7 +298,7 @@ const ecosystemList: EcosystemGroup[] = [
           {(!eco.directItems || eco.directItems.length === 0) && (!eco.subgroups || eco.subgroups.length === 0) && (
             <div class="empty-ecosystem-msg">No monitored APIs</div>
           )}
-        </div>
+        </details>
       ))}
     </div>
   </div>
@@ -303,8 +332,14 @@ const ecosystemList: EcosystemGroup[] = [
   }
 
   .sidebar-header {
-    padding: 16px;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sidebar-header-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -314,20 +349,70 @@ const ecosystemList: EcosystemGroup[] = [
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
     color: var(--text-secondary);
   }
 
+  .sidebar-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
   .total-services-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     font-size: 11px;
-    background-color: var(--google-blue-subtle);
-    color: var(--google-blue);
-    padding: 2px 6px;
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 2px 7px;
     border-radius: var(--radius-full);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .status-pulse-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--google-green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+  }
+
+  .badge-count {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .sidebar-request-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
     font-weight: 600;
+    color: var(--google-blue-text);
+    background-color: var(--google-blue-subtle);
+    border: 1px solid var(--google-blue-border);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .sidebar-request-link:hover {
+    background-color: var(--google-blue);
+    color: #ffffff;
+    border-color: var(--google-blue);
+    text-decoration: none;
   }
 
   .sidebar-menu {
@@ -335,96 +420,60 @@ const ecosystemList: EcosystemGroup[] = [
     flex: 1;
   }
 
-  .sidebar-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 12px;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-primary);
-    text-decoration: none;
-    margin-bottom: 2px;
-    transition: all 0.15s ease;
-  }
-
-  .sidebar-item:hover {
-    background-color: var(--bg-surface-hover);
-    text-decoration: none;
-  }
-
-  .sidebar-item.active {
-    background-color: var(--google-blue-subtle);
-    color: var(--google-blue);
-    font-weight: 600;
-  }
-
-  .item-count-group {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .item-count {
-    font-size: 11px;
-    color: var(--text-tertiary);
-    font-family: var(--font-mono);
-  }
-
-  .item-breaking-pill {
-    font-size: 10px;
-    font-weight: 700;
-    background-color: var(--google-red-subtle);
-    color: var(--google-red);
-    padding: 1px 5px;
-    border-radius: 4px;
-  }
-
-  .breaking-item {
-    color: var(--google-red);
-  }
-
-  .breaking-item.active {
-    background-color: var(--google-red-subtle);
-    color: var(--google-red);
-  }
-
-  .item-badge-breaking {
-    font-size: 10px;
-    font-weight: 700;
-    background-color: var(--google-red);
-    color: #ffffff;
-    padding: 1px 6px;
-    border-radius: 4px;
-    text-transform: uppercase;
-  }
-
-  .sidebar-divider {
-    height: 1px;
-    background-color: var(--border-subtle);
-    margin: 12px 4px;
-  }
-
-  /* Ecosystem Containers */
+  /* Ecosystem Containers (Collapsible) */
   .ecosystem-container {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 10px;
   }
 
-  .ecosystem-section {
+  details.ecosystem-section {
     border-radius: var(--radius-sm);
   }
 
-  .ecosystem-header {
+  summary.ecosystem-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 6px 10px;
     background-color: var(--bg-surface-hover);
     border-radius: var(--radius-sm);
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  summary.ecosystem-header::-webkit-details-marker,
+  summary.ecosystem-header::marker {
+    display: none;
+  }
+
+  summary.ecosystem-header:hover {
+    background-color: var(--border-subtle);
+  }
+
+  summary.ecosystem-header:focus-visible {
+    outline: 2px solid var(--google-blue);
+    outline-offset: 1px;
+  }
+
+  details.ecosystem-section[open] summary.ecosystem-header {
     margin-bottom: 6px;
+  }
+
+  .ecosystem-chevron {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+
+  details.ecosystem-section[open] > summary .ecosystem-chevron {
+    transform: rotate(90deg);
+  }
+
+  details.ecosystem-section:not([open]) summary.ecosystem-header:hover .ecosystem-chevron {
+    color: var(--text-primary);
   }
 
   .ecosystem-label {
@@ -445,9 +494,12 @@ const ecosystemList: EcosystemGroup[] = [
   }
 
   .badge-breaking-micro {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
     font-size: 9px;
     font-weight: 700;
-    color: var(--google-red);
+    color: var(--google-red-text);
     background-color: var(--google-red-subtle);
     padding: 1px 4px;
     border-radius: 3px;
@@ -459,7 +511,7 @@ const ecosystemList: EcosystemGroup[] = [
     font-size: 10px;
     font-weight: 700;
     background-color: var(--border-subtle);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     padding: 1px 5px;
     border-radius: 4px;
   }
@@ -498,6 +550,9 @@ const ecosystemList: EcosystemGroup[] = [
   }
 
   .category-breaking {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
     font-size: 9px;
     color: var(--google-red);
     font-weight: 700;
@@ -561,11 +616,14 @@ const ecosystemList: EcosystemGroup[] = [
   }
 
   .service-breaking-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
     font-size: 10px;
     font-weight: 700;
     color: var(--google-red);
     background-color: var(--google-red-subtle);
-    padding: 0 4px;
+    padding: 1px 4px;
     border-radius: 3px;
     font-family: var(--font-mono);
   }
@@ -746,6 +804,46 @@ const ecosystemList: EcosystemGroup[] = [
     });
   }
 
-  initSidebarDrawer();
-  document.addEventListener('astro:page-load', initSidebarDrawer);
+  function initEcosystemCollapse() {
+    const STORAGE_KEY = 'gcr_collapsed_ecosystems';
+    let collapsedSet = new Set<string>();
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        collapsedSet = new Set(JSON.parse(saved));
+      }
+    } catch {}
+
+    const detailsList = document.querySelectorAll<HTMLDetailsElement>('details.ecosystem-section');
+    detailsList.forEach((details) => {
+      const ecoId = details.getAttribute('data-eco-id');
+      if (!ecoId) return;
+
+      const hasActiveLink = details.querySelector('.service-link.active') !== null;
+      if (hasActiveLink) {
+        details.open = true;
+      } else if (collapsedSet.has(ecoId)) {
+        details.open = false;
+      }
+
+      details.addEventListener('toggle', () => {
+        if (details.open) {
+          collapsedSet.delete(ecoId);
+        } else {
+          collapsedSet.add(ecoId);
+        }
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(collapsedSet)));
+        } catch {}
+      });
+    });
+  }
+
+  function initSidebar() {
+    initSidebarDrawer();
+    initEcosystemCollapse();
+  }
+
+  initSidebar();
+  document.addEventListener('astro:page-load', initSidebar);
 </script>

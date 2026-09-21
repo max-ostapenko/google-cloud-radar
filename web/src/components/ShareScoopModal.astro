@@ -58,7 +58,10 @@
         <span id="shareTwitterCount" class="char-count">0 chars</span>
         <div class="action-buttons">
           <button type="button" class="copy-btn" id="shareTwitterCopyBtn">
-            <span class="copy-icon">📋</span>
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
             <span>Copy Text</span>
           </button>
           <a
@@ -83,7 +86,10 @@
         <span id="shareLinkedInCount" class="char-count">0 chars</span>
         <div class="action-buttons">
           <button type="button" class="copy-btn" id="shareLinkedInCopyBtn">
-            <span class="copy-icon">📋</span>
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
             <span>Copy Post</span>
           </button>
           <a
@@ -105,7 +111,10 @@
         <span class="char-count">Slack Markdown</span>
         <div class="action-buttons">
           <button type="button" class="copy-btn" id="shareSlackCopyBtn">
-            <span class="copy-icon">📋</span>
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
             <span>Copy Slack Markdown</span>
           </button>
         </div>
@@ -123,7 +132,10 @@
         <span class="char-count">r/googlecloud formatted</span>
         <div class="action-buttons">
           <button type="button" class="copy-btn" id="shareRedditCopyBtn">
-            <span class="copy-icon">📋</span>
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
             <span>Copy All</span>
           </button>
           <a
@@ -176,9 +188,9 @@
       const methods = data.methods || [];
       const methodHighlight = methods.length > 0 ? methods[0] : data.api;
 
-      const twitterText = `⚡ Google Cloud API Radar: Updates detected for ${data.service} (${data.api})${data.isBreaking ? ' [BREAKING]' : ''} ahead of official release notes!\n\n"${data.title}"\nTargeted Method: ${methodHighlight}\n\nTrack the pre-release diff on Google Cloud Radar:\n${permalink}\n\n#GCP #GoogleCloud #DevOps #CloudArchitecture`;
+      const twitterText = `Google Cloud API Radar: Updates detected for ${data.service} (${data.api})${data.isBreaking ? ' [BREAKING]' : ''} ahead of official release notes!\n\n"${data.title}"\nTargeted Method: ${methodHighlight}\n\nTrack the pre-release diff on Google Cloud Radar:\n${permalink}\n\n#GCP #GoogleCloud #DevOps #CloudArchitecture`;
 
-      const linkedInText = `Google Cloud API Update Signal: ${data.service}\n\nUnreleased changes detected in ${data.service} Google Discovery APIs before official release documentation:\n\n📌 Key Details:\n• Update: ${data.title}\n• API: ${data.api}\n• Impact: ${data.isBreaking ? '⚠️ Breaking Change' : '✨ New Feature / Method Extensions'}\n${methods.length > 0 ? `• Key Methods: ${methods.slice(0, 3).join(', ')}\n` : ''}\nSummary:\n${data.summary}\n\nInspect the full schema diff and crowd-sourced impact signals on Google Cloud Radar:\n${permalink}\n\n#GoogleCloud #GCP #CloudArchitecture #SoftwareEngineering #DevOps`;
+      const linkedInText = `Google Cloud API Update Signal: ${data.service}\n\nUnreleased changes detected in ${data.service} Google Discovery APIs before official release documentation:\n\nKey Details:\n• Update: ${data.title}\n• API: ${data.api}\n• Impact: ${data.isBreaking ? '[BREAKING] Breaking Change' : 'New Feature / Method Extensions'}\n${methods.length > 0 ? `• Key Methods: ${methods.slice(0, 3).join(', ')}\n` : ''}\nSummary:\n${data.summary}\n\nInspect the full schema diff and crowd-sourced impact signals on Google Cloud Radar:\n${permalink}\n\n#GoogleCloud #GCP #CloudArchitecture #SoftwareEngineering #DevOps`;
 
       const slackText = `*Google Cloud API Update: ${data.service} (${data.api})* ${data.isBreaking ? ':warning: *[BREAKING]*' : ''}\n*${data.title}*\n>${data.summary}\n${methods.length > 0 ? `*Targeted Methods:* \`${methods.slice(0, 2).join('`, `')}\`\n` : ''}> *Radar Permalink:* <${permalink}|Inspect Schema Diff & Methods>`;
 
@@ -269,7 +281,7 @@
         try {
           await navigator.clipboard.writeText(text);
           const orig = btn.innerHTML;
-          btn.innerHTML = '<span>✅ Copied!</span>';
+          btn.innerHTML = '<span>Copied!</span>';
           btn.classList.add('copied');
           setTimeout(() => {
             btn.innerHTML = orig;

@@ -1,4 +1,8 @@
 ---
+import { getAllFeedEntries, groupEntriesByMonth } from '../lib/feed';
+
+const entries = await getAllFeedEntries();
+const monthGroups = groupEntriesByMonth(entries);
 ---
 
 <footer class="gcp-footer">
@@ -14,7 +18,7 @@
           <span class="footer-title">Google Cloud Radar</span>
         </div>
         <p class="footer-desc">
-          Automated pre-release intelligence for Google APIs and Cloud services. Continuously tracking the Google Discovery Service to surface API changes and breaking changes before official documentation and release notes catch up.
+          Automated pre-release intelligence for Google APIs and Cloud services. Continuously tracking the Google Discovery Service to surface API updates, breaking schema evolutions, and method additions before official documentation and release notes catch up.
         </p>
       </div>
 
@@ -26,46 +30,32 @@
           </svg>
           <span>Source</span>
         </a>
-        <!-- Theme toggle -->
-        <button id="footer-theme-toggle" class="footer-theme-btn" aria-label="Toggle dark mode" title="Toggle Theme">
-          <svg class="sun-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/>
-            <line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          </svg>
-          <svg class="moon-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-          </svg>
-        </button>
       </nav>
     </div>
 
+    <!-- Monthly Archives Navigation -->
+    {monthGroups && monthGroups.length > 0 && (
+      <div class="footer-archives">
+        <span class="archives-heading">Monthly Archives:</span>
+        <nav class="archives-nav" aria-label="Monthly timeline archives">
+          {monthGroups.map((g) => (
+            <a href={`/timeline/${g.key}`} class="archive-pill" title={`Browse Google Cloud API changes for ${g.label}`}>
+              <span class="archive-name">{g.monthName} '{String(g.year).slice(2)}</span>
+              <span class="archive-badge">{g.totalCount}</span>
+            </a>
+          ))}
+        </nav>
+      </div>
+    )}
+
     <div class="footer-bottom">
       <p class="disclaimer">
-        Independent developer telemetry tool. Google, Google Cloud, GCP, and Vertex AI are trademarks of Google LLC.
+        Google, Google Cloud, GCP, and Vertex AI are trademarks of Google LLC.
       </p>
-      <div class="copyright">© {new Date().getFullYear()} Google Cloud Radar · Apache 2.0</div>
+      <div class="copyright">© {new Date().getFullYear()} Google Cloud Radar</div>
     </div>
   </div>
 </footer>
-
-<script is:inline>
-  const footerToggle = document.getElementById('footer-theme-toggle');
-  if (footerToggle) {
-    footerToggle.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme') || 'dark';
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('gcp-radar-theme', next);
-    });
-  }
-</script>
 
 <style>
   .gcp-footer {
@@ -142,27 +132,64 @@
     color: var(--google-blue);
   }
 
-  .footer-theme-btn {
+  .footer-archives {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-top: 1px solid var(--border-subtle);
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .archives-heading {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+
+  .archives-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .archive-pill {
     display: inline-flex;
     align-items: center;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .archive-pill:hover {
+    color: var(--google-blue);
+    border-color: var(--google-blue-border);
+    background-color: var(--google-blue-subtle);
+  }
+
+  .archive-badge {
+    font-size: 10px;
+    font-family: var(--font-mono);
     color: var(--text-tertiary);
-    transition: color 0.15s ease;
+    background-color: var(--bg-surface);
+    padding: 1px 5px;
+    border-radius: var(--radius-full);
   }
 
-  .footer-theme-btn:hover {
-    color: var(--text-primary);
+  .archive-pill:hover .archive-badge {
+    color: var(--google-blue);
   }
-
-  [data-theme='dark'] .sun-icon { display: block; }
-  [data-theme='dark'] .moon-icon { display: none; }
-  [data-theme='light'] .sun-icon { display: none; }
-  [data-theme='light'] .moon-icon { display: block; }
-  .sun-icon { display: block; }
-  .moon-icon { display: none; }
 
   .footer-bottom {
     padding-top: 16px;

@@ -2,20 +2,26 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ChangeCard from '../../components/ChangeCard.astro';
 import SubscriptionCard from '../../components/SubscriptionCard.astro';
-import { getAllFeedEntries, getServicesList, slugify, getDiscoveryMetaForApi, type FeedEntry } from '../../lib/feed';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import {
+  getAllFeedEntries,
+  getServicesList,
+  slugify,
+  type FeedEntry,
+} from '../../lib/feed';
 
 export async function getStaticPaths() {
-  const services = await getServicesList();
   const allEntries = await getAllFeedEntries();
+  const services = await getServicesList();
 
-  return services.map((svc) => {
+  return services.map((s) => {
     const serviceEntries = allEntries.filter(
-      (e) => slugify(e.service) === svc.slug
+      (e) => slugify(e.service) === s.slug,
     );
     return {
-      params: { service: svc.slug },
+      params: { service: s.slug },
       props: {
-        serviceInfo: svc,
+        serviceInfo: s,
         entries: serviceEntries,
       },
     };
@@ -28,6 +34,7 @@ interface Props {
     slug: string;
     count: number;
     category: string;
+    ecosystem?: string;
   };
   entries: FeedEntry[];
 }
@@ -35,22 +42,26 @@ interface Props {
 const { serviceInfo, entries } = Astro.props;
 
 const breakingCount = entries.filter((e) => e.breaking).length;
-const highImpactCount = entries.filter((e) => e.impact === 'high').length;
+const highImpactCount = entries.filter((e) => e.impact === "high").length;
+
 const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
-
-// Resolve official docs and discovery URLs
-const primaryDocLink = entries.find((e) => e.documentationLink)?.documentationLink || 
-  getDiscoveryMetaForApi(serviceInfo.service).documentationLink || 
-  getDiscoveryMetaForApi(apisUsed[0] || '').documentationLink;
-
 const apisWithMeta = apisUsed.map((api) => {
-  const meta = getDiscoveryMetaForApi(api);
   return {
     api,
-    discoveryRestUrl: meta.discoveryRestUrl || `https://${api.split('.')[0]}.googleapis.com/$discovery/rest?version=${api.split('.')[1] || 'v1'}`,
-    documentationLink: meta.documentationLink,
+    discoveryRestUrl: `https://www.googleapis.com/discovery/v1/apis/${api.replace(":", "/")}/rest`,
   };
 });
+
+const primaryDocLink = `https://cloud.google.com/products`;
+
+const breadcrumbItems = [
+  { label: "Radar Feed", href: "/" },
+  ...(serviceInfo.ecosystem ? [{ label: serviceInfo.ecosystem }] : []),
+  ...(serviceInfo.category && serviceInfo.category !== serviceInfo.ecosystem
+    ? [{ label: serviceInfo.category }]
+    : []),
+  { label: serviceInfo.service },
+];
 ---
 
 <BaseLayout
@@ -60,6 +71,9 @@ const apisWithMeta = apisUsed.map((api) => {
   activeCategory={serviceInfo.category}
 >
   <div class="service-hub-container">
+    <!-- Breadcrumb Navigation -->
+    <Breadcrumbs items={breadcrumbItems} />
+
     <!-- Service Header Banner -->
     <div class="service-hero">
       <div class="service-hero-top">
@@ -106,7 +120,12 @@ const apisWithMeta = apisUsed.map((api) => {
           <div class="stat-val-group">
             <span class="stat-val">{entries.length}</span>
             {breakingCount > 0 && (
-              <span class="stat-breaking-pill" title={`${breakingCount} breaking changes`}>⚠️ {breakingCount}</span>
+              <span class="stat-breaking-pill" title={`${breakingCount} breaking changes`}>
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true">
+                  <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                </svg>
+                <span>{breakingCount}</span>
+              </span>
             )}
           </div>
           <span class="stat-lbl">Detected Changes</span>
@@ -144,7 +163,7 @@ const apisWithMeta = apisUsed.map((api) => {
 
     <!-- Timeline of Changes -->
     <div class="timeline-header">
-      <h2>Change History ({entries.length}{breakingCount > 0 ? ` · ⚠️ ${breakingCount} breaking` : ''})</h2>
+      <h2>Change History ({entries.length}{breakingCount > 0 ? ` · ${breakingCount} breaking` : ''})</h2>
       <a href="/" class="back-home-link">← All Services</a>
     </div>
 
@@ -155,7 +174,11 @@ const apisWithMeta = apisUsed.map((api) => {
         ))
       ) : (
         <div class="no-changes-card">
-          <div class="no-changes-icon">📡</div>
+          <div class="no-changes-icon">
+            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4.93 19.07a10 10 0 0 1 0-14.14M2 12h.01M12 2v.01M12 22v.01M22 12h.01M19.07 4.93a10 10 0 0 1 0 14.14M7.76 16.24a6 6 0 0 1 0-8.48M16.24 7.76a6 6 0 0 1 0 8.48M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+            </svg>
+          </div>
           <h3>Continuous Monitoring Active</h3>
           <p>
             No method additions or breaking changes have been detected for <strong>{serviceInfo.service}</strong> yet.

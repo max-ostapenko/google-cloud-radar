@@ -2,6 +2,16 @@ import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import { getAllFeedEntries } from '../lib/feed';
 
+function escapeXml(str: unknown): string {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 export async function GET(context: APIContext) {
   const entries = await getAllFeedEntries();
 
@@ -15,12 +25,12 @@ export async function GET(context: APIContext) {
       description: entry.summary,
       link: `/changes/${entry.slug}`,
       customData: `
-        <category>${entry.category}</category>
-        <service>${entry.service}</service>
-        <api>${entry.api}</api>
-        <impact>${entry.impact}</impact>
-        <breaking>${entry.breaking}</breaking>
-        <interesting_score>${entry.interesting_score}</interesting_score>
+        <category>${escapeXml(entry.category)}</category>
+        <service>${escapeXml(entry.service)}</service>
+        <api>${escapeXml(entry.api)}</api>
+        <impact>${escapeXml(entry.impact)}</impact>
+        <breaking>${escapeXml(entry.breaking)}</breaking>
+        <interesting_score>${escapeXml(entry.interesting_score)}</interesting_score>
       `,
     })),
     customData: `<language>en-us</language>`,

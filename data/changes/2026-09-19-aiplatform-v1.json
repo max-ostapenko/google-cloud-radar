@@ -1,0 +1,23 @@
+{
+  "id": "2026-09-19-aiplatform-v1",
+  "date": "2026-09-19",
+  "api": "aiplatform.v1",
+  "service": "Vertex AI",
+  "title": "Vertex AI adds Video 'Pro Edit' and Agent Observability",
+  "summary": "Vertex AI introduces experimental video editing capabilities and OpenTelemetry-based observability for Agents. Notably, updating an Agent via patch is now a long-running operation.",
+  "details": "New experimental 'Pro Edit' features for video generation allow developers to modify existing video outputs using text instructions or structured prompts via the `fromOperationId` field. For Agent developers, the new `observabilityConfig` enables OpenTelemetry span emission for monitoring tool usage, model latency, and token counts. Additionally, the `agents.patch` method has transitioned from a synchronous response to a `GoogleLongrunningOperation`, requiring a change in how developers handle agent updates in their CI/CD pipelines or application logic.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "AI",
+    "Vertex AI",
+    "Video Generation",
+    "Observability",
+    "Agents"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-19T13:47:25.440453+00:00"
+}

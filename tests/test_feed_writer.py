@@ -40,11 +40,11 @@ class TestFeedWriter(unittest.TestCase):
             self.assertEqual("2026-04-17", doc["date"])
             self.assertEqual("bigquery.v2", doc["api"])
             self.assertEqual("BigQuery adds a useful flag", doc["title"])
-            self.assertEqual("BigQuery", doc["service_name"])
+            self.assertEqual("BigQuery", doc["service"])
 
             index = json.loads(index_path.read_text(encoding="utf-8"))
             self.assertEqual(1, len(index))
-            self.assertEqual("2026-04-17-bigquery-v2", index[0]["slug"])
+            self.assertEqual("2026-04-17-bigquery-v2", index[0]["id"])
             self.assertEqual("bigquery.v2", index[0]["api"])
             self.assertEqual(["bigquery", "jobs"], index[0]["tags"])
 

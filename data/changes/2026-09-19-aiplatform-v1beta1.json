@@ -1,0 +1,25 @@
+{
+  "id": "2026-09-19-aiplatform-v1beta1",
+  "date": "2026-09-19",
+  "api": "aiplatform.v1beta1",
+  "service": "Vertex AI",
+  "title": "Agent Patching goes Async and Video 'Pro Edit' arrives",
+  "summary": "Vertex AI v1beta1 shifts Agent updates to Long Running Operations and introduces experimental 'Pro Edit' video capabilities. New observability features and Reasoning Engine garbage collection also debut.",
+  "details": "This update introduces a significant breaking change: the `projects.locations.agents.patch` method now returns a `GoogleLongrunningOperation` instead of the `Agent` resource directly. Developers must update their integration logic to poll the operation for completion. Additionally, the `data` field in the `GoogleCloudAiplatformV1beta1A2APart` schema has changed from `object` to `any`, which may impact strictly typed client implementations. \n\nOn the feature side, experimental video generation now supports 'Pro Edit' via `CloudAiLargeModelsVisionGenerateVideoExperimentsProEditConfig`. This allows developers to modify existing video generations using text instructions or structured prompts by referencing a `fromOperationId`. For production monitoring, the `Agent` resource now includes an `observabilityConfig` to enable OpenTelemetry spans for tracking tool usage, model latencies, and token counts. Finally, Reasoning Engines now support a `revisionGarbageCollectionStrategy` to automatically manage resource bloat by keeping only the latest N runtime revisions.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "vertex-ai",
+    "agents",
+    "video-gen",
+    "breaking-change",
+    "lro"
+  ],
+  "extracted_methods": [
+    "projects.locations.agents.patch"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-19T13:47:25.442932+00:00"
+}

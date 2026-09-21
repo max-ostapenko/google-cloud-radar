@@ -1,35 +1,6 @@
-import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
-import {
-  getAuth,
-  initializeAuth,
-  browserLocalPersistence,
-  browserPopupRedirectResolver,
-  browserSessionPersistence,
-  inMemoryPersistence,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged,
-  type User,
-  type Auth,
-} from 'firebase/auth';
-import {
-  getFirestore,
-  collection,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  addDoc,
-  deleteDoc,
-  query,
-  orderBy,
-  limit,
-  onSnapshot,
-  serverTimestamp,
-  increment,
-  type Firestore,
-} from 'firebase/firestore';
+import type { FirebaseApp } from 'firebase/app';
+import type { User, Auth } from 'firebase/auth';
+import type { Firestore } from 'firebase/firestore';
 
 // Public client Firebase configuration for Google Cloud Radar
 const firebaseConfig = {
@@ -40,9 +11,9 @@ const firebaseConfig = {
   appId: '1:751333758884:web:de973a9e1464cd58c19331',
 };
 
-let app: FirebaseApp;
-let auth: Auth;
-let db: Firestore;
+let appPromise: Promise<FirebaseApp> | null = null;
+let authPromise: Promise<Auth> | null = null;
+let dbPromise: Promise<Firestore> | null = null;
 
 export function isLocalEnvironment(): boolean {
   if (typeof window === 'undefined') return false;
@@ -53,40 +24,52 @@ export function isLocalEnvironment(): boolean {
   );
 }
 
-export function getFirebaseApp() {
-  if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-  } else {
-    app = getApps()[0];
+export async function getFirebaseApp(): Promise<FirebaseApp> {
+  if (!appPromise) {
+    appPromise = (async () => {
+      const { initializeApp, getApps } = await import('firebase/app');
+      const apps = getApps();
+      return apps.length ? apps[0] : initializeApp(firebaseConfig);
+    })();
   }
-  return app;
+  return appPromise;
 }
 
-export function getFirebaseAuth(): Auth {
-  if (!auth) {
-    const firebaseApp = getFirebaseApp();
-    try {
-      auth = initializeAuth(firebaseApp, {
-        persistence: [browserLocalPersistence, browserSessionPersistence, inMemoryPersistence],
-        popupRedirectResolver: browserPopupRedirectResolver,
-      });
-    } catch {
-      auth = getAuth(firebaseApp);
-    }
+export async function getFirebaseAuth(): Promise<Auth> {
+  if (!authPromise) {
+    authPromise = (async () => {
+      const app = await getFirebaseApp();
+      const {
+        initializeAuth,
+        getAuth,
+        browserLocalPersistence,
+        browserSessionPersistence,
+        inMemoryPersistence,
+        browserPopupRedirectResolver,
+      } = await import('firebase/auth');
+      try {
+        return initializeAuth(app, {
+          persistence: [browserLocalPersistence, browserSessionPersistence, inMemoryPersistence],
+          popupRedirectResolver: browserPopupRedirectResolver,
+        });
+      } catch {
+        return getAuth(app);
+      }
+    })();
   }
-  return auth;
+  return authPromise;
 }
 
-export function getFirebaseDb(): Firestore {
-  if (!db) {
-    db = getFirestore(getFirebaseApp(), 'radar');
+export async function getFirebaseDb(): Promise<Firestore> {
+  if (!dbPromise) {
+    dbPromise = (async () => {
+      const app = await getFirebaseApp();
+      const { getFirestore } = await import('firebase/firestore');
+      return getFirestore(app, 'radar');
+    })();
   }
-  return db;
+  return dbPromise;
 }
-
-// Google Sign-In Provider
-const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 // Local Mock User Storage Key
 const LOCAL_DEV_USER_KEY = 'gcp_radar_dev_user';
@@ -110,7 +93,10 @@ export async function signInWithGoogle(): Promise<User | null> {
   }
 
   try {
-    const authInstance = getFirebaseAuth();
+    const authInstance = await getFirebaseAuth();
+    const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
+    const googleProvider = new GoogleAuthProvider();
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
     const result = await signInWithPopup(authInstance, googleProvider);
     return result.user;
   } catch (error: any) {
@@ -132,11 +118,12 @@ export async function signOutUser(): Promise<void> {
     return;
   }
 
-  const authInstance = getFirebaseAuth();
+  const authInstance = await getFirebaseAuth();
+  const { signOut } = await import('firebase/auth');
   await signOut(authInstance);
 }
 
-export function onAuthChange(callback: (user: User | null) => void) {
+export function onAuthChange(callback: (user: User | null) => void): () => void {
   if (isLocalEnvironment()) {
     const checkLocalUser = () => {
       try {
@@ -153,8 +140,22 @@ export function onAuthChange(callback: (user: User | null) => void) {
     return () => window.removeEventListener('radar_auth_change', handleAuthEvent);
   }
 
-  const authInstance = getFirebaseAuth();
-  return onAuthStateChanged(authInstance, callback);
+  let unsubscribe: (() => void) | null = null;
+  let active = true;
+
+  getFirebaseAuth().then(async (authInstance) => {
+    if (!active) return;
+    const { onAuthStateChanged } = await import('firebase/auth');
+    if (!active) return;
+    unsubscribe = onAuthStateChanged(authInstance, callback);
+  }).catch((err) => {
+    console.warn('onAuthChange initialization error:', err);
+  });
+
+  return () => {
+    active = false;
+    if (unsubscribe) unsubscribe();
+  };
 }
 
 export type ReactionType = 'like_change' | 'released' | 'false_positive_or_duplicate';
@@ -255,7 +256,8 @@ async function executeReactionSync(
   }
 
   try {
-    const dbInstance = getFirebaseDb();
+    const dbInstance = await getFirebaseDb();
+    const { doc, setDoc, serverTimestamp, increment } = await import('firebase/firestore');
     const reactionDocRef = doc(dbInstance, 'changes', changeId, 'reactions', user.uid);
     const changeDocRef = doc(dbInstance, 'changes', changeId);
     const delta = targetValue ? 1 : -1;
@@ -316,10 +318,15 @@ export function listenToChange(
     return () => window.removeEventListener('radar_reaction_update', handleUpdate);
   }
 
-  try {
-    const dbInstance = getFirebaseDb();
+  let unsubscribe: (() => void) | null = null;
+  let active = true;
+
+  getFirebaseDb().then(async (dbInstance) => {
+    if (!active) return;
+    const { doc, onSnapshot } = await import('firebase/firestore');
+    if (!active) return;
     const changeDocRef = doc(dbInstance, 'changes', changeId);
-    return onSnapshot(
+    unsubscribe = onSnapshot(
       changeDocRef,
       (docSnap) => {
         if (docSnap.exists()) {
@@ -336,10 +343,14 @@ export function listenToChange(
         console.warn('Change listener fallback:', err);
       }
     );
-  } catch (err) {
+  }).catch((err) => {
     console.warn('Could not initialize change listener:', err);
-    return () => {};
-  }
+  });
+
+  return () => {
+    active = false;
+    if (unsubscribe) unsubscribe();
+  };
 }
 
 /**
@@ -362,10 +373,15 @@ export function listenToUserReactions(
     return () => {};
   }
 
-  try {
-    const dbInstance = getFirebaseDb();
+  let unsubscribe: (() => void) | null = null;
+  let active = true;
+
+  getFirebaseDb().then(async (dbInstance) => {
+    if (!active) return;
+    const { doc, onSnapshot } = await import('firebase/firestore');
+    if (!active) return;
     const reactionDocRef = doc(dbInstance, 'changes', changeId, 'reactions', userId);
-    return onSnapshot(
+    unsubscribe = onSnapshot(
       reactionDocRef,
       (docSnap) => {
         if (docSnap.exists()) {
@@ -393,10 +409,14 @@ export function listenToUserReactions(
         }
       }
     );
-  } catch (err) {
+  }).catch((err) => {
     console.warn('Could not initialize user reaction listener:', err);
-    return () => {};
-  }
+  });
+
+  return () => {
+    active = false;
+    if (unsubscribe) unsubscribe();
+  };
 }
 
 export interface UserAlertPreferences {
@@ -432,7 +452,8 @@ export async function getUserAlertPreferences(user: User | any): Promise<UserAle
   }
 
   try {
-    const dbInstance = getFirebaseDb();
+    const dbInstance = await getFirebaseDb();
+    const { doc, getDoc } = await import('firebase/firestore');
     const docRef = doc(dbInstance, 'users', user.uid);
     const snap = await getDoc(docRef);
     if (snap.exists()) {
@@ -484,7 +505,8 @@ export async function saveUserAlertPreferences(
   }
 
   try {
-    const dbInstance = getFirebaseDb();
+    const dbInstance = await getFirebaseDb();
+    const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
     const docRef = doc(dbInstance, 'users', user.uid);
     await setDoc(
       docRef,
@@ -507,4 +529,3 @@ export async function saveUserAlertPreferences(
 
   return fullPrefs;
 }
-

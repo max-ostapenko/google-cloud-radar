@@ -1,10 +1,8 @@
 {
   "id": "2026-05-28-datalineage-v1",
-  "slug": "2026-05-28-datalineage-v1",
   "date": "2026-05-28",
   "api": "datalineage.v1",
   "service": "Data Lineage",
-  "service_name": "Data Lineage",
   "title": "Clarified location requirements for lineage search",
   "summary": "The Data Lineage API now explicitly requires that the locations list in streaming search requests includes the location specified in the parent field.",
   "details": "A documentation update to SearchLineageStreamingRequest clarifies that the locations parameter is not just a general list, but must specifically contain the location provided in the parent field. This helps prevent validation errors when performing streaming lineage searches by ensuring consistency between the parent resource path and the search scope.",
@@ -17,7 +15,6 @@
   ],
   "extracted_methods": [],
   "status": "released",
-  "radar_ring": "adopt",
   "lead_time_days": 1,
   "generated_at": "2026-05-28T03:00:00Z",
   "official_release_date": "2026-05-29",

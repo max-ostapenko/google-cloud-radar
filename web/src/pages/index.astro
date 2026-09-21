@@ -1,93 +1,184 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ChangeCard from '../components/ChangeCard.astro';
-import SubscriptionCard from '../components/SubscriptionCard.astro';
-import { getAllFeedEntries, getServicesList, groupEntriesByMonth } from '../lib/feed';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { getAllFeedEntries, groupEntriesByMonth } from '../lib/feed';
 
 const entries = await getAllFeedEntries();
-const services = await getServicesList();
 const monthGroups = groupEntriesByMonth(entries);
 
 const breakingCount = entries.filter((e) => e.breaking).length;
 const highImpactCount = entries.filter((e) => e.impact === 'high').length;
-const aiCount = entries.filter((e) => e.category === 'AI & ML' || e.category.toLowerCase().includes('ai')).length;
-const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.category.toLowerCase().includes('data')).length;
+
+// Initial 30d calculations for SSR facets
+const firstDate = entries[0]?.date ? new Date(entries[0].date + 'T00:00:00Z') : new Date('2026-09-16T00:00:00Z');
+const min30d = new Date(firstDate.getTime() - 30 * 86400000).toISOString().slice(0, 10);
+const entries30d = entries.filter((e) => e.date >= min30d);
+const count30d = entries30d.length;
+const breaking30d = entries30d.filter((e) => e.breaking).length;
+const highImpact30d = entries30d.filter((e) => e.impact === 'high').length;
+
+const min60d = new Date(firstDate.getTime() - 60 * 86400000).toISOString().slice(0, 10);
+const count60d = entries.filter((e) => e.date >= min60d).length;
+
+const min90d = new Date(firstDate.getTime() - 90 * 86400000).toISOString().slice(0, 10);
+const count90d = entries.filter((e) => e.date >= min90d).length;
 ---
 
-<BaseLayout 
+<BaseLayout
   title="Google Cloud Radar — Real-Time Google API & Breaking Change Tracker"
   description="Live pre-release intelligence for Google Cloud and Google APIs. Track silent method additions, schema changes, and breaking changes before official documentation catches up."
 >
   <div class="feed-header">
-    <div class="hero-banner">
-      <div class="hero-content">
+    <Breadcrumbs items={[{ label: 'Radar Feed' }]} />
+
+    <!-- Merged Hero & Alerts Banner (Auto-hidden if user is already subscribed) -->
+    <div class="merged-hero-card" id="feedHeroBanner">
+      <div class="hero-main">
         <h1 class="hero-title">Google Cloud Radar</h1>
         <p class="hero-subtitle">
           Real-time intelligence on unreleased Google Cloud API updates, breaking schema evolutions, and method additions caught directly from Discovery Service.
         </p>
       </div>
-      <div class="hero-stats">
-        <div class="stat-box">
-          <div class="stat-main-row">
-            <span class="stat-number">{entries.length}</span>
-            {breakingCount > 0 && (
-              <span class="stat-breaking-sub" title={`${breakingCount} breaking changes`}>⚠️ {breakingCount}</span>
-            )}
+
+      <div class="hero-alerts-callout">
+        <div class="hero-alerts-info">
+          <div class="hero-alerts-badge">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span>Email Alerts</span>
           </div>
-          <span class="stat-label">Total Insights</span>
+          <p class="hero-alerts-prompt">Breaking changes instantly & Monday digests across monitored GCP services.</p>
         </div>
-        <div class="stat-box">
-          <span class="stat-number">{services.length}</span>
-          <span class="stat-label">APIs Monitored</span>
-          <a
-            class="request-api-link"
-            href="https://github.com/max-ostapenko/google-cloud-radar/issues/new?template=api_request.yml"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Open a GitHub issue to request monitoring for a new API"
-          >+ Request</a>
-        </div>
+        <button class="hero-subscribe-btn" id="heroSubscribeBtn" type="button">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"></path>
+          </svg>
+          <span>Enable Email Alerts</span>
+        </button>
       </div>
     </div>
 
-    <!-- Feed Subscription Callout Card -->
-    <SubscriptionCard variant="feed" />
-
-    <!-- Filters & Action Bar -->
+    <!-- Unified Single-Row Filters & Action Bar -->
     <div class="filters-bar">
-      <div class="filter-pills" id="filter-pills-container">
-        <button class="pill-btn active" data-filter="all">
-          <span>All Updates</span>
-          <span class="pill-count">{entries.length}</span>
-          {breakingCount > 0 && (
-            <span class="pill-breaking-sub" title={`${breakingCount} breaking changes`}>⚠️ {breakingCount}</span>
-          )}
-        </button>
-        <button class="pill-btn pill-breaking" data-filter="breaking">
-          <span>⚠️ Breaking Only</span>
-          <span class="pill-count">{breakingCount}</span>
-        </button>
-        <button class="pill-btn" data-filter="high-impact">
-          <span>🔥 High Impact</span>
-          <span class="pill-count">{highImpactCount}</span>
-        </button>
-        <button class="pill-btn" data-filter="category-ai">
-          <span>🧠 AI & ML</span>
-          <span class="pill-count">{aiCount}</span>
-        </button>
-        <button class="pill-btn" data-filter="category-data">
-          <span>📊 Data Analytics</span>
-          <span class="pill-count">{dataCount}</span>
-        </button>
+      <div class="filters-controls-group">
+        <!-- Timeline Calendar Dropdown -->
+        <div class="filter-dropdown-wrapper" id="timelineDropdownWrapper">
+          <button
+            class="filter-dropdown-trigger"
+            id="timelineDropdownBtn"
+            type="button"
+            aria-haspopup="true"
+            aria-expanded="false"
+            title="Filter by timeline"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="dropdown-leading-icon">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span class="dropdown-label-muted">Timeline:</span>
+            <strong id="timelineActiveLabel">Last 30 days</strong>
+            <span class="dropdown-count-badge" id="timelineActiveCount">{count30d}</span>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" class="dropdown-chevron">
+              <path d="m6 9 6 6 6-6"></path>
+            </svg>
+          </button>
+
+          <div class="filter-dropdown-menu" id="timelineDropdownMenu" role="menu">
+            <div class="menu-section-label">Presets</div>
+            <button class="menu-option active" data-timeline-preset="30d" type="button" role="menuitem">
+              <span class="option-check-icon">✓</span>
+              <span class="option-label">Last 30 days</span>
+              <span class="option-badge">{count30d}</span>
+            </button>
+            <button class="menu-option" data-timeline-preset="60d" type="button" role="menuitem">
+              <span class="option-check-icon">✓</span>
+              <span class="option-label">Last 60 days</span>
+              <span class="option-badge">{count60d}</span>
+            </button>
+            <button class="menu-option" data-timeline-preset="90d" type="button" role="menuitem">
+              <span class="option-check-icon">✓</span>
+              <span class="option-label">Last 90 days</span>
+              <span class="option-badge">{count90d}</span>
+            </button>
+            <button class="menu-option" data-timeline-preset="all" type="button" role="menuitem">
+              <span class="option-check-icon">✓</span>
+              <span class="option-label">All time</span>
+              <span class="option-badge">{entries.length}</span>
+            </button>
+
+            <div class="menu-divider"></div>
+
+            <div class="custom-range-box">
+              <div class="menu-section-label">Custom Date Range</div>
+              <div class="custom-inputs-row">
+                <div class="custom-input-group">
+                  <label for="customDateFrom">From</label>
+                  <input type="date" id="customDateFrom" />
+                </div>
+                <div class="custom-input-group">
+                  <label for="customDateTo">To</label>
+                  <input type="date" id="customDateTo" />
+                </div>
+              </div>
+              <button type="button" id="applyCustomDateBtn" class="custom-apply-btn">Apply Range</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Impact Filter Dropdown -->
+        <div class="filter-dropdown-wrapper" id="impactDropdownWrapper">
+          <button
+            class="filter-dropdown-trigger"
+            id="impactDropdownBtn"
+            type="button"
+            aria-haspopup="true"
+            aria-expanded="false"
+            title="Filter by change impact"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="dropdown-leading-icon">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            <span class="dropdown-label-muted">Impact:</span>
+            <strong id="impactActiveLabel">All changes</strong>
+            <span class="dropdown-count-badge" id="impactActiveCount">{count30d}</span>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" class="dropdown-chevron">
+              <path d="m6 9 6 6 6-6"></path>
+            </svg>
+          </button>
+
+          <div class="filter-dropdown-menu" id="impactDropdownMenu" role="menu">
+            <button class="menu-option active" data-impact="all" type="button" role="menuitem">
+              <span class="option-check-icon">✓</span>
+              <span class="option-label">All changes</span>
+              <span class="option-badge">{count30d}</span>
+            </button>
+            <button class="menu-option" data-impact="high-impact" type="button" role="menuitem">
+              <span class="option-check-icon">✓</span>
+              <span class="option-label">High Impact</span>
+              <span class="option-badge">{highImpact30d}</span>
+            </button>
+            <button class="menu-option menu-option-breaking" data-impact="breaking" type="button" role="menuitem">
+              <span class="option-check-icon">✓</span>
+              <span class="option-label">Breaking Only</span>
+              <span class="option-badge breaking-badge">{breaking30d}</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="feed-actions-group">
+        <span class="feed-results-count" id="feed-results-count">{count30d} updates</span>
         <button class="feed-alerts-cta-btn" id="feed-alerts-cta-btn" type="button" title="Email Alerts for Breaking Changes">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
           </svg>
-          <span id="feed-alerts-cta-text">⚡ Get Alerts</span>
+          <span id="feed-alerts-cta-text">Get Alerts</span>
         </button>
         <button class="share-view-btn" id="share-view-btn" title="Copy shareable link to this view">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
@@ -96,41 +187,6 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
           </svg>
           <span id="share-view-btn-text">Share View</span>
         </button>
-      </div>
-    </div>
-
-    <!-- Month Timeline Switcher -->
-    <div class="month-nav-bar" id="monthNavBar">
-      <div class="month-nav-label">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-          <line x1="16" y1="2" x2="16" y2="6"></line>
-          <line x1="8" y1="2" x2="8" y2="6"></line>
-          <line x1="3" y1="10" x2="21" y2="10"></line>
-        </svg>
-        <span>Timeline</span>
-      </div>
-      <div class="month-chips-list">
-        {monthGroups.map((g, idx) => {
-          const aiMonthCount = g.entries.filter((e) => e.category === 'AI & ML' || e.category?.toLowerCase().includes('ai')).length;
-          const dataMonthCount = g.entries.filter((e) => e.category === 'Data Analytics' || e.category?.toLowerCase().includes('data')).length;
-          return (
-            <a
-              href={`/timeline/${g.key}/`}
-              class={`month-chip ${idx === 0 ? 'active' : ''}`}
-              data-month={g.key}
-              data-month-label={g.label}
-              data-count-all={g.totalCount}
-              data-count-breaking={g.breakingCount}
-              data-count-high-impact={g.highImpactCount}
-              data-count-category-ai={aiMonthCount}
-              data-count-category-data={dataMonthCount}
-            >
-              <span>{g.monthName} '{String(g.year).slice(2)}</span>
-              <span class="month-chip-count">{g.totalCount}</span>
-            </a>
-          );
-        })}
       </div>
     </div>
   </div>
@@ -142,12 +198,9 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
         class={`month-section ${index === 0 ? 'is-latest' : ''}`}
         data-month={group.key}
         id={`month-${group.key}`}
+        aria-label={`${group.label} Updates`}
       >
-        <div class="in-month-empty-state" style="display: none;">
-          <p>No <strong>{group.label}</strong> updates match the active category filter.</p>
-          <button class="in-month-reset-btn" type="button">Reset Category Filter</button>
-        </div>
-
+        <h2 class="sr-only">{group.label} Updates</h2>
         <div class="month-cards-list">
           {group.entries.map((entry) => (
             <ChangeCard entry={entry} />
@@ -158,9 +211,14 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
   </div>
 
   <div id="no-results" class="no-results-state" style="display: none;">
-    <div class="no-results-icon">🔍</div>
+    <div class="no-results-icon">
+      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </div>
     <h3>No API updates match your query</h3>
-    <p>Try searching for a different service name, method identifier, or clear your filters.</p>
+    <p>Try expanding your timeline, selecting different impact filters, or adjusting your search keywords.</p>
     <button id="clear-search-btn" class="clear-btn">Reset All Filters</button>
   </div>
 </BaseLayout>
@@ -169,60 +227,96 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
   import MiniSearch from 'minisearch';
   import { onAuthChange, getUserAlertPreferences } from '../lib/firebase';
 
-  // Client-side instant filtering & search logic with MiniSearch
+  // DOM Elements
   const searchInput = document.getElementById('global-search-input') as HTMLInputElement;
-  const pillButtons = document.querySelectorAll('.pill-btn');
-  const monthChips = document.querySelectorAll('.month-chip');
-  const monthSections = document.querySelectorAll('.month-section') as NodeListOf<HTMLElement>;
   const cards = document.querySelectorAll('.change-card') as NodeListOf<HTMLElement>;
-  const resultsCountText = document.getElementById('results-count-text');
+  const monthSections = document.querySelectorAll('.month-section') as NodeListOf<HTMLElement>;
+  const feedResultsCount = document.getElementById('feed-results-count');
   const noResults = document.getElementById('no-results');
   const clearBtn = document.getElementById('clear-search-btn');
 
-  const defaultMonth = monthChips.length > 0 ? (monthChips[0].getAttribute('data-month') || '') : '';
-  let activeFilter = 'all';
-  let activeMonth = defaultMonth;
-  let searchQuery = '';
+  // Merged Hero Banner Elements
+  const heroBanner = document.getElementById('feedHeroBanner');
+  const heroSubscribeBtn = document.getElementById('heroSubscribeBtn');
+  const feedAlertsBtn = document.getElementById('feed-alerts-cta-btn');
+  const feedAlertsText = document.getElementById('feed-alerts-cta-text');
 
+  // Timeline Dropdown Elements
+  const timelineDropdownWrapper = document.getElementById('timelineDropdownWrapper');
+  const timelineDropdownBtn = document.getElementById('timelineDropdownBtn');
+  const timelineActiveLabel = document.getElementById('timelineActiveLabel');
+  const timelineActiveCount = document.getElementById('timelineActiveCount');
+  const timelinePresetBtns = document.querySelectorAll('[data-timeline-preset]');
+  const customDateFrom = document.getElementById('customDateFrom') as HTMLInputElement;
+  const customDateTo = document.getElementById('customDateTo') as HTMLInputElement;
+  const applyCustomDateBtn = document.getElementById('applyCustomDateBtn');
+
+  // Impact Dropdown Elements
+  const impactDropdownWrapper = document.getElementById('impactDropdownWrapper');
+  const impactDropdownBtn = document.getElementById('impactDropdownBtn');
+  const impactActiveLabel = document.getElementById('impactActiveLabel');
+  const impactActiveCount = document.getElementById('impactActiveCount');
+  const impactOptionBtns = document.querySelectorAll('[data-impact]');
+
+  // Share View
   const shareViewBtn = document.getElementById('share-view-btn');
   const shareViewText = document.getElementById('share-view-btn-text');
 
-  // Read initial state from URL search params
+  // Reference date for relative timeline presets (uses latest card date or today)
+  let latestDateStr = '2026-09-16';
+  if (cards.length > 0) {
+    const firstDate = cards[0].getAttribute('data-date');
+    if (firstDate) latestDateStr = firstDate;
+  }
+  const refDate = new Date(latestDateStr + 'T00:00:00Z');
+
+  // Prefill custom date inputs
+  const defaultMinDate = new Date(refDate.getTime() - 30 * 86400000);
+  if (customDateFrom) customDateFrom.value = defaultMinDate.toISOString().slice(0, 10);
+  if (customDateTo) customDateTo.value = latestDateStr;
+
+  // Active filter state - declared at the top before any functions execute
+  let activeTimeline = '30d';
+  let activeImpact = 'all';
+  let searchQuery = '';
+  let focusedCardIndex = -1;
+
+  // Read initial state from URL query parameters
   const urlParams = new URLSearchParams(window.location.search);
-  const initialMonth = urlParams.get('month');
-  const initialFilter = urlParams.get('filter');
-  const initialQ = urlParams.get('q');
+  const paramTimeline = urlParams.get('timeline');
+  const paramImpact = urlParams.get('impact') || urlParams.get('filter'); // backwards compat
+  const paramQ = urlParams.get('q');
 
-  if (initialMonth && Array.from(monthChips).some((c) => c.getAttribute('data-month') === initialMonth)) {
-    activeMonth = initialMonth;
-    monthChips.forEach((c) => {
-      if (c.getAttribute('data-month') === initialMonth) c.classList.add('active');
-      else c.classList.remove('active');
-    });
+  if (paramTimeline) {
+    if (['30d', '60d', '90d', 'all'].includes(paramTimeline)) {
+      activeTimeline = paramTimeline;
+    } else if (paramTimeline.includes(':')) {
+      activeTimeline = paramTimeline;
+      const [f, t] = paramTimeline.split(':');
+      if (customDateFrom && f) customDateFrom.value = f;
+      if (customDateTo && t) customDateTo.value = t;
+    }
   }
 
-  if (initialFilter && ['breaking', 'high-impact', 'category-ai', 'category-data'].includes(initialFilter)) {
-    activeFilter = initialFilter;
-    pillButtons.forEach((b) => {
-      if (b.getAttribute('data-filter') === initialFilter) b.classList.add('active');
-      else b.classList.remove('active');
-    });
+  if (paramImpact && ['all', 'high-impact', 'breaking'].includes(paramImpact)) {
+    activeImpact = paramImpact;
   }
 
-  if (initialQ && searchInput) {
-    searchInput.value = initialQ;
-    searchQuery = initialQ;
+  if (paramQ && searchInput) {
+    searchInput.value = paramQ;
+    searchQuery = paramQ;
   }
 
-  const filterLabels: Record<string, string> = {
-    all: 'updates',
-    breaking: 'breaking alerts',
-    'high-impact': 'high-impact updates',
-    'category-ai': 'AI & ML updates',
-    'category-data': 'Data Analytics updates',
-  };
+  // Check subscriber status immediately to prevent CLS
+  if (localStorage.getItem('gcr_alerts_subscribed') === 'true') {
+    if (heroBanner) heroBanner.style.display = 'none';
+    if (feedAlertsBtn) {
+      feedAlertsBtn.classList.add('is-subscribed');
+      if (feedAlertsText) feedAlertsText.textContent = 'Alerts Active';
+    }
+  }
 
-  // Initialize MiniSearch Index with all rendered cards
+  // Initialize MiniSearch
   const documents: any[] = [];
   cards.forEach((card) => {
     const slug = card.getAttribute('data-slug') || '';
@@ -262,13 +356,136 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
       combineWith: 'AND',
     },
   });
-
   miniSearch.addAll(documents);
+
+  function getDateRangeForTimeline(timeline: string): { minDate: string; maxDate: string } {
+    if (timeline === 'all') {
+      return { minDate: '1970-01-01', maxDate: '9999-12-31' };
+    }
+    if (timeline === '60d') {
+      const minD = new Date(refDate.getTime() - 60 * 86400000);
+      return { minDate: minD.toISOString().slice(0, 10), maxDate: '9999-12-31' };
+    }
+    if (timeline === '90d') {
+      const minD = new Date(refDate.getTime() - 90 * 86400000);
+      return { minDate: minD.toISOString().slice(0, 10), maxDate: '9999-12-31' };
+    }
+    if (timeline.includes(':')) {
+      const [from, to] = timeline.split(':');
+      return { minDate: from || '1970-01-01', maxDate: to || '9999-12-31' };
+    }
+    // Default 30d
+    const minD = new Date(refDate.getTime() - 30 * 86400000);
+    return { minDate: minD.toISOString().slice(0, 10), maxDate: '9999-12-31' };
+  }
+
+  function updateTimelineUi(timelineCounts: Record<string, number>, totalMatchingCount: number) {
+    timelinePresetBtns.forEach((btn) => {
+      const preset = btn.getAttribute('data-timeline-preset');
+      if (preset === activeTimeline) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+
+      if (preset && timelineCounts[preset] !== undefined) {
+        const count = timelineCounts[preset];
+        const badge = btn.querySelector('.option-badge');
+        if (badge) badge.textContent = String(count);
+        if (count === 0) btn.classList.add('is-zero-facet');
+        else btn.classList.remove('is-zero-facet');
+      }
+    });
+
+    if (timelineActiveLabel) {
+      if (activeTimeline === '30d') timelineActiveLabel.textContent = 'Last 30 days';
+      else if (activeTimeline === '60d') timelineActiveLabel.textContent = 'Last 60 days';
+      else if (activeTimeline === '90d') timelineActiveLabel.textContent = 'Last 90 days';
+      else if (activeTimeline === 'all') timelineActiveLabel.textContent = 'All time';
+      else if (activeTimeline.includes(':')) {
+        const [from, to] = activeTimeline.split(':');
+        timelineActiveLabel.textContent = `${from} – ${to}`;
+      }
+    }
+
+    if (timelineActiveCount) {
+      const count = activeTimeline in timelineCounts ? timelineCounts[activeTimeline] : totalMatchingCount;
+      timelineActiveCount.textContent = String(count);
+    }
+  }
+
+  function updateImpactUi(impactCounts: Record<string, number>) {
+    impactOptionBtns.forEach((btn) => {
+      const val = btn.getAttribute('data-impact');
+      if (val === activeImpact) {
+        btn.classList.add('active');
+        const label = btn.querySelector('.option-label')?.textContent || '';
+        if (impactActiveLabel) impactActiveLabel.textContent = label;
+      } else {
+        btn.classList.remove('active');
+      }
+
+      if (val && impactCounts[val] !== undefined) {
+        const count = impactCounts[val];
+        const badge = btn.querySelector('.option-badge');
+        if (badge) badge.textContent = String(count);
+        if (count === 0) btn.classList.add('is-zero-facet');
+        else btn.classList.remove('is-zero-facet');
+      }
+    });
+
+    if (impactActiveCount) {
+      const count = impactCounts[activeImpact] !== undefined ? impactCounts[activeImpact] : impactCounts['all'];
+      impactActiveCount.textContent = String(count);
+    }
+  }
+
+  function computeFacetedCounts(matchedIds: Set<string> | null) {
+    const rangeActive = getDateRangeForTimeline(activeTimeline);
+    const range30 = getDateRangeForTimeline('30d');
+    const range60 = getDateRangeForTimeline('60d');
+    const range90 = getDateRangeForTimeline('90d');
+
+    const impactCounts: Record<string, number> = { all: 0, 'high-impact': 0, breaking: 0 };
+    const timelineCounts: Record<string, number> = { '30d': 0, '60d': 0, '90d': 0, all: 0 };
+
+    cards.forEach((card) => {
+      const slug = card.getAttribute('data-slug') || '';
+      const cardBreaking = card.getAttribute('data-breaking') === 'true';
+      const cardImpact = card.getAttribute('data-impact') || '';
+      const cardDate = card.getAttribute('data-date') || '';
+
+      const matchesSearch = matchedIds !== null ? matchedIds.has(slug) : true;
+      if (!matchesSearch) return;
+
+      // 1. Impact Facets (given currently active timeline + search):
+      const inActiveTimeline = cardDate >= rangeActive.minDate && cardDate <= rangeActive.maxDate;
+      if (inActiveTimeline) {
+        impactCounts['all']++;
+        if (cardImpact === 'high') impactCounts['high-impact']++;
+        if (cardBreaking) impactCounts['breaking']++;
+      }
+
+      // 2. Timeline Facets (given currently active impact + search):
+      let matchesActiveImpact = true;
+      if (activeImpact === 'breaking') matchesActiveImpact = cardBreaking;
+      else if (activeImpact === 'high-impact') matchesActiveImpact = cardImpact === 'high';
+
+      if (matchesActiveImpact) {
+        if (cardDate >= range30.minDate && cardDate <= range30.maxDate) timelineCounts['30d']++;
+        if (cardDate >= range60.minDate && cardDate <= range60.maxDate) timelineCounts['60d']++;
+        if (cardDate >= range90.minDate && cardDate <= range90.maxDate) timelineCounts['90d']++;
+        timelineCounts['all']++;
+      }
+    });
+
+    return { impactCounts, timelineCounts };
+  }
 
   function updateUrlState() {
     const params = new URLSearchParams();
-    if (activeMonth !== defaultMonth) params.set('month', activeMonth);
-    if (activeFilter !== 'all') params.set('filter', activeFilter);
+    if (activeTimeline !== '30d') params.set('timeline', activeTimeline);
+    if (activeImpact !== 'all') params.set('impact', activeImpact);
     if (searchQuery.trim()) params.set('q', searchQuery.trim());
     const queryString = params.toString();
     const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
@@ -287,33 +504,37 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
       matchedIds = new Set(searchResults.map((r) => r.id));
     }
 
+    const { minDate, maxDate } = getDateRangeForTimeline(activeTimeline);
     let totalMatchingCount = 0;
+
+    // Reset keyboard selection on filter/search change
+    focusedCardIndex = -1;
+    cards.forEach((c) => c.classList.remove('keyboard-focused'));
 
     cards.forEach((card) => {
       const slug = card.getAttribute('data-slug') || '';
       const cardBreaking = card.getAttribute('data-breaking') === 'true';
       const cardImpact = card.getAttribute('data-impact');
-      const cardCategory = (card.getAttribute('data-category') || '').toLowerCase();
+      const cardDate = card.getAttribute('data-date') || '';
 
-      // Check Pill Filter
-      let matchesPill = true;
-      if (activeFilter === 'breaking') {
-        matchesPill = cardBreaking;
-      } else if (activeFilter === 'high-impact') {
-        matchesPill = cardImpact === 'high';
-      } else if (activeFilter === 'category-ai') {
-        matchesPill = cardCategory.includes('ai') || cardCategory.includes('machine learning');
-      } else if (activeFilter === 'category-data') {
-        matchesPill = cardCategory.includes('data') || cardCategory.includes('platform') || cardCategory.includes('analytics');
+      // Date Range Match
+      const matchesDate = cardDate >= minDate && cardDate <= maxDate;
+
+      // Impact Match
+      let matchesImpact = true;
+      if (activeImpact === 'breaking') {
+        matchesImpact = cardBreaking;
+      } else if (activeImpact === 'high-impact') {
+        matchesImpact = cardImpact === 'high';
       }
 
-      // Check MiniSearch Match
+      // MiniSearch Match
       let matchesSearch = true;
       if (matchedIds !== null) {
         matchesSearch = matchedIds.has(slug);
       }
 
-      if (matchesPill && matchesSearch) {
+      if (matchesDate && matchesImpact && matchesSearch) {
         card.style.display = 'block';
         totalMatchingCount++;
       } else {
@@ -321,107 +542,120 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
       }
     });
 
-    // Update Month Chip Badge Counts dynamically based on active filter
-    monthChips.forEach((chip) => {
-      const countForFilter = chip.getAttribute(`data-count-${activeFilter}`) || '0';
-      const countEl = chip.querySelector('.month-chip-count');
-      if (countEl) {
-        countEl.textContent = countForFilter;
-      }
-      if (parseInt(countForFilter, 10) === 0) {
-        chip.classList.add('is-empty');
-      } else {
-        chip.classList.remove('is-empty');
-      }
-    });
-
-    let activeMonthVisibleCount = 0;
-    const activeChip = document.querySelector('.month-chip.active');
-    const activeMonthLabel = activeChip?.getAttribute('data-month-label') || 'Selected Month';
-
-    // Update Month Sections visibility
+    // Update month section visibility
     monthSections.forEach((section) => {
-      const sectionMonth = section.getAttribute('data-month') || '';
       const sectionCards = section.querySelectorAll('.change-card') as NodeListOf<HTMLElement>;
-      const inMonthEmpty = section.querySelector('.in-month-empty-state') as HTMLElement;
       let sectionVisibleCount = 0;
       sectionCards.forEach((c) => {
         if (c.style.display !== 'none') sectionVisibleCount++;
       });
 
-      if (sectionMonth === activeMonth) {
-        activeMonthVisibleCount = sectionVisibleCount;
-      }
-
-      // When searching, show all months with matches.
-      // When not searching, show ONLY the active month section.
-      if (isSearching) {
-        section.style.display = sectionVisibleCount > 0 ? 'flex' : 'none';
-        if (inMonthEmpty) inMonthEmpty.style.display = 'none';
-      } else {
-        if (sectionMonth === activeMonth) {
-          section.style.display = 'flex';
-          if (inMonthEmpty) {
-            inMonthEmpty.style.display = sectionVisibleCount === 0 ? 'flex' : 'none';
-          }
-        } else {
-          section.style.display = 'none';
-        }
-      }
+      section.style.display = sectionVisibleCount > 0 ? 'flex' : 'none';
     });
 
-    if (resultsCountText) {
-      const label = filterLabels[activeFilter] || 'updates';
-      if (isSearching) {
-        resultsCountText.innerHTML = `Found <strong>${totalMatchingCount}</strong> ${label} matching "<strong>${searchQuery}</strong>"`;
-      } else {
-        resultsCountText.innerHTML = `Showing <strong>${activeMonthVisibleCount}</strong> ${label} in <strong>${activeMonthLabel}</strong>`;
-      }
+    // Update results indicator
+    if (feedResultsCount) {
+      feedResultsCount.textContent = `${totalMatchingCount} update${totalMatchingCount === 1 ? '' : 's'}`;
     }
 
     if (noResults) {
-      noResults.style.display = (isSearching && totalMatchingCount === 0) ? 'block' : 'none';
+      noResults.style.display = totalMatchingCount === 0 ? 'block' : 'none';
     }
 
+    const { impactCounts, timelineCounts } = computeFacetedCounts(matchedIds);
+    updateTimelineUi(timelineCounts, totalMatchingCount);
+    updateImpactUi(impactCounts);
     updateUrlState();
   }
 
-  // Initial filter run
+  // Initial Filter Application
   applyFilters();
 
-  // Pill click handlers
-  pillButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      pillButtons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      activeFilter = btn.getAttribute('data-filter') || 'all';
-      applyFilters();
+  // Dropdown Toggles & Click Outside handling
+  function closeAllDropdowns() {
+    timelineDropdownWrapper?.classList.remove('is-open');
+    timelineDropdownBtn?.setAttribute('aria-expanded', 'false');
+    impactDropdownWrapper?.classList.remove('is-open');
+    impactDropdownBtn?.setAttribute('aria-expanded', 'false');
+  }
+
+  timelineDropdownBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = timelineDropdownWrapper?.classList.contains('is-open');
+    closeAllDropdowns();
+    if (!isOpen && timelineDropdownWrapper) {
+      timelineDropdownWrapper.classList.add('is-open');
+      timelineDropdownBtn.setAttribute('aria-expanded', 'true');
+    }
+  });
+
+  impactDropdownBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = impactDropdownWrapper?.classList.contains('is-open');
+    closeAllDropdowns();
+    if (!isOpen && impactDropdownWrapper) {
+      impactDropdownWrapper.classList.add('is-open');
+      impactDropdownBtn.setAttribute('aria-expanded', 'true');
+    }
+  });
+
+  // Prevent closing when clicking inside menu boxes
+  document.getElementById('timelineDropdownMenu')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+  document.getElementById('impactDropdownMenu')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+
+  window.addEventListener('click', () => {
+    closeAllDropdowns();
+  });
+
+  window.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      closeAllDropdowns();
+    }
+  });
+
+  // Timeline Preset Click Handlers
+  timelinePresetBtns.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const preset = btn.getAttribute('data-timeline-preset');
+      if (preset) {
+        activeTimeline = preset;
+        closeAllDropdowns();
+        applyFilters();
+      }
     });
   });
 
-  // Month chip click handlers (intercept link click for client instant tab switch)
-  monthChips.forEach((chip) => {
-    chip.addEventListener('click', (e) => {
-      e.preventDefault();
-      monthChips.forEach((c) => c.classList.remove('active'));
-      chip.classList.add('active');
-      activeMonth = chip.getAttribute('data-month') || defaultMonth;
+  // Custom Date Range Apply Button
+  applyCustomDateBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const fromVal = customDateFrom?.value;
+    const toVal = customDateTo?.value;
+    if (fromVal && toVal) {
+      activeTimeline = `${fromVal}:${toVal}`;
+      closeAllDropdowns();
       applyFilters();
+    }
+  });
+
+  // Impact Option Click Handlers
+  impactOptionBtns.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const val = btn.getAttribute('data-impact');
+      if (val) {
+        activeImpact = val;
+        closeAllDropdowns();
+        applyFilters();
+      }
     });
   });
 
-  // In-month reset buttons
-  document.querySelectorAll('.in-month-reset-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      activeFilter = 'all';
-      pillButtons.forEach((b) => b.classList.remove('active'));
-      const allPill = document.querySelector('[data-filter="all"]');
-      if (allPill) allPill.classList.add('active');
-      applyFilters();
-    });
-  });
-
-  // Search input handler
+  // Global search input handler
   if (searchInput) {
     searchInput.addEventListener('input', (e: Event) => {
       searchQuery = (e.target as HTMLInputElement).value;
@@ -429,48 +663,37 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
     });
   }
 
-  // Clear button
+  // Clear / Reset All Filters
   if (clearBtn) {
     clearBtn.addEventListener('click', () => {
       if (searchInput) searchInput.value = '';
       searchQuery = '';
-      activeFilter = 'all';
-      activeMonth = defaultMonth;
-      pillButtons.forEach((b) => b.classList.remove('active'));
-      monthChips.forEach((c, idx) => {
-        if (idx === 0) c.classList.add('active');
-        else c.classList.remove('active');
-      });
-      const allPill = document.querySelector('[data-filter="all"]');
-      if (allPill) allPill.classList.add('active');
+      activeTimeline = '30d';
+      activeImpact = 'all';
+      if (customDateFrom) customDateFrom.value = defaultMinDate.toISOString().slice(0, 10);
+      if (customDateTo) customDateTo.value = latestDateStr;
+      closeAllDropdowns();
       applyFilters();
     });
   }
 
+  // Share View Link handler
   function getShareableUrl(): string {
     const origin = window.location.origin;
-    const isSearching = searchQuery.trim().length > 0;
-    if (isSearching) {
-      const params = new URLSearchParams();
-      if (activeFilter !== 'all') params.set('filter', activeFilter);
-      params.set('q', searchQuery.trim());
-      return `${origin}/?${params.toString()}`;
-    }
-
-    const monthKey = activeMonth || defaultMonth;
     const params = new URLSearchParams();
-    if (activeFilter !== 'all') params.set('filter', activeFilter);
-    const queryString = params.toString();
-    return `${origin}/timeline/${monthKey}/${queryString ? `?${queryString}` : ''}`;
+    if (activeTimeline !== '30d') params.set('timeline', activeTimeline);
+    if (activeImpact !== 'all') params.set('impact', activeImpact);
+    if (searchQuery.trim()) params.set('q', searchQuery.trim());
+    const qs = params.toString();
+    return `${origin}/${qs ? `?${qs}` : ''}`;
   }
 
-  // Share View Link handler
   if (shareViewBtn) {
     shareViewBtn.addEventListener('click', async () => {
       try {
         const shareUrl = getShareableUrl();
         await navigator.clipboard.writeText(shareUrl);
-        if (shareViewText) shareViewText.textContent = 'Link Copied! ✓';
+        if (shareViewText) shareViewText.textContent = 'Link Copied!';
         shareViewBtn.classList.add('copied');
         setTimeout(() => {
           if (shareViewText) shareViewText.textContent = 'Share View';
@@ -482,39 +705,110 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
     });
   }
 
-  // In-feed Alerts Button handler & Dynamic subscription status
-  const feedAlertsBtn = document.getElementById('feed-alerts-cta-btn');
-  const feedAlertsText = document.getElementById('feed-alerts-cta-text');
+  // Alerts Modal & Subscription Management
+  heroSubscribeBtn?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('open_alerts_modal'));
+  });
 
   feedAlertsBtn?.addEventListener('click', () => {
     window.dispatchEvent(new CustomEvent('open_alerts_modal'));
   });
 
-  async function updateAlertsBtnStatus(user: any) {
-    if (!feedAlertsBtn || !feedAlertsText) return;
-    if (user) {
-      const prefs = await getUserAlertPreferences(user);
-      if (prefs.breakingAlerts) {
+  function setSubscribedState(isSubscribed: boolean) {
+    if (isSubscribed) {
+      localStorage.setItem('gcr_alerts_subscribed', 'true');
+      if (heroBanner) heroBanner.style.display = 'none';
+      if (feedAlertsBtn) {
         feedAlertsBtn.classList.add('is-subscribed');
-        feedAlertsText.textContent = '✓ Alerts Active';
-      } else {
-        feedAlertsBtn.classList.remove('is-subscribed');
-        feedAlertsText.textContent = '⚡ Enable Alerts';
+        if (feedAlertsText) feedAlertsText.textContent = 'Alerts Active';
       }
     } else {
-      feedAlertsBtn.classList.remove('is-subscribed');
-      feedAlertsText.textContent = '⚡ Get Alerts';
+      localStorage.removeItem('gcr_alerts_subscribed');
+      if (heroBanner) heroBanner.style.display = '';
+      if (feedAlertsBtn) {
+        feedAlertsBtn.classList.remove('is-subscribed');
+        if (feedAlertsText) feedAlertsText.textContent = 'Get Alerts';
+      }
     }
   }
 
-  onAuthChange(updateAlertsBtnStatus);
-  window.addEventListener('radar_alert_prefs_update', (e: any) => {
-    if (e.detail?.breakingAlerts) {
-      feedAlertsBtn?.classList.add('is-subscribed');
-      if (feedAlertsText) feedAlertsText.textContent = '✓ Alerts Active';
+  onAuthChange(async (user: any) => {
+    if (user) {
+      try {
+        const prefs = await getUserAlertPreferences(user);
+        const isSubscribed = Boolean(prefs?.breakingAlerts || prefs?.weeklyDigest);
+        setSubscribedState(isSubscribed);
+      } catch (err) {
+        console.warn('Could not read user alert preferences', err);
+      }
     } else {
-      feedAlertsBtn?.classList.remove('is-subscribed');
-      if (feedAlertsText) feedAlertsText.textContent = '⚡ Enable Alerts';
+      setSubscribedState(false);
+    }
+  });
+
+  window.addEventListener('radar_alert_prefs_update', (e: any) => {
+    const isSubscribed = Boolean(e.detail?.breakingAlerts || e.detail?.weeklyDigest);
+    setSubscribedState(isSubscribed);
+  });
+
+  // Keyboard ergonomics: 'j' (next update), 'k' (previous update), 'Enter' (open permalink)
+  function getVisibleCards(): HTMLElement[] {
+    const allCards = Array.from(document.querySelectorAll<HTMLElement>('.change-card'));
+    return allCards.filter((card) => {
+      if (card.style.display === 'none') return false;
+      const section = card.closest<HTMLElement>('.month-section');
+      if (section && section.style.display === 'none') return false;
+      return true;
+    });
+  }
+
+  function updateCardFocus(targetCards: HTMLElement[], newIndex: number) {
+    if (!targetCards.length) return;
+    targetCards.forEach((c) => c.classList.remove('keyboard-focused'));
+    focusedCardIndex = Math.max(0, Math.min(newIndex, targetCards.length - 1));
+    const targetCard = targetCards[focusedCardIndex];
+    if (targetCard) {
+      targetCard.classList.add('keyboard-focused');
+      targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  window.addEventListener('keydown', (e: KeyboardEvent) => {
+    const active = document.activeElement;
+    if (
+      active?.tagName === 'INPUT' ||
+      active?.tagName === 'TEXTAREA' ||
+      active?.tagName === 'SELECT' ||
+      (active as HTMLElement)?.isContentEditable
+    ) {
+      return;
+    }
+
+    const shareModal = document.getElementById('globalShareModalBackdrop');
+    if (shareModal && shareModal.style.display === 'flex') return;
+    const alertsModal = document.getElementById('alertsModalBackdrop');
+    if (alertsModal && alertsModal.style.display === 'flex') return;
+
+    if (e.key === 'j' || e.key === 'J') {
+      const visibleCards = getVisibleCards();
+      if (!visibleCards.length) return;
+      e.preventDefault();
+      updateCardFocus(visibleCards, focusedCardIndex + 1);
+    } else if (e.key === 'k' || e.key === 'K') {
+      const visibleCards = getVisibleCards();
+      if (!visibleCards.length) return;
+      e.preventDefault();
+      updateCardFocus(visibleCards, focusedCardIndex <= 0 ? 0 : focusedCardIndex - 1);
+    } else if (e.key === 'Enter') {
+      const visibleCards = getVisibleCards();
+      if (focusedCardIndex >= 0 && focusedCardIndex < visibleCards.length) {
+        const focusedCard = visibleCards[focusedCardIndex];
+        const titleLink = focusedCard.querySelector<HTMLAnchorElement>('a.title-link');
+        if (titleLink && titleLink.href) {
+          e.preventDefault();
+          window.location.href = titleLink.href;
+        }
+      }
     }
   });
 </script>
@@ -524,189 +818,387 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
     margin-bottom: 24px;
   }
 
-  .hero-banner {
-    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-surface-hover) 100%);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-lg);
-    padding: 28px 32px;
-    margin-bottom: 24px;
+  /* Merged Hero & Alerts Banner */
+  .merged-hero-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 32px;
+    background: linear-gradient(135deg, var(--bg-surface) 0%, #f8fafd 100%);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 22px 26px;
+    margin-bottom: 20px;
     box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
   }
 
-  .hero-content {
-    max-width: 680px;
+  .hero-main {
+    flex: 1;
+    min-width: 0;
   }
 
   .hero-title {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1.25;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     letter-spacing: -0.3px;
   }
 
   .hero-subtitle {
-    font-size: 14px;
+    font-size: 13.5px;
     color: var(--text-secondary);
-    line-height: 1.5;
+    line-height: 1.55;
     margin: 0;
+    max-width: 680px;
   }
 
-  .hero-stats {
-    display: flex;
-    gap: 16px;
-    flex-shrink: 0;
-  }
-
-  .stat-box {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    padding: 14px 20px;
+  .hero-alerts-callout {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    min-width: 115px;
-    text-align: center;
+    gap: 10px;
+    background: #ffffff;
+    border: 1px solid #d2e3fc;
+    border-radius: 12px;
+    padding: 16px 20px;
+    min-width: 290px;
+    max-width: 320px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(26, 115, 232, 0.06);
   }
 
-  .stat-main-row {
+  .hero-alerts-info {
     display: flex;
-    align-items: baseline;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .hero-alerts-badge {
+    display: inline-flex;
+    align-items: center;
     gap: 6px;
-    margin-bottom: 4px;
-  }
-
-  .stat-number {
-    font-size: 24px;
+    font-size: 11.5px;
     font-weight: 700;
-    font-family: var(--font-mono);
-    color: var(--google-blue);
-    line-height: 1;
-  }
-
-  .stat-breaking-sub {
-    font-size: 10.5px;
-    font-weight: 700;
-    color: var(--google-red);
-    background-color: var(--google-red-subtle);
-    padding: 1px 5px;
-    border-radius: 4px;
-    font-family: var(--font-mono);
-  }
-
-  .stat-label {
-    font-size: 11px;
-    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--text-tertiary);
-  }
-
-  .request-api-link {
-    margin-top: 6px;
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text-tertiary);
-    text-decoration: none;
-    border-bottom: 1px dashed var(--border-subtle);
-    transition: color 0.15s ease, border-color 0.15s ease;
-    letter-spacing: 0.3px;
-  }
-
-  .request-api-link:hover {
     color: var(--google-blue);
-    border-bottom-color: var(--google-blue);
-    text-decoration: none;
   }
 
+  .hero-alerts-prompt {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .hero-subscribe-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: var(--google-blue);
+    color: #ffffff;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+  }
+
+  .hero-subscribe-btn:hover {
+    background-color: var(--google-blue-hover);
+    transform: translateY(-1px);
+  }
+
+  .hero-subscribe-btn:active {
+    transform: translateY(0);
+  }
+
+  /* Unified Filters Bar */
   .filters-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 14px;
     padding-bottom: 16px;
     border-bottom: 1px solid var(--border-subtle);
   }
 
-  .filter-pills {
+  .filters-controls-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
   }
 
-  .pill-btn {
+  /* Dropdown Wrapper & Trigger */
+  .filter-dropdown-wrapper {
+    position: relative;
+  }
+
+  .filter-dropdown-trigger {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
     font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 500;
-    padding: 6px 14px;
-    border-radius: var(--radius-full);
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
     background-color: var(--bg-surface);
     border: 1px solid var(--border-subtle);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     cursor: pointer;
     transition: all 0.15s ease;
+    user-select: none;
   }
 
-  .pill-btn:hover {
+  .filter-dropdown-trigger:hover {
     background-color: var(--bg-surface-hover);
-    color: var(--text-primary);
+    border-color: var(--border-strong);
   }
 
-  .pill-btn.active {
-    background-color: var(--google-blue);
-    color: #ffffff;
+  .filter-dropdown-wrapper.is-open .filter-dropdown-trigger {
+    border-color: var(--google-blue);
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.15);
+    background-color: var(--bg-surface);
+  }
+
+  .dropdown-leading-icon {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .dropdown-label-muted {
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  .dropdown-chevron {
+    color: var(--text-tertiary);
+    transition: transform 0.2s ease;
+    margin-left: 2px;
+  }
+
+  .filter-dropdown-wrapper.is-open .dropdown-chevron {
+    transform: rotate(180deg);
+  }
+
+  .dropdown-count-badge {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    background-color: var(--bg-surface-hover);
+    padding: 1px 6px;
+    border-radius: 9999px;
+  }
+
+  /* Dropdown Menu */
+  .filter-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 60;
+    min-width: 230px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 6px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  }
+
+  .filter-dropdown-wrapper.is-open .filter-dropdown-menu {
+    display: block;
+    animation: menuFadeIn 0.15s ease-out;
+  }
+
+  @keyframes menuFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .menu-section-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+    padding: 6px 10px 4px 10px;
+  }
+
+  .menu-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+    padding: 7px 10px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+  }
+
+  .menu-option:hover {
+    background-color: var(--bg-surface-hover);
+  }
+
+  .menu-option.active {
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue-text);
+    font-weight: 600;
+  }
+
+  .option-check-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    font-size: 12px;
+    opacity: 0;
+    color: var(--google-blue-text);
+    flex-shrink: 0;
+  }
+
+  .menu-option.active .option-check-icon {
+    opacity: 1;
+  }
+
+  .option-label {
+    flex: 1;
+  }
+
+  .option-sub {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-left: auto;
+  }
+
+  .option-badge {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    background-color: var(--bg-surface-hover);
+    padding: 1px 6px;
+    border-radius: 9999px;
+    margin-left: auto;
+  }
+
+  .option-badge.breaking-badge {
+    color: var(--google-red-text);
+    background-color: var(--google-red-subtle);
+    font-weight: 700;
+  }
+
+  .menu-option.is-zero-facet {
+    opacity: 0.45;
+  }
+
+  .menu-option.is-zero-facet .option-badge {
+    opacity: 0.7;
+    background-color: transparent;
+    border: 1px dashed var(--border-subtle);
+  }
+
+  .menu-divider {
+    height: 1px;
+    background-color: var(--border-subtle);
+    margin: 6px 0;
+  }
+
+  /* Custom Range Box */
+  .custom-range-box {
+    padding: 4px 6px 4px 6px;
+  }
+
+  .custom-inputs-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .custom-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+  }
+
+  .custom-input-group label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .custom-input-group input {
+    width: 100%;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    padding: 5px 8px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  .custom-input-group input:focus {
     border-color: var(--google-blue);
   }
 
-  .pill-btn.active .pill-count {
-    background-color: rgba(255, 255, 255, 0.25);
+  .custom-apply-btn {
+    width: 100%;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
     color: #ffffff;
+    background-color: var(--google-blue);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
   }
 
-  .pill-breaking.active {
-    background-color: var(--google-red);
-    border-color: var(--google-red);
+  .custom-apply-btn:hover {
+    background-color: var(--google-blue-hover);
   }
 
-  .pill-count {
-    font-size: 11px;
-    font-family: var(--font-mono);
-    background-color: var(--bg-surface-hover);
-    padding: 1px 6px;
-    border-radius: var(--radius-full);
-    color: var(--text-tertiary);
-  }
-
-  .pill-breaking-sub {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--google-red);
-    background-color: var(--google-red-subtle);
-    padding: 1px 4px;
-    border-radius: 4px;
-    font-family: var(--font-mono);
-  }
-
-  .pill-btn.active .pill-breaking-sub {
-    background-color: rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-  }
-
+  /* Right Action Group in Filter Bar */
   .feed-actions-group {
     display: inline-flex;
     align-items: center;
     gap: 10px;
+  }
+
+  .feed-results-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    padding: 5px 10px;
+    border-radius: var(--radius-full);
   }
 
   .feed-alerts-cta-btn {
@@ -715,7 +1207,7 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
     gap: 6px;
     font-size: 12px;
     font-weight: 600;
-    color: var(--google-blue);
+    color: var(--google-blue-text);
     background-color: var(--google-blue-subtle);
     border: 1px solid var(--google-blue-border);
     padding: 5px 12px;
@@ -730,7 +1222,7 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
   }
 
   .feed-alerts-cta-btn.is-subscribed {
-    color: var(--google-green);
+    color: var(--google-green-text);
     background-color: rgba(52, 168, 83, 0.1);
     border-color: rgba(52, 168, 83, 0.35);
   }
@@ -761,145 +1253,27 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
     color: var(--google-green);
   }
 
-  /* Month Timeline Navigation Bar */
-  .month-nav-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    padding: 8px 14px;
-    margin-top: 14px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .month-nav-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--text-tertiary);
-    flex-shrink: 0;
-    padding-right: 8px;
-    border-right: 1px solid var(--border-subtle);
-  }
-
-  .month-chips-list {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-
-  .month-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--font-sans);
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    background-color: var(--bg-surface-hover);
-    border: 1px solid var(--border-subtle);
-    padding: 4px 10px;
-    border-radius: var(--radius-full);
-    cursor: pointer;
-    transition: all 0.15s ease;
-    white-space: nowrap;
-  }
-
-  .month-chip:hover {
-    color: var(--text-primary);
-    border-color: var(--border-strong);
-  }
-
-  .month-chip.active {
-    background-color: var(--google-blue-subtle);
-    border-color: var(--google-blue-border);
-    color: var(--google-blue);
-    font-weight: 600;
-  }
-
-  .month-chip-count {
-    font-size: 10px;
-    font-family: var(--font-mono);
-    color: var(--text-tertiary);
-    background-color: var(--bg-surface);
-    padding: 1px 5px;
-    border-radius: var(--radius-full);
-  }
-
-  .month-chip.active .month-chip-count {
-    background-color: rgba(26, 115, 232, 0.15);
-    color: var(--google-blue);
-  }
-
-  .month-chip.is-empty {
-    opacity: 0.45;
-  }
-
-  .month-chip.is-empty:hover {
-    opacity: 0.8;
-  }
-
-  .in-month-empty-state {
-    text-align: center;
-    padding: 32px 20px;
-    background-color: var(--bg-surface);
-    border: 1px dashed var(--border-subtle);
-    border-radius: var(--radius-md);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .in-month-empty-state p {
-    font-size: 13.5px;
-    color: var(--text-secondary);
-    margin: 0;
-  }
-
-  .in-month-reset-btn {
-    background-color: var(--bg-surface-hover);
-    border: 1px solid var(--border-subtle);
-    color: var(--google-blue);
-    padding: 6px 14px;
-    border-radius: var(--radius-md);
-    font-size: 12.5px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-  }
-
-  .in-month-reset-btn:hover {
-    background-color: var(--border-subtle);
-  }
-
   /* Grouped Month Sections */
   .feed-timeline {
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 14px;
+    margin-top: 18px;
   }
 
   .month-section {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
   }
 
   .month-cards-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
   }
 
+  /* No Results State */
   .no-results-state {
     text-align: center;
     padding: 60px 20px;
@@ -944,27 +1318,35 @@ const dataCount = entries.filter((e) => e.category === 'Data Analytics' || e.cat
   }
 
   @media (max-width: 900px) {
-    .hero-banner {
+    .merged-hero-card {
       flex-direction: column;
-      align-items: flex-start;
+      align-items: stretch;
       padding: 20px;
-      gap: 20px;
     }
-    .hero-stats {
-      width: 100%;
-      justify-content: flex-start;
-      flex-wrap: wrap;
+    .hero-alerts-callout {
+      max-width: 100%;
+      min-width: 0;
     }
   }
 
   @media (max-width: 640px) {
-    .month-section-header {
+    .filters-bar {
       flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
+      align-items: stretch;
     }
-    .month-header-stats {
+    .filters-controls-group {
       width: 100%;
+    }
+    .filter-dropdown-wrapper {
+      flex: 1;
+    }
+    .filter-dropdown-trigger {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .feed-actions-group {
+      width: 100%;
+      justify-content: space-between;
     }
   }
 </style>

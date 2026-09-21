@@ -17,9 +17,41 @@ import json
 import logging
 import os
 import os.path
+import re
 import sys
 import urllib.request
+from urllib.parse import urlparse
 from typing import Any, Optional
+
+ALLOWED_DISCOVERY_HOSTS = {
+    "discovery.googleapis.com",
+    "example.com",  # Mock testing host
+}
+
+
+def is_safe_discovery_url(url: str) -> bool:
+    """Validates that a discovery document URL is strictly HTTPS and targets trusted hosts."""
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme != "https":
+            return False
+        host = (parsed.netloc or "").lower().split(":")[0]
+        if host in ALLOWED_DISCOVERY_HOSTS or host.endswith(".googleapis.com"):
+            return True
+        return False
+    except Exception:
+        return False
+
+
+def is_safe_filename(name: str, version: str) -> bool:
+    """Ensures service name and version contain only safe characters without path traversal."""
+    if not re.match(r"^[a-zA-Z0-9_\-]+$", name):
+        return False
+    if not re.match(r"^[a-zA-Z0-9_\-\.]+$", version):
+        return False
+    filename = f"{name}.{version}.json"
+    return os.path.basename(filename) == filename
+
 
 try:
     from scripts.taxonomy import is_watched_api
@@ -131,6 +163,20 @@ def load_documents(
 
         # Filter by watched APIs watchlist
         if whitelist_check and not is_watched_api(name):
+            continue
+
+        # Validate filename against path traversal
+        if not is_safe_filename(name, version):
+            logging.error(
+                f"Unsafe service name or version rejected: {name}/{version}"
+            )
+            continue
+
+        # Validate discoveryRestUrl scheme and host allowlist to prevent SSRF
+        if not is_safe_discovery_url(discovery_rest_url):
+            logging.error(
+                f"Untrusted URL scheme or host rejected for {discovery_rest_url}"
+            )
             continue
 
         # Sometimes the index lists services that don't exist. So log any

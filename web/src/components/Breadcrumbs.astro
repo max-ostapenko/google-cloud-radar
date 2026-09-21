@@ -1,0 +1,182 @@
+---
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+  isCode?: boolean;
+}
+
+interface Props {
+  items: BreadcrumbItem[];
+  class?: string;
+}
+
+const { items, class: className = '' } = Astro.props;
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://google-cloud-radar.com';
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
+
+// Build Google-compliant BreadcrumbList structured data (JSON-LD).
+// Google Search Console requires that every intermediate breadcrumb item has a valid, absolute URL ('item').
+// Non-navigable visual tags (e.g. ecosystem or category labels without dedicated index pages)
+// remain visible in the human UI trail, but are omitted from the Search Engine hierarchy to prevent
+// "Missing field 'item' (in 'itemListElement')" errors in Google Search Console.
+// The final breadcrumb represents the current page and resolves to the canonical URL if href is omitted.
+const schemaBreadcrumbItems = items
+  .map((item, index) => {
+    const isLast = index === items.length - 1;
+    let url: string | null = null;
+
+    if (item.href) {
+      url = new URL(item.href, siteUrl).href;
+    } else if (isLast) {
+      url = canonicalUrl;
+    }
+
+    if (!url) return null;
+
+    return {
+      name: item.label,
+      url,
+    };
+  })
+  .filter((item): item is { name: string; url: string } => item !== null);
+
+// Only output schema if there is a meaningful multi-level hierarchy (2+ items with URLs).
+// Google guidelines advise against emitting BreadcrumbList for single root/home items.
+const shouldEmitSchema = schemaBreadcrumbItems.length >= 2;
+
+const breadcrumbSchema = shouldEmitSchema
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: schemaBreadcrumbItems.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        item: item.url,
+      })),
+    }
+  : null;
+---
+
+<nav class={`breadcrumb-nav ${className}`} aria-label="Breadcrumb">
+  <ol class="breadcrumb-list">
+    {items.map((item, index) => {
+      const isLast = index === items.length - 1;
+      return (
+        <li 
+          class={`breadcrumb-item ${isLast ? 'current' : ''} ${!item.href && !isLast ? 'crumb-dim' : ''}`}
+          aria-current={isLast ? 'page' : undefined}
+        >
+          {isLast ? (
+            item.isCode ? (
+              <code class="crumb-code">{item.label}</code>
+            ) : (
+              <span class="crumb-text" title={item.label}>{item.label}</span>
+            )
+          ) : item.href ? (
+            <a href={item.href} class="crumb-link">
+              {item.isCode ? (
+                <code class="crumb-code">{item.label}</code>
+              ) : (
+                <span>{item.label}</span>
+              )}
+            </a>
+          ) : item.isCode ? (
+            <code class="crumb-code">{item.label}</code>
+          ) : (
+            <span class="crumb-text">{item.label}</span>
+          )}
+        </li>
+      );
+    })}
+  </ol>
+</nav>
+
+{breadcrumbSchema && (
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+)}
+
+<style>
+  .breadcrumb-nav {
+    margin-bottom: 16px;
+  }
+
+  .breadcrumb-list {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-tertiary);
+    flex-wrap: wrap;
+    line-height: 1.5;
+  }
+
+  .breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    max-width: 320px;
+  }
+
+  .breadcrumb-item + .breadcrumb-item::before {
+    content: '/';
+    margin: 0 8px;
+    color: var(--border-strong);
+    user-select: none;
+    font-size: 12px;
+  }
+
+  .breadcrumb-item.current {
+    max-width: 420px;
+  }
+
+  .crumb-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .crumb-link:hover {
+    color: var(--google-blue);
+    text-decoration: underline;
+  }
+
+  .crumb-dim {
+    color: var(--text-tertiary);
+    white-space: nowrap;
+  }
+
+  .crumb-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .current .crumb-text {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .crumb-code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background-color: var(--bg-surface-hover);
+    padding: 1px 5px;
+    border-radius: var(--radius-xs, 3px);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  .current .crumb-code {
+    background-color: var(--google-blue-subtle);
+    border-color: var(--google-blue-border);
+    color: var(--google-blue);
+    font-weight: 600;
+  }
+</style>

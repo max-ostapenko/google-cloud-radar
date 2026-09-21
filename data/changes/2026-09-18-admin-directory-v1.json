@@ -1,0 +1,21 @@
+{
+  "id": "2026-09-18-admin-directory-v1",
+  "date": "2026-09-18",
+  "api": "admin.directory_v1",
+  "service": "Admin SDK",
+  "title": "Clarified Unmanaged Account Resolution Logic",
+  "summary": "The Directory API documentation now explicitly details the HTTP response codes returned when resolving unmanaged user account conflicts during user creation.",
+  "details": "The 'users.insert' method description has been updated to clarify the behavior of the 'resolveConflictAccount' parameter. It now specifies that a 200 response indicates successful creation or replacement, 202 indicates an invitation was sent to an unmanaged personal account, and 409 indicates a conflict that prevents creation (such as an existing unmanaged work account or a policy to preserve the account). New documentation links for resolving duplicate account errors and transferring unmanaged work accounts have also been added to assist with troubleshooting provisioning failures.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 3,
+  "tags": [
+    "Users",
+    "Provisioning",
+    "Documentation"
+  ],
+  "extracted_methods": [],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-18T03:57:19.403256+00:00"
+}
