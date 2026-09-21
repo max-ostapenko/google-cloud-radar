@@ -19,7 +19,7 @@
     "pr:open": "tsx scripts/open_pr.ts"
   },
   "dependencies": {
-    "@google-cloud/firestore": "^7.11.0",
+    "@google-cloud/firestore": "^9.2.0",
     "@google/genai": "^2.23.0",
     "dotenv": "^16.4.7",
     "fast-xml-parser": "^5.0.8",
