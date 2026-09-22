@@ -1,5 +1,47 @@
 [
   {
+    "id": "2026-09-22-dataform-v1",
+    "date": "2026-09-22",
+    "api": "dataform.v1",
+    "service": "Dataform",
+    "title": "Dataform: File path description clarified",
+    "summary": "A minor documentation update clarifies the reference point for file paths within Dataform workspaces. No functional changes or developer action required.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 2,
+    "tags": [
+      "documentation",
+      "clarification"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.filesearchresult.properties.path.description"
+    ],
+    "generated_at": "2026-09-22T14:30:42.836Z"
+  },
+  {
+    "id": "2026-09-22-androidpublisher-v3",
+    "date": "2026-09-22",
+    "api": "androidpublisher.v3",
+    "service": "Android Publisher",
+    "title": "New `updateId` for Hosted App Responses",
+    "summary": "The `UpdateAppStoreHostedAppResponse` now includes an `updateId` to uniquely identify and track specific versions of hosted app updates, enabling correlation with publishing signals.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "Android Publisher",
+      "App Updates",
+      "Tracking"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.updateappstorehostedappresponse.properties.updateid.description",
+      "schemas.updateappstorehostedappresponse.properties.updateid.type"
+    ],
+    "generated_at": "2026-09-22T14:30:42.816Z"
+  },
+  {
     "id": "2026-09-21-aiplatform-v1",
     "date": "2026-09-21",
     "api": "aiplatform.v1",
