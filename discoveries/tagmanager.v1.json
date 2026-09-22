@@ -1932,7 +1932,7 @@
       }
     }
   },
-  "revision": "20260916",
+  "revision": "20260921",
   "rootUrl": "https://tagmanager.googleapis.com/",
   "schemas": {
     "Account": {
