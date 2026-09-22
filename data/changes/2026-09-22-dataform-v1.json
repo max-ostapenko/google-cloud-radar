@@ -1,0 +1,23 @@
+{
+  "id": "2026-09-22-dataform-v1",
+  "date": "2026-09-22",
+  "api": "dataform.v1",
+  "service": "Dataform",
+  "title": "Dataform: File path description clarified",
+  "summary": "A minor documentation update clarifies the reference point for file paths within Dataform workspaces. No functional changes or developer action required.",
+  "details": "The description for `FileSearchResult.path` has been updated. It now specifies 'File system path relative to the file tree root.' instead of 'File system path relative to the workspace root.'. This is a documentation clarification and does not impact API behavior or require any code changes.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 2,
+  "tags": [
+    "documentation",
+    "clarification"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.filesearchresult.properties.path.description"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-22T14:30:42.836Z"
+}

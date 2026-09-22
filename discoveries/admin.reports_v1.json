@@ -702,7 +702,7 @@
       }
     }
   },
-  "revision": "20260914",
+  "revision": "20260917",
   "rootUrl": "https://admin.googleapis.com/",
   "schemas": {
     "Activities": {
