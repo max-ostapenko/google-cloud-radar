@@ -253,7 +253,7 @@
       }
     }
   },
-  "revision": "20260913",
+  "revision": "20260920",
   "rootUrl": "https://safebrowsing.googleapis.com/",
   "schemas": {
     "GoogleSecuritySafebrowsingV5BatchGetHashListsResponse": {
