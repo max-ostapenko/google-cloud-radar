@@ -42,6 +42,46 @@
     "generated_at": "2026-09-22T14:30:42.816Z"
   },
   {
+    "id": "2026-09-22-analyticshub-v1",
+    "date": "2026-09-22",
+    "api": "analyticshub.v1",
+    "service": "Analytics Hub",
+    "title": "Analytics Hub: Custom Bigtable Row Keys & Column Mappings",
+    "summary": "Analytics Hub now provides advanced customization for Pub/Sub to Bigtable ingestion. Developers can define custom row keys using delimited fields or structured schemas, and control how JSON message fields map to Bigtable column families, offering greater flexibility for data modeling.",
+    "impact": "high",
+    "breaking": false,
+    "interesting_score": 8,
+    "tags": [
+      "data ingestion",
+      "bigtable",
+      "pub/sub",
+      "configuration"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.bigtableconfig.description",
+      "schemas.bigtableconfig.properties.columnfamilymapping.$ref",
+      "schemas.bigtableconfig.properties.columnfamilymapping.description",
+      "schemas.columnfamilymapping.description",
+      "schemas.columnfamilymapping.properties.delimitedkey.$ref",
+      "schemas.columnfamilymapping.properties.delimitedkey.description",
+      "schemas.columnfamilymapping.properties.rowkeyschema.$ref",
+      "schemas.columnfamilymapping.properties.rowkeyschema.description",
+      "schemas.columnfamilymapping.type",
+      "schemas.delimitedkey.description",
+      "schemas.delimitedkey.properties.delimiter.description",
+      "schemas.delimitedkey.properties.delimiter.format",
+      "schemas.delimitedkey.properties.delimiter.type",
+      "schemas.delimitedkey.properties.keyfields.description",
+      "schemas.delimitedkey.properties.keyfields.items.type",
+      "schemas.delimitedkey.properties.keyfields.type",
+      "schemas.delimitedkey.type",
+      "schemas.rowkeyschema.description",
+      "schemas.rowkeyschema.type"
+    ],
+    "generated_at": "2026-09-22T18:38:22.555Z"
+  },
+  {
     "id": "2026-09-21-aiplatform-v1",
     "date": "2026-09-21",
     "api": "aiplatform.v1",
