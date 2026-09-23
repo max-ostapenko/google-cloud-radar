@@ -1,5 +1,104 @@
 [
   {
+    "id": "2026-09-23-metastore-v1beta",
+    "date": "2026-09-23",
+    "api": "metastore.v1beta",
+    "service": "Dataproc Metastore",
+    "title": "Lakehouse Proxy Config Introduced (Breaking)",
+    "summary": "Dataproc Metastore now exposes `LakehouseProxyConfig` for managing phased migrations to Lakehouse Iceberg REST Catalogs. This new configuration and its properties are read-only, which is a breaking change for any clients attempting to write to them.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking-change",
+      "new-feature",
+      "dataproc-metastore",
+      "lakehouse"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.lakehouseproxyconfig.description",
+      "schemas.lakehouseproxyconfig.properties.catalog.description",
+      "schemas.lakehouseproxyconfig.properties.catalog.readonly",
+      "schemas.lakehouseproxyconfig.properties.catalog.type",
+      "schemas.lakehouseproxyconfig.properties.namespaces.description",
+      "schemas.lakehouseproxyconfig.properties.namespaces.items.type",
+      "schemas.lakehouseproxyconfig.properties.namespaces.readonly",
+      "schemas.lakehouseproxyconfig.properties.namespaces.type",
+      "schemas.lakehouseproxyconfig.type",
+      "schemas.service.properties.lakehouseproxyconfig.$ref",
+      "schemas.service.properties.lakehouseproxyconfig.description",
+      "schemas.service.properties.lakehouseproxyconfig.readonly"
+    ],
+    "generated_at": "2026-09-23T04:03:14.484Z"
+  },
+  {
+    "id": "2026-09-23-metastore-v1alpha",
+    "date": "2026-09-23",
+    "api": "metastore.v1alpha",
+    "service": "Dataproc Metastore",
+    "title": "Metastore v1alpha: Lakehouse Proxy Config & Read-Only Fields",
+    "summary": "The Metastore v1alpha API introduces Lakehouse proxy configuration for phased namespace migrations. The new 'lakehouseProxyConfig' field in the Service schema and its sub-properties are now explicitly read-only, which is a breaking change.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 8,
+    "tags": [
+      "Metastore",
+      "Lakehouse",
+      "Breaking Change",
+      "Migration"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.lakehouseproxyconfig.description",
+      "schemas.lakehouseproxyconfig.properties.catalog.description",
+      "schemas.lakehouseproxyconfig.properties.catalog.readonly",
+      "schemas.lakehouseproxyconfig.properties.catalog.type",
+      "schemas.lakehouseproxyconfig.properties.namespaces.description",
+      "schemas.lakehouseproxyconfig.properties.namespaces.items.type",
+      "schemas.lakehouseproxyconfig.properties.namespaces.readonly",
+      "schemas.lakehouseproxyconfig.properties.namespaces.type",
+      "schemas.lakehouseproxyconfig.type",
+      "schemas.service.properties.lakehouseproxyconfig.$ref",
+      "schemas.service.properties.lakehouseproxyconfig.description",
+      "schemas.service.properties.lakehouseproxyconfig.readonly"
+    ],
+    "generated_at": "2026-09-23T04:03:14.463Z"
+  },
+  {
+    "id": "2026-09-23-metastore-v1",
+    "date": "2026-09-23",
+    "api": "metastore.v1",
+    "service": "Dataproc Metastore",
+    "title": "Lakehouse Proxy Routing & Read-Only Config",
+    "summary": "Dataproc Metastore introduces new Lakehouse proxy routing capabilities for phased migrations to Iceberg REST Catalogs. The new `LakehouseProxyConfig` and its properties are now officially read-only, which is a breaking change if you were previously attempting to configure them.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "Metastore",
+      "Lakehouse",
+      "Migration",
+      "Breaking Change"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.lakehouseproxyconfig.description",
+      "schemas.lakehouseproxyconfig.properties.catalog.description",
+      "schemas.lakehouseproxyconfig.properties.catalog.readonly",
+      "schemas.lakehouseproxyconfig.properties.catalog.type",
+      "schemas.lakehouseproxyconfig.properties.namespaces.description",
+      "schemas.lakehouseproxyconfig.properties.namespaces.items.type",
+      "schemas.lakehouseproxyconfig.properties.namespaces.readonly",
+      "schemas.lakehouseproxyconfig.properties.namespaces.type",
+      "schemas.lakehouseproxyconfig.type",
+      "schemas.service.properties.lakehouseproxyconfig.$ref",
+      "schemas.service.properties.lakehouseproxyconfig.description",
+      "schemas.service.properties.lakehouseproxyconfig.readonly"
+    ],
+    "generated_at": "2026-09-23T04:03:14.429Z"
+  },
+  {
     "id": "2026-09-22-dataform-v1",
     "date": "2026-09-22",
     "api": "dataform.v1",
