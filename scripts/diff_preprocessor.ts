@@ -34,6 +34,9 @@ export const DESCRIPTION_ONLY_KEYS = new Set(['description', 'title']);
 // Maximum number of change entries per category to send to the LLM
 export const MAX_ENTRIES_PER_CATEGORY = 60;
 
+// Maximum buffer for git commands (50MB) to handle large discovery files (e.g. Vertex AI, Discovery Engine)
+export const MAX_GIT_BUFFER = 50 * 1024 * 1024;
+
 export function getChangedDiscoveryFiles(baseRef: string, headRef = 'WORKTREE'): string[] {
   let args: string[];
   if (!headRef || headRef === 'WORKTREE') {
@@ -43,7 +46,11 @@ export function getChangedDiscoveryFiles(baseRef: string, headRef = 'WORKTREE'):
   }
 
   try {
-    const stdout = execFileSync('git', args, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'ignore'] });
+    const stdout = execFileSync('git', args, {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'ignore'],
+      maxBuffer: MAX_GIT_BUFFER,
+    });
     return stdout
       .split('\n')
       .map((p) => p.trim())
@@ -66,9 +73,17 @@ export function getFileContentAtRef(ref: string, filepath: string): string {
   try {
     return execFileSync('git', ['show', `${ref}:${filepath}`], {
       encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'ignore'],
+      stdio: ['pipe', 'pipe', 'pipe'],
+      maxBuffer: MAX_GIT_BUFFER,
     });
-  } catch {
+  } catch (err: any) {
+    const stderr = err.stderr ? err.stderr.toString() : '';
+    // If the file simply did not exist at the ref (new file), git show returns exit code 128
+    // with message containing "does not exist in"
+    if (err.status === 128 && stderr.includes('does not exist in')) {
+      return '';
+    }
+    console.warn(`git show ${ref}:${filepath} failed (status=${err.status}): ${err.message}\n${stderr}`);
     return '';
   }
 }

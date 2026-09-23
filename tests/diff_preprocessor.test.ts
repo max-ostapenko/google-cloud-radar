@@ -508,4 +508,17 @@ describe('Diff Preprocessor', () => {
       expect(result.breaking_reasons.some((r: string) => r.includes("parameter 'state'"))).toBe(false);
     }
   });
+
+  it('getFileContentAtRef reads large files without ENOBUFS and handles non-existent paths', () => {
+    expect(diff_preprocessor.MAX_GIT_BUFFER).toBeGreaterThanOrEqual(50 * 1024 * 1024);
+
+    // Non-existent path returns empty string
+    const missing = diff_preprocessor.getFileContentAtRef('HEAD', 'discoveries/nonexistent_file_xyz.json');
+    expect(missing).toBe('');
+
+    // Reading aiplatform.v1.json (3.7MB) should succeed without throwing ENOBUFS
+    const content = diff_preprocessor.getFileContentAtRef('HEAD', 'discoveries/aiplatform.v1.json');
+    expect(content.length).toBeGreaterThan(1024 * 1024);
+  });
 });
+

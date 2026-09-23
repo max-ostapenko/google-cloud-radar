@@ -68,13 +68,13 @@ export class DocumentInfo {
       this.json = JSON.parse(this.content.toString('utf-8'));
       this.revision = this.json.revision ?? null;
 
-      const withoutRev = { ...this.json };
+      const sorted = sortKeys(this.json);
+      this.json_string = JSON.stringify(sorted, null, 2);
+
+      const withoutRev = { ...sorted };
       delete withoutRev.revision;
       delete withoutRev.etag;
       this.json_without_revision = withoutRev;
-
-      const sorted = sortKeys(this.json);
-      this.json_string = JSON.stringify(sorted, null, 2);
     } catch {
       this.json = null;
       this.json_without_revision = null;

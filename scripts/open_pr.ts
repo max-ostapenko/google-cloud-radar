@@ -21,7 +21,11 @@ export const APPROVAL_TOKEN_ENV = 'APPROVAL_GITHUB_TOKEN';
 export const CHANGE_SCOPE_PATHS = ['discoveries', 'data'];
 
 export function runCmd(cmd: string, args: string[], options: { check?: boolean } = {}): string {
-  const result = spawnSync(cmd, args, { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] });
+  const result = spawnSync(cmd, args, {
+    encoding: 'utf-8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: 50 * 1024 * 1024,
+  });
   if (options.check && result.status !== 0) {
     throw new Error(`Command failed [${cmd} ${args.join(' ')}]: ${result.stderr}`);
   }

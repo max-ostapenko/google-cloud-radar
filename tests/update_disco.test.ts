@@ -180,6 +180,20 @@ describe('Update Disco', () => {
     expect(fs.readFileSync(discPath)).toEqual(DISCOVERY_0002_CONTENT);
   });
 
+  it('update files newer revision same data different key order', () => {
+    const discPath = path.join(TMP_DIR, 'disc.json');
+    const existingContent = Buffer.from(JSON.stringify({ data: 'bar', extra: { y: 2, x: 1 }, revision: '0002' }));
+    fs.writeFileSync(discPath, existingContent);
+
+    // Incoming document has different key order and newer revision, but identical schema
+    const incomingContent = Buffer.from(JSON.stringify({ revision: '0003', extra: { x: 1, y: 2 }, data: 'bar' }));
+    const discDoc = new update_disco.DocumentInfo(incomingContent, 'disc.json');
+    update_disco.updateFiles([discDoc], TMP_DIR);
+
+    // File on disk should remain untouched
+    expect(fs.readFileSync(discPath)).toEqual(existingContent);
+  });
+
   it('update files newer revision updated data', () => {
     const discPath = path.join(TMP_DIR, 'disc.json');
     fs.writeFileSync(discPath, DISCOVERY_0001_CONTENT);
