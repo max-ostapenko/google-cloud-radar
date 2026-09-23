@@ -9680,7 +9680,7 @@
       }
     }
   },
-  "revision": "20260915",
+  "revision": "20260922",
   "rootUrl": "https://discoveryengine.googleapis.com/",
   "schemas": {
     "GoogleApiDistribution": {
@@ -10013,7 +10013,7 @@
             "description": "Properties of the object.",
             "type": "any"
           },
-          "description": "The API request payload, represented as a protocol buffer. Most API request types are supported\u2014for example: * `type.googleapis.com/google.cloud.discoveryengine.v1alpha.DocumentService.CreateDocumentRequest` * `type.googleapis.com/google.cloud.discoveryengine.v1alpha.UserEventService.WriteUserEventRequest`",
+          "description": "The API request payload, represented as a protocol buffer. Most API request types are supported—for example: * `type.googleapis.com/google.cloud.discoveryengine.v1alpha.DocumentService.CreateDocumentRequest` * `type.googleapis.com/google.cloud.discoveryengine.v1alpha.UserEventService.WriteUserEventRequest`",
           "type": "object"
         },
         "responsePayload": {
@@ -10079,7 +10079,7 @@
       "id": "GoogleCloudDiscoveryengineLoggingServiceContext",
       "properties": {
         "service": {
-          "description": "An identifier of the service\u2014for example, `discoveryengine.googleapis.com`.",
+          "description": "An identifier of the service—for example, `discoveryengine.googleapis.com`.",
           "type": "string"
         }
       },
@@ -10090,7 +10090,7 @@
       "id": "GoogleCloudDiscoveryengineLoggingSourceLocation",
       "properties": {
         "functionName": {
-          "description": "Human-readable name of a function or method\u2014for example, `google.cloud.discoveryengine.v1alpha.RecommendationService.Recommend`.",
+          "description": "Human-readable name of a function or method—for example, `google.cloud.discoveryengine.v1alpha.RecommendationService.Recommend`.",
           "type": "string"
         }
       },
@@ -10395,7 +10395,7 @@
       "id": "GoogleCloudDiscoveryengineV1AssistantCustomerPolicyBannedPhrase",
       "properties": {
         "ignoreDiacritics": {
-          "description": "Optional. If true, diacritical marks (e.g., accents, umlauts) are ignored when matching banned phrases. For example, \"cafe\" would match \"caf\u00e9\".",
+          "description": "Optional. If true, diacritical marks (e.g., accents, umlauts) are ignored when matching banned phrases. For example, \"cafe\" would match \"café\".",
           "type": "boolean"
         },
         "matchType": {
@@ -13553,7 +13553,7 @@
       "type": "object"
     },
     "GoogleCloudDiscoveryengineV1ProjectConfigurableBillingStatusAgentSearchTokenSubscriptionStatus": {
-      "description": "Per-model Agent Search TPM subscription status. One entry per active `core_subscription.agent_search_token_subscriptions[*]` entry in the customer-provided config; populated by UpdateProject and GetProject. The lifecycle scalars on this message (`start_time`, `terminate_time`, `update_type`, `tpm_threshold_next_update_time`) are per (project, model_version) \u2014 siblings of the whole-relationship `start_time` / `terminate_time` / `update_type` on the enclosing ConfigurableBillingStatus, but scoped to this specific Agent Search TPM subscription instead of to the overall customer-configurable- pricing relationship. This per-instance granularity is intentional: the underlying SubV3 storage is per-(project, model_version), so each model has its own activation, termination, and deferred-update clock; surfacing that on the response gives customers the granularity they need to manage per-model commitments independently. QPM / IndexingCore differ \u2014 their storage is one row per (project, location), so their lifecycle is represented only by the whole- relationship scalars on ConfigurableBillingStatus.",
+      "description": "Per-model Agent Search TPM subscription status. One entry per active `core_subscription.agent_search_token_subscriptions[*]` entry in the customer-provided config; populated by UpdateProject and GetProject. The lifecycle scalars on this message (`start_time`, `terminate_time`, `update_type`, `tpm_threshold_next_update_time`) are per (project, model_version) — siblings of the whole-relationship `start_time` / `terminate_time` / `update_type` on the enclosing ConfigurableBillingStatus, but scoped to this specific Agent Search TPM subscription instead of to the overall customer-configurable- pricing relationship. This per-instance granularity is intentional: the underlying SubV3 storage is per-(project, model_version), so each model has its own activation, termination, and deferred-update clock; surfacing that on the response gives customers the granularity they need to manage per-model commitments independently. QPM / IndexingCore differ — their storage is one row per (project, location), so their lifecycle is represented only by the whole- relationship scalars on ConfigurableBillingStatus.",
       "id": "GoogleCloudDiscoveryengineV1ProjectConfigurableBillingStatusAgentSearchTokenSubscriptionStatus",
       "properties": {
         "effectiveTpmThreshold": {
@@ -20156,6 +20156,11 @@
           "description": "Optional. Whether the license config should be auto renewed when it reaches the end date.",
           "type": "boolean"
         },
+        "billingAccountLicenseConfig": {
+          "description": "Output only. The name of the BillingAccountLicenseConfig from which this LicenseConfig is assigned, if this field is set.",
+          "readOnly": true,
+          "type": "string"
+        },
         "earlyTerminated": {
           "description": "Output only. Indication of whether the subscription is terminated earlier than the expiration date. This is usually terminated by pipeline once the subscription gets terminated from subsv3.",
           "readOnly": true,
@@ -20546,7 +20551,7 @@
       "type": "object"
     },
     "GoogleCloudDiscoveryengineV1alphaProjectConfigurableBillingStatusAgentSearchTokenSubscriptionStatus": {
-      "description": "Per-model Agent Search TPM subscription status. One entry per active `core_subscription.agent_search_token_subscriptions[*]` entry in the customer-provided config; populated by UpdateProject and GetProject. The lifecycle scalars on this message (`start_time`, `terminate_time`, `update_type`, `tpm_threshold_next_update_time`) are per (project, model_version) \u2014 siblings of the whole-relationship `start_time` / `terminate_time` / `update_type` on the enclosing ConfigurableBillingStatus, but scoped to this specific Agent Search TPM subscription instead of to the overall customer-configurable- pricing relationship. This per-instance granularity is intentional: the underlying SubV3 storage is per-(project, model_version), so each model has its own activation, termination, and deferred-update clock; surfacing that on the response gives customers the granularity they need to manage per-model commitments independently. QPM / IndexingCore differ \u2014 their storage is one row per (project, location), so their lifecycle is represented only by the whole- relationship scalars on ConfigurableBillingStatus.",
+      "description": "Per-model Agent Search TPM subscription status. One entry per active `core_subscription.agent_search_token_subscriptions[*]` entry in the customer-provided config; populated by UpdateProject and GetProject. The lifecycle scalars on this message (`start_time`, `terminate_time`, `update_type`, `tpm_threshold_next_update_time`) are per (project, model_version) — siblings of the whole-relationship `start_time` / `terminate_time` / `update_type` on the enclosing ConfigurableBillingStatus, but scoped to this specific Agent Search TPM subscription instead of to the overall customer-configurable- pricing relationship. This per-instance granularity is intentional: the underlying SubV3 storage is per-(project, model_version), so each model has its own activation, termination, and deferred-update clock; surfacing that on the response gives customers the granularity they need to manage per-model commitments independently. QPM / IndexingCore differ — their storage is one row per (project, location), so their lifecycle is represented only by the whole- relationship scalars on ConfigurableBillingStatus.",
       "id": "GoogleCloudDiscoveryengineV1alphaProjectConfigurableBillingStatusAgentSearchTokenSubscriptionStatus",
       "properties": {
         "effectiveTpmThreshold": {
@@ -25310,7 +25315,7 @@
       "id": "GoogleCloudDiscoveryengineV1betaAssistantCustomerPolicyBannedPhrase",
       "properties": {
         "ignoreDiacritics": {
-          "description": "Optional. If true, diacritical marks (e.g., accents, umlauts) are ignored when matching banned phrases. For example, \"cafe\" would match \"caf\u00e9\".",
+          "description": "Optional. If true, diacritical marks (e.g., accents, umlauts) are ignored when matching banned phrases. For example, \"cafe\" would match \"café\".",
           "type": "boolean"
         },
         "matchType": {
@@ -26505,7 +26510,7 @@
           "type": "integer"
         },
         "selectedSuggestion": {
-          "description": "End user selected CompleteQueryResponse.QuerySuggestion.suggestion.",
+          "description": "Optional. End user selected CompleteQueryResponse.QuerySuggestion.suggestion.",
           "type": "string"
         }
       },
@@ -30550,7 +30555,7 @@
       "type": "object"
     },
     "GoogleCloudDiscoveryengineV1betaProjectConfigurableBillingStatusAgentSearchTokenSubscriptionStatus": {
-      "description": "Per-model Agent Search TPM subscription status. One entry per active `core_subscription.agent_search_token_subscriptions[*]` entry in the customer-provided config; populated by UpdateProject and GetProject. The lifecycle scalars on this message (`start_time`, `terminate_time`, `update_type`, `tpm_threshold_next_update_time`) are per (project, model_version) \u2014 siblings of the whole-relationship `start_time` / `terminate_time` / `update_type` on the enclosing ConfigurableBillingStatus, but scoped to this specific Agent Search TPM subscription instead of to the overall customer-configurable- pricing relationship. This per-instance granularity is intentional: the underlying SubV3 storage is per-(project, model_version), so each model has its own activation, termination, and deferred-update clock; surfacing that on the response gives customers the granularity they need to manage per-model commitments independently. QPM / IndexingCore differ \u2014 their storage is one row per (project, location), so their lifecycle is represented only by the whole- relationship scalars on ConfigurableBillingStatus.",
+      "description": "Per-model Agent Search TPM subscription status. One entry per active `core_subscription.agent_search_token_subscriptions[*]` entry in the customer-provided config; populated by UpdateProject and GetProject. The lifecycle scalars on this message (`start_time`, `terminate_time`, `update_type`, `tpm_threshold_next_update_time`) are per (project, model_version) — siblings of the whole-relationship `start_time` / `terminate_time` / `update_type` on the enclosing ConfigurableBillingStatus, but scoped to this specific Agent Search TPM subscription instead of to the overall customer-configurable- pricing relationship. This per-instance granularity is intentional: the underlying SubV3 storage is per-(project, model_version), so each model has its own activation, termination, and deferred-update clock; surfacing that on the response gives customers the granularity they need to manage per-model commitments independently. QPM / IndexingCore differ — their storage is one row per (project, location), so their lifecycle is represented only by the whole- relationship scalars on ConfigurableBillingStatus.",
       "id": "GoogleCloudDiscoveryengineV1betaProjectConfigurableBillingStatusAgentSearchTokenSubscriptionStatus",
       "properties": {
         "effectiveTpmThreshold": {
@@ -31606,7 +31611,7 @@
           "type": "string"
         },
         "searchQuery": {
-          "description": "The user's search query. See SearchRequest.query for definition. The value must be a UTF-8 encoded string with a length limit of 5,000 characters. Otherwise, an `INVALID_ARGUMENT` error is returned. At least one of search_query or PageInfo.page_category is required for `search` events. Other event types should not set this field. Otherwise, an `INVALID_ARGUMENT` error is returned.",
+          "description": "Optional. The user's search query. See SearchRequest.query for definition. The value must be a UTF-8 encoded string with a length limit of 5,000 characters. Otherwise, an `INVALID_ARGUMENT` error is returned. At least one of search_query or PageInfo.page_category is required for `search` events. Other event types should not set this field. Otherwise, an `INVALID_ARGUMENT` error is returned.",
           "type": "string"
         }
       },
@@ -34541,7 +34546,7 @@
           "additionalProperties": {
             "$ref": "GoogleCloudDiscoveryengineV1betaCustomAttribute"
           },
-          "description": "Extra user event features to include in the recommendation model. These attributes must NOT contain data that needs to be parsed or processed further, e.g. JSON or other encodings. If you provide custom attributes for ingested user events, also include them in the user events that you associate with prediction requests. Custom attribute formatting must be consistent between imported events and events provided with prediction requests. This lets the Discovery Engine API use those custom attributes when training models and serving predictions, which helps improve recommendation quality. This field needs to pass all below criteria, otherwise an `INVALID_ARGUMENT` error is returned: * The key must be a UTF-8 encoded string with a length limit of 5,000 characters. * For text attributes, at most 400 values are allowed. Empty values are not allowed. Each value must be a UTF-8 encoded string with a length limit of 256 characters. * For number attributes, at most 400 values are allowed. For product recommendations, an example of extra user information is `traffic_channel`, which is how a user arrives at the site. Users can arrive at the site by coming to the site directly, coming through Google search, or in other ways.",
+          "description": "Optional. Extra user event features to include in the recommendation model. These attributes must NOT contain data that needs to be parsed or processed further, e.g. JSON or other encodings. If you provide custom attributes for ingested user events, also include them in the user events that you associate with prediction requests. Custom attribute formatting must be consistent between imported events and events provided with prediction requests. This lets the Discovery Engine API use those custom attributes when training models and serving predictions, which helps improve recommendation quality. This field needs to pass all below criteria, otherwise an `INVALID_ARGUMENT` error is returned: * The key must be a UTF-8 encoded string with a length limit of 5,000 characters. * For text attributes, at most 400 values are allowed. Empty values are not allowed. Each value must be a UTF-8 encoded string with a length limit of 256 characters. * For number attributes, at most 400 values are allowed. For product recommendations, an example of extra user information is `traffic_channel`, which is how a user arrives at the site. Users can arrive at the site by coming to the site directly, coming through Google search, or in other ways.",
           "type": "object"
         },
         "attributionToken": {
@@ -35063,12 +35068,12 @@
           "description": "A distribution value."
         },
         "doubleValue": {
-          "description": "A 64-bit double-precision floating-point number. Its magnitude is approximately \u00b110\u00b1300 and it has 16 significant digits of precision.",
+          "description": "A 64-bit double-precision floating-point number. Its magnitude is approximately ±10±300 and it has 16 significant digits of precision.",
           "format": "double",
           "type": "number"
         },
         "int64Value": {
-          "description": "A 64-bit integer. Its range is approximately \u00b19.2x1018.",
+          "description": "A 64-bit integer. Its range is approximately ±9.2x1018.",
           "format": "int64",
           "type": "string"
         },

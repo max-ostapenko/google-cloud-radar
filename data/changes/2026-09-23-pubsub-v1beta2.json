@@ -1,0 +1,35 @@
+{
+  "id": "2026-09-23-pubsub-v1beta2",
+  "date": "2026-09-23",
+  "api": "pubsub.v1beta2",
+  "service": "Cloud Pub/Sub",
+  "title": "Client Telemetry for Pub/Sub Publish Operations",
+  "summary": "Cloud Pub/Sub introduces new schemas, `PublishOperation` and `PubsubClientTelemetry`, to provide more detailed client-side telemetry for publish operations, including hedging attempts and client-side start times.",
+  "details": "The `pubsub.v1beta2` API now includes two new schemas. `PubsubClientTelemetry` is introduced to capture client-side telemetry, intended to be passed via the `x-goog-pubsub-client-telemetry` header. This schema includes a `publishOperation` field, which references the new `PublishOperation` schema. The `PublishOperation` schema itself now exposes `hedgedAttemptCount` (an integer indicating hedging attempts) and `publishStartTime` (a timestamp for the client-side initiation of the publish call), offering deeper insights into client-side publish behavior and performance.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "pubsub",
+    "telemetry",
+    "observability"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.publishoperation.description",
+    "schemas.publishoperation.properties.hedgedattemptcount.description",
+    "schemas.publishoperation.properties.hedgedattemptcount.format",
+    "schemas.publishoperation.properties.hedgedattemptcount.type",
+    "schemas.publishoperation.properties.publishstarttime.description",
+    "schemas.publishoperation.properties.publishstarttime.format",
+    "schemas.publishoperation.properties.publishstarttime.type",
+    "schemas.publishoperation.type",
+    "schemas.pubsubclienttelemetry.description",
+    "schemas.pubsubclienttelemetry.properties.publishoperation.$ref",
+    "schemas.pubsubclienttelemetry.properties.publishoperation.description",
+    "schemas.pubsubclienttelemetry.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-23T09:51:24.483Z"
+}
