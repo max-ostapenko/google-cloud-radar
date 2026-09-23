@@ -1,0 +1,36 @@
+{
+  "id": "2026-09-23-metastore-v1alpha",
+  "date": "2026-09-23",
+  "api": "metastore.v1alpha",
+  "service": "Dataproc Metastore",
+  "title": "Metastore v1alpha: Lakehouse Proxy Config & Read-Only Fields",
+  "summary": "The Metastore v1alpha API introduces Lakehouse proxy configuration for phased namespace migrations. The new 'lakehouseProxyConfig' field in the Service schema and its sub-properties are now explicitly read-only, which is a breaking change.",
+  "details": "A new `LakehouseProxyConfig` schema has been added to the Metastore v1alpha API, enabling configuration for Dataproc Metastore to Lakehouse proxy routing during phased namespace migrations. This configuration is exposed via the new `lakehouseProxyConfig` property within the `Service` schema. This update includes a breaking change: the `lakehouseProxyConfig` property itself, along with its nested `catalog` and `namespaces` properties, are now explicitly marked as read-only (output-only). Developers who were previously attempting to set these properties in any capacity will need to update their clients to reflect their immutable nature.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "Metastore",
+    "Lakehouse",
+    "Breaking Change",
+    "Migration"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.lakehouseproxyconfig.description",
+    "schemas.lakehouseproxyconfig.properties.catalog.description",
+    "schemas.lakehouseproxyconfig.properties.catalog.readonly",
+    "schemas.lakehouseproxyconfig.properties.catalog.type",
+    "schemas.lakehouseproxyconfig.properties.namespaces.description",
+    "schemas.lakehouseproxyconfig.properties.namespaces.items.type",
+    "schemas.lakehouseproxyconfig.properties.namespaces.readonly",
+    "schemas.lakehouseproxyconfig.properties.namespaces.type",
+    "schemas.lakehouseproxyconfig.type",
+    "schemas.service.properties.lakehouseproxyconfig.$ref",
+    "schemas.service.properties.lakehouseproxyconfig.description",
+    "schemas.service.properties.lakehouseproxyconfig.readonly"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-23T04:03:14.463Z"
+}

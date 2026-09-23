@@ -36063,7 +36063,9 @@
     "version",
     "version_module"
   ],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-09-21T23:05:45.743Z"
+  "status": "released",
+  "lead_time_days": 0,
+  "generated_at": "2026-09-21T23:05:45.743Z",
+  "official_release_date": "2026-09-21",
+  "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#September_21_2026"
 }
