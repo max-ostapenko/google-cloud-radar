@@ -2899,7 +2899,7 @@
       }
     }
   },
-  "revision": "20260910",
+  "revision": "20260920",
   "rootUrl": "https://dataflow.googleapis.com/",
   "schemas": {
     "ApproximateProgress": {
