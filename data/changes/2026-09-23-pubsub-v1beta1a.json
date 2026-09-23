@@ -1,0 +1,36 @@
+{
+  "id": "2026-09-23-pubsub-v1beta1a",
+  "date": "2026-09-23",
+  "api": "pubsub.v1beta1a",
+  "service": "Cloud Pub/Sub",
+  "title": "Pub/Sub Adds Client Telemetry for Publish Operations",
+  "summary": "The Pub/Sub API now includes new schemas for client-side telemetry, `PubsubClientTelemetry` and `PublishOperation`. These additions provide insights into publish operations, such as hedging attempts and client-side publish start times, to aid in debugging and performance analysis.",
+  "details": "Two new schemas, `PubsubClientTelemetry` and `PublishOperation`, have been added to the Pub/Sub API. `PubsubClientTelemetry` is designed to carry client-side telemetry data, which will be sent via the `x-goog-pubsub-client-telemetry` header. It includes a `publishOperation` field, referencing the new `PublishOperation` schema. The `PublishOperation` schema provides details like `hedgedAttemptCount` (an integer indicating hedging attempts) and `publishStartTime` (a `google-datetime` string representing the client-side initiation time of the publish call). These new fields offer developers more visibility into the behavior and performance of their Pub/Sub publish calls, particularly for debugging client library interactions and understanding end-to-end latency with hedging.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "pubsub",
+    "telemetry",
+    "debugging",
+    "client-libraries"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.publishoperation.description",
+    "schemas.publishoperation.properties.hedgedattemptcount.description",
+    "schemas.publishoperation.properties.hedgedattemptcount.format",
+    "schemas.publishoperation.properties.hedgedattemptcount.type",
+    "schemas.publishoperation.properties.publishstarttime.description",
+    "schemas.publishoperation.properties.publishstarttime.format",
+    "schemas.publishoperation.properties.publishstarttime.type",
+    "schemas.publishoperation.type",
+    "schemas.pubsubclienttelemetry.description",
+    "schemas.pubsubclienttelemetry.properties.publishoperation.$ref",
+    "schemas.pubsubclienttelemetry.properties.publishoperation.description",
+    "schemas.pubsubclienttelemetry.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-23T09:51:24.432Z"
+}
