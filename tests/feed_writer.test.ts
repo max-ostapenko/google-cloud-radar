@@ -4,10 +4,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import * as feed_writer from '../scripts/feed_writer.ts';
+import * as update_disco from '../scripts/update_disco.ts';
 
 const TMP_DATA_DIR = path.join(os.tmpdir(), 'radar_test_feed_data');
 
-function makeInsight(api = 'bigquery.v2', score = 5): Record<string, any> {
+function makeInsight(api = 'bigquery.v2', score = 5, breaking = false): Record<string, any> {
   return {
     api,
     service_name: 'BigQuery',
@@ -15,7 +16,7 @@ function makeInsight(api = 'bigquery.v2', score = 5): Record<string, any> {
     summary: 'A short summary.',
     details: 'More detail about the changed API surface.',
     impact: 'medium',
-    breaking: false,
+    breaking,
     tags: ['bigquery', 'jobs'],
     interesting_score: score,
   };
@@ -95,10 +96,40 @@ describe('Feed Writer', () => {
     expect(index[0].interesting_score).toBe(7);
   });
 
-  it('write_insight skips scores below threshold', () => {
-    const slug = feed_writer.writeInsight(makeInsight('bigquery.v2', 1), '2026-04-17', TMP_DATA_DIR);
+  it('write_insight skips scores below threshold (non-breaking)', () => {
+    const slug = feed_writer.writeInsight(makeInsight('bigquery.v2', 2), '2026-04-17', TMP_DATA_DIR);
     expect(slug).toBeNull();
     const changesDir = path.join(TMP_DATA_DIR, 'changes');
     expect(fs.existsSync(changesDir)).toBe(false);
+  });
+
+  it('write_insight always publishes breaking changes regardless of score (530514db)', () => {
+    // Score 1 would normally be filtered; breaking=true bypasses that
+    const slug = feed_writer.writeInsight(makeInsight('bigquery.v2', 1, true), '2026-04-17', TMP_DATA_DIR);
+    expect(slug).toBe('2026-04-17-bigquery-v2');
+    const jsonPath = path.join(TMP_DATA_DIR, 'changes/2026-04-17-bigquery-v2.json');
+    expect(fs.existsSync(jsonPath)).toBe(true);
+    const doc = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+    expect(doc.breaking).toBe(true);
+  });
+});
+
+describe('compareRevisions', () => {
+  it('numeric comparison beats lexicographic for variable-length revision strings (7239c954)', () => {
+    // Lex: "9" > "10" because "9" > "1". Numeric: 9 < 10.
+    expect(update_disco.compareRevisions('9', '10')).toBeLessThan(0);
+    expect(update_disco.compareRevisions('10', '9')).toBeGreaterThan(0);
+    expect(update_disco.compareRevisions('10', '10')).toBe(0);
+  });
+
+  it('handles date-style revision integers correctly', () => {
+    expect(update_disco.compareRevisions('20231210', '20240101')).toBeLessThan(0);
+    expect(update_disco.compareRevisions('20240101', '20231210')).toBeGreaterThan(0);
+  });
+
+  it('falls back to lexicographic for non-numeric strings', () => {
+    expect(update_disco.compareRevisions('alpha', 'beta')).toBeLessThan(0);
+    expect(update_disco.compareRevisions('beta', 'alpha')).toBeGreaterThan(0);
+    expect(update_disco.compareRevisions('same', 'same')).toBe(0);
   });
 });

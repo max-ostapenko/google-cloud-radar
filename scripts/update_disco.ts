@@ -52,6 +52,23 @@ export function sortKeys(value: any): any {
   return value;
 }
 
+/**
+ * Compares two revision strings in a numeric-aware manner.
+ * Discovery revision strings are typically date-based integers (e.g. "20231210").
+ * Lexicographic comparison fails when they differ in digit count.
+ * Returns negative if a < b, positive if a > b, 0 if equal.
+ * (7239c954 / 4f5ad5f6)
+ */
+export function compareRevisions(a: string, b: string): number {
+  const na = parseInt(a, 10);
+  const nb = parseInt(b, 10);
+  if (!isNaN(na) && !isNaN(nb)) {
+    return na - nb;
+  }
+  // Fallback to lexicographic for non-numeric revision strings
+  return a.localeCompare(b);
+}
+
 export class DocumentInfo {
   filename: string;
   content: Buffer;
@@ -205,11 +222,18 @@ export function updateFiles(
       const existing = new DocumentInfo(existingContent, filename);
       const existingRevision = existing.revision || '(unknown)';
 
-      if (existingRevision > documentRevision) {
+      // Use numeric-aware comparison: Discovery revisions are date integers
+      // like "20231210". Raw string > fails for variable-length numerics.
+      // (7239c954 / 4f5ad5f6)
+      const cmp = compareRevisions(existingRevision, documentRevision);
+      if (cmp > 0) {
+        // Existing is newer — skip
         continue;
-      } else if (existingRevision === documentRevision) {
+      } else if (cmp === 0) {
+        // Same revision — authoritative signal, skip regardless of content
         continue;
       } else if (
+        // Incoming is newer but content (sans revision/etag) is identical — no-op write
         JSON.stringify(existing.json_without_revision) ===
         JSON.stringify(document.json_without_revision)
       ) {

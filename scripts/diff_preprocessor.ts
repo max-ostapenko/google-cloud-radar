@@ -303,44 +303,73 @@ export function detectBreakingChanges(
     }
   }
 
-  // 4. Parameter Enum Value Removal
-  const enumParamPrefixes = new Set<string>();
+  // 4. Enum Value Removal — method parameters and schema properties (aa4df698)
+  //
+  // Discovery JSON stores enum arrays as:
+  //   methods.foo.parameters.bar.enum[0]   — method parameter
+  //   schemas.MySchema.properties.baz.enum[0]  — schema property
+  // Both are breaking when existing values are removed.
+
+  interface EnumTarget {
+    prefix: string;
+    name: string;
+    context: string;
+  }
+  const enumTargets: EnumTarget[] = [];
+
   for (const k of Object.keys(oldFlat)) {
-    if (k.includes('.enum[')) {
-      const parts = k.split('.');
-      if (parts.includes('parameters') && !parts.includes('schemas')) {
-        const pIdx = parts.indexOf('parameters');
-        if (parts.length > pIdx + 1) {
-          const paramPrefix = parts.slice(0, pIdx + 2).join('.');
-          enumParamPrefixes.add(paramPrefix);
-        }
+    if (!k.includes('.enum[')) continue;
+    const parts = k.split('.');
+
+    // Method parameter enum: ..parameters.<paramName>.enum[N]
+    if (parts.includes('parameters') && !parts.includes('schemas')) {
+      const pIdx = parts.indexOf('parameters');
+      if (parts.length > pIdx + 1) {
+        const prefix = parts.slice(0, pIdx + 2).join('.');
+        const name = parts[pIdx + 1];
+        enumTargets.push({ prefix, name, context: 'parameter' });
+      }
+      continue;
+    }
+
+    // Schema property enum: schemas.<SchemaName>.properties.<propName>.enum[N]
+    if (parts.includes('schemas') && parts.includes('properties')) {
+      const sIdx = parts.indexOf('schemas');
+      const pIdx = parts.indexOf('properties');
+      if (sIdx < pIdx && parts.length > pIdx + 1) {
+        const prefix = parts.slice(0, pIdx + 2).join('.');
+        const schemaName = parts[sIdx + 1];
+        const propName = parts[pIdx + 1];
+        enumTargets.push({ prefix, name: `${propName} (schema: ${schemaName})`, context: 'schema property' });
       }
     }
   }
 
-  for (const paramPrefix of Array.from(enumParamPrefixes).sort()) {
-    if (!Object.keys(newFlat).some((k) => k === paramPrefix || k.startsWith(`${paramPrefix}.`))) {
-      continue; // Parameter itself was removed; handled by parameter removal check
-    }
+  // Deduplicate by prefix (multiple enum[N] keys would add same prefix)
+  const seenPrefixes = new Set<string>();
+  for (const { prefix, name, context } of enumTargets) {
+    if (seenPrefixes.has(prefix)) continue;
+    seenPrefixes.add(prefix);
 
-    const parts = paramPrefix.split('.');
-    const pIdx = parts.indexOf('parameters');
-    const paramName = parts[pIdx + 1];
+    // Skip if the entire property/param was removed (covered by removal checks above)
+    if (!Object.keys(newFlat).some((k) => k === prefix || k.startsWith(`${prefix}.`))) {
+      continue;
+    }
 
     const oldEnums = new Set(
       Object.entries(oldFlat)
-        .filter(([k]) => k.startsWith(`${paramPrefix}.enum[`))
+        .filter(([k]) => k.startsWith(`${prefix}.enum[`))
         .map(([, v]) => String(v))
     );
     const newEnums = new Set(
       Object.entries(newFlat)
-        .filter(([k]) => k.startsWith(`${paramPrefix}.enum[`))
+        .filter(([k]) => k.startsWith(`${prefix}.enum[`))
         .map(([, v]) => String(v))
     );
 
     const removedEnums = Array.from(oldEnums).filter((x) => !newEnums.has(x));
     for (const val of removedEnums.sort()) {
-      const reason = `Removed enum value '${val}' from parameter '${paramName}'`;
+      const reason = `Removed enum value '${val}' from ${context} '${name}'`;
       if (!reasons.includes(reason)) reasons.push(reason);
     }
   }
@@ -397,11 +426,22 @@ export function buildStructuredDiff(
 
   const added = filterNoise(addedPaths);
   const removed = filterNoise(removedPaths);
-  const modified = filterNoise(modifiedPaths);
+  const allModified = filterNoise(modifiedPaths);
+
+  // Separate description-only modifications so they don't inflate LLM context
+  // (d7ce66d8: feed fluff from unfiltered description edits)
+  const descriptionOnlyModified = allModified.filter(isDescriptionOnly);
+  const modified = allModified.filter((p) => !isDescriptionOnly(p));
 
   if ((Object.keys(newFlat).length === 0 && Object.keys(oldFlat).length > 0) ||
       (Object.keys(newFlat).length < 5 && removed.length > 40 && added.length === 0)) {
     console.info(`  ${filename}: document wiped or deleted (${removed.length} removals). Skipping.`);
+    return null;
+  }
+
+  // If ALL changes are description-only text edits, skip entirely — no API surface changed
+  if (added.length === 0 && removed.length === 0 && modified.length === 0 && descriptionOnlyModified.length > 0) {
+    console.info(`  ${filename}: only description/title text changes (${descriptionOnlyModified.length} paths). Skipping.`);
     return null;
   }
 
@@ -455,7 +495,7 @@ export function buildStructuredDiff(
       added_count: added.length,
       removed_count: removed.length,
       modified_count: modified.length,
-      description_only_modified: modified.filter(isDescriptionOnly).length,
+      description_only_modified: descriptionOnlyModified.length,
       is_breaking: isBreaking,
       breaking_reasons: breakingReasons,
     },

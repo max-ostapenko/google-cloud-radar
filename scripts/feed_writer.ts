@@ -15,7 +15,7 @@ export const DEFAULT_DATA_DIR = path.resolve(__dirname, '../data');
 export const DEFAULT_CHANGES_DIR = path.join(DEFAULT_DATA_DIR, 'changes');
 export const DEFAULT_INDEX_PATH = path.join(DEFAULT_DATA_DIR, 'index.json');
 
-export const INTERESTING_SCORE_THRESHOLD = 2;
+export const INTERESTING_SCORE_THRESHOLD = 3;
 
 export function slugify(s: string): string {
   return s
@@ -109,9 +109,12 @@ export function writeInsight(
 ): string | null {
   const score = insight.interesting_score ?? 0;
   const api = insight.api || 'unknown';
+  const isBreaking = Boolean(insight.breaking);
 
-  if (score < INTERESTING_SCORE_THRESHOLD) {
-    console.info(`  Skipping ${api} (interesting_score=${score} < ${INTERESTING_SCORE_THRESHOLD})`);
+  // Breaking changes always get published regardless of score, because a dropped
+  // breaking alert is worse than a noisy feed entry (insight 530514db).
+  if (!isBreaking && score < INTERESTING_SCORE_THRESHOLD) {
+    console.info(`  Skipping ${api} (interesting_score=${score} < ${INTERESTING_SCORE_THRESHOLD}, non-breaking)`);
     return null;
   }
 
