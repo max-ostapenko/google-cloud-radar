@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   renderBreakingEmailHtml,
+  renderBreakingChangesEmailHtml,
+  formatAlertSubject,
   isServiceWatched,
   isDevEnvironment,
   sendResendEmail,
@@ -126,4 +128,73 @@ describe('dispatch_email_alerts', () => {
     expect(fetchSpy).toHaveBeenCalledOnce();
     fetchSpy.mockRestore();
   });
+
+  describe('formatAlertSubject', () => {
+    it('formats subject for single change', () => {
+      const subject = formatAlertSubject([sampleChange]);
+      expect(subject).toBe(
+        '⚠️ [Breaking Alert] Vertex AI: Vertex AI: Breaking Changes & Agent IAM Controls'
+      );
+    });
+
+    it('formats subject for multiple changes from 2 services', () => {
+      const change2 = {
+        slug: '2026-08-30-storage-v1',
+        service: 'Cloud Storage',
+        title: 'Storage API v1 Updates',
+      };
+      const subject = formatAlertSubject([sampleChange, change2]);
+      expect(subject).toBe(
+        '⚠️ [Breaking Alert] 2 breaking changes detected (Vertex AI, Cloud Storage)'
+      );
+    });
+
+    it('formats subject for 3+ services with overflow count', () => {
+      const change2 = { service: 'Cloud Storage', title: 'Storage v1' };
+      const change3 = { service: 'BigQuery', title: 'BigQuery v2' };
+      const subject = formatAlertSubject([sampleChange, change2, change3]);
+      expect(subject).toBe(
+        '⚠️ [Breaking Alert] 3 breaking changes detected (Vertex AI, Cloud Storage +1 more)'
+      );
+    });
+  });
+
+  describe('renderBreakingChangesEmailHtml', () => {
+    it('returns empty string for empty changes array', () => {
+      expect(renderBreakingChangesEmailHtml([])).toBe('');
+    });
+
+    it('renders single change identical to renderBreakingEmailHtml', () => {
+      const html1 = renderBreakingChangesEmailHtml([sampleChange]);
+      const html2 = renderBreakingEmailHtml(sampleChange);
+      expect(html1).toBe(html2);
+      expect(html1).toContain('⚠️ Breaking Alert');
+      expect(html1).toContain('Vertex AI');
+      expect(html1).not.toContain('We detected <strong>');
+    });
+
+    it('renders multiple breaking changes with combined header and multiple cards', () => {
+      const change2 = {
+        slug: '2026-08-30-storage-v1',
+        date: '2026-08-30',
+        service: 'Cloud Storage',
+        api: 'storage.v1',
+        title: 'Cloud Storage: Bucket Policy Enforcements',
+        summary: 'Enforces strict bucket policy controls.',
+        extracted_methods: ['buckets.setIamPolicy'],
+        tags: ['storage', 'iam'],
+      };
+
+      const html = renderBreakingChangesEmailHtml([sampleChange, change2]);
+      expect(html).toContain('⚠️ 2 Breaking Alerts');
+      expect(html).toContain('We detected <strong>2 breaking changes</strong>');
+      expect(html).toContain('Vertex AI');
+      expect(html).toContain('Cloud Storage');
+      expect(html).toContain('https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1');
+      expect(html).toContain('https://google-cloud-radar.com/changes/2026-08-30-storage-v1');
+      expect(html).toContain('publishers.v1beta1.compact');
+      expect(html).toContain('buckets.setIamPolicy');
+    });
+  });
 });
+

@@ -128,7 +128,26 @@ export async function sendResendEmail(options: SendEmailOptions): Promise<boolea
   }
 }
 
-export function renderBreakingEmailHtml(change: Record<string, any>): string {
+export function formatAlertSubject(changes: Array<Record<string, any>>): string {
+  if (changes.length === 0) {
+    return '⚠️ [Breaking Alert] Google Cloud Radar Update';
+  }
+  if (changes.length === 1) {
+    const c = changes[0];
+    const serviceName = c.service || c.service_name || 'Google Cloud';
+    return `⚠️ [Breaking Alert] ${serviceName}: ${c.title || 'Breaking Change Detected'}`;
+  }
+  const services = Array.from(
+    new Set(changes.map((c) => c.service || c.service_name || 'Google Cloud'))
+  );
+  const servicesStr =
+    services.length <= 2
+      ? services.join(', ')
+      : `${services.slice(0, 2).join(', ')} +${services.length - 2} more`;
+  return `⚠️ [Breaking Alert] ${changes.length} breaking changes detected (${servicesStr})`;
+}
+
+export function renderChangeCardHtml(change: Record<string, any>, isSingle = true): string {
   const rawService = change.service || change.service_name || 'Google Cloud Service';
   const rawTitle = change.title || `${rawService} Breaking Change Detected`;
   const rawSummary = change.summary || '';
@@ -157,7 +176,7 @@ export function renderBreakingEmailHtml(change: Record<string, any>): string {
       )
       .join('');
     methodsHtml = `
-        <div style="margin-top: 18px; margin-bottom: 18px; padding: 14px 16px; background-color: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid #ea4335; border-radius: 6px;">
+        <div style="margin-top: 16px; margin-bottom: 16px; padding: 12px 14px; background-color: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid #ea4335; border-radius: 6px;">
           <strong style="display: block; margin-bottom: 8px; font-size: 12px; color: #b3261e; text-transform: uppercase; letter-spacing: 0.5px;">Impacted Methods &amp; Schema Elements:</strong>
           <ul style="margin: 0; padding-left: 20px;">
             ${methodsItems}
@@ -174,12 +193,67 @@ export function renderBreakingEmailHtml(change: Record<string, any>): string {
     )
     .join('');
 
+  const titleTag = isSingle ? 'h1' : 'h2';
+
+  return `
+    <div style="${isSingle ? '' : 'padding: 24px 0; border-top: 1px solid #e8eaed;'}">
+      <!-- Meta Row -->
+      <div style="font-size: 12.5px; color: #5f6368; margin-bottom: 8px;">
+        <strong style="color: #1a73e8; font-size: 13.5px;">${serviceName}</strong> &nbsp;•&nbsp; <code style="font-family: monospace; background: #f1f3f4; padding: 2px 6px; border-radius: 4px;">${api}</code> &nbsp;•&nbsp; ${dateStr}
+      </div>
+
+      <!-- Title -->
+      <${titleTag} style="font-size: ${isSingle ? '20px' : '18px'}; font-weight: 700; color: #202124; margin: 0 0 14px 0; line-height: 1.35; letter-spacing: -0.2px;">
+        ${title}
+      </${titleTag}>
+
+      <!-- Summary -->
+      <p style="font-size: 14.5px; color: #3c4043; line-height: 1.55; margin: 0 0 16px 0;">
+        ${summary}
+      </p>
+
+      <!-- Extracted Methods -->
+      ${methodsHtml}
+
+      <!-- Tags -->
+      <div style="margin-top: 14px; margin-bottom: 20px;">
+        ${tagsHtml}
+      </div>
+
+      <!-- CTA Button -->
+      <div style="text-align: ${isSingle ? 'center' : 'left'}; margin-top: 16px; margin-bottom: 8px;">
+        <a href="${diffUrl}" target="_blank" style="display: inline-block; background-color: #1a73e8; color: #ffffff; font-size: 13.5px; font-weight: 600; text-decoration: none; padding: 10px 20px; border-radius: 6px; box-shadow: 0 1px 3px rgba(26,115,232,0.3);">
+          View Full AST Diff &amp; Impact Analysis →
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+export function renderBreakingChangesEmailHtml(changes: Array<Record<string, any>>): string {
+  if (changes.length === 0) return '';
+  const isSingle = changes.length === 1;
+  const firstChange = changes[0];
+  const serviceName = escapeHtml(String(firstChange.service || firstChange.service_name || 'Google Cloud'));
+  const headerBadge = isSingle ? '⚠️ Breaking Alert' : `⚠️ ${changes.length} Breaking Alerts`;
+  const pageTitle = isSingle ? `Breaking Alert: ${serviceName}` : `${changes.length} Breaking Changes Detected`;
+
+  const introHtml = !isSingle
+    ? `<div style="font-size: 14.5px; color: #3c4043; line-height: 1.5; margin-bottom: 20px; padding-bottom: 12px;">
+        We detected <strong>${changes.length} breaking changes</strong> affecting your watched services in the latest crawl:
+       </div>`
+    : '';
+
+  const cardsHtml = changes
+    .map((c) => renderChangeCardHtml(c, isSingle))
+    .join('');
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Breaking Alert: ${serviceName}</title>
+  <title>${pageTitle}</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #202124; line-height: 1.5;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8f9fa; padding: 24px 12px;">
@@ -198,7 +272,7 @@ export function renderBreakingEmailHtml(change: Record<string, any>): string {
                   </td>
                   <td align="right">
                     <span style="background-color: rgba(234,67,53,0.2); color: #f28b82; border: 1px solid #ea4335; padding: 3px 8px; border-radius: 12px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
-                      ⚠️ Breaking Alert
+                      ${headerBadge}
                     </span>
                   </td>
                 </tr>
@@ -209,35 +283,8 @@ export function renderBreakingEmailHtml(change: Record<string, any>): string {
           <!-- Main Content -->
           <tr>
             <td style="padding: 28px 24px;">
-              <!-- Meta Row -->
-              <div style="font-size: 12.5px; color: #5f6368; margin-bottom: 8px;">
-                <strong style="color: #1a73e8; font-size: 13.5px;">${serviceName}</strong> &nbsp;•&nbsp; <code style="font-family: monospace; background: #f1f3f4; padding: 2px 6px; border-radius: 4px;">${api}</code> &nbsp;•&nbsp; ${dateStr}
-              </div>
-
-              <!-- Title -->
-              <h1 style="font-size: 20px; font-weight: 700; color: #202124; margin: 0 0 14px 0; line-height: 1.35; letter-spacing: -0.2px;">
-                ${title}
-              </h1>
-
-              <!-- Summary -->
-              <p style="font-size: 14.5px; color: #3c4043; line-height: 1.55; margin: 0 0 16px 0;">
-                ${summary}
-              </p>
-
-              <!-- Extracted Methods -->
-              ${methodsHtml}
-
-              <!-- Tags -->
-              <div style="margin-top: 14px; margin-bottom: 24px;">
-                ${tagsHtml}
-              </div>
-
-              <!-- CTA Button -->
-              <div style="text-align: center; margin-top: 24px; margin-bottom: 12px;">
-                <a href="${diffUrl}" target="_blank" style="display: inline-block; background-color: #1a73e8; color: #ffffff; font-size: 14px; font-weight: 600; text-decoration: none; padding: 12px 24px; border-radius: 6px; box-shadow: 0 1px 3px rgba(26,115,232,0.3);">
-                  View Full AST Diff & Impact Analysis →
-                </a>
-              </div>
+              ${introHtml}
+              ${cardsHtml}
             </td>
           </tr>
 
@@ -255,6 +302,10 @@ export function renderBreakingEmailHtml(change: Record<string, any>): string {
 </body>
 </html>
 `;
+}
+
+export function renderBreakingEmailHtml(change: Record<string, any>): string {
+  return renderBreakingChangesEmailHtml([change]);
 }
 
 export function isServiceWatched(
@@ -421,13 +472,10 @@ export async function runDispatchEmailAlerts(options?: {
 
   // 2. Test mode dispatch
   if (testEmail) {
-    const testChange = targetChanges[0];
-    const serviceName =
-      testChange.service || testChange.service_name || 'Google Cloud';
-    const subject = `⚠️ [Breaking Alert] ${serviceName}: ${testChange.title}`;
-    const htmlBody = renderBreakingEmailHtml(testChange);
+    const subject = formatAlertSubject(targetChanges);
+    const htmlBody = renderBreakingChangesEmailHtml(targetChanges);
 
-    console.log(`Dispatching TEST EMAIL to ${testEmail} for change: ${testChange.slug}`);
+    console.log(`Dispatching TEST EMAIL to ${testEmail} for ${targetChanges.length} change(s)`);
     if (dryRun) {
       console.log(`\n--- SUBJECT: ${subject} ---`);
       console.log(`--- TO: ${testEmail} ---`);
@@ -455,7 +503,7 @@ export async function runDispatchEmailAlerts(options?: {
     return;
   }
 
-  // 3. Production subscriber loop
+  // 3. Production subscriber loop (one combined email per subscriber per crawl)
   const subscribers = await fetchFirestoreSubscribers(projectId, databaseId);
   console.log(`Found ${subscribers.length} active breaking change subscriber(s) in Firestore.`);
 
@@ -465,25 +513,25 @@ export async function runDispatchEmailAlerts(options?: {
   }
 
   const firestore = new Firestore({ projectId, databaseId: databaseId || '(default)' });
-  let totalSent = 0;
+  let totalEmailsSent = 0;
+  let totalChangesAlerted = 0;
   const isDev = isDevEnvironment();
 
-  for (const change of targetChanges) {
-    const changeSlug = change.slug || change.id;
-    if (typeof changeSlug !== 'string') {
-      console.warn('Skipping change without a valid slug');
-      continue;
-    }
-    const serviceSlug = (change.service || '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-    const serviceName = change.service || change.service_name || 'Google Cloud';
-    const subject = `⚠️ [Breaking Alert] ${serviceName}: ${change.title}`;
-    const htmlBody = renderBreakingEmailHtml(change);
+  for (const sub of subscribers) {
+    const email = sub.email;
+    const eligibleChanges: Array<Record<string, any>> = [];
 
-    for (const sub of subscribers) {
-      const email = sub.email;
+    for (const change of targetChanges) {
+      const changeSlug = change.slug || change.id;
+      if (typeof changeSlug !== 'string') {
+        console.warn('Skipping change without a valid slug');
+        continue;
+      }
+      const serviceSlug = (change.service || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
       if (!isServiceWatched(sub, serviceSlug)) {
         continue;
       }
@@ -492,28 +540,45 @@ export async function runDispatchEmailAlerts(options?: {
         continue;
       }
 
-      if (dryRun) {
-        console.log(`[DRY-RUN] Would send alert for ${changeSlug} to ${email}`);
-        continue;
-      }
+      eligibleChanges.push(change);
+    }
 
-      const sent = await sendResendEmail({
-        apiKey: apiKey!,
-        fromEmail,
-        toEmail: email,
-        subject,
-        htmlContent: htmlBody,
-        allowDevFallback: isDev,
-      });
+    if (eligibleChanges.length === 0) {
+      continue;
+    }
 
-      if (sent) {
-        totalSent++;
+    const subject = formatAlertSubject(eligibleChanges);
+    const htmlBody = renderBreakingChangesEmailHtml(eligibleChanges);
+
+    if (dryRun) {
+      console.log(
+        `[DRY-RUN] Would send combined alert (${eligibleChanges.length} changes: ${eligibleChanges.map((c) => c.slug || c.id).join(', ')}) to ${email}`
+      );
+      continue;
+    }
+
+    const sent = await sendResendEmail({
+      apiKey: apiKey!,
+      fromEmail,
+      toEmail: email,
+      subject,
+      htmlContent: htmlBody,
+      allowDevFallback: isDev,
+    });
+
+    if (sent) {
+      totalEmailsSent++;
+      totalChangesAlerted += eligibleChanges.length;
+      for (const change of eligibleChanges) {
+        const changeSlug = change.slug || change.id;
         await recordAlertSent(firestore, changeSlug, email);
       }
     }
   }
 
-  console.log(`Email dispatch complete. Sent ${totalSent} alert email(s).`);
+  console.log(
+    `Email dispatch complete. Sent ${totalEmailsSent} email(s) covering ${totalChangesAlerted} breaking change alert(s).`
+  );
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
