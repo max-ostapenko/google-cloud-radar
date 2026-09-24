@@ -125,6 +125,29 @@
     "generated_at": "2026-09-24T03:58:01.769Z"
   },
   {
+    "id": "2026-09-24-androidpublisher-v3",
+    "date": "2026-09-24",
+    "api": "androidpublisher.v3",
+    "service": "Android Publisher",
+    "title": "Increased Deobfuscation File Upload Limit",
+    "summary": "The Android Publisher API now supports larger deobfuscation file uploads, with the maximum size increased from 1.6 GB to 2.0 GB. This update benefits developers with larger apps.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "Android Publisher",
+      "Uploads",
+      "Deobfuscation"
+    ],
+    "extracted_methods": [
+      "edits.deobfuscationfiles.upload"
+    ],
+    "target_paths": [
+      "resources.edits.resources.deobfuscationfiles.methods.upload.mediaupload.maxsize"
+    ],
+    "generated_at": "2026-09-24T14:44:46.652Z"
+  },
+  {
     "id": "2026-09-23-pubsub-v1beta2",
     "date": "2026-09-23",
     "api": "pubsub.v1beta2",
