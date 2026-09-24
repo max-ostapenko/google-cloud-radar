@@ -8,7 +8,7 @@ import * as update_disco from '../scripts/update_disco.ts';
 
 const TMP_DATA_DIR = path.join(os.tmpdir(), 'radar_test_feed_data');
 
-function makeInsight(api = 'bigquery.v2', score = 5, breaking = false): Record<string, any> {
+function makeInsight(api = 'bigquery.v2', score = 5, breaking = false, overrides: Record<string, any> = {}): Record<string, any> {
   return {
     api,
     service_name: 'BigQuery',
@@ -19,6 +19,7 @@ function makeInsight(api = 'bigquery.v2', score = 5, breaking = false): Record<s
     breaking,
     tags: ['bigquery', 'jobs'],
     interesting_score: score,
+    ...overrides,
   };
 }
 
@@ -111,6 +112,20 @@ describe('Feed Writer', () => {
     expect(fs.existsSync(jsonPath)).toBe(true);
     const doc = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
     expect(doc.breaking).toBe(true);
+  });
+
+  it('extracts two-segment GCP method identifiers as fallback (24ef8039)', () => {
+    const insight = makeInsight('storage.v1', 5, false, {
+      summary: 'Added new method `storage.insert` and updated `buckets.get` endpoint.',
+      details: 'See `storage.insert` for details.',
+    });
+    feed_writer.writeInsight(insight, '2026-04-17', TMP_DATA_DIR);
+
+    const jsonPath = path.join(TMP_DATA_DIR, 'changes/2026-04-17-storage-v1.json');
+    expect(fs.existsSync(jsonPath)).toBe(true);
+    const doc = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+    expect(doc.extracted_methods).toContain('storage.insert');
+    expect(doc.extracted_methods).toContain('buckets.get');
   });
 });
 

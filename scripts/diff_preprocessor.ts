@@ -193,8 +193,8 @@ export function detectBreakingChanges(
       }
     }
 
-    // Removed parameter from method
-    if (parts.includes('parameters') && parts.includes('methods')) {
+    // Removed parameter from method or root service definition (2e7659ed)
+    if (parts.includes('parameters') && !parts.includes('schemas')) {
       const idx = parts.indexOf('parameters');
       if (parts.length > idx + 1) {
         const paramName = parts[idx + 1];
@@ -202,7 +202,8 @@ export function detectBreakingChanges(
           parts.length === idx + 2 ||
           (parts.length === idx + 3 && ['type', 'location', 'format'].includes(parts[idx + 2]))
         ) {
-          const reason = `Removed parameter '${paramName}' from method`;
+          const scope = parts.includes('methods') ? 'method' : 'service';
+          const reason = `Removed parameter '${paramName}' from ${scope}`;
           if (!reasons.includes(reason)) reasons.push(reason);
         }
       }

@@ -37,15 +37,39 @@ export function isSafeFilename(name: string, version: string): boolean {
   return path.basename(filename) === filename;
 }
 
-export function sortKeys(value: any): any {
+// Keys where array element order is semantically meaningful and must not be sorted (b00b1e45)
+export const PRESERVE_ARRAY_ORDER = new Set([
+  'parameterOrder',
+  'enum',
+  'enumDescriptions',
+  'enumDeprecated',
+]);
+
+export function sortKeys(value: any, keyName?: string): any {
   if (Array.isArray(value)) {
-    return value.map(sortKeys);
+    const mapped = value.map((item) => sortKeys(item));
+    if (keyName && PRESERVE_ARRAY_ORDER.has(keyName)) {
+      return mapped;
+    }
+    // Sort arrays of primitive strings/numbers
+    if (mapped.every((x) => typeof x === 'string' || typeof x === 'number')) {
+      return [...mapped].sort((a, b) => String(a).localeCompare(String(b)));
+    }
+    // Sort arrays of objects deterministically by identifier or serialized content
+    if (mapped.every((x) => x !== null && typeof x === 'object' && !Array.isArray(x))) {
+      return [...mapped].sort((a, b) => {
+        const keyA = a.name || a.id || a.location || a.endpointUrl || JSON.stringify(a);
+        const keyB = b.name || b.id || b.location || b.endpointUrl || JSON.stringify(b);
+        return String(keyA).localeCompare(String(keyB));
+      });
+    }
+    return mapped;
   }
   if (value !== null && typeof value === 'object') {
     const sorted: Record<string, any> = {};
     const keys = Object.keys(value).sort();
     for (const key of keys) {
-      sorted[key] = sortKeys(value[key]);
+      sorted[key] = sortKeys(value[key], key);
     }
     return sorted;
   }

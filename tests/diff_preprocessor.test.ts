@@ -520,5 +520,33 @@ describe('Diff Preprocessor', () => {
     const content = diff_preprocessor.getFileContentAtRef('HEAD', 'discoveries/aiplatform.v1.json');
     expect(content.length).toBeGreaterThan(1024 * 1024);
   });
+
+  it('detects parameter removal from root service definitions as breaking (2e7659ed)', () => {
+    const old = {
+      name: 'bigquery',
+      version: 'v2',
+      parameters: {
+        alt: { type: 'string', description: 'Data format for the response.' },
+        quotaUser: { type: 'string', description: 'Available to use for quota purposes.' },
+      },
+    };
+    const next = {
+      name: 'bigquery',
+      version: 'v2',
+      parameters: {
+        alt: { type: 'string', description: 'Data format for the response.' },
+      },
+    };
+
+    const result = diff_preprocessor.buildStructuredDiff(
+      'bigquery.v2.json',
+      JSON.stringify(old),
+      JSON.stringify(next)
+    );
+
+    expect(result).not.toBeNull();
+    expect(result!.is_breaking).toBe(true);
+    expect(result!.breaking_reasons).toContain("Removed parameter 'quotaUser' from service");
+  });
 });
 

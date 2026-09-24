@@ -142,7 +142,8 @@ export function writeInsight(
   let extractedMethods = insight.extracted_methods || [];
   if (extractedMethods.length === 0) {
     const combined = `${summary} ${details}`;
-    const matches = combined.match(/`([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+){2,})`/g) || [];
+    // Support standard 2-segment GCP RPC patterns (`service.method`) as well as 3+ segment paths (24ef8039)
+    const matches = combined.match(/`([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)+)`/g) || [];
     extractedMethods = Array.from(new Set(matches.map((m) => m.slice(1, -1)))).slice(0, 6);
   }
 

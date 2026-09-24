@@ -282,4 +282,40 @@ describe('Update Disco', () => {
     expect(update_disco.isSafeFilename('service/nested', 'v1')).toBe(false);
     expect(update_disco.isSafeFilename('service', 'v1/../../cron.d')).toBe(false);
   });
+
+  describe('sortKeys array normalization (b00b1e45)', () => {
+    it('sorts arrays of strings and numbers deterministically', () => {
+      const input = {
+        scopes: ['https://auth/b', 'https://auth/a'],
+        ports: [8080, 80],
+      };
+      const sorted = update_disco.sortKeys(input);
+      expect(sorted.scopes).toEqual(['https://auth/a', 'https://auth/b']);
+      expect(sorted.ports).toEqual([80, 8080]);
+    });
+
+    it('sorts arrays of objects deterministically by key identifier', () => {
+      const input = {
+        endpoints: [
+          { location: 'us-east1', endpointUrl: 'https://us-east1.example.com' },
+          { location: 'europe-west1', endpointUrl: 'https://europe-west1.example.com' },
+        ],
+      };
+      const sorted = update_disco.sortKeys(input);
+      expect(sorted.endpoints[0].location).toBe('europe-west1');
+      expect(sorted.endpoints[1].location).toBe('us-east1');
+    });
+
+    it('preserves array order for semantic fields like parameterOrder and enum', () => {
+      const input = {
+        parameterOrder: ['project', 'zone', 'instance'],
+        enum: ['B', 'A', 'C'],
+        enumDescriptions: ['desc B', 'desc A', 'desc C'],
+      };
+      const sorted = update_disco.sortKeys(input);
+      expect(sorted.parameterOrder).toEqual(['project', 'zone', 'instance']);
+      expect(sorted.enum).toEqual(['B', 'A', 'C']);
+      expect(sorted.enumDescriptions).toEqual(['desc B', 'desc A', 'desc C']);
+    });
+  });
 });
