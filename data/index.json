@@ -1,5 +1,153 @@
 [
   {
+    "id": "2026-09-24-youtube-v3",
+    "date": "2026-09-24",
+    "api": "youtube.v3",
+    "service": "YouTube Data API",
+    "title": "YouTube Data API: Favorite & Like Activities Removed",
+    "summary": "The `favorite` and `like` activity types, along with their corresponding properties in `ActivityContentDetails`, have been removed from the API. Developers relying on these fields will encounter breaking changes. Conversely, the `subscription` activity type and its details are no longer deprecated.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking-change",
+      "schema",
+      "deprecation"
+    ],
+    "extracted_methods": [
+      "channels.update",
+      "search.list",
+      "videos.list",
+      "videos.rate"
+    ],
+    "target_paths": [
+      "resources.channels.methods.update.parameters.onbehalfofcontentowner.description",
+      "resources.search.methods.list.parameters.eventtype.enumdescriptions[0]",
+      "resources.videos.methods.list.parameters.myrating.enumdescriptions[0]",
+      "resources.videos.methods.rate.parameters.rating.enumdescriptions[0]",
+      "schemas.activitycontentdetails.properties.favorite.$ref",
+      "schemas.activitycontentdetails.properties.favorite.description",
+      "schemas.activitycontentdetails.properties.like.$ref",
+      "schemas.activitycontentdetails.properties.like.description",
+      "schemas.activitycontentdetails.properties.subscription.description",
+      "schemas.activitycontentdetailsfavorite.description",
+      "schemas.activitycontentdetailsfavorite.properties.resourceid.$ref",
+      "schemas.activitycontentdetailsfavorite.properties.resourceid.description",
+      "schemas.activitycontentdetailsfavorite.type",
+      "schemas.activitycontentdetailslike.description",
+      "schemas.activitycontentdetailslike.properties.resourceid.$ref",
+      "schemas.activitycontentdetailslike.properties.resourceid.description",
+      "schemas.activitycontentdetailslike.type",
+      "schemas.activitycontentdetailsrecommendation.properties.reason.enum[1]",
+      "schemas.activitycontentdetailsrecommendation.properties.reason.enum[2]",
+      "schemas.activitycontentdetailsrecommendation.properties.reason.enum[3]",
+      "schemas.activitycontentdetailsrecommendation.properties.reason.enumdescriptions[1]",
+      "schemas.activitycontentdetailsrecommendation.properties.reason.enumdescriptions[2]",
+      "schemas.activitycontentdetailsrecommendation.properties.reason.enumdescriptions[3]",
+      "schemas.activitycontentdetailssubscription.description",
+      "schemas.activitysnippet.properties.type.enum[10]",
+      "schemas.activitysnippet.properties.type.enum[11]",
+      "schemas.activitysnippet.properties.type.enum[2]",
+      "schemas.activitysnippet.properties.type.enum[3]",
+      "schemas.activitysnippet.properties.type.enum[4]",
+      "schemas.activitysnippet.properties.type.enum[5]",
+      "schemas.activitysnippet.properties.type.enum[6]",
+      "schemas.activitysnippet.properties.type.enum[7]",
+      "schemas.activitysnippet.properties.type.enum[8]",
+      "schemas.activitysnippet.properties.type.enum[9]",
+      "schemas.activitysnippet.properties.type.enumdescriptions[10]",
+      "schemas.activitysnippet.properties.type.enumdescriptions[11]",
+      "schemas.activitysnippet.properties.type.enumdescriptions[2]",
+      "schemas.activitysnippet.properties.type.enumdescriptions[3]",
+      "schemas.activitysnippet.properties.type.enumdescriptions[5]",
+      "schemas.commentsnippet.properties.viewerrating.enumdescriptions[0]",
+      "schemas.searchresultsnippet.properties.livebroadcastcontent.enumdescriptions[0]",
+      "schemas.videorating.properties.rating.enumdescriptions[0]",
+      "schemas.videosnippet.properties.livebroadcastcontent.enumdescriptions[0]",
+      "schemas.videostatus.description",
+      "schemas.videostatus.properties.license.enumdescriptions[0]",
+      "schemas.videostatus.properties.license.enumdescriptions[1]"
+    ],
+    "generated_at": "2026-09-24T03:58:01.771Z"
+  },
+  {
+    "id": "2026-09-24-drive-v3",
+    "date": "2026-09-24",
+    "api": "drive.v3",
+    "service": "Google Drive API",
+    "title": "Drive API clarifies concurrent permission warnings",
+    "summary": "The Google Drive API's documentation for `permissions.create`, `delete`, and `update` methods has been updated. The warning about concurrent permission modifications is now more explicit, clarifying its scope.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 3,
+    "tags": [
+      "documentation",
+      "clarification"
+    ],
+    "extracted_methods": [
+      "permissions.create",
+      "permissions.delete",
+      "permissions.update"
+    ],
+    "target_paths": [
+      "resources.permissions.methods.create.description",
+      "resources.permissions.methods.delete.description",
+      "resources.permissions.methods.update.description"
+    ],
+    "generated_at": "2026-09-24T03:58:01.770Z"
+  },
+  {
+    "id": "2026-09-24-drive-v2",
+    "date": "2026-09-24",
+    "api": "drive.v2",
+    "service": "Google Drive API",
+    "title": "Permission Concurrency Warning Clarified",
+    "summary": "The Google Drive API's permission methods (`delete`, `insert`, `patch`, `update`) now feature updated descriptions that clarify the scope of concurrent modification warnings.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 4,
+    "tags": [
+      "documentation",
+      "clarification"
+    ],
+    "extracted_methods": [
+      "permissions.delete",
+      "permissions.insert",
+      "permissions.patch",
+      "permissions.update"
+    ],
+    "target_paths": [
+      "resources.permissions.methods.delete.description",
+      "resources.permissions.methods.insert.description",
+      "resources.permissions.methods.patch.description",
+      "resources.permissions.methods.update.description"
+    ],
+    "generated_at": "2026-09-24T03:58:01.769Z"
+  },
+  {
+    "id": "2026-09-24-androidpublisher-v3",
+    "date": "2026-09-24",
+    "api": "androidpublisher.v3",
+    "service": "Android Publisher",
+    "title": "Increased Deobfuscation File Upload Limit",
+    "summary": "The Android Publisher API now supports larger deobfuscation file uploads, with the maximum size increased from 1.6 GB to 2.0 GB. This update benefits developers with larger apps.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "Android Publisher",
+      "Uploads",
+      "Deobfuscation"
+    ],
+    "extracted_methods": [
+      "edits.deobfuscationfiles.upload"
+    ],
+    "target_paths": [
+      "resources.edits.resources.deobfuscationfiles.methods.upload.mediaupload.maxsize"
+    ],
+    "generated_at": "2026-09-24T14:44:46.652Z"
+  },
+  {
     "id": "2026-09-23-pubsub-v1beta2",
     "date": "2026-09-23",
     "api": "pubsub.v1beta2",

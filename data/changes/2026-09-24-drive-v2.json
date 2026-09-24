@@ -1,0 +1,31 @@
+{
+  "id": "2026-09-24-drive-v2",
+  "date": "2026-09-24",
+  "api": "drive.v2",
+  "service": "Google Drive API",
+  "title": "Permission Concurrency Warning Clarified",
+  "summary": "The Google Drive API's permission methods (`delete`, `insert`, `patch`, `update`) now feature updated descriptions that clarify the scope of concurrent modification warnings.",
+  "details": "The `permissions.delete`, `permissions.insert`, `permissions.patch`, and `permissions.update` methods have updated their warning messages regarding concurrent operations. The warning now explicitly states that \"Concurrent permission modifications (such as update or delete) on the same file, folder, or shared drive aren't supported across any users or clients; only the last update is applied.\" This clarification expands the scope of the warning to explicitly include folders and shared drives, and emphasizes that the restriction applies across any users or clients. This is a documentation update to improve clarity, not a change in API behavior.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 4,
+  "tags": [
+    "documentation",
+    "clarification"
+  ],
+  "extracted_methods": [
+    "permissions.delete",
+    "permissions.insert",
+    "permissions.patch",
+    "permissions.update"
+  ],
+  "target_paths": [
+    "resources.permissions.methods.delete.description",
+    "resources.permissions.methods.insert.description",
+    "resources.permissions.methods.patch.description",
+    "resources.permissions.methods.update.description"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-24T03:58:01.769Z"
+}
