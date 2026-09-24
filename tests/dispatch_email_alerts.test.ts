@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
 import {
   renderBreakingEmailHtml,
   renderBreakingChangesEmailHtml,
@@ -7,6 +10,7 @@ import {
   isDevEnvironment,
   sendResendEmail,
   escapeHtml,
+  loadBreakingChanges,
 } from '../scripts/dispatch_email_alerts.ts';
 
 describe('dispatch_email_alerts', () => {
@@ -194,6 +198,56 @@ describe('dispatch_email_alerts', () => {
       expect(html).toContain('https://google-cloud-radar.com/changes/2026-08-30-storage-v1');
       expect(html).toContain('publishers.v1beta1.compact');
       expect(html).toContain('buckets.setIamPolicy');
+    });
+  });
+
+  describe('loadBreakingChanges (740f4036 / 4b80e126)', () => {
+    const testDir = path.join(os.tmpdir(), 'radar_test_breaking_changes');
+
+    beforeEach(() => {
+      if (fs.existsSync(testDir)) {
+        fs.rmSync(testDir, { recursive: true, force: true });
+      }
+      fs.mkdirSync(testDir, { recursive: true });
+    });
+
+    afterEach(() => {
+      if (fs.existsSync(testDir)) {
+        fs.rmSync(testDir, { recursive: true, force: true });
+      }
+    });
+
+    it('filters out breaking changes older than maxAgeDays (740f4036)', () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const oldDate = new Date(Date.now() - 15 * 86400000).toISOString().slice(0, 10);
+
+      fs.writeFileSync(
+        path.join(testDir, 'recent.json'),
+        JSON.stringify({ slug: 'recent', date: today, breaking: true })
+      );
+      fs.writeFileSync(
+        path.join(testDir, 'old.json'),
+        JSON.stringify({ slug: 'old', date: oldDate, breaking: true })
+      );
+
+      const recentOnly = loadBreakingChanges(undefined, testDir, 7);
+      expect(recentOnly.map((c) => c.slug)).toEqual(['recent']);
+
+      const all = loadBreakingChanges(undefined, testDir, 0);
+      expect(all.map((c) => c.slug).sort()).toEqual(['old', 'recent']);
+    });
+
+    it('returns all breaking changes without pre-truncating to 3 (4b80e126)', () => {
+      const today = new Date().toISOString().slice(0, 10);
+      for (let i = 1; i <= 5; i++) {
+        fs.writeFileSync(
+          path.join(testDir, `change-${i}.json`),
+          JSON.stringify({ slug: `change-${i}`, date: today, breaking: true })
+        );
+      }
+
+      const results = loadBreakingChanges(undefined, testDir, 7);
+      expect(results.length).toBe(5);
     });
   });
 });

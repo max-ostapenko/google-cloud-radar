@@ -395,7 +395,11 @@ export async function recordAlertSent(
   }
 }
 
-export function loadBreakingChanges(slugFilter?: string, changesDir?: string): any[] {
+export function loadBreakingChanges(
+  slugFilter?: string,
+  changesDir?: string,
+  maxAgeDays: number = 7
+): any[] {
   const dir = changesDir ? path.resolve(changesDir) : CHANGES_DIR;
   if (slugFilter) {
     const filePath = path.join(dir, `${slugFilter}.json`);
@@ -413,11 +417,21 @@ export function loadBreakingChanges(slugFilter?: string, changesDir?: string): a
   if (!fs.existsSync(dir)) return [];
   const files = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
   const changes: any[] = [];
+
+  let cutoffDate = '';
+  if (maxAgeDays > 0) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - maxAgeDays);
+    cutoffDate = cutoff.toISOString().slice(0, 10);
+  }
+
   for (const f of files) {
     try {
       const doc = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf-8'));
       if (doc.breaking === true) {
-        changes.push(doc);
+        if (!cutoffDate || !doc.date || doc.date >= cutoffDate) {
+          changes.push(doc);
+        }
       }
     } catch {
       // ignore parse errors
@@ -441,6 +455,7 @@ export async function runDispatchEmailAlerts(options?: {
   project?: string;
   database?: string;
   dryRun?: boolean;
+  maxAgeDays?: number;
 }): Promise<void> {
   const apiKey = options?.resendApiKey || process.env.RESEND_API_KEY;
   const rawFrom =
@@ -453,6 +468,7 @@ export async function runDispatchEmailAlerts(options?: {
   const databaseId = options?.database || DEFAULT_FIRESTORE_DB;
   const testEmail = options?.testEmail;
   const slug = options?.slug;
+  const maxAgeDays = options?.maxAgeDays ?? (slug ? 0 : 7);
 
   if (!apiKey && !dryRun) {
     console.error('Missing RESEND_API_KEY environment variable or --resend-api-key flag.');
@@ -460,14 +476,15 @@ export async function runDispatchEmailAlerts(options?: {
     process.exit(1);
   }
 
-  // 1. Load target breaking change(s)
-  const breakingChanges = loadBreakingChanges(slug);
+  // 1. Load target breaking change(s) with recency window (740f4036)
+  const breakingChanges = loadBreakingChanges(slug, undefined, maxAgeDays);
   if (breakingChanges.length === 0) {
     console.log('No breaking changes found to dispatch.');
     return;
   }
 
-  const targetChanges = slug ? breakingChanges : breakingChanges.slice(0, 3);
+  // Evaluate all breaking changes without premature truncation before Firestore sent check (4b80e126)
+  const targetChanges = breakingChanges;
   console.log(`Loaded ${targetChanges.length} breaking change(s) for evaluation.`);
 
   // 2. Test mode dispatch
@@ -596,6 +613,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     project: getArg('--project'),
     database: getArg('--database'),
     dryRun: args.includes('--dry-run'),
+    maxAgeDays: getArg('--max-age-days') ? parseInt(getArg('--max-age-days')!, 10) : undefined,
   }).catch((err) => {
     console.error('Fatal dispatch_email_alerts error:', err);
     process.exit(1);
