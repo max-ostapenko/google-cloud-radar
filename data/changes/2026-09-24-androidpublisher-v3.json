@@ -1,0 +1,26 @@
+{
+  "id": "2026-09-24-androidpublisher-v3",
+  "date": "2026-09-24",
+  "api": "androidpublisher.v3",
+  "service": "Android Publisher",
+  "title": "Increased Deobfuscation File Upload Limit",
+  "summary": "The Android Publisher API now supports larger deobfuscation file uploads, with the maximum size increased from 1.6 GB to 2.0 GB. This update benefits developers with larger apps.",
+  "details": "The `androidpublisher.v3` API's `edits.deobfuscationfiles.upload` method has increased its `mediaUpload.maxSize` from 1677721600 bytes (1.6 GB) to 2097152000 bytes (2.0 GB). This enhancement allows developers to upload larger deobfuscation files, such as ProGuard mapping files, which is crucial for crash reporting and analysis of increasingly complex and larger Android applications.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "Android Publisher",
+    "Uploads",
+    "Deobfuscation"
+  ],
+  "extracted_methods": [
+    "edits.deobfuscationfiles.upload"
+  ],
+  "target_paths": [
+    "resources.edits.resources.deobfuscationfiles.methods.upload.mediaupload.maxsize"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-24T14:44:46.652Z"
+}
