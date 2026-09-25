@@ -1,5 +1,75 @@
 [
   {
+    "id": "2026-09-25-alloydb-v1beta",
+    "date": "2026-09-25",
+    "api": "alloydb.v1beta",
+    "service": "AlloyDB",
+    "title": "AlloyDB: Observability Field Deprecated",
+    "summary": "The `trackActiveQueryPlan` field within the `ObservabilityInstanceConfig` schema has been marked as deprecated. Developers should plan to migrate away from its use.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "deprecation",
+      "observability"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.observabilityinstanceconfig.properties.trackactivequeryplan.deprecated"
+    ],
+    "generated_at": "2026-09-25T04:12:26.492Z"
+  },
+  {
+    "id": "2026-09-25-alloydb-v1alpha",
+    "date": "2026-09-25",
+    "api": "alloydb.v1alpha",
+    "service": "AlloyDB",
+    "title": "Observability Config Field Deprecated",
+    "summary": "The `trackActiveQueryPlan` property within the `ObservabilityInstanceConfig` schema has been marked as deprecated. Developers should update their configurations.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "deprecation",
+      "alloydb"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.observabilityinstanceconfig.properties.trackactivequeryplan.deprecated"
+    ],
+    "generated_at": "2026-09-25T04:12:26.491Z"
+  },
+  {
+    "id": "2026-09-25-alloydb-v1",
+    "date": "2026-09-25",
+    "api": "alloydb.v1",
+    "service": "AlloyDB",
+    "title": "AlloyDB Enhances IAM Group User Types",
+    "summary": "AlloyDB now supports new user types for IAM group-based authentication. This allows for more granular and centralized access management for your database users.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 8,
+    "tags": [
+      "AlloyDB",
+      "IAM",
+      "Security",
+      "Authentication",
+      "User Management"
+    ],
+    "extracted_methods": [
+      "schemas.User.properties.userType"
+    ],
+    "target_paths": [
+      "schemas.user.properties.usertype.enum[3]",
+      "schemas.user.properties.usertype.enum[4]",
+      "schemas.user.properties.usertype.enum[5]",
+      "schemas.user.properties.usertype.enumdescriptions[3]",
+      "schemas.user.properties.usertype.enumdescriptions[4]",
+      "schemas.user.properties.usertype.enumdescriptions[5]"
+    ],
+    "generated_at": "2026-09-25T04:12:26.484Z"
+  },
+  {
     "id": "2026-09-24-youtube-v3",
     "date": "2026-09-24",
     "api": "youtube.v3",
