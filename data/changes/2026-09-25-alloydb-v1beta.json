@@ -1,0 +1,23 @@
+{
+  "id": "2026-09-25-alloydb-v1beta",
+  "date": "2026-09-25",
+  "api": "alloydb.v1beta",
+  "service": "AlloyDB",
+  "title": "AlloyDB: `trackActiveQueryPlan` Deprecated",
+  "summary": "The `trackActiveQueryPlan` property within AlloyDB's `ObservabilityInstanceConfig` schema has been deprecated. Developers should plan to migrate away from using this feature.",
+  "details": "The `trackActiveQueryPlan` boolean property, found within the `ObservabilityInstanceConfig` schema, is now explicitly marked as deprecated. While it may continue to function for a period, developers are advised to update their configurations to no longer rely on this field and anticipate its eventual removal. Consider alternative observability methods for active query plan tracking.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "deprecation",
+    "alloydb"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.observabilityinstanceconfig.properties.trackactivequeryplan.deprecated"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-25T10:04:35.870Z"
+}

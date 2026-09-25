@@ -1,5 +1,77 @@
 [
   {
+    "id": "2026-09-25-alloydb-v1beta",
+    "date": "2026-09-25",
+    "api": "alloydb.v1beta",
+    "service": "AlloyDB",
+    "title": "AlloyDB: `trackActiveQueryPlan` Deprecated",
+    "summary": "The `trackActiveQueryPlan` property within AlloyDB's `ObservabilityInstanceConfig` schema has been deprecated. Developers should plan to migrate away from using this feature.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "deprecation",
+      "alloydb"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.observabilityinstanceconfig.properties.trackactivequeryplan.deprecated"
+    ],
+    "generated_at": "2026-09-25T10:04:35.870Z"
+  },
+  {
+    "id": "2026-09-25-alloydb-v1alpha",
+    "date": "2026-09-25",
+    "api": "alloydb.v1alpha",
+    "service": "AlloyDB",
+    "title": "AlloyDB: Observability Config Field Deprecated",
+    "summary": "The `trackActiveQueryPlan` field within the `ObservabilityInstanceConfig` schema has been marked as deprecated. Developers should update their configurations to avoid using this field.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "AlloyDB",
+      "Deprecation",
+      "Observability"
+    ],
+    "extracted_methods": [
+      "schemas.ObservabilityInstanceConfig.properties"
+    ],
+    "target_paths": [
+      "schemas.observabilityinstanceconfig.properties.trackactivequeryplan.deprecated"
+    ],
+    "generated_at": "2026-09-25T10:04:35.869Z"
+  },
+  {
+    "id": "2026-09-25-alloydb-v1",
+    "date": "2026-09-25",
+    "api": "alloydb.v1",
+    "service": "AlloyDB",
+    "title": "AlloyDB Enhances IAM Group Authentication",
+    "summary": "AlloyDB now supports new `userType` enum values for IAM group-based authentication, enabling more flexible and granular control over database access for groups, users, and service accounts.",
+    "impact": "high",
+    "breaking": false,
+    "interesting_score": 8,
+    "tags": [
+      "IAM",
+      "Authentication",
+      "Security",
+      "AlloyDB"
+    ],
+    "extracted_methods": [
+      "schemas.User.properties.userType"
+    ],
+    "target_paths": [
+      "schemas.user.properties.usertype.enum[3]",
+      "schemas.user.properties.usertype.enum[4]",
+      "schemas.user.properties.usertype.enum[5]",
+      "schemas.user.properties.usertype.enumdescriptions[3]",
+      "schemas.user.properties.usertype.enumdescriptions[4]",
+      "schemas.user.properties.usertype.enumdescriptions[5]"
+    ],
+    "generated_at": "2026-09-25T10:04:35.862Z"
+  },
+  {
     "id": "2026-09-24-youtube-v3",
     "date": "2026-09-24",
     "api": "youtube.v3",
