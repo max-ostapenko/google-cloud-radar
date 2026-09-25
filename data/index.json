@@ -81,6 +81,74 @@
     "generated_at": "2026-09-25T19:11:33.184Z"
   },
   {
+    "id": "2026-09-25-bigqueryconnection-v1",
+    "date": "2026-09-25",
+    "api": "bigqueryconnection.v1",
+    "service": "BigQuery Connection API",
+    "title": "Cross-Cloud Caching for External Connections",
+    "summary": "BigQuery Connection now supports configuring cross-cloud caching for AWS, Azure, and Salesforce Data Cloud connections, potentially boosting query performance and reducing egress costs.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 7,
+    "tags": [
+      "connections",
+      "caching",
+      "performance",
+      "cost-optimization"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.awsproperties.properties.crosscloudcacheoptions.$ref",
+      "schemas.awsproperties.properties.crosscloudcacheoptions.description",
+      "schemas.azureproperties.properties.crosscloudcacheoptions.$ref",
+      "schemas.azureproperties.properties.crosscloudcacheoptions.description",
+      "schemas.crosscloudcacheoptions.description",
+      "schemas.crosscloudcacheoptions.properties.enabled.description",
+      "schemas.crosscloudcacheoptions.properties.enabled.type",
+      "schemas.crosscloudcacheoptions.type",
+      "schemas.salesforcedatacloudproperties.properties.crosscloudcacheoptions.$ref",
+      "schemas.salesforcedatacloudproperties.properties.crosscloudcacheoptions.description"
+    ],
+    "generated_at": "2026-09-25T23:11:39.068Z"
+  },
+  {
+    "id": "2026-09-25-bigquery-v2",
+    "date": "2026-09-25",
+    "api": "bigquery.v2",
+    "service": "BigQuery",
+    "title": "BigQuery: Secure Query Context, Parquet Geo Export, & JobStatistics2 Breaking Change",
+    "summary": "BigQuery introduces a new `SecureContext` for queries, enabling secure parameter passing, and adds support for native Parquet Geography type exports. Heads up: `JobStatistics2.referencedLogicalViews` is now read-only, which is a breaking change if you were previously setting this field.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking-change",
+      "security",
+      "data-export",
+      "query-execution"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.jobconfigurationextract.properties.nativegeographyexportenabled.description",
+      "schemas.jobconfigurationextract.properties.nativegeographyexportenabled.type",
+      "schemas.jobconfigurationquery.properties.securecontext.$ref",
+      "schemas.jobconfigurationquery.properties.securecontext.description",
+      "schemas.jobstatistics2.properties.referencedlogicalviews.description",
+      "schemas.jobstatistics2.properties.referencedlogicalviews.items.$ref",
+      "schemas.jobstatistics2.properties.referencedlogicalviews.readonly",
+      "schemas.jobstatistics2.properties.referencedlogicalviews.type",
+      "schemas.queryrequest.properties.securecontext.$ref",
+      "schemas.queryrequest.properties.securecontext.description",
+      "schemas.securecontext.description",
+      "schemas.securecontext.properties.secureparameterentries.additionalproperties.description",
+      "schemas.securecontext.properties.secureparameterentries.additionalproperties.type",
+      "schemas.securecontext.properties.secureparameterentries.description",
+      "schemas.securecontext.properties.secureparameterentries.type",
+      "schemas.securecontext.type"
+    ],
+    "generated_at": "2026-09-25T23:11:39.066Z"
+  },
+  {
     "id": "2026-09-25-alloydb-v1beta",
     "date": "2026-09-25",
     "api": "alloydb.v1beta",

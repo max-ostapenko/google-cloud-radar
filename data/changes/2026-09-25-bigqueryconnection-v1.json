@@ -1,0 +1,34 @@
+{
+  "id": "2026-09-25-bigqueryconnection-v1",
+  "date": "2026-09-25",
+  "api": "bigqueryconnection.v1",
+  "service": "BigQuery Connection API",
+  "title": "Cross-Cloud Caching for External Connections",
+  "summary": "BigQuery Connection now supports configuring cross-cloud caching for AWS, Azure, and Salesforce Data Cloud connections, potentially boosting query performance and reducing egress costs.",
+  "details": "A new `CrossCloudCacheOptions` schema has been introduced, containing an `enabled` boolean field. This option is now available as `crossCloudCacheOptions` within the `AwsProperties`, `AzureProperties`, and `SalesforceDataCloudProperties` schemas. Developers can use this to enable or disable caching of data and metadata files for cross-cloud queries, which can improve performance and decrease network egress costs.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "connections",
+    "caching",
+    "performance",
+    "cost-optimization"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.awsproperties.properties.crosscloudcacheoptions.$ref",
+    "schemas.awsproperties.properties.crosscloudcacheoptions.description",
+    "schemas.azureproperties.properties.crosscloudcacheoptions.$ref",
+    "schemas.azureproperties.properties.crosscloudcacheoptions.description",
+    "schemas.crosscloudcacheoptions.description",
+    "schemas.crosscloudcacheoptions.properties.enabled.description",
+    "schemas.crosscloudcacheoptions.properties.enabled.type",
+    "schemas.crosscloudcacheoptions.type",
+    "schemas.salesforcedatacloudproperties.properties.crosscloudcacheoptions.$ref",
+    "schemas.salesforcedatacloudproperties.properties.crosscloudcacheoptions.description"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-25T23:11:39.068Z"
+}
