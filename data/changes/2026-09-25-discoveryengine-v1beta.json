@@ -1,0 +1,31 @@
+{
+  "id": "2026-09-25-discoveryengine-v1beta",
+  "date": "2026-09-25",
+  "api": "discoveryengine.v1beta",
+  "service": "Vertex AI Agent Builder",
+  "title": "Breaking Change: AssistAnswer's `connectorDisplayNames` is now Read-Only",
+  "summary": "The `connectorDisplayNames` property in both `GoogleCloudDiscoveryengineV1alphaAssistAnswer` and `GoogleCloudDiscoveryengineV1betaAssistAnswer` schemas has been made read-only. This is a breaking change for applications that may have been writing to this field.",
+  "details": "The `connectorDisplayNames` property within the `AssistAnswer` schema (for both `v1alpha` and `v1beta` versions) is now explicitly marked as `readOnly`. This field provides a mapping from internal connector agent names to their human-readable display names, intended for output-only use in user interfaces. If your application was previously attempting to write to this field, you will need to update your code to reflect its new immutable status.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "breaking-change",
+    "schema",
+    "assist"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.additionalproperties.type",
+    "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.description",
+    "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.readonly",
+    "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.type",
+    "schemas.googleclouddiscoveryenginev1betaassistanswer.properties.connectordisplaynames.additionalproperties.type",
+    "schemas.googleclouddiscoveryenginev1betaassistanswer.properties.connectordisplaynames.description",
+    "schemas.googleclouddiscoveryenginev1betaassistanswer.properties.connectordisplaynames.readonly",
+    "schemas.googleclouddiscoveryenginev1betaassistanswer.properties.connectordisplaynames.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-25T19:11:33.190Z"
+}

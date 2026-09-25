@@ -1,5 +1,86 @@
 [
   {
+    "id": "2026-09-25-discoveryengine-v1beta",
+    "date": "2026-09-25",
+    "api": "discoveryengine.v1beta",
+    "service": "Vertex AI Agent Builder",
+    "title": "Breaking Change: AssistAnswer's `connectorDisplayNames` is now Read-Only",
+    "summary": "The `connectorDisplayNames` property in both `GoogleCloudDiscoveryengineV1alphaAssistAnswer` and `GoogleCloudDiscoveryengineV1betaAssistAnswer` schemas has been made read-only. This is a breaking change for applications that may have been writing to this field.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 8,
+    "tags": [
+      "breaking-change",
+      "schema",
+      "assist"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.additionalproperties.type",
+      "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.description",
+      "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.readonly",
+      "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.type",
+      "schemas.googleclouddiscoveryenginev1betaassistanswer.properties.connectordisplaynames.additionalproperties.type",
+      "schemas.googleclouddiscoveryenginev1betaassistanswer.properties.connectordisplaynames.description",
+      "schemas.googleclouddiscoveryenginev1betaassistanswer.properties.connectordisplaynames.readonly",
+      "schemas.googleclouddiscoveryenginev1betaassistanswer.properties.connectordisplaynames.type"
+    ],
+    "generated_at": "2026-09-25T19:11:33.190Z"
+  },
+  {
+    "id": "2026-09-25-discoveryengine-v1alpha",
+    "date": "2026-09-25",
+    "api": "discoveryengine.v1alpha",
+    "service": "Vertex AI Agent Builder",
+    "title": "Discovery Engine: AssistAnswer Field Now Read-Only, New OAuth Auth Option",
+    "summary": "A breaking change makes `connectorDisplayNames` in `AssistAnswer` read-only, requiring updates if you were writing to it. Additionally, a new `basicAuthenticationEnabled` field provides more flexibility for OAuth integrations.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 8,
+    "tags": [
+      "breaking-change",
+      "authentication",
+      "schema-update"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.additionalproperties.type",
+      "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.description",
+      "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.readonly",
+      "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.type",
+      "schemas.googleclouddiscoveryenginev1alphaauthorizationserversideoauth2.properties.basicauthenticationenabled.description",
+      "schemas.googleclouddiscoveryenginev1alphaauthorizationserversideoauth2.properties.basicauthenticationenabled.type"
+    ],
+    "generated_at": "2026-09-25T19:11:33.185Z"
+  },
+  {
+    "id": "2026-09-25-discoveryengine-v1",
+    "date": "2026-09-25",
+    "api": "discoveryengine.v1",
+    "service": "Vertex AI Agent Builder",
+    "title": "Discovery Engine: AssistAnswer `connectorDisplayNames` is now read-only",
+    "summary": "The `connectorDisplayNames` property in the `AssistAnswer` schema (v1 and v1alpha) is now `readOnly`. This is a breaking change for developers who were previously writing to this field, which provides human-readable names for internal connector agents.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 8,
+    "tags": [
+      "breaking-change",
+      "schema-update"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.additionalproperties.type",
+      "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.description",
+      "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.readonly",
+      "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.type",
+      "schemas.googleclouddiscoveryenginev1assistanswer.properties.connectordisplaynames.additionalproperties.type",
+      "schemas.googleclouddiscoveryenginev1assistanswer.properties.connectordisplaynames.description",
+      "schemas.googleclouddiscoveryenginev1assistanswer.properties.connectordisplaynames.readonly",
+      "schemas.googleclouddiscoveryenginev1assistanswer.properties.connectordisplaynames.type"
+    ],
+    "generated_at": "2026-09-25T19:11:33.184Z"
+  },
+  {
     "id": "2026-09-25-alloydb-v1beta",
     "date": "2026-09-25",
     "api": "alloydb.v1beta",
