@@ -1,0 +1,23 @@
+{
+  "id": "2026-09-25-alloydb-v1alpha",
+  "date": "2026-09-25",
+  "api": "alloydb.v1alpha",
+  "service": "AlloyDB",
+  "title": "Observability Config Field Deprecated",
+  "summary": "The `trackActiveQueryPlan` property within the `ObservabilityInstanceConfig` schema has been marked as deprecated. Developers should update their configurations.",
+  "details": "The `trackActiveQueryPlan` boolean property, part of the `ObservabilityInstanceConfig` schema, is now officially deprecated. This indicates that the field is no longer recommended for use and may be removed in a future API version. Developers should review their AlloyDB instance configurations and API calls to remove any reliance on this property.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "deprecation",
+    "alloydb"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.observabilityinstanceconfig.properties.trackactivequeryplan.deprecated"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-25T04:12:26.491Z"
+}
