@@ -1,5 +1,42 @@
 [
   {
+    "id": "2026-09-26-bigquery-v2",
+    "date": "2026-09-26",
+    "api": "bigquery.v2",
+    "service": "BigQuery",
+    "title": "BigQuery: Secure Query Context, Native Parquet Geography Export, and a Breaking Change",
+    "summary": "BigQuery introduces a new `secureContext` for passing sensitive, context-specific information to queries, accessible via a new SQL function. Additionally, you can now export Parquet data with native Geography types. Heads up: `JobStatistics2.referencedLogicalViews` is now read-only, which may break existing integrations.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking-change",
+      "data-export",
+      "security",
+      "query-engine"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.jobconfigurationextract.properties.nativegeographyexportenabled.description",
+      "schemas.jobconfigurationextract.properties.nativegeographyexportenabled.type",
+      "schemas.jobconfigurationquery.properties.securecontext.$ref",
+      "schemas.jobconfigurationquery.properties.securecontext.description",
+      "schemas.jobstatistics2.properties.referencedlogicalviews.description",
+      "schemas.jobstatistics2.properties.referencedlogicalviews.items.$ref",
+      "schemas.jobstatistics2.properties.referencedlogicalviews.readonly",
+      "schemas.jobstatistics2.properties.referencedlogicalviews.type",
+      "schemas.queryrequest.properties.securecontext.$ref",
+      "schemas.queryrequest.properties.securecontext.description",
+      "schemas.securecontext.description",
+      "schemas.securecontext.properties.secureparameterentries.additionalproperties.description",
+      "schemas.securecontext.properties.secureparameterentries.additionalproperties.type",
+      "schemas.securecontext.properties.secureparameterentries.description",
+      "schemas.securecontext.properties.secureparameterentries.type",
+      "schemas.securecontext.type"
+    ],
+    "generated_at": "2026-09-26T14:15:08.695Z"
+  },
+  {
     "id": "2026-09-25-discoveryengine-v1beta",
     "date": "2026-09-25",
     "api": "discoveryengine.v1beta",
