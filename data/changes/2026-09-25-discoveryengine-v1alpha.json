@@ -1,0 +1,29 @@
+{
+  "id": "2026-09-25-discoveryengine-v1alpha",
+  "date": "2026-09-25",
+  "api": "discoveryengine.v1alpha",
+  "service": "Vertex AI Agent Builder",
+  "title": "Discovery Engine: AssistAnswer Field Now Read-Only, New OAuth Auth Option",
+  "summary": "A breaking change makes `connectorDisplayNames` in `AssistAnswer` read-only, requiring updates if you were writing to it. Additionally, a new `basicAuthenticationEnabled` field provides more flexibility for OAuth integrations.",
+  "details": "The `GoogleCloudDiscoveryengineV1alphaAssistAnswer` schema now marks the `connectorDisplayNames` property as `readOnly`. This is a breaking change; if your code attempts to write to this field, it will now fail. This field is intended as an output-only map from internal connector agent names to human-readable display names, populated by the service. Developers should update their implementations to no longer set this value.\n\nSeparately, the `GoogleCloudDiscoveryengineV1alphaAuthorizationServerSideOAuth2` schema gains a new `basicAuthenticationEnabled` boolean field. This allows you to configure HTTP Basic authentication (`client_secret_basic`) for OAuth token exchanges, useful for integrating with OAuth providers that require this method instead of the default `client_secret_post`.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "breaking-change",
+    "authentication",
+    "schema-update"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.additionalproperties.type",
+    "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.description",
+    "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.readonly",
+    "schemas.googleclouddiscoveryenginev1alphaassistanswer.properties.connectordisplaynames.type",
+    "schemas.googleclouddiscoveryenginev1alphaauthorizationserversideoauth2.properties.basicauthenticationenabled.description",
+    "schemas.googleclouddiscoveryenginev1alphaauthorizationserversideoauth2.properties.basicauthenticationenabled.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-25T19:11:33.185Z"
+}

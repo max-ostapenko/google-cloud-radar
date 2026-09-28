@@ -1,0 +1,40 @@
+{
+  "id": "2026-09-26-bigquery-v2",
+  "date": "2026-09-26",
+  "api": "bigquery.v2",
+  "service": "BigQuery",
+  "title": "BigQuery: Secure Query Context, Native Parquet Geography Export, and a Breaking Change",
+  "summary": "BigQuery introduces a new `secureContext` for passing sensitive, context-specific information to queries, accessible via a new SQL function. Additionally, you can now export Parquet data with native Geography types. Heads up: `JobStatistics2.referencedLogicalViews` is now read-only, which may break existing integrations.",
+  "details": "The `JobConfigurationQuery` and `QueryRequest` schemas now include a new `secureContext` field. This field, backed by the new `SecureContext` schema, allows developers to pass key-value pairs of sensitive or context-specific information directly into query execution. These values can then be retrieved within the query using the `SECURE_CONTEXT()` function, enabling more dynamic and secure query behaviors.\n\nFor data export, `JobConfigurationExtract` gains a `nativeGeographyExportEnabled` boolean property. When set to `true` for Parquet exports, BigQuery will now write the native Parquet Geography type instead of the default GeoParquet type, offering more control over geospatial data representation.\n\nBreaking Change Alert: The `referencedLogicalViews` property within the `JobStatistics2` schema has been made read-only. If your applications or tools were previously attempting to set or modify this field, they will now encounter errors. Please update your code to reflect this change.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "data-export",
+    "security",
+    "query-engine"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.jobconfigurationextract.properties.nativegeographyexportenabled.description",
+    "schemas.jobconfigurationextract.properties.nativegeographyexportenabled.type",
+    "schemas.jobconfigurationquery.properties.securecontext.$ref",
+    "schemas.jobconfigurationquery.properties.securecontext.description",
+    "schemas.jobstatistics2.properties.referencedlogicalviews.description",
+    "schemas.jobstatistics2.properties.referencedlogicalviews.items.$ref",
+    "schemas.jobstatistics2.properties.referencedlogicalviews.readonly",
+    "schemas.jobstatistics2.properties.referencedlogicalviews.type",
+    "schemas.queryrequest.properties.securecontext.$ref",
+    "schemas.queryrequest.properties.securecontext.description",
+    "schemas.securecontext.description",
+    "schemas.securecontext.properties.secureparameterentries.additionalproperties.description",
+    "schemas.securecontext.properties.secureparameterentries.additionalproperties.type",
+    "schemas.securecontext.properties.secureparameterentries.description",
+    "schemas.securecontext.properties.secureparameterentries.type",
+    "schemas.securecontext.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-26T14:15:08.695Z"
+}

@@ -23,7 +23,9 @@
     "resources.permissions.methods.delete.description",
     "resources.permissions.methods.update.description"
   ],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-09-24T03:58:01.770Z"
+  "status": "released",
+  "lead_time_days": 0,
+  "generated_at": "2026-09-24T03:58:01.770Z",
+  "official_release_date": "2026-09-24",
+  "official_release_notes_url": "http://workspaceupdates.googleblog.com/2026/09/now-in-beta-import-and-convert-your.html"
 }

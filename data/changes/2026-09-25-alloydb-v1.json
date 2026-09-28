@@ -1,0 +1,32 @@
+{
+  "id": "2026-09-25-alloydb-v1",
+  "date": "2026-09-25",
+  "api": "alloydb.v1",
+  "service": "AlloyDB",
+  "title": "AlloyDB Enhances IAM Group Authentication",
+  "summary": "AlloyDB now supports new `userType` enum values for IAM group-based authentication, enabling more flexible and granular control over database access for groups, users, and service accounts.",
+  "details": "The `schemas.User.properties.userType` enum has been extended with three new values: `ALLOYDB_IAM_GROUP`, `ALLOYDB_IAM_GROUP_USER`, and `ALLOYDB_IAM_GROUP_SERVICE_ACCOUNT`. These additions enable developers to configure database users that represent entire IAM groups, individual users within those groups, or service accounts associated with groups, streamlining identity and access management for AlloyDB instances.",
+  "impact": "high",
+  "breaking": false,
+  "interesting_score": 8,
+  "tags": [
+    "IAM",
+    "Authentication",
+    "Security",
+    "AlloyDB"
+  ],
+  "extracted_methods": [
+    "schemas.User.properties.userType"
+  ],
+  "target_paths": [
+    "schemas.user.properties.usertype.enum[3]",
+    "schemas.user.properties.usertype.enum[4]",
+    "schemas.user.properties.usertype.enum[5]",
+    "schemas.user.properties.usertype.enumdescriptions[3]",
+    "schemas.user.properties.usertype.enumdescriptions[4]",
+    "schemas.user.properties.usertype.enumdescriptions[5]"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-25T10:04:35.862Z"
+}
