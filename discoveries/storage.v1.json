@@ -104,6 +104,11 @@
     },
     {
       "description": "Regional Endpoint",
+      "endpointUrl": "https://storage.europe-north2.rep.googleapis.com/",
+      "location": "europe-north2"
+    },
+    {
+      "description": "Regional Endpoint",
       "endpointUrl": "https://storage.europe-southwest1.rep.googleapis.com/",
       "location": "europe-southwest1"
     },
@@ -111,6 +116,16 @@
       "description": "Regional Endpoint",
       "endpointUrl": "https://storage.europe-west1.rep.googleapis.com/",
       "location": "europe-west1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://storage.europe-west10.rep.googleapis.com/",
+      "location": "europe-west10"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://storage.europe-west12.rep.googleapis.com/",
+      "location": "europe-west12"
     },
     {
       "description": "Regional Endpoint",
@@ -144,13 +159,8 @@
     },
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://storage.europe-west10.rep.googleapis.com/",
-      "location": "europe-west10"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://storage.europe-west12.rep.googleapis.com/",
-      "location": "europe-west12"
+      "endpointUrl": "https://storage.me-central1.rep.googleapis.com/",
+      "location": "me-central1"
     },
     {
       "description": "Regional Endpoint",
@@ -161,6 +171,31 @@
       "description": "Regional Endpoint",
       "endpointUrl": "https://storage.me-west1.rep.googleapis.com/",
       "location": "me-west1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://storage.northamerica-northeast1.rep.googleapis.com/",
+      "location": "northamerica-northeast1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://storage.northamerica-northeast2.rep.googleapis.com/",
+      "location": "northamerica-northeast2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://storage.northamerica-south1.rep.googleapis.com/",
+      "location": "northamerica-south1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://storage.southamerica-east1.rep.googleapis.com/",
+      "location": "southamerica-east1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://storage.southamerica-west1.rep.googleapis.com/",
+      "location": "southamerica-west1"
     },
     {
       "description": "Regional Endpoint",
@@ -214,46 +249,11 @@
     },
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://storage.northamerica-northeast2.rep.googleapis.com/",
-      "location": "northamerica-northeast2"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://storage.southamerica-east1.rep.googleapis.com/",
-      "location": "southamerica-east1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://storage.southamerica-west1.rep.googleapis.com/",
-      "location": "southamerica-west1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://storage.me-central1.rep.googleapis.com/",
-      "location": "me-central1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://storage.northamerica-northeast1.rep.googleapis.com/",
-      "location": "northamerica-northeast1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://storage.europe-north2.rep.googleapis.com/",
-      "location": "europe-north2"
-    },
-    {
-      "description": "Regional Endpoint",
       "endpointUrl": "https://storage.us-west8.rep.googleapis.com/",
       "location": "us-west8"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://storage.northamerica-south1.rep.googleapis.com/",
-      "location": "northamerica-south1"
     }
   ],
-  "etag": "\"33353736393331313932363831393434383930\"",
+  "etag": "\"3132373433353833303733323234363038313037\"",
   "icons": {
     "x16": "https://www.google.com/images/icons/product/cloud_storage-16.png",
     "x32": "https://www.google.com/images/icons/product/cloud_storage-32.png"
@@ -4167,6 +4167,57 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/devstorage.full_control"
           ]
+        },
+        "viewFullContext": {
+          "description": "Retrieves a specific object context with its extended data for a given object.",
+          "httpMethod": "GET",
+          "id": "storage.objects.viewFullContext",
+          "parameterOrder": [
+            "bucket",
+            "object"
+          ],
+          "parameters": {
+            "bucket": {
+              "description": "Name of the bucket in which the object resides.",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "contextKey": {
+              "description": "Key identifying the object context to retrieve.",
+              "location": "query",
+              "required": true,
+              "type": "string"
+            },
+            "generation": {
+              "description": "If present, selects a specific revision of this object (as opposed to the latest version, the default).",
+              "format": "int64",
+              "location": "query",
+              "type": "string"
+            },
+            "object": {
+              "description": "Name of the object. For information about how to URL encode object names to be path safe, see [Encoding URI Path Parts](https://cloud.google.com/storage/docs/request-endpoints#encoding).",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "userProject": {
+              "description": "The project to be billed for this request. Required for Requester Pays buckets.",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "path": "b/{bucket}/o/{object}/viewFullContext",
+          "response": {
+            "$ref": "ObjectFullContext"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only",
+            "https://www.googleapis.com/auth/devstorage.full_control",
+            "https://www.googleapis.com/auth/devstorage.read_only",
+            "https://www.googleapis.com/auth/devstorage.read_write"
+          ]
         }
       }
     },
@@ -4731,7 +4782,7 @@
       }
     }
   },
-  "revision": "20260918",
+  "revision": "20260926",
   "rootUrl": "https://storage.googleapis.com/",
   "schemas": {
     "AdvanceRelocateBucketOperationRequest": {
@@ -6540,6 +6591,54 @@
       },
       "type": "object"
     },
+    "ObjectFullContext": {
+      "description": "A full representation of an object context.",
+      "id": "ObjectFullContext",
+      "properties": {
+        "createTime": {
+          "description": "The time at which the object context was created. This value is in RFC 3339 format.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "extendedData": {
+          "additionalProperties": {
+            "description": "Properties of the object. Contains field @type with type URL.",
+            "type": "any"
+          },
+          "description": "The extended data of the object context.",
+          "type": "object"
+        },
+        "key": {
+          "description": "The key of the object context.",
+          "type": "string"
+        },
+        "kind": {
+          "default": "storage#objectFullContext",
+          "description": "The kind of item this is. For ObjectFullContext, this is always storage#objectFullContext.",
+          "type": "string"
+        },
+        "type": {
+          "description": "The type of the object context.",
+          "enum": [
+            "CUSTOM"
+          ],
+          "enumDescriptions": [
+            "Custom object context."
+          ],
+          "type": "string"
+        },
+        "updateTime": {
+          "description": "The time at which the object context was last updated. This value is in RFC 3339 format.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "value": {
+          "description": "The value of the object context.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "Objects": {
       "description": "A list of objects.",
       "id": "Objects",
@@ -6578,8 +6677,8 @@
           "annotations": {
             "required": [
               "storage.buckets.setIamPolicy",
-              "storage.objects.setIamPolicy",
-              "storage.managedFolders.setIamPolicy"
+              "storage.managedFolders.setIamPolicy",
+              "storage.objects.setIamPolicy"
             ]
           },
           "description": "An association between a role, which comes with a set of permissions, and members who may assume that role.",
@@ -6593,8 +6692,8 @@
                 "annotations": {
                   "required": [
                     "storage.buckets.setIamPolicy",
-                    "storage.objects.setIamPolicy",
-                    "storage.managedFolders.setIamPolicy"
+                    "storage.managedFolders.setIamPolicy",
+                    "storage.objects.setIamPolicy"
                   ]
                 },
                 "description": "A collection of identifiers for members who may assume the provided role. Recognized identifiers are as follows:  \n- allUsers - A special identifier that represents anyone on the internet; with or without a Google account.  \n- allAuthenticatedUsers - A special identifier that represents anyone who is authenticated with a Google account or a service account.  \n- user:emailid - An email address that represents a specific account. For example, user:alice@gmail.com or user:joe@example.com.  \n- serviceAccount:emailid - An email address that represents a service account. For example,  serviceAccount:my-other-app@appspot.gserviceaccount.com .  \n- group:emailid - An email address that represents a Google group. For example, group:admins@example.com.  \n- domain:domain - A Google Apps domain name that represents all the users of that domain. For example, domain:google.com or domain:example.com.  \n- projectOwner:projectid - Owners of the given project. For example, projectOwner:my-example-project  \n- projectEditor:projectid - Editors of the given project. For example, projectEditor:my-example-project  \n- projectViewer:projectid - Viewers of the given project. For example, projectViewer:my-example-project",
@@ -6607,8 +6706,8 @@
                 "annotations": {
                   "required": [
                     "storage.buckets.setIamPolicy",
-                    "storage.objects.setIamPolicy",
-                    "storage.managedFolders.setIamPolicy"
+                    "storage.managedFolders.setIamPolicy",
+                    "storage.objects.setIamPolicy"
                   ]
                 },
                 "description": "The role to which members belong. Two types of roles are supported: new IAM roles, which grant permissions that do not map directly to those provided by ACLs, and legacy IAM roles, which do map directly to ACL permissions. All roles are of the format roles/storage.specificRole.\nThe new IAM roles are:  \n- roles/storage.admin - Full control of Google Cloud Storage resources.  \n- roles/storage.objectViewer - Read-Only access to Google Cloud Storage objects.  \n- roles/storage.objectCreator - Access to create objects in Google Cloud Storage.  \n- roles/storage.objectAdmin - Full control of Google Cloud Storage objects.   The legacy IAM roles are:  \n- roles/storage.legacyObjectReader - Read-only access to objects without listing. Equivalent to an ACL entry on an object with the READER role.  \n- roles/storage.legacyObjectOwner - Read/write access to existing objects without listing. Equivalent to an ACL entry on an object with the OWNER role.  \n- roles/storage.legacyBucketReader - Read access to buckets with object listing. Equivalent to an ACL entry on a bucket with the READER role.  \n- roles/storage.legacyBucketWriter - Read access to buckets with object listing/creation/deletion. Equivalent to an ACL entry on a bucket with the WRITER role.  \n- roles/storage.legacyBucketOwner - Read and write access to existing buckets with object listing/creation/deletion. Equivalent to an ACL entry on a bucket with the OWNER role.",
