@@ -1,0 +1,42 @@
+{
+  "id": "2026-09-30-pubsub-v1",
+  "date": "2026-09-30",
+  "api": "pubsub.v1",
+  "service": "Cloud Pub/Sub",
+  "title": "Pub/Sub Bigtable Sink: Custom Row Keys & Columns",
+  "summary": "The Pub/Sub Bigtable integration now offers significantly enhanced control over data ingestion. Developers can define custom row keys and map message fields to specific Bigtable column families, moving beyond the default fixed schema.",
+  "details": "A new `columnFamilyMapping` property has been added to the `BigtableConfig` schema. This new configuration, defined by the `ColumnFamilyMapping` schema, allows for flexible data mapping from Pub/Sub messages (which must be in JSON format) to Bigtable. You can now specify how row keys are constructed using either `delimitedKey` (concatenating message fields with a delimiter) or `rowKeySchema` (aligning with Bigtable's structured row key definitions). Additionally, top-level JSON fields in your messages can be mapped directly to specific Bigtable column families, providing granular control over data organization within Bigtable.",
+  "impact": "high",
+  "breaking": false,
+  "interesting_score": 9,
+  "tags": [
+    "Pub/Sub",
+    "Bigtable",
+    "Integration",
+    "Data Ingestion"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.bigtableconfig.properties.columnfamilymapping.$ref",
+    "schemas.bigtableconfig.properties.columnfamilymapping.description",
+    "schemas.columnfamilymapping.description",
+    "schemas.columnfamilymapping.properties.delimitedkey.$ref",
+    "schemas.columnfamilymapping.properties.delimitedkey.description",
+    "schemas.columnfamilymapping.properties.rowkeyschema.$ref",
+    "schemas.columnfamilymapping.properties.rowkeyschema.description",
+    "schemas.columnfamilymapping.type",
+    "schemas.delimitedkey.description",
+    "schemas.delimitedkey.properties.delimiter.description",
+    "schemas.delimitedkey.properties.delimiter.format",
+    "schemas.delimitedkey.properties.delimiter.type",
+    "schemas.delimitedkey.properties.keyfields.description",
+    "schemas.delimitedkey.properties.keyfields.items.type",
+    "schemas.delimitedkey.properties.keyfields.type",
+    "schemas.delimitedkey.type",
+    "schemas.rowkeyschema.description",
+    "schemas.rowkeyschema.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-09-30T19:54:30.583Z"
+}

@@ -1,5 +1,76 @@
 [
   {
+    "id": "2026-09-30-pubsub-v1",
+    "date": "2026-09-30",
+    "api": "pubsub.v1",
+    "service": "Cloud Pub/Sub",
+    "title": "Pub/Sub Bigtable Sink: Custom Row Keys & Columns",
+    "summary": "The Pub/Sub Bigtable integration now offers significantly enhanced control over data ingestion. Developers can define custom row keys and map message fields to specific Bigtable column families, moving beyond the default fixed schema.",
+    "impact": "high",
+    "breaking": false,
+    "interesting_score": 9,
+    "tags": [
+      "Pub/Sub",
+      "Bigtable",
+      "Integration",
+      "Data Ingestion"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.bigtableconfig.properties.columnfamilymapping.$ref",
+      "schemas.bigtableconfig.properties.columnfamilymapping.description",
+      "schemas.columnfamilymapping.description",
+      "schemas.columnfamilymapping.properties.delimitedkey.$ref",
+      "schemas.columnfamilymapping.properties.delimitedkey.description",
+      "schemas.columnfamilymapping.properties.rowkeyschema.$ref",
+      "schemas.columnfamilymapping.properties.rowkeyschema.description",
+      "schemas.columnfamilymapping.type",
+      "schemas.delimitedkey.description",
+      "schemas.delimitedkey.properties.delimiter.description",
+      "schemas.delimitedkey.properties.delimiter.format",
+      "schemas.delimitedkey.properties.delimiter.type",
+      "schemas.delimitedkey.properties.keyfields.description",
+      "schemas.delimitedkey.properties.keyfields.items.type",
+      "schemas.delimitedkey.properties.keyfields.type",
+      "schemas.delimitedkey.type",
+      "schemas.rowkeyschema.description",
+      "schemas.rowkeyschema.type"
+    ],
+    "generated_at": "2026-09-30T19:54:30.583Z"
+  },
+  {
+    "id": "2026-09-30-bigqueryconnection-v1",
+    "date": "2026-09-30",
+    "api": "bigqueryconnection.v1",
+    "service": "BigQuery Connection API",
+    "title": "Cross-Cloud Caching for External Connections",
+    "summary": "BigQuery connections to AWS, Azure, and Salesforce Data Cloud now support an optional cross-cloud caching feature. This can improve query performance and reduce network egress costs for external data sources.",
+    "impact": "high",
+    "breaking": false,
+    "interesting_score": 8,
+    "tags": [
+      "bigquery",
+      "connections",
+      "caching",
+      "cross-cloud",
+      "performance"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.awsproperties.properties.crosscloudcacheoptions.$ref",
+      "schemas.awsproperties.properties.crosscloudcacheoptions.description",
+      "schemas.azureproperties.properties.crosscloudcacheoptions.$ref",
+      "schemas.azureproperties.properties.crosscloudcacheoptions.description",
+      "schemas.crosscloudcacheoptions.description",
+      "schemas.crosscloudcacheoptions.properties.enabled.description",
+      "schemas.crosscloudcacheoptions.properties.enabled.type",
+      "schemas.crosscloudcacheoptions.type",
+      "schemas.salesforcedatacloudproperties.properties.crosscloudcacheoptions.$ref",
+      "schemas.salesforcedatacloudproperties.properties.crosscloudcacheoptions.description"
+    ],
+    "generated_at": "2026-09-30T19:54:30.581Z"
+  },
+  {
     "id": "2026-09-29-dataproc-v1",
     "date": "2026-09-29",
     "api": "dataproc.v1",
