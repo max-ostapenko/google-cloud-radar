@@ -1,0 +1,29 @@
+{
+  "id": "2026-10-01-admin-reports-v1",
+  "date": "2026-10-01",
+  "api": "admin.reports_v1",
+  "service": "Admin SDK",
+  "title": "Gemini Notebook Activity Reports Now Available",
+  "summary": "The Admin Reports API now allows developers to retrieve activity reports for Gemini Notebook, expanding audit and monitoring capabilities for Google Workspace.",
+  "details": "Developers can now specify `gemini_notebook` as a value for the `applicationName` parameter when calling the `activities.list` method. This enables access to audit logs detailing various events within the Gemini Notebook application, providing deeper insights into user activity.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "reporting",
+    "admin",
+    "gemini",
+    "workspace"
+  ],
+  "extracted_methods": [
+    "activities.list"
+  ],
+  "target_paths": [
+    "resources.activities.methods.list.parameters.applicationname.enum[41]",
+    "resources.activities.methods.list.parameters.applicationname.enumdescriptions[41]",
+    "resources.activities.methods.list.parameters.applicationname.pattern"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-01T05:02:10.494Z"
+}
