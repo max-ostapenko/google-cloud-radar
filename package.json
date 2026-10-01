@@ -20,15 +20,15 @@
   },
   "dependencies": {
     "@google-cloud/firestore": "^9.2.0",
-    "@google/genai": "^2.23.0",
-    "dotenv": "^18.0.1",
+    "@google/genai": "^2.24.0",
+    "dotenv": "^18.0.4",
     "fast-xml-parser": "^5.0.8",
-    "resend": "^6.28.1"
+    "resend": "^6.30.0"
   },
   "devDependencies": {
-    "@types/node": "^26.6.2",
+    "@types/node": "^26.6.3",
     "tsx": "^4.19.3",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.2"
   }
 }
