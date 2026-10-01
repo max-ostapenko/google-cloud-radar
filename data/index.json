@@ -1,5 +1,116 @@
 [
   {
+    "id": "2026-10-01-youtube-v3",
+    "date": "2026-10-01",
+    "api": "youtube.v3",
+    "service": "YouTube Data API",
+    "title": "YouTube Comments: `imageUrl` Now Output-Only",
+    "summary": "The `imageUrl` property in `CommentSnippet` is now read-only, meaning developers can no longer set it. Additionally, several media upload endpoints now accept a broader range of content types.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking-change",
+      "comments",
+      "uploads",
+      "media"
+    ],
+    "extracted_methods": [
+      "captions.insert",
+      "captions.update",
+      "channelbanners.insert",
+      "playlistimages.insert",
+      "playlistimages.update",
+      "thumbnails.set",
+      "videos.insert",
+      "watermarks.set"
+    ],
+    "target_paths": [
+      "resources.captions.methods.insert.mediaupload.accept[0]",
+      "resources.captions.methods.insert.mediaupload.accept[2]",
+      "resources.captions.methods.update.mediaupload.accept[0]",
+      "resources.captions.methods.update.mediaupload.accept[2]",
+      "resources.channelbanners.methods.insert.mediaupload.accept[0]",
+      "resources.channelbanners.methods.insert.mediaupload.accept[1]",
+      "resources.channelbanners.methods.insert.mediaupload.accept[2]",
+      "resources.playlistimages.methods.insert.mediaupload.accept[0]",
+      "resources.playlistimages.methods.insert.mediaupload.accept[1]",
+      "resources.playlistimages.methods.insert.mediaupload.accept[2]",
+      "resources.playlistimages.methods.update.mediaupload.accept[0]",
+      "resources.playlistimages.methods.update.mediaupload.accept[1]",
+      "resources.playlistimages.methods.update.mediaupload.accept[2]",
+      "resources.thumbnails.methods.set.mediaupload.accept[0]",
+      "resources.thumbnails.methods.set.mediaupload.accept[1]",
+      "resources.thumbnails.methods.set.mediaupload.accept[2]",
+      "resources.videos.methods.insert.mediaupload.accept[0]",
+      "resources.videos.methods.insert.mediaupload.accept[1]",
+      "resources.watermarks.methods.set.mediaupload.accept[0]",
+      "resources.watermarks.methods.set.mediaupload.accept[1]",
+      "resources.watermarks.methods.set.mediaupload.accept[2]",
+      "schemas.commentsnippet.properties.imageurl.description",
+      "schemas.commentsnippet.properties.imageurl.readonly",
+      "schemas.commentsnippet.properties.imageurl.type"
+    ],
+    "generated_at": "2026-10-01T23:47:40.114Z"
+  },
+  {
+    "id": "2026-10-01-datastream-v1",
+    "date": "2026-10-01",
+    "api": "datastream.v1",
+    "service": "Datastream",
+    "title": "Automate SQL Server DDL Handling",
+    "summary": "Datastream now provides new configuration options for SQL Server change tables, enabling automated management of capture instances when DDL changes occur. This simplifies handling schema evolution.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 7,
+    "tags": [
+      "Datastream",
+      "SQL Server",
+      "CDC",
+      "DDL",
+      "Automation"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.sqlserverchangetables.properties.ddlconfig.$ref",
+      "schemas.sqlserverchangetables.properties.ddlconfig.description",
+      "schemas.sqlserverddlconfig.description",
+      "schemas.sqlserverddlconfig.id",
+      "schemas.sqlserverddlconfig.properties.autocreatenewcaptureinstanceonddl.description",
+      "schemas.sqlserverddlconfig.properties.autocreatenewcaptureinstanceonddl.type",
+      "schemas.sqlserverddlconfig.properties.autodeleteoldcaptureinstance.description",
+      "schemas.sqlserverddlconfig.properties.autodeleteoldcaptureinstance.type",
+      "schemas.sqlserverddlconfig.type"
+    ],
+    "generated_at": "2026-10-01T23:47:40.113Z"
+  },
+  {
+    "id": "2026-10-01-admin-reports-v1",
+    "date": "2026-10-01",
+    "api": "admin.reports_v1",
+    "service": "Admin SDK",
+    "title": "Gemini Notebook Audit Logs Now Available",
+    "summary": "The Google Workspace Admin Reports API now supports auditing for Gemini Notebook activities. Developers can use the `activities.list` method to retrieve these new reports.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 7,
+    "tags": [
+      "audit",
+      "reports",
+      "gemini",
+      "admin"
+    ],
+    "extracted_methods": [
+      "activities.list"
+    ],
+    "target_paths": [
+      "resources.activities.methods.list.parameters.applicationname.enum[41]",
+      "resources.activities.methods.list.parameters.applicationname.enumdescriptions[41]",
+      "resources.activities.methods.list.parameters.applicationname.pattern"
+    ],
+    "generated_at": "2026-10-01T23:47:40.108Z"
+  },
+  {
     "id": "2026-09-30-pubsub-v1",
     "date": "2026-09-30",
     "api": "pubsub.v1",
