@@ -149,6 +149,16 @@ export function writeInsight(
 
   const targetPaths = insight.target_paths || insight.extracted_paths || [];
 
+  const isUpdate = fs.existsSync(filePath);
+  let existing: Record<string, any> = {};
+  if (isUpdate) {
+    try {
+      existing = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    } catch (err: any) {
+      console.warn(`Could not read existing file for update ${filePath}:`, err.message);
+    }
+  }
+
   const entry = {
     id: finalSlug,
     date: resolvedDate,
@@ -163,12 +173,16 @@ export function writeInsight(
     tags,
     extracted_methods: extractedMethods,
     target_paths: targetPaths,
-    status: 'canary',
-    lead_time_days: null,
-    generated_at: new Date().toISOString(),
+    status: existing.status ?? 'canary',
+    lead_time_days: existing.lead_time_days !== undefined ? existing.lead_time_days : null,
+    generated_at: existing.generated_at ?? new Date().toISOString(),
+    ...(existing.official_release_date ? { official_release_date: existing.official_release_date } : {}),
+    ...(existing.official_release_notes_url ? { official_release_notes_url: existing.official_release_notes_url } : {}),
+    ...(existing.corroborated_at ? { corroborated_at: existing.corroborated_at } : {}),
+    ...(existing.release_notes_summary ? { release_notes_summary: existing.release_notes_summary } : {}),
+    ...(existing.release_notes_match ? { release_notes_match: existing.release_notes_match } : {}),
   };
 
-  const isUpdate = fs.existsSync(filePath);
   fs.writeFileSync(filePath, JSON.stringify(entry, null, 2) + '\n', 'utf-8');
 
   console.info(`  ${isUpdate ? 'Updated' : 'Written'}: ${filePath} (score=${score})`);

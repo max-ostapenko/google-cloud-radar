@@ -10,6 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { Firestore } from '@google-cloud/firestore';
+import { isChangeWatchedBySubscriber } from './taxonomy.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -315,14 +316,16 @@ export function isServiceWatched(
     watched_services?: string[];
     watchedServices?: string[];
   },
-  serviceSlug: string
+  serviceSlugOrChange: string | Record<string, any>,
+  api?: string
 ): boolean {
-  const allServices = subscriber.all_services ?? subscriber.allServices ?? true;
-  if (allServices) {
-    return true;
+  if (typeof serviceSlugOrChange === 'object' && serviceSlugOrChange !== null) {
+    return isChangeWatchedBySubscriber(subscriber, serviceSlugOrChange);
   }
-  const watched = subscriber.watched_services ?? subscriber.watchedServices ?? [];
-  return watched.includes(serviceSlug);
+  return isChangeWatchedBySubscriber(subscriber, {
+    service: serviceSlugOrChange,
+    api: api || '',
+  });
 }
 
 export async function fetchFirestoreSubscribers(
@@ -544,12 +547,7 @@ export async function runDispatchEmailAlerts(options?: {
         console.warn('Skipping change without a valid slug');
         continue;
       }
-      const serviceSlug = (change.service || '')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-
-      if (!isServiceWatched(sub, serviceSlug)) {
+      if (!isChangeWatchedBySubscriber(sub, change)) {
         continue;
       }
 

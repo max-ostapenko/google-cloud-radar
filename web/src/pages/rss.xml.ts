@@ -14,16 +14,17 @@ function escapeXml(str: unknown): string {
 
 export async function GET(context: APIContext) {
   const entries = await getAllFeedEntries();
+  const siteUrl = (context.site ? context.site.toString() : 'https://google-cloud-radar.com').replace(/\/+$/, '');
 
   return rss({
     title: 'Google Cloud Radar — Real-Time Google API & Cloud Feed',
     description: 'Automated pre-release intelligence for Google APIs and Cloud services. Live API changes and breaking changes tracked from the Google Discovery Service.',
-    site: context.site || 'https://google-cloud-radar.com',
+    site: siteUrl,
     items: entries.map((entry) => ({
       title: `${entry.breaking ? '⚠️ [BREAKING] ' : ''}${entry.title}`,
       pubDate: new Date(entry.date),
       description: entry.summary,
-      link: `/changes/${entry.slug}`,
+      link: `${siteUrl}/changes/${entry.slug}`,
       customData: `
         <category>${escapeXml(entry.category)}</category>
         <service>${escapeXml(entry.service)}</service>

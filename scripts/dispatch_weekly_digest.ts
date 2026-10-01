@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { Firestore } from '@google-cloud/firestore';
 import { escapeHtml, isDevEnvironment, sendResendEmail } from './dispatch_email_alerts.ts';
+import { isChangeWatchedBySubscriber } from './taxonomy.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -73,28 +74,7 @@ export function filterChangesForSubscriber(changes: any[], subscriber: {
   if (allServices) {
     return changes;
   }
-
-  const watched = new Set(subscriber.watched_services ?? subscriber.watchedServices ?? []);
-  const matched: any[] = [];
-
-  for (const c of changes) {
-    const rawSvc = (c.service || c.service_name || '').toLowerCase();
-    const slug = rawSvc.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    let isMatch = watched.has(slug);
-    if (!isMatch) {
-      for (const w of watched) {
-        if (slug.includes(w)) {
-          isMatch = true;
-          break;
-        }
-      }
-    }
-    if (isMatch) {
-      matched.push(c);
-    }
-  }
-
-  return matched;
+  return changes.filter((c) => isChangeWatchedBySubscriber(subscriber, c));
 }
 
 export function renderWeeklyDigestHtml(changes: any[], weekLabel?: string): string {

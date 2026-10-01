@@ -12,6 +12,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export interface ServiceMeta {
+  id?: string;
   name: string;
   ecosystem: string;
   ecosystem_id: string;
@@ -74,6 +75,7 @@ for (const [svcId, svcData] of Object.entries(_SERVICES_RAW)) {
   }
 
   const meta: ServiceMeta = {
+    id: svcId,
     name: svcData.name || svcId,
     ecosystem: eco.name || 'More',
     ecosystem_id: eco.id || 'more',
@@ -205,3 +207,100 @@ export function getOfficialReleaseFeeds(): Record<string, string> {
   }
   return feeds;
 }
+
+export function slugify(s: string): string {
+  return (s || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export function isChangeWatchedBySubscriber(
+  subscriber: {
+    all_services?: boolean;
+    allServices?: boolean;
+    watched_services?: string[];
+    watchedServices?: string[];
+  },
+  change: Record<string, any>
+): boolean {
+  const allServices = subscriber.all_services ?? subscriber.allServices ?? true;
+  if (allServices) {
+    return true;
+  }
+
+  const rawWatched = subscriber.watched_services ?? subscriber.watchedServices ?? [];
+  if (!Array.isArray(rawWatched) || rawWatched.length === 0) {
+    return false;
+  }
+
+  const changeApi = (change.api || '').toLowerCase().trim();
+  const changeApiPrefix = changeApi.split('.')[0].split(':')[0];
+  const changeService = (change.service || change.service_name || '').toLowerCase().trim();
+  const changeServiceSlug = slugify(changeService);
+
+  const changeMeta =
+    findServiceMeta(changeApi) ||
+    (changeApiPrefix ? findServiceMeta(changeApiPrefix) : null) ||
+    (changeService ? findServiceMeta(changeService) : null);
+
+  const canonicalId = (changeMeta?.id || '').toLowerCase();
+  const canonicalName = (changeMeta?.name || '').toLowerCase();
+  const canonicalSlug = canonicalName ? slugify(canonicalName) : '';
+  const canonicalAliases = (changeMeta?.aliases || []).map((a) => (typeof a === 'string' ? a.toLowerCase() : ''));
+  const canonicalAliasSlugs = canonicalAliases.map((a) => slugify(a));
+
+  for (const item of rawWatched) {
+    if (!item || typeof item !== 'string') continue;
+    const w = item.toLowerCase().trim();
+    const wSlug = slugify(w);
+
+    // 1. Direct API match (e.g. subscriber watches "bigquery.v2" or "bigquery")
+    if (changeApi && (w === changeApi || wSlug === changeApi.replace(/[^a-z0-9]+/g, '-'))) {
+      return true;
+    }
+    if (changeApiPrefix && (w === changeApiPrefix || wSlug === changeApiPrefix)) {
+      return true;
+    }
+
+    // 2. Direct service string / slug match
+    if (changeService && (w === changeService || wSlug === changeServiceSlug)) {
+      return true;
+    }
+
+    // 3. Match against canonical metadata (id, name, slug, aliases)
+    if (canonicalId && (w === canonicalId || wSlug === canonicalId)) {
+      return true;
+    }
+    if (canonicalName && (w === canonicalName || wSlug === canonicalSlug)) {
+      return true;
+    }
+    if (canonicalAliases.includes(w) || canonicalAliasSlugs.includes(wSlug)) {
+      return true;
+    }
+
+    // 4. Resolve watched item in taxonomy
+    const wMeta = findServiceMeta(w);
+    if (wMeta) {
+      if (changeMeta && wMeta.id && changeMeta.id && wMeta.id === changeMeta.id) {
+        return true;
+      }
+      if (changeApiPrefix && wMeta.id && wMeta.id.toLowerCase() === changeApiPrefix) {
+        return true;
+      }
+    }
+
+    // 5. Loose substring matching if token is distinct (length >= 3)
+    if (wSlug && wSlug.length >= 3) {
+      if (changeServiceSlug && (changeServiceSlug.includes(wSlug) || wSlug.includes(changeServiceSlug))) {
+        return true;
+      }
+      if (canonicalSlug && (canonicalSlug.includes(wSlug) || wSlug.includes(canonicalSlug))) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+

@@ -9,13 +9,57 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Type } from '@google/genai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const PROMPT_PATH = path.join(__dirname, 'prompts/api_change_analyst.txt');
 export const MODEL = 'gemini-2.5-flash';
+
+export const INSIGHT_RESPONSE_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    api: { type: Type.STRING },
+    service_name: { type: Type.STRING },
+    title: { type: Type.STRING },
+    summary: { type: Type.STRING },
+    details: { type: Type.STRING },
+    impact: {
+      type: Type.STRING,
+      enum: ['low', 'medium', 'high'],
+    },
+    breaking: { type: Type.BOOLEAN },
+    tags: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+    },
+    interesting_score: {
+      type: Type.INTEGER,
+      description: 'Score from 1 to 10 indicating developer impact and significance',
+    },
+  },
+  required: [
+    'api',
+    'service_name',
+    'title',
+    'summary',
+    'details',
+    'impact',
+    'breaking',
+    'tags',
+    'interesting_score',
+  ],
+};
+
+export function parseModelJson(raw: string): any {
+  let cleaned = (raw || '').trim();
+  // Strip markdown code fences if model wrapped response in ```json ... ``` (5d5d4406)
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+  }
+  return JSON.parse(cleaned);
+}
 
 export function loadSystemPrompt(): string {
   if (fs.existsSync(PROMPT_PATH)) {
@@ -90,13 +134,14 @@ export async function analyzeApiDiff(
       config: {
         systemInstruction: systemPrompt,
         responseMimeType: 'application/json',
+        responseSchema: INSIGHT_RESPONSE_SCHEMA,
         temperature: 0.3,
       },
     });
 
     const raw = (response.text || '').trim();
     if (!raw) return null;
-    const result = JSON.parse(raw);
+    const result = parseModelJson(raw);
     console.info(
       `  → ${result.api}: score=${result.interesting_score}, ` +
         `impact=${result.impact}, breaking=${result.breaking}`

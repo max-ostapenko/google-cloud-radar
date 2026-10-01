@@ -548,5 +548,23 @@ describe('Diff Preprocessor', () => {
     expect(result!.is_breaking).toBe(true);
     expect(result!.breaking_reasons).toContain("Removed parameter 'quotaUser' from service");
   });
+
+  describe('isNoisePath (f011a1d9)', () => {
+    it('filters top-level document metadata', () => {
+      expect(diff_preprocessor.isNoisePath('id')).toBe(true);
+      expect(diff_preprocessor.isNoisePath('revision')).toBe(true);
+      expect(diff_preprocessor.isNoisePath('etag')).toBe(true);
+      expect(diff_preprocessor.isNoisePath('rootUrl')).toBe(true);
+      expect(diff_preprocessor.isNoisePath('servicePath')).toBe(true);
+      expect(diff_preprocessor.isNoisePath('endpoints[0].location')).toBe(true);
+    });
+
+    it('does NOT filter resource or schema properties named id', () => {
+      expect(diff_preprocessor.isNoisePath('schemas.Job.properties.id')).toBe(false);
+      expect(diff_preprocessor.isNoisePath('schemas.Dataset.properties.id.type')).toBe(false);
+      expect(diff_preprocessor.isNoisePath('parameters.id')).toBe(false);
+      expect(diff_preprocessor.isNoisePath('resources.tables.methods.get.parameters.tableId')).toBe(false);
+    });
+  });
 });
 

@@ -82,6 +82,50 @@ describe('dispatch_email_alerts', () => {
     };
     expect(isServiceWatched(subSpecific, 'vertex-ai')).toBe(true);
     expect(isServiceWatched(subSpecific, 'bigquery')).toBe(false);
+
+    // Support change object with canonical API matching (589fadd7, e05efb2f)
+    expect(
+      isServiceWatched(subSpecific, {
+        service: 'Vertex AI',
+        api: 'aiplatform.v1beta1',
+      })
+    ).toBe(true);
+
+    // Match subscriber watching service ID 'aiplatform'
+    const subByServiceId = {
+      all_services: false,
+      watched_services: ['aiplatform'],
+    };
+    expect(
+      isServiceWatched(subByServiceId, {
+        service: 'Vertex AI',
+        api: 'aiplatform.v1',
+      })
+    ).toBe(true);
+
+    // Match subscriber watching exact API 'bigquery.v2'
+    const subByApi = {
+      all_services: false,
+      watched_services: ['bigquery.v2'],
+    };
+    expect(
+      isServiceWatched(subByApi, {
+        service: 'BigQuery',
+        api: 'bigquery.v2',
+      })
+    ).toBe(true);
+
+    // Match subscriber watching alias/taxonomy id 'discoveryengine'
+    const subByAlias = {
+      all_services: false,
+      watched_services: ['discoveryengine'],
+    };
+    expect(
+      isServiceWatched(subByAlias, {
+        service: 'Vertex AI Agent Builder',
+        api: 'discoveryengine.v1beta',
+      })
+    ).toBe(true);
   });
 
   describe('isDevEnvironment', () => {

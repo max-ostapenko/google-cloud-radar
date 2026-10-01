@@ -3,6 +3,7 @@ import {
   extractMethodAndPathMetadata,
   isDuplicateDiff,
 } from '../scripts/diff_to_feed.ts';
+import { parseModelJson } from '../scripts/llm_client.ts';
 
 describe('Diff To Feed Deduplication', () => {
   it('extract_method_and_path_metadata', () => {
@@ -141,3 +142,36 @@ describe('Diff To Feed Deduplication', () => {
     expect(isDup).toBe(false);
   });
 });
+
+describe('parseModelJson', () => {
+  it('parses clean JSON objects correctly', () => {
+    const raw = '{"api": "bigquery.v2", "interesting_score": 7, "breaking": false}';
+    const parsed = parseModelJson(raw);
+    expect(parsed).toEqual({
+      api: 'bigquery.v2',
+      interesting_score: 7,
+      breaking: false,
+    });
+  });
+
+  it('strips markdown ```json ... ``` fences (5d5d4406)', () => {
+    const raw = '```json\n{\n  "api": "bigquery.v2",\n  "interesting_score": 9,\n  "breaking": true\n}\n```';
+    const parsed = parseModelJson(raw);
+    expect(parsed.api).toBe('bigquery.v2');
+    expect(parsed.interesting_score).toBe(9);
+    expect(parsed.breaking).toBe(true);
+  });
+
+  it('strips plain ``` ... ``` fences without json tag', () => {
+    const raw = '```\n{\n  "api": "storage.v1",\n  "interesting_score": 4\n}\n```';
+    const parsed = parseModelJson(raw);
+    expect(parsed.api).toBe('storage.v1');
+    expect(parsed.interesting_score).toBe(4);
+  });
+
+  it('throws on invalid JSON syntax', () => {
+    const raw = '```json\n{ not valid json }\n```';
+    expect(() => parseModelJson(raw)).toThrow();
+  });
+});
+

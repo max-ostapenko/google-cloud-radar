@@ -97,6 +97,29 @@ describe('Feed Writer', () => {
     expect(index[0].interesting_score).toBe(7);
   });
 
+  it('write_insight preserves release correlation status and lead time on update (2911bb03)', () => {
+    feed_writer.writeInsight(makeInsight(), '2026-04-17', TMP_DATA_DIR);
+    const jsonPath = path.join(TMP_DATA_DIR, 'changes/2026-04-17-bigquery-v2.json');
+
+    // Simulate release correlation script enriching the record
+    const existing = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+    existing.status = 'released';
+    existing.lead_time_days = 42;
+    existing.official_release_date = '2026-05-29';
+    existing.official_release_notes_url = 'https://cloud.google.com/release-notes';
+    fs.writeFileSync(jsonPath, JSON.stringify(existing, null, 2) + '\n', 'utf-8');
+
+    // Re-run writeInsight on the same change
+    feed_writer.writeInsight(makeInsight('bigquery.v2', 8), '2026-04-17', TMP_DATA_DIR);
+
+    const updated = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+    expect(updated.interesting_score).toBe(8);
+    expect(updated.status).toBe('released');
+    expect(updated.lead_time_days).toBe(42);
+    expect(updated.official_release_date).toBe('2026-05-29');
+    expect(updated.official_release_notes_url).toBe('https://cloud.google.com/release-notes');
+  });
+
   it('write_insight skips scores below threshold (non-breaking)', () => {
     const slug = feed_writer.writeInsight(makeInsight('bigquery.v2', 2), '2026-04-17', TMP_DATA_DIR);
     expect(slug).toBeNull();

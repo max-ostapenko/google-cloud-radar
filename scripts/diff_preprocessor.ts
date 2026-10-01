@@ -9,8 +9,9 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 
-// Keys that change on every sync and carry no semantic value for developers
-export const NOISE_KEYS = new Set([
+// Top-level document metadata keys that carry no developer API surface value
+export const ROOT_METADATA_KEYS = new Set([
+  'id',
   'revision',
   'etag',
   'rootUrl',
@@ -22,8 +23,16 @@ export const NOISE_KEYS = new Set([
   'ownerDomain',
   'ownerName',
   'packagePath',
-  'id', // top-level only — filtered by path depth check
 ]);
+
+// Volatile leaf-level properties that change every build without semantic API impact
+export const LEAF_NOISE_KEYS = new Set([
+  'revision',
+  'etag',
+]);
+
+// Alias for backward compatibility
+export const NOISE_KEYS = ROOT_METADATA_KEYS;
 
 // Top-level path segments that are structural/infrastructure, not developer API surface
 export const NOISE_PATH_PREFIXES = new Set(['endpoints']);
@@ -115,8 +124,12 @@ export function flattenJson(obj: any, prefix = ''): Record<string, any> {
 
 export function isNoisePath(pathStr: string): boolean {
   const parts = pathStr.split('.');
-  // Top-level noise keys (e.g. revision, etag)
-  if (NOISE_KEYS.has(parts[0])) {
+  // Top-level document metadata root keys (e.g. revision, etag, rootUrl, or root id)
+  if (parts.length === 1 && ROOT_METADATA_KEYS.has(parts[0])) {
+    return true;
+  }
+  // If first segment is a document metadata prefix (excluding 'id' which can be a valid namespace)
+  if (parts.length > 1 && ROOT_METADATA_KEYS.has(parts[0]) && parts[0] !== 'id') {
     return true;
   }
   // Top-level structural prefixes (e.g. endpoints[N].location — infra noise)
@@ -124,9 +137,9 @@ export function isNoisePath(pathStr: string): boolean {
   if (NOISE_PATH_PREFIXES.has(topSegment)) {
     return true;
   }
-  // The key at the leaf level is a noise key
+  // Truly volatile build-artifact fields at leaf level (e.g. revision, etag)
   const leaf = parts[parts.length - 1].split('[')[0];
-  if (NOISE_KEYS.has(leaf)) {
+  if (LEAF_NOISE_KEYS.has(leaf)) {
     return true;
   }
   return false;

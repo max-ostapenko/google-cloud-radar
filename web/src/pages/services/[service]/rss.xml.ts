@@ -32,16 +32,17 @@ function escapeXml(str: unknown): string {
 
 export async function GET(context: APIContext) {
   const { serviceInfo, entries } = context.props as { serviceInfo: any; entries: any[] };
+  const siteUrl = (context.site ? context.site.toString() : 'https://google-cloud-radar.com').replace(/\/+$/, '');
 
   return rss({
     title: `${serviceInfo.service} API Changes — Google Cloud Radar`,
     description: `Real-time pre-release intelligence and changelog for Google ${serviceInfo.service}. Tracked from Google Discovery Service.`,
-    site: context.site || 'https://google-cloud-radar.com',
+    site: siteUrl,
     items: entries.map((entry) => ({
       title: `${entry.breaking ? '⚠️ [BREAKING] ' : ''}${entry.title}`,
       pubDate: new Date(entry.date),
       description: entry.summary,
-      link: `/changes/${entry.slug}`,
+      link: `${siteUrl}/changes/${entry.slug}`,
       customData: `
         <category>${escapeXml(entry.category)}</category>
         <service>${escapeXml(entry.service)}</service>
