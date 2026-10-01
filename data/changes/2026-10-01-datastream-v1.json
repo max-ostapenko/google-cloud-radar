@@ -1,0 +1,34 @@
+{
+  "id": "2026-10-01-datastream-v1",
+  "date": "2026-10-01",
+  "api": "datastream.v1",
+  "service": "Datastream",
+  "title": "Automate SQL Server DDL Handling",
+  "summary": "Datastream now provides new configuration options for SQL Server change tables, enabling automated management of capture instances when DDL changes occur. This simplifies handling schema evolution.",
+  "details": "The `SqlServerChangeTables` schema has been extended with a new `ddlConfig` property. This property references the newly introduced `SqlServerDdlConfig` schema, which includes two key boolean fields: `autoCreateNewCaptureInstanceOnDdl` and `autoDeleteOldCaptureInstance`. These options allow you to automate the creation and deletion of capture instances in response to DDL changes on SQL Server sources, significantly streamlining DDL change management.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "Datastream",
+    "SQL Server",
+    "CDC",
+    "DDL",
+    "Automation"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.sqlserverchangetables.properties.ddlconfig.$ref",
+    "schemas.sqlserverchangetables.properties.ddlconfig.description",
+    "schemas.sqlserverddlconfig.description",
+    "schemas.sqlserverddlconfig.id",
+    "schemas.sqlserverddlconfig.properties.autocreatenewcaptureinstanceonddl.description",
+    "schemas.sqlserverddlconfig.properties.autocreatenewcaptureinstanceonddl.type",
+    "schemas.sqlserverddlconfig.properties.autodeleteoldcaptureinstance.description",
+    "schemas.sqlserverddlconfig.properties.autodeleteoldcaptureinstance.type",
+    "schemas.sqlserverddlconfig.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-01T23:47:40.113Z"
+}

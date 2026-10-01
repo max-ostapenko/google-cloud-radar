@@ -312,9 +312,9 @@
           "id": "youtube.captions.insert",
           "mediaUpload": {
             "accept": [
-              "text/xml",
+              "*/*",
               "application/octet-stream",
-              "*/*"
+              "text/xml"
             ],
             "maxSize": "104857600",
             "protocols": {
@@ -424,9 +424,9 @@
           "id": "youtube.captions.update",
           "mediaUpload": {
             "accept": [
-              "text/xml",
+              "*/*",
               "application/octet-stream",
-              "*/*"
+              "text/xml"
             ],
             "maxSize": "104857600",
             "protocols": {
@@ -491,9 +491,9 @@
           "id": "youtube.channelBanners.insert",
           "mediaUpload": {
             "accept": [
+              "application/octet-stream",
               "image/jpeg",
-              "image/png",
-              "application/octet-stream"
+              "image/png"
             ],
             "maxSize": "6291456",
             "protocols": {
@@ -2241,9 +2241,9 @@
           "id": "youtube.playlistImages.insert",
           "mediaUpload": {
             "accept": [
+              "application/octet-stream",
               "image/jpeg",
-              "image/png",
-              "application/octet-stream"
+              "image/png"
             ],
             "maxSize": "52428800",
             "protocols": {
@@ -2351,9 +2351,9 @@
           "id": "youtube.playlistImages.update",
           "mediaUpload": {
             "accept": [
+              "application/octet-stream",
               "image/jpeg",
-              "image/png",
-              "application/octet-stream"
+              "image/png"
             ],
             "maxSize": "52428800",
             "protocols": {
@@ -3490,9 +3490,9 @@
           "id": "youtube.thumbnails.set",
           "mediaUpload": {
             "accept": [
+              "application/octet-stream",
               "image/jpeg",
-              "image/png",
-              "application/octet-stream"
+              "image/png"
             ],
             "maxSize": "52428800",
             "protocols": {
@@ -3751,8 +3751,8 @@
           "id": "youtube.videos.insert",
           "mediaUpload": {
             "accept": [
-              "video/*",
-              "application/octet-stream"
+              "application/octet-stream",
+              "video/*"
             ],
             "maxSize": "274877906944",
             "protocols": {
@@ -4043,9 +4043,9 @@
           "id": "youtube.watermarks.set",
           "mediaUpload": {
             "accept": [
+              "application/octet-stream",
               "image/jpeg",
-              "image/png",
-              "application/octet-stream"
+              "image/png"
             ],
             "maxSize": "10485760",
             "protocols": {
@@ -4188,7 +4188,7 @@
       }
     }
   },
-  "revision": "20260924",
+  "revision": "20261001",
   "rootUrl": "https://youtube.googleapis.com/",
   "schemas": {
     "AbuseReport": {
@@ -5949,6 +5949,11 @@
         },
         "channelId": {
           "description": "The id of the corresponding YouTube channel. In case of a channel comment this is the channel the comment refers to. In case of a video or post comment it's the video/post's channel.",
+          "type": "string"
+        },
+        "imageUrl": {
+          "description": "Output only. The URL of the image or animated GIF attached to the comment, if any. This property is only present when a comment contains an image or GIF. The URL is served as a signed link with a six-hour time to live (TTL) and expires six hours after retrieval.",
+          "readOnly": true,
           "type": "string"
         },
         "likeCount": {
