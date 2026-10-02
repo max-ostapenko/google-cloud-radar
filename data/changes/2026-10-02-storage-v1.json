@@ -1,0 +1,33 @@
+{
+  "id": "2026-10-02-storage-v1",
+  "date": "2026-10-02",
+  "api": "storage.v1",
+  "service": "Cloud Storage",
+  "title": "Bucket Hard Delete Pause Configuration",
+  "summary": "Cloud Storage buckets now support a `hardDeletePause` configuration within their `softDeletePolicy`. This new setting allows you to temporarily prevent permanent deletion of soft-deleted objects.",
+  "details": "The `Bucket` schema has been extended with a new `softDeletePolicy.hardDeletePause` object. This configuration includes an `enabled` boolean property to activate or deactivate the pause, and an `effectiveTime` string (RFC 3339 format) indicating when the pause became active. This provides more granular control over data retention and recovery for soft-deleted objects.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "storage",
+    "buckets",
+    "data retention",
+    "soft delete"
+  ],
+  "extracted_methods": [
+    "softDeletePolicy.hardDeletePause"
+  ],
+  "target_paths": [
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.description",
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.properties.effectivetime.description",
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.properties.effectivetime.format",
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.properties.effectivetime.type",
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.properties.enabled.description",
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.properties.enabled.type",
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-02T23:38:35.986Z"
+}
