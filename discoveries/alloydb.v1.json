@@ -18,148 +18,8 @@
   "endpoints": [
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.us-central2.rep.googleapis.com/",
-      "location": "us-central2"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.us-east7.rep.googleapis.com/",
-      "location": "us-east7"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.northamerica-northeast1.rep.googleapis.com/",
-      "location": "northamerica-northeast1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.northamerica-northeast2.rep.googleapis.com/",
-      "location": "northamerica-northeast2"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.northamerica-south1.rep.googleapis.com/",
-      "location": "northamerica-south1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.southamerica-east1.rep.googleapis.com/",
-      "location": "southamerica-east1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.southamerica-west1.rep.googleapis.com/",
-      "location": "southamerica-west1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.us-central1.rep.googleapis.com/",
-      "location": "us-central1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.us-east1.rep.googleapis.com/",
-      "location": "us-east1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.us-east4.rep.googleapis.com/",
-      "location": "us-east4"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.us-east5.rep.googleapis.com/",
-      "location": "us-east5"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.us-south1.rep.googleapis.com/",
-      "location": "us-south1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.us-west1.rep.googleapis.com/",
-      "location": "us-west1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.us-west2.rep.googleapis.com/",
-      "location": "us-west2"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.us-west3.rep.googleapis.com/",
-      "location": "us-west3"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.us-west4.rep.googleapis.com/",
-      "location": "us-west4"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.europe-central2.rep.googleapis.com/",
-      "location": "europe-central2"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.europe-southwest1.rep.googleapis.com/",
-      "location": "europe-southwest1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.europe-north1.rep.googleapis.com/",
-      "location": "europe-north1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.europe-north2.rep.googleapis.com/",
-      "location": "europe-north2"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.europe-west1.rep.googleapis.com/",
-      "location": "europe-west1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.europe-west2.rep.googleapis.com/",
-      "location": "europe-west2"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.europe-west3.rep.googleapis.com/",
-      "location": "europe-west3"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.europe-west4.rep.googleapis.com/",
-      "location": "europe-west4"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.europe-west6.rep.googleapis.com/",
-      "location": "europe-west6"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.europe-west8.rep.googleapis.com/",
-      "location": "europe-west8"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.europe-west9.rep.googleapis.com/",
-      "location": "europe-west9"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.europe-west10.rep.googleapis.com/",
-      "location": "europe-west10"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.europe-west12.rep.googleapis.com/",
-      "location": "europe-west12"
+      "endpointUrl": "https://alloydb.africa-south1.rep.googleapis.com/",
+      "location": "africa-south1"
     },
     {
       "description": "Regional Endpoint",
@@ -218,6 +78,71 @@
     },
     {
       "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.europe-central2.rep.googleapis.com/",
+      "location": "europe-central2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.europe-north1.rep.googleapis.com/",
+      "location": "europe-north1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.europe-north2.rep.googleapis.com/",
+      "location": "europe-north2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.europe-southwest1.rep.googleapis.com/",
+      "location": "europe-southwest1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.europe-west1.rep.googleapis.com/",
+      "location": "europe-west1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.europe-west10.rep.googleapis.com/",
+      "location": "europe-west10"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.europe-west12.rep.googleapis.com/",
+      "location": "europe-west12"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.europe-west2.rep.googleapis.com/",
+      "location": "europe-west2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.europe-west3.rep.googleapis.com/",
+      "location": "europe-west3"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.europe-west4.rep.googleapis.com/",
+      "location": "europe-west4"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.europe-west6.rep.googleapis.com/",
+      "location": "europe-west6"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.europe-west8.rep.googleapis.com/",
+      "location": "europe-west8"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.europe-west9.rep.googleapis.com/",
+      "location": "europe-west9"
+    },
+    {
+      "description": "Regional Endpoint",
       "endpointUrl": "https://alloydb.me-central1.rep.googleapis.com/",
       "location": "me-central1"
     },
@@ -233,8 +158,83 @@
     },
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://alloydb.africa-south1.rep.googleapis.com/",
-      "location": "africa-south1"
+      "endpointUrl": "https://alloydb.northamerica-northeast1.rep.googleapis.com/",
+      "location": "northamerica-northeast1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.northamerica-northeast2.rep.googleapis.com/",
+      "location": "northamerica-northeast2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.northamerica-south1.rep.googleapis.com/",
+      "location": "northamerica-south1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.southamerica-east1.rep.googleapis.com/",
+      "location": "southamerica-east1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.southamerica-west1.rep.googleapis.com/",
+      "location": "southamerica-west1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.us-central1.rep.googleapis.com/",
+      "location": "us-central1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.us-central2.rep.googleapis.com/",
+      "location": "us-central2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.us-east1.rep.googleapis.com/",
+      "location": "us-east1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.us-east4.rep.googleapis.com/",
+      "location": "us-east4"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.us-east5.rep.googleapis.com/",
+      "location": "us-east5"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.us-east7.rep.googleapis.com/",
+      "location": "us-east7"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.us-south1.rep.googleapis.com/",
+      "location": "us-south1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.us-west1.rep.googleapis.com/",
+      "location": "us-west1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.us-west2.rep.googleapis.com/",
+      "location": "us-west2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.us-west3.rep.googleapis.com/",
+      "location": "us-west3"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://alloydb.us-west4.rep.googleapis.com/",
+      "location": "us-west4"
     }
   ],
   "fullyEncodeReservedExpansion": true,
@@ -1879,7 +1879,7 @@
       }
     }
   },
-  "revision": "20260917",
+  "revision": "20260924",
   "rootUrl": "https://alloydb.googleapis.com/",
   "schemas": {
     "AuthorizedNetwork": {
@@ -3388,6 +3388,11 @@
           "$ref": "ObservabilityInstanceConfig",
           "description": "Configuration for observability."
         },
+        "observabilityInstanceInfo": {
+          "$ref": "ObservabilityInstanceInfo",
+          "description": "Output only. Instance level observability information, contains the effective values of observability settings for this instance, by merging customer's provided `ObservabilityInstanceConfig` with the Observability defaults.",
+          "readOnly": true
+        },
         "outboundPublicIpAddresses": {
           "description": "Output only. All outbound public IP addresses configured for the instance.",
           "items": {
@@ -3413,6 +3418,11 @@
         "queryInsightsConfig": {
           "$ref": "QueryInsightsInstanceConfig",
           "description": "Configuration for query insights."
+        },
+        "queryInsightsInfo": {
+          "$ref": "QueryInsightsInstanceInfo",
+          "description": "Output only. Instance level Query Insights information, which is read-only and available in the output only. Contains the effective query insights settings for this instance, by merging customer's provided `QueryInsightsInstanceConfig` with the Query Insights defaults.",
+          "readOnly": true
         },
         "readPoolConfig": {
           "$ref": "ReadPoolConfig",
@@ -3926,6 +3936,54 @@
       },
       "type": "object"
     },
+    "ObservabilityInstanceInfo": {
+      "id": "ObservabilityInstanceInfo",
+      "properties": {
+        "enabled": {
+          "description": "Output only. Observability feature status for an instance.",
+          "readOnly": true,
+          "type": "boolean"
+        },
+        "maxQueryStringLength": {
+          "description": "Output only. Query string length. The default value is 10k.",
+          "format": "int32",
+          "readOnly": true,
+          "type": "integer"
+        },
+        "preserveComments": {
+          "description": "Output only. Preserve comments in query string for an instance.",
+          "readOnly": true,
+          "type": "boolean"
+        },
+        "queryPlansPerMinute": {
+          "description": "Output only. Number of query execution plans captured by Insights per minute for all queries combined.",
+          "format": "int32",
+          "readOnly": true,
+          "type": "integer"
+        },
+        "recordApplicationTags": {
+          "description": "Output only. Record application tags for an instance.",
+          "readOnly": true,
+          "type": "boolean"
+        },
+        "trackActiveQueries": {
+          "description": "Output only. Track actively running queries on the instance.",
+          "readOnly": true,
+          "type": "boolean"
+        },
+        "trackWaitEventTypes": {
+          "description": "Output only. Track wait event types during query execution for an instance.",
+          "readOnly": true,
+          "type": "boolean"
+        },
+        "trackWaitEvents": {
+          "description": "Output only. Track wait events during query execution for an instance.",
+          "readOnly": true,
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
     "Operation": {
       "description": "This resource represents a long-running operation that is the result of a network API call.",
       "id": "Operation",
@@ -4267,6 +4325,40 @@
         },
         "recordClientAddress": {
           "description": "Record client address for an instance. Client address is PII information. This flag is turned \"on\" by default.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "QueryInsightsInstanceInfo": {
+      "description": "Instance level Query Insights information, which is read-only and available in the output only.",
+      "id": "QueryInsightsInstanceInfo",
+      "properties": {
+        "enabled": {
+          "description": "Output only. Whether Query Insights is enabled.",
+          "readOnly": true,
+          "type": "boolean"
+        },
+        "queryPlansPerMinute": {
+          "description": "Output only. Number of query execution plans captured per minute.",
+          "format": "uint32",
+          "readOnly": true,
+          "type": "integer"
+        },
+        "queryStringLength": {
+          "description": "Output only. Maximum query string length.",
+          "format": "uint32",
+          "readOnly": true,
+          "type": "integer"
+        },
+        "recordApplicationTags": {
+          "description": "Output only. Whether to record application tags.",
+          "readOnly": true,
+          "type": "boolean"
+        },
+        "recordClientAddress": {
+          "description": "Output only. Whether to record client address.",
+          "readOnly": true,
           "type": "boolean"
         }
       },
