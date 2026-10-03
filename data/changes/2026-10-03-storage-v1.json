@@ -1,0 +1,33 @@
+{
+  "id": "2026-10-03-storage-v1",
+  "date": "2026-10-03",
+  "api": "storage.v1",
+  "service": "Cloud Storage",
+  "title": "Cloud Storage: New Hard Delete Pause for Soft-Deleted Objects",
+  "summary": "Cloud Storage buckets now support a 'hard delete pause' configuration within their soft delete policy. This new feature allows administrators to temporarily prevent the permanent deletion of soft-deleted objects, offering an additional layer of data protection.",
+  "details": "The `Bucket` schema has been updated with a new `hardDeletePause` object under `properties.softDeletePolicy`. This new configuration includes an `enabled` boolean property to activate or deactivate the pause, and an `effectiveTime` string property (RFC 3339 format) indicating when the pause became active. When enabled, soft-deleted objects in the bucket will not be permanently deleted until the hard delete pause is explicitly disabled, providing more control over data retention and recovery.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "storage",
+    "data-protection",
+    "soft-delete",
+    "buckets"
+  ],
+  "extracted_methods": [
+    "properties.softDeletePolicy"
+  ],
+  "target_paths": [
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.description",
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.properties.effectivetime.description",
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.properties.effectivetime.format",
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.properties.effectivetime.type",
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.properties.enabled.description",
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.properties.enabled.type",
+    "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-03T18:37:16.195Z"
+}

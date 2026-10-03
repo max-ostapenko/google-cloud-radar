@@ -21,8 +21,148 @@
   "endpoints": [
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.us-east7.rep.googleapis.com/",
-      "location": "us-east7"
+      "endpointUrl": "https://sqladmin.africa-south1.rep.googleapis.com/",
+      "location": "africa-south1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.asia-east1.rep.googleapis.com/",
+      "location": "asia-east1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.asia-east2.rep.googleapis.com/",
+      "location": "asia-east2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.asia-northeast1.rep.googleapis.com/",
+      "location": "asia-northeast1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.asia-northeast2.rep.googleapis.com/",
+      "location": "asia-northeast2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.asia-northeast3.rep.googleapis.com/",
+      "location": "asia-northeast3"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.asia-south1.rep.googleapis.com/",
+      "location": "asia-south1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.asia-south2.rep.googleapis.com/",
+      "location": "asia-south2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.asia-southeast1.rep.googleapis.com/",
+      "location": "asia-southeast1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.asia-southeast2.rep.googleapis.com/",
+      "location": "asia-southeast2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.asia-southeast3.rep.googleapis.com/",
+      "location": "asia-southeast3"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.australia-southeast1.rep.googleapis.com/",
+      "location": "australia-southeast1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.australia-southeast2.rep.googleapis.com/",
+      "location": "australia-southeast2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.europe-central2.rep.googleapis.com/",
+      "location": "europe-central2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.europe-north1.rep.googleapis.com/",
+      "location": "europe-north1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.europe-north2.rep.googleapis.com/",
+      "location": "europe-north2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.europe-southwest1.rep.googleapis.com/",
+      "location": "europe-southwest1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.europe-west1.rep.googleapis.com/",
+      "location": "europe-west1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.europe-west10.rep.googleapis.com/",
+      "location": "europe-west10"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.europe-west12.rep.googleapis.com/",
+      "location": "europe-west12"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.europe-west2.rep.googleapis.com/",
+      "location": "europe-west2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.europe-west3.rep.googleapis.com/",
+      "location": "europe-west3"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.europe-west4.rep.googleapis.com/",
+      "location": "europe-west4"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.europe-west6.rep.googleapis.com/",
+      "location": "europe-west6"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.europe-west8.rep.googleapis.com/",
+      "location": "europe-west8"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.europe-west9.rep.googleapis.com/",
+      "location": "europe-west9"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.me-central1.rep.googleapis.com/",
+      "location": "me-central1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.me-central2.rep.googleapis.com/",
+      "location": "me-central2"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.me-west1.rep.googleapis.com/",
+      "location": "me-west1"
     },
     {
       "description": "Regional Endpoint",
@@ -36,148 +176,18 @@
     },
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.europe-north1.rep.googleapis.com/",
-      "location": "europe-north1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.us-west2.rep.googleapis.com/",
-      "location": "us-west2"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.asia-east2.rep.googleapis.com/",
-      "location": "asia-east2"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.europe-west3.rep.googleapis.com/",
-      "location": "europe-west3"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.us-east1.rep.googleapis.com/",
-      "location": "us-east1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.asia-east1.rep.googleapis.com/",
-      "location": "asia-east1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.asia-northeast2.rep.googleapis.com/",
-      "location": "asia-northeast2"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.me-central1.rep.googleapis.com/",
-      "location": "me-central1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.europe-central2.rep.googleapis.com/",
-      "location": "europe-central2"
-    },
-    {
-      "description": "Regional Endpoint",
       "endpointUrl": "https://sqladmin.northamerica-south1.rep.googleapis.com/",
       "location": "northamerica-south1"
     },
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.us-west8.rep.googleapis.com/",
-      "location": "us-west8"
+      "endpointUrl": "https://sqladmin.southamerica-east1.rep.googleapis.com/",
+      "location": "southamerica-east1"
     },
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.me-west1.rep.googleapis.com/",
-      "location": "me-west1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.asia-northeast3.rep.googleapis.com/",
-      "location": "asia-northeast3"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.us-west1.rep.googleapis.com/",
-      "location": "us-west1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.europe-west9.rep.googleapis.com/",
-      "location": "europe-west9"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.asia-southeast3.rep.googleapis.com/",
-      "location": "asia-southeast3"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.europe-west1.rep.googleapis.com/",
-      "location": "europe-west1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.asia-southeast1.rep.googleapis.com/",
-      "location": "asia-southeast1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.us-west4.rep.googleapis.com/",
-      "location": "us-west4"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.europe-west12.rep.googleapis.com/",
-      "location": "europe-west12"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.asia-south2.rep.googleapis.com/",
-      "location": "asia-south2"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.australia-southeast1.rep.googleapis.com/",
-      "location": "australia-southeast1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.europe-west6.rep.googleapis.com/",
-      "location": "europe-west6"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.us-east4.rep.googleapis.com/",
-      "location": "us-east4"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.asia-southeast2.rep.googleapis.com/",
-      "location": "asia-southeast2"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.europe-southwest1.rep.googleapis.com/",
-      "location": "europe-southwest1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.europe-west8.rep.googleapis.com/",
-      "location": "europe-west8"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.africa-south1.rep.googleapis.com/",
-      "location": "africa-south1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.me-central2.rep.googleapis.com/",
-      "location": "me-central2"
+      "endpointUrl": "https://sqladmin.southamerica-west1.rep.googleapis.com/",
+      "location": "southamerica-west1"
     },
     {
       "description": "Regional Endpoint",
@@ -191,23 +201,13 @@
     },
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.europe-north2.rep.googleapis.com/",
-      "location": "europe-north2"
+      "endpointUrl": "https://sqladmin.us-east1.rep.googleapis.com/",
+      "location": "us-east1"
     },
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.asia-northeast1.rep.googleapis.com/",
-      "location": "asia-northeast1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.europe-west2.rep.googleapis.com/",
-      "location": "europe-west2"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.southamerica-east1.rep.googleapis.com/",
-      "location": "southamerica-east1"
+      "endpointUrl": "https://sqladmin.us-east4.rep.googleapis.com/",
+      "location": "us-east4"
     },
     {
       "description": "Regional Endpoint",
@@ -216,13 +216,23 @@
     },
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.asia-south1.rep.googleapis.com/",
-      "location": "asia-south1"
+      "endpointUrl": "https://sqladmin.us-east7.rep.googleapis.com/",
+      "location": "us-east7"
     },
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.europe-west4.rep.googleapis.com/",
-      "location": "europe-west4"
+      "endpointUrl": "https://sqladmin.us-south1.rep.googleapis.com/",
+      "location": "us-south1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.us-west1.rep.googleapis.com/",
+      "location": "us-west1"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://sqladmin.us-west2.rep.googleapis.com/",
+      "location": "us-west2"
     },
     {
       "description": "Regional Endpoint",
@@ -231,23 +241,13 @@
     },
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.australia-southeast2.rep.googleapis.com/",
-      "location": "australia-southeast2"
+      "endpointUrl": "https://sqladmin.us-west4.rep.googleapis.com/",
+      "location": "us-west4"
     },
     {
       "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.southamerica-west1.rep.googleapis.com/",
-      "location": "southamerica-west1"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.europe-west10.rep.googleapis.com/",
-      "location": "europe-west10"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://sqladmin.us-south1.rep.googleapis.com/",
-      "location": "us-south1"
+      "endpointUrl": "https://sqladmin.us-west8.rep.googleapis.com/",
+      "location": "us-west8"
     }
   ],
   "fullyEncodeReservedExpansion": true,
@@ -3721,7 +3721,7 @@
       }
     }
   },
-  "revision": "20260908",
+  "revision": "20260920",
   "rootUrl": "https://sqladmin.googleapis.com/",
   "schemas": {
     "AclEntry": {
@@ -4152,7 +4152,7 @@
           "type": "string"
         },
         "type": {
-          "description": "Output only. The type of this backup. The type can be \"AUTOMATED\", \"ON_DEMAND\", or \u201cFINAL\u201d.",
+          "description": "Output only. The type of this backup. The type can be \"AUTOMATED\", \"ON_DEMAND\", or “FINAL”.",
           "enum": [
             "SQL_BACKUP_TYPE_UNSPECIFIED",
             "AUTOMATED",
@@ -10141,7 +10141,7 @@
       "properties": {
         "startWorkloadReplayContext": {
           "$ref": "StartWorkloadReplayContext",
-          "description": "Optional. Contains details about the start workload replay operation."
+          "description": "Required. Contains details about the start workload replay operation."
         }
       },
       "type": "object"
@@ -10163,7 +10163,7 @@
       "properties": {
         "stopWorkloadReplayContext": {
           "$ref": "StopWorkloadReplayContext",
-          "description": "Optional. Contains details about the stop workload replay operation."
+          "description": "Required. Contains details about the stop workload replay operation."
         }
       },
       "type": "object"
