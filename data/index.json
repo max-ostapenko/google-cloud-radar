@@ -1,5 +1,34 @@
 [
   {
+    "id": "2026-10-06-looker-v1",
+    "date": "2026-10-06",
+    "api": "looker.v1",
+    "service": "Looker Core",
+    "title": "Looker Instances Expose Authentication Types",
+    "summary": "Looker instances now expose their configured authentication types, including Google Auth and Workforce Identity Federation, through a new `authType` field. This provides clearer insight into instance security configurations.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "authentication",
+      "security",
+      "instance management"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.authtype.description",
+      "schemas.authtype.id",
+      "schemas.authtype.properties.googleauthenabled.description",
+      "schemas.authtype.properties.googleauthenabled.type",
+      "schemas.authtype.properties.workforceauthenabled.description",
+      "schemas.authtype.properties.workforceauthenabled.type",
+      "schemas.authtype.type",
+      "schemas.instance.properties.authtype.$ref",
+      "schemas.instance.properties.authtype.description"
+    ],
+    "generated_at": "2026-10-06T16:36:01.562Z"
+  },
+  {
     "id": "2026-10-03-storage-v1",
     "date": "2026-10-03",
     "api": "storage.v1",
