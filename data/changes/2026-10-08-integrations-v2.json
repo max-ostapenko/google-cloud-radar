@@ -1,0 +1,25 @@
+{
+  "id": "2026-10-08-integrations-v2",
+  "date": "2026-10-08",
+  "api": "integrations.v2",
+  "service": "Application Integration",
+  "title": "Test Unpublished Integration Drafts",
+  "summary": "The `PostToQueueWithTriggerIdRequest` schema now includes a `workflowId` field, allowing you to target specific, even unpublished, versions of your integrations for testing.",
+  "details": "Developers can now use the new `workflowId` string field within the `GoogleInternalCloudCrmEventbusV3PostToQueueWithTriggerIdRequest` schema. This enables pinning an enqueue operation to a particular workflow version, facilitating the testing of unpublished draft integrations before they are made active. This is a significant improvement for development and testing workflows.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "integrations",
+    "workflow",
+    "testing"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.googleinternalcloudcrmeventbusv3posttoqueuewithtriggeridrequest.properties.workflowid.description",
+    "schemas.googleinternalcloudcrmeventbusv3posttoqueuewithtriggeridrequest.properties.workflowid.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-08T00:05:30.577Z"
+}
