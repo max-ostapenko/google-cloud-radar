@@ -1,0 +1,36 @@
+{
+  "id": "2026-10-08-discoveryengine-v1beta",
+  "date": "2026-10-08",
+  "api": "discoveryengine.v1beta",
+  "service": "Vertex AI Agent Builder",
+  "title": "Discovery Engine: Link Feedback to Agent Tasks",
+  "summary": "Discovery Engine now allows linking conversation feedback to specific Sobi agent tasks via a new `taskName` field. Minor internal scope adjustments were also made for `completeQuery` methods.",
+  "details": "The `GoogleCloudDiscoveryengineV1betaFeedbackConversationInfo` schema now includes an optional `taskName` field. This field, of type `string`, allows developers to associate conversation feedback with the full resource name of a Sobi task (e.g., `projects/{project}/locations/{location}/tasks/{task_id}`). This enhances traceability for conversations handled by long-running agent tasks. Additionally, the `completeQuery` methods across `dataStores` and `engines` had their required OAuth scopes (`cloud-platform` and `cloud_search.query`) reordered, which should have no functional impact on existing integrations.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "AI/ML",
+    "Discovery Engine",
+    "Feedback",
+    "Agent Tasks"
+  ],
+  "extracted_methods": [
+    "projects.locations.collections.datastores.completionconfig.completequery",
+    "projects.locations.collections.engines.completionconfig.completequery",
+    "projects.locations.datastores.completionconfig.completequery"
+  ],
+  "target_paths": [
+    "resources.projects.resources.locations.resources.collections.resources.datastores.resources.completionconfig.methods.completequery.scopes[0]",
+    "resources.projects.resources.locations.resources.collections.resources.datastores.resources.completionconfig.methods.completequery.scopes[1]",
+    "resources.projects.resources.locations.resources.collections.resources.engines.resources.completionconfig.methods.completequery.scopes[0]",
+    "resources.projects.resources.locations.resources.collections.resources.engines.resources.completionconfig.methods.completequery.scopes[1]",
+    "resources.projects.resources.locations.resources.datastores.resources.completionconfig.methods.completequery.scopes[0]",
+    "resources.projects.resources.locations.resources.datastores.resources.completionconfig.methods.completequery.scopes[1]",
+    "schemas.googleclouddiscoveryenginev1betafeedbackconversationinfo.properties.taskname.description",
+    "schemas.googleclouddiscoveryenginev1betafeedbackconversationinfo.properties.taskname.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-08T11:53:20.045Z"
+}
