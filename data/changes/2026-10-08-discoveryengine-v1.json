@@ -1,0 +1,39 @@
+{
+  "id": "2026-10-08-discoveryengine-v1",
+  "date": "2026-10-08",
+  "api": "discoveryengine.v1",
+  "service": "Vertex AI Agent Builder",
+  "title": "Discovery Engine: `autoModelId` Now Output-Only; Sobi Task Tracking Added",
+  "summary": "A breaking change makes the `autoModelId` property in `WidgetConfigUiSettingsModelConfigInfo` read-only. Additionally, `FeedbackConversationInfo` now includes `taskName` for tracking Sobi long-running agent tasks, and `completeQuery` methods see scope reordering.",
+  "details": "The `autoModelId` property within the `GoogleCloudDiscoveryengineV1WidgetConfigUiSettingsModelConfigInfo` schema has been marked as `Output only`. This is a breaking change: if your integration was previously setting this field, it will now fail. This field is intended to provide the `model_id` to use when an end-user selects an 'Auto' option in the UI, and is now server-managed.\n\nOn the positive side, the `GoogleCloudDiscoveryengineV1FeedbackConversationInfo` schema gains a new optional `taskName` property. This allows developers to associate conversation feedback with the full resource name of a Sobi long-running agent task, providing better traceability.\n\nFinally, the `completeQuery` methods across various `completionConfig` resources have had their authentication scopes reordered. While `cloud-platform` is still supported, `cloud_search.query` is now listed as the primary scope, encouraging more granular permission usage.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "breaking-change",
+    "new-feature",
+    "schema-update",
+    "authentication"
+  ],
+  "extracted_methods": [
+    "projects.locations.collections.datastores.completionconfig.completequery",
+    "projects.locations.collections.engines.completionconfig.completequery",
+    "projects.locations.datastores.completionconfig.completequery"
+  ],
+  "target_paths": [
+    "resources.projects.resources.locations.resources.collections.resources.datastores.resources.completionconfig.methods.completequery.scopes[0]",
+    "resources.projects.resources.locations.resources.collections.resources.datastores.resources.completionconfig.methods.completequery.scopes[1]",
+    "resources.projects.resources.locations.resources.collections.resources.engines.resources.completionconfig.methods.completequery.scopes[0]",
+    "resources.projects.resources.locations.resources.collections.resources.engines.resources.completionconfig.methods.completequery.scopes[1]",
+    "resources.projects.resources.locations.resources.datastores.resources.completionconfig.methods.completequery.scopes[0]",
+    "resources.projects.resources.locations.resources.datastores.resources.completionconfig.methods.completequery.scopes[1]",
+    "schemas.googleclouddiscoveryenginev1feedbackconversationinfo.properties.taskname.description",
+    "schemas.googleclouddiscoveryenginev1feedbackconversationinfo.properties.taskname.type",
+    "schemas.googleclouddiscoveryenginev1widgetconfiguisettingsmodelconfiginfo.properties.automodelid.description",
+    "schemas.googleclouddiscoveryenginev1widgetconfiguisettingsmodelconfiginfo.properties.automodelid.readonly",
+    "schemas.googleclouddiscoveryenginev1widgetconfiguisettingsmodelconfiginfo.properties.automodelid.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-08T11:53:20.041Z"
+}
