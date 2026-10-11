@@ -1,5 +1,48 @@
 [
   {
+    "id": "2026-10-11-sqladmin-v1beta4",
+    "date": "2026-10-11",
+    "api": "sqladmin.v1beta4",
+    "service": "Cloud SQL",
+    "title": "Cloud SQL: Workload Capture Update & Instance Controls",
+    "summary": "Cloud SQL Admin API introduces new controls for Database Center integration and major version upgrades. A breaking change makes `WorkloadCapture.backupId` read-only, and a new `TERMINATED` state is added for workload captures.",
+    "impact": "medium",
+    "breaking": true,
+    "interesting_score": 8,
+    "tags": [
+      "Cloud SQL",
+      "DatabaseInstance",
+      "WorkloadCapture",
+      "Breaking Change",
+      "Upgrade"
+    ],
+    "extracted_methods": [
+      "WorkloadCapture.backupId"
+    ],
+    "target_paths": [
+      "schemas.databaseinstance.properties.databasecenterintegration.description",
+      "schemas.databaseinstance.properties.databasecenterintegration.enum[0]",
+      "schemas.databaseinstance.properties.databasecenterintegration.enum[1]",
+      "schemas.databaseinstance.properties.databasecenterintegration.enum[2]",
+      "schemas.databaseinstance.properties.databasecenterintegration.enumdescriptions[0]",
+      "schemas.databaseinstance.properties.databasecenterintegration.enumdescriptions[1]",
+      "schemas.databaseinstance.properties.databasecenterintegration.enumdescriptions[2]",
+      "schemas.databaseinstance.properties.databasecenterintegration.type",
+      "schemas.databaseinstance.properties.skipprecheck.description",
+      "schemas.databaseinstance.properties.skipprecheck.type",
+      "schemas.precheckmajorversionupgradecontext.properties.maxruntime.description",
+      "schemas.precheckmajorversionupgradecontext.properties.maxruntime.format",
+      "schemas.precheckmajorversionupgradecontext.properties.maxruntime.type",
+      "schemas.workloadcapture.properties.backupid.description",
+      "schemas.workloadcapture.properties.backupid.readonly",
+      "schemas.workloadcapture.properties.backupid.type",
+      "schemas.workloadcapture.properties.workloadcapturestate.enum[4]",
+      "schemas.workloadcapture.properties.workloadcapturestate.enumdescriptions[2]",
+      "schemas.workloadcapture.properties.workloadcapturestate.enumdescriptions[4]"
+    ],
+    "generated_at": "2026-10-11T04:56:59.493Z"
+  },
+  {
     "id": "2026-10-09-sqladmin-v1",
     "date": "2026-10-09",
     "api": "sqladmin.v1",
