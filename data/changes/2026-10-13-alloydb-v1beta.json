@@ -1,0 +1,41 @@
+{
+  "id": "2026-10-13-alloydb-v1beta",
+  "date": "2026-10-13",
+  "api": "alloydb.v1beta",
+  "service": "AlloyDB",
+  "title": "AlloyDB: 'edition' Deprecated, 'expressConfig' Read-Only",
+  "summary": "The recently introduced `edition` field on AlloyDB `Cluster` and `Backup` schemas is now deprecated. Developers should transition to using the new `expressConfig` property on `Backup` for Express cluster details, which is output-only and considered a breaking change if you anticipated setting it.",
+  "details": "Less than a month after its introduction, the `edition` field on both `Cluster` and `Backup` schemas, along with its enum values, has been deprecated. This rapid deprecation requires developers who adopted this field to update their code to no longer rely on it. Instead, for backups of Express clusters, the new `expressConfig` property has been added to the `Backup` schema. This `expressConfig` property is output-only (`readOnly`), meaning it reflects the configuration of the source cluster but cannot be set or modified directly. This immutability is considered a breaking change if you were anticipating setting this new property, as indicated by the API's breaking reasons.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "deprecation",
+    "breaking-change",
+    "schema-update",
+    "alloydb"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.backup.properties.edition.deprecated",
+    "schemas.backup.properties.edition.enumdeprecated[0]",
+    "schemas.backup.properties.edition.enumdeprecated[1]",
+    "schemas.backup.properties.edition.enumdeprecated[2]",
+    "schemas.backup.properties.edition.enumdescriptions[0]",
+    "schemas.backup.properties.edition.enumdescriptions[1]",
+    "schemas.backup.properties.edition.enumdescriptions[2]",
+    "schemas.backup.properties.expressconfig.$ref",
+    "schemas.backup.properties.expressconfig.description",
+    "schemas.backup.properties.expressconfig.readonly",
+    "schemas.cluster.properties.edition.deprecated",
+    "schemas.cluster.properties.edition.enumdeprecated[0]",
+    "schemas.cluster.properties.edition.enumdeprecated[1]",
+    "schemas.cluster.properties.edition.enumdeprecated[2]",
+    "schemas.cluster.properties.edition.enumdescriptions[0]",
+    "schemas.cluster.properties.edition.enumdescriptions[1]",
+    "schemas.cluster.properties.edition.enumdescriptions[2]"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-13T12:33:49.747Z"
+}

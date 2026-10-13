@@ -369,7 +369,9 @@
     "schemas.googlelearningvertexapiinteractionsv1beta1listvoicesresponse.properties.voices.type",
     "schemas.googlelearningvertexapiinteractionsv1beta1listvoicesresponse.type"
   ],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-10-03T18:37:16.193Z"
+  "status": "released",
+  "lead_time_days": 9,
+  "generated_at": "2026-10-03T18:37:16.193Z",
+  "official_release_date": "2026-10-12",
+  "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#October_12_2026"
 }
