@@ -20,7 +20,9 @@
   "target_paths": [
     "resources.edits.resources.deobfuscationfiles.methods.upload.mediaupload.maxsize"
   ],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-09-24T14:44:46.652Z"
+  "status": "released",
+  "lead_time_days": 19,
+  "generated_at": "2026-09-24T14:44:46.652Z",
+  "official_release_date": "2026-10-13",
+  "official_release_notes_url": "https://android-developers.googleblog.com/2026/10/new-tools-for-discovery-and-engagement.html"
 }
