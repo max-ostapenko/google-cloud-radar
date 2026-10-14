@@ -1,0 +1,28 @@
+{
+  "id": "2026-10-14-drive-v3",
+  "date": "2026-10-14",
+  "api": "drive.v3",
+  "service": "Google Drive API",
+  "title": "Drive API: Approval Schema Read-Only Flags Removed",
+  "summary": "The `Approval` schema in the Drive API no longer explicitly marks `completeTime`, `createTime`, `modifyTime`, `fileContentChangeBehavior`, and `status` properties as read-only in its discovery document. This is a metadata update.",
+  "details": "The `readOnly: true` attribute has been removed from the `completeTime`, `createTime`, `fileContentChangeBehavior`, `modifyTime`, and `status` properties within the `Approval` schema. This change updates the API's metadata, meaning these fields are no longer explicitly advertised as read-only in the schema definition. Developers should be aware of this clarification, though it does not immediately imply new write capabilities for these fields.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 4,
+  "tags": [
+    "metadata",
+    "schema",
+    "drive"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.approval.properties.completetime.readonly",
+    "schemas.approval.properties.createtime.readonly",
+    "schemas.approval.properties.filecontentchangebehavior.readonly",
+    "schemas.approval.properties.modifytime.readonly",
+    "schemas.approval.properties.status.readonly"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-14T23:04:47.677Z"
+}
