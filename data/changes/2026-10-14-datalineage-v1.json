@@ -1,0 +1,26 @@
+{
+  "id": "2026-10-14-datalineage-v1",
+  "date": "2026-10-14",
+  "api": "datalineage.v1",
+  "service": "Data Lineage",
+  "title": "Filter Lineage Search by Project",
+  "summary": "The Data Lineage API now allows developers to filter `searchLineageStreaming` results by specific projects, enabling more targeted and efficient lineage queries.",
+  "details": "The `GoogleCloudDatacatalogLineageV1SearchLineageStreamingRequestSearchFilters` schema has been enhanced with a new `projects` property. This optional array of strings accepts project IDs (e.g., `projects/my-project`) or project numbers (e.g., `projects/123456789`). When provided, lineage links will be restricted to the specified projects, offering a significant improvement for managing and querying lineage in multi-project environments.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "lineage",
+    "filtering",
+    "search"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.googleclouddatacataloglineagev1searchlineagestreamingrequestsearchfilters.properties.projects.description",
+    "schemas.googleclouddatacataloglineagev1searchlineagestreamingrequestsearchfilters.properties.projects.items.type",
+    "schemas.googleclouddatacataloglineagev1searchlineagestreamingrequestsearchfilters.properties.projects.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-14T15:02:22.070Z"
+}
