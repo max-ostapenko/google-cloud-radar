@@ -79,7 +79,9 @@
     "schemas.policy.properties.bindings.items.properties.role.annotations.required[1]",
     "schemas.policy.properties.bindings.items.properties.role.annotations.required[2]"
   ],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-09-28T11:33:26.555Z"
+  "status": "released",
+  "lead_time_days": 15,
+  "generated_at": "2026-09-28T11:33:26.555Z",
+  "official_release_date": "2026-10-13",
+  "official_release_notes_url": "https://docs.cloud.google.com/storage/docs/release-notes#October_13_2026"
 }
