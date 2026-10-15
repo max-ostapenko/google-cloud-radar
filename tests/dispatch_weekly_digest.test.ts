@@ -48,6 +48,9 @@ describe('dispatch_weekly_digest', () => {
     expect(html).toContain('New Features &amp; Schema Updates (1)');
     expect(html).toContain('Vertex AI');
     expect(html).toContain('BigQuery');
+    expect(html).toContain('Impacted RPC Methods:');
+    expect(html).toContain('<code>publishers.v1beta1.compact</code>');
+    expect(html).toMatch(/<code[^>]*>jobs\.query\.stats<\/code>/);
     expect(html).toContain(
       'https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1'
     );
@@ -60,10 +63,107 @@ describe('dispatch_weekly_digest', () => {
     expect(text).toContain('Week of August 31, 2026');
     expect(text).toContain('⚠️ BREAKING CHANGES:');
     expect(text).toContain('* [Vertex AI] Vertex AI: Breaking Changes & Agent IAM Controls');
+    expect(text).toContain('Impacted RPC Methods: publishers.v1beta1.compact');
     expect(text).toContain('RECENT API ADDITIONS & EVOLUTIONS:');
     expect(text).toContain('* [BigQuery] BigQuery adds fine-grained reservation parameters');
+    expect(text).toContain('Methods: jobs.query.stats');
     expect(text).toContain('https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1');
     expect(text).toContain('https://google-cloud-radar.com/?action=alerts');
+  });
+
+  it('renders callout box for breaking changes capped at 8 methods with overflow badge', () => {
+    const tenMethods = Array.from({ length: 10 }, (_, i) => `method.test.rpc${i + 1}`);
+    const breakingChange = [
+      {
+        slug: '2026-09-01-spanner-v1',
+        date: '2026-09-01',
+        service: 'Spanner',
+        api: 'spanner.v1',
+        title: 'Spanner breaking change',
+        summary: 'Database fields changed.',
+        impact: 'high',
+        breaking: true,
+        extracted_methods: tenMethods,
+      },
+    ];
+
+    const html = renderWeeklyDigestHtml(breakingChange, 'Week of September 1, 2026');
+    expect(html).toContain('Impacted RPC Methods:');
+    expect(html).toContain('<code>method.test.rpc1</code>');
+    expect(html).toContain('<code>method.test.rpc8</code>');
+    expect(html).not.toContain('<code>method.test.rpc9</code>');
+    expect(html).not.toContain('<code>method.test.rpc10</code>');
+    expect(html).toContain('+2 more methods');
+
+    const text = renderWeeklyDigestText(breakingChange, 'Week of September 1, 2026');
+    expect(text).toContain('method.test.rpc1');
+    expect(text).toContain('method.test.rpc8');
+    expect(text).not.toContain('method.test.rpc9');
+    expect(text).toContain('(+2 more methods)');
+  });
+
+  it('renders inline method list for non-breaking changes capped at 5 methods with overflow badge', () => {
+    const sevenMethods = Array.from({ length: 7 }, (_, i) => `nonbreaking.method${i + 1}`);
+    const nonBreakingChange = [
+      {
+        slug: '2026-09-01-compute-v1',
+        date: '2026-09-01',
+        service: 'Compute Engine',
+        api: 'compute.v1',
+        title: 'Compute Engine updates',
+        summary: 'Added new VM configuration options.',
+        impact: 'medium',
+        breaking: false,
+        extracted_methods: sevenMethods,
+      },
+    ];
+
+    const html = renderWeeklyDigestHtml(nonBreakingChange, 'Week of September 1, 2026');
+    expect(html).toMatch(/<code[^>]*>nonbreaking\.method1<\/code>/);
+    expect(html).toMatch(/<code[^>]*>nonbreaking\.method5<\/code>/);
+    expect(html).not.toContain('nonbreaking.method6');
+    expect(html).not.toContain('+7 methods');
+    expect(html).toContain('+2 more');
+
+    const text = renderWeeklyDigestText(nonBreakingChange, 'Week of September 1, 2026');
+    expect(text).toContain('nonbreaking.method1');
+    expect(text).toContain('nonbreaking.method5');
+    expect(text).not.toContain('nonbreaking.method6');
+    expect(text).toContain('(+2 more)');
+  });
+
+  it('omits method list container gracefully when extracted_methods is empty or missing', () => {
+    const noMethodsChanges = [
+      {
+        slug: '2026-09-01-storage-v1',
+        date: '2026-09-01',
+        service: 'Cloud Storage',
+        api: 'storage.v1',
+        title: 'Storage bucket policy update',
+        summary: 'Updated bucket IAM documentation.',
+        impact: 'low',
+        breaking: true,
+        extracted_methods: [],
+      },
+      {
+        slug: '2026-09-01-pubsub-v1',
+        date: '2026-09-01',
+        service: 'Cloud Pub/Sub',
+        api: 'pubsub.v1',
+        title: 'Pub/Sub topic metrics',
+        summary: 'New throughput metrics available.',
+        impact: 'low',
+        breaking: false,
+      },
+    ];
+
+    const html = renderWeeklyDigestHtml(noMethodsChanges, 'Week of September 1, 2026');
+    expect(html).not.toContain('Impacted RPC Methods:');
+    expect(html).not.toContain('<code>');
+
+    const text = renderWeeklyDigestText(noMethodsChanges, 'Week of September 1, 2026');
+    expect(text).not.toContain('Impacted RPC Methods:');
+    expect(text).not.toContain('Methods:');
   });
 
   it('filters changes for subscriber based on service preferences', () => {

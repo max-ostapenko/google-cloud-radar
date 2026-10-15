@@ -130,6 +130,34 @@ export function renderWeeklyDigestHtml(changes: any[], weekLabel?: string): stri
         ? ` · <span style='color: #b3261e;'>${escapeHtml(reasons[0])}</span>`
         : '';
 
+      const extractedMethods: string[] = Array.isArray(c.extracted_methods)
+        ? c.extracted_methods
+        : [];
+      let breakingMethodsHtml = '';
+      if (extractedMethods.length > 0) {
+        const displayMethods = extractedMethods.slice(0, 8);
+        const overflowCount = extractedMethods.length - 8;
+        const methodListItemsHtml = displayMethods
+          .map(
+            (m) =>
+              `<li style="margin-bottom: 4px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11.5px; color: #b3261e;"><code>${escapeHtml(String(m))}</code></li>`
+          )
+          .join('');
+        const overflowBadgeHtml = overflowCount > 0
+          ? `<div style="margin-top: 6px;"><span style="display: inline-block; font-size: 10.5px; font-weight: 600; background-color: #f1f3f4; color: #5f6368; border: 1px solid #dadce0; padding: 2px 6px; border-radius: 4px;">+${overflowCount} more method${overflowCount > 1 ? 's' : ''}</span></div>`
+          : '';
+
+        breakingMethodsHtml = `
+              <div style="margin-top: 10px; margin-bottom: 10px; padding: 10px 12px; background-color: #fef7f7; border: 1px solid #fad2cf; border-left: 3px solid #ea4335; border-radius: 4px;">
+                <strong style="display: block; margin-bottom: 6px; font-size: 11px; color: #c5221f; text-transform: uppercase; letter-spacing: 0.5px;">Impacted RPC Methods:</strong>
+                <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #202124;">
+                  ${methodListItemsHtml}
+                </ul>
+                ${overflowBadgeHtml}
+              </div>
+              `;
+      }
+
       breakingItemsHtml += `
             <div style="margin-bottom: 14px; padding: 14px 16px; background-color: #ffffff; border: 1px solid #e0e0e0; border-left: 4px solid #ea4335; border-radius: 6px;">
               <div style="margin-bottom: 6px;">
@@ -145,6 +173,7 @@ export function renderWeeklyDigestHtml(changes: any[], weekLabel?: string): stri
               <p style="font-size: 12.5px; color: #474747; margin: 0 0 8px 0; line-height: 1.45;">
                 ${summary}${reasonText}
               </p>
+              ${breakingMethodsHtml}
               <a href="https://google-cloud-radar.com/changes/${slug}" target="_blank" style="font-size: 12px; font-weight: 600; color: #1a73e8; text-decoration: none;">
                 View AST Diff &amp; Impact Analysis →
               </a>
@@ -178,17 +207,36 @@ export function renderWeeklyDigestHtml(changes: any[], weekLabel?: string): stri
     }
 
     const badgeText = `${impact} IMPACT`;
-    const methods = c.extracted_methods || [];
-    const methodsChip = methods.length > 0
-      ? `<span style='font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; background: #f1f3f4; color: #3c4043; padding: 2px 6px; border-radius: 4px; margin-left: 6px;'>+${methods.length} methods</span>`
-      : '';
+    const methods: string[] = Array.isArray(c.extracted_methods)
+      ? c.extracted_methods
+      : [];
+    let inlineMethodsHtml = '';
+    if (methods.length > 0) {
+      const displayMethods = methods.slice(0, 5);
+      const overflowCount = methods.length - 5;
+      const methodPillsHtml = displayMethods
+        .map(
+          (m) =>
+            `<code style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; color: #3c4043; background-color: #f1f3f4; border: 1px solid #dadce0; padding: 2px 6px; border-radius: 4px; margin-right: 6px; margin-bottom: 4px; display: inline-block;">${escapeHtml(String(m))}</code>`
+        )
+        .join('');
+      const overflowBadgeHtml = overflowCount > 0
+        ? `<span style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; color: #5f6368; background-color: #f1f3f4; border: 1px solid #dadce0; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px; display: inline-block;">+${overflowCount} more</span>`
+        : '';
+
+      inlineMethodsHtml = `
+          <div style="margin-top: 8px;">
+            ${methodPillsHtml}${overflowBadgeHtml}
+          </div>
+          `;
+    }
 
     regularItemsHtml += `
         <div style="padding: 16px 0; border-bottom: 1px solid #eeeeee;">
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 8px;">
             <tr>
               <td style="font-size: 12px; color: #5f6368; vertical-align: middle;">
-                <strong style="color: #202124;">${svcName}</strong> &nbsp;•&nbsp; <code style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; color: #5f6368; background-color: #f8f9fa; padding: 2px 5px; border-radius: 3px; border: 1px solid #e8eaed;">${api}</code>${methodsChip}
+                <strong style="color: #202124;">${svcName}</strong> &nbsp;•&nbsp; <code style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; color: #5f6368; background-color: #f8f9fa; padding: 2px 5px; border-radius: 3px; border: 1px solid #e8eaed;">${api}</code>
               </td>
               <td align="right" style="vertical-align: middle;">
                 <span style="font-size: 9.5px; font-weight: 700; ${badgeStyle} padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.3px;">
@@ -205,6 +253,7 @@ export function renderWeeklyDigestHtml(changes: any[], weekLabel?: string): stri
           <p style="font-size: 12.5px; color: #474747; line-height: 1.5; margin: 0;">
             ${summary}
           </p>
+          ${inlineMethodsHtml}
         </div>
         `;
   }
@@ -339,10 +388,22 @@ export function renderWeeklyDigestText(changes: any[], weekLabel?: string): stri
       const svcName = c.service || c.service_name || 'Google Cloud';
       const title = c.title || 'Breaking API Change';
       const slug = encodeURIComponent(String(c.slug || c.id || ''));
+      const extractedMethods: string[] = Array.isArray(c.extracted_methods)
+        ? c.extracted_methods
+        : [];
       lines.push(`* [${svcName}] ${title}`);
       if (c.summary) lines.push(`  ${c.summary}`);
       if (Array.isArray(c.breaking_reasons) && c.breaking_reasons.length > 0) {
         lines.push(`  Reason: ${c.breaking_reasons[0]}`);
+      }
+      if (extractedMethods.length > 0) {
+        const displayMethods = extractedMethods.slice(0, 8);
+        const overflowCount = extractedMethods.length - 8;
+        const overflowSuffix =
+          overflowCount > 0
+            ? ` (+${overflowCount} more method${overflowCount > 1 ? 's' : ''})`
+            : '';
+        lines.push(`  Impacted RPC Methods: ${displayMethods.join(', ')}${overflowSuffix}`);
       }
       lines.push(`  Details: https://google-cloud-radar.com/changes/${slug}`);
       lines.push('');
@@ -356,8 +417,15 @@ export function renderWeeklyDigestText(changes: any[], weekLabel?: string): stri
       const svcName = c.service || c.service_name || 'Google Cloud';
       const title = c.title || 'API Update';
       const slug = encodeURIComponent(String(c.slug || c.id || ''));
+      const methods: string[] = Array.isArray(c.extracted_methods) ? c.extracted_methods : [];
       lines.push(`* [${svcName}] ${title}`);
       if (c.summary) lines.push(`  ${c.summary}`);
+      if (methods.length > 0) {
+        const displayMethods = methods.slice(0, 5);
+        const overflowCount = methods.length - 5;
+        const overflowSuffix = overflowCount > 0 ? ` (+${overflowCount} more)` : '';
+        lines.push(`  Methods: ${displayMethods.join(', ')}${overflowSuffix}`);
+      }
       lines.push(`  Details: https://google-cloud-radar.com/changes/${slug}`);
       lines.push('');
     }
