@@ -1,0 +1,37 @@
+{
+  "id": "2026-10-15-composer-v1",
+  "date": "2026-10-15",
+  "api": "composer.v1",
+  "service": "Cloud Composer",
+  "title": "Composer Environment Rollback Targets",
+  "summary": "Cloud Composer environments now expose `imageVersionRollbackTargets` in `SoftwareConfig`, providing insights into available rollback points and their last active usage.",
+  "details": "The `SoftwareConfig` schema now includes a new `imageVersionRollbackTargets` array. This array contains `ImageVersionRollbackTarget` objects, each detailing an `imageVersion` and its `lastActiveTime`. These new fields are `Output only`, providing valuable insights into available rollback points for your Composer environments. The API change is marked as breaking because these newly introduced properties (`imageVersion` and `lastActiveTime` within `ImageVersionRollbackTarget`, and `imageVersionRollbackTargets` itself) are explicitly defined as `readOnly`. Developers should ensure their clients do not attempt to set values for these properties, as such attempts will now fail.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 7,
+  "tags": [
+    "environments",
+    "management",
+    "rollback"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.imageversionrollbacktarget.description",
+    "schemas.imageversionrollbacktarget.id",
+    "schemas.imageversionrollbacktarget.properties.imageversion.description",
+    "schemas.imageversionrollbacktarget.properties.imageversion.readonly",
+    "schemas.imageversionrollbacktarget.properties.imageversion.type",
+    "schemas.imageversionrollbacktarget.properties.lastactivetime.description",
+    "schemas.imageversionrollbacktarget.properties.lastactivetime.format",
+    "schemas.imageversionrollbacktarget.properties.lastactivetime.readonly",
+    "schemas.imageversionrollbacktarget.properties.lastactivetime.type",
+    "schemas.imageversionrollbacktarget.type",
+    "schemas.softwareconfig.properties.imageversionrollbacktargets.description",
+    "schemas.softwareconfig.properties.imageversionrollbacktargets.items.$ref",
+    "schemas.softwareconfig.properties.imageversionrollbacktargets.readonly",
+    "schemas.softwareconfig.properties.imageversionrollbacktargets.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-15T03:56:14.543Z"
+}
