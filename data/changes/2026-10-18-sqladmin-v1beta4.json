@@ -1,0 +1,38 @@
+{
+  "id": "2026-10-18-sqladmin-v1beta4",
+  "date": "2026-10-18",
+  "api": "sqladmin.v1beta4",
+  "service": "Cloud SQL",
+  "title": "Cloud SQL: Workload Replay `stopReplay` Refactored (Breaking)",
+  "summary": "The `workloadCaptures.stopReplay` method has undergone a significant breaking refactor. The `workloadId` path parameter has been removed, and the `StopWorkloadReplayContext` schema no longer includes `replayInstance` or `workloadId` properties. Developers using the workload replay feature must update their client code.",
+  "details": "The `workloadCaptures.stopReplay` method's URI path has changed from `sql/v1beta4/projects/{project}/instances/{instance}/workloadCaptures/{workloadId}:stopReplay` to `sql/v1beta4/projects/{project}/instances/{instance}/workloadCaptures:stopReplay`. This means the `workloadId` is no longer passed as a path parameter, directly reversing a recent update that made it a required parameter. Additionally, the `StopWorkloadReplayContext` schema has been simplified, removing the `replayInstance` and `workloadId` properties. This refactoring impacts how you specify which workload replay to stop, requiring updates to client code that interacts with this method. This is a breaking change for the recently introduced workload replay functionality.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "sql",
+    "workload-replay",
+    "refactor"
+  ],
+  "extracted_methods": [
+    "workloadcaptures.stopreplay"
+  ],
+  "target_paths": [
+    "resources.workloadcaptures.methods.stopreplay.flatpath",
+    "resources.workloadcaptures.methods.stopreplay.parameterorder[2]",
+    "resources.workloadcaptures.methods.stopreplay.parameters.workloadid.description",
+    "resources.workloadcaptures.methods.stopreplay.parameters.workloadid.location",
+    "resources.workloadcaptures.methods.stopreplay.parameters.workloadid.required",
+    "resources.workloadcaptures.methods.stopreplay.parameters.workloadid.type",
+    "resources.workloadcaptures.methods.stopreplay.path",
+    "schemas.stopworkloadreplaycontext.properties.replayinstance.description",
+    "schemas.stopworkloadreplaycontext.properties.replayinstance.type",
+    "schemas.stopworkloadreplaycontext.properties.workloadid.description",
+    "schemas.stopworkloadreplaycontext.properties.workloadid.readonly",
+    "schemas.stopworkloadreplaycontext.properties.workloadid.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-18T17:55:04.194Z"
+}
