@@ -1,5 +1,39 @@
 [
   {
+    "id": "2026-10-18-sqladmin-v1beta4",
+    "date": "2026-10-18",
+    "api": "sqladmin.v1beta4",
+    "service": "Cloud SQL",
+    "title": "Cloud SQL `stopReplay` Method Breaking Change",
+    "summary": "The `workloadCaptures.stopReplay` method has undergone a breaking change, removing the `workloadId` parameter from its URI path and altering the `StopWorkloadReplayContext` schema. This is a significant adjustment to the recently introduced workload replay functionality.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking-change",
+      "cloud-sql",
+      "workload-replay"
+    ],
+    "extracted_methods": [
+      "workloadcaptures.stopreplay"
+    ],
+    "target_paths": [
+      "resources.workloadcaptures.methods.stopreplay.flatpath",
+      "resources.workloadcaptures.methods.stopreplay.parameterorder[2]",
+      "resources.workloadcaptures.methods.stopreplay.parameters.workloadid.description",
+      "resources.workloadcaptures.methods.stopreplay.parameters.workloadid.location",
+      "resources.workloadcaptures.methods.stopreplay.parameters.workloadid.required",
+      "resources.workloadcaptures.methods.stopreplay.parameters.workloadid.type",
+      "resources.workloadcaptures.methods.stopreplay.path",
+      "schemas.stopworkloadreplaycontext.properties.replayinstance.description",
+      "schemas.stopworkloadreplaycontext.properties.replayinstance.type",
+      "schemas.stopworkloadreplaycontext.properties.workloadid.description",
+      "schemas.stopworkloadreplaycontext.properties.workloadid.readonly",
+      "schemas.stopworkloadreplaycontext.properties.workloadid.type"
+    ],
+    "generated_at": "2026-10-18T22:18:33.500Z"
+  },
+  {
     "id": "2026-10-17-sqladmin-v1",
     "date": "2026-10-17",
     "api": "sqladmin.v1",
