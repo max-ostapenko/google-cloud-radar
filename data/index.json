@@ -1,5 +1,34 @@
 [
   {
+    "id": "2026-10-20-androidpublisher-v3",
+    "date": "2026-10-20",
+    "api": "androidpublisher.v3",
+    "service": "Android Publisher",
+    "title": "In-App Product Subscriptions Deprecated",
+    "summary": "The `InAppProduct` resource in the Android Publisher API is deprecating subscription-related fields and the subscription `purchaseType`. Developers should now use the dedicated Subscriptions API for managing subscriptions.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 8,
+    "tags": [
+      "deprecation",
+      "subscriptions",
+      "android"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.inappproduct.properties.graceperiod.deprecated",
+      "schemas.inappproduct.properties.purchasetype.enumdeprecated[0]",
+      "schemas.inappproduct.properties.purchasetype.enumdeprecated[1]",
+      "schemas.inappproduct.properties.purchasetype.enumdeprecated[2]",
+      "schemas.inappproduct.properties.purchasetype.enumdescriptions[2]",
+      "schemas.inappproduct.properties.subscriptionperiod.deprecated",
+      "schemas.inappproduct.properties.subscriptiontaxesandcompliancesettings.deprecated",
+      "schemas.inappproduct.properties.trialperiod.deprecated",
+      "schemas.inappproductlisting.properties.benefits.deprecated"
+    ],
+    "generated_at": "2026-10-20T14:50:47.415Z"
+  },
+  {
     "id": "2026-10-18-sqladmin-v1beta4",
     "date": "2026-10-18",
     "api": "sqladmin.v1beta4",
