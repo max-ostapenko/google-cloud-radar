@@ -1,0 +1,32 @@
+{
+  "id": "2026-10-20-androidpublisher-v3",
+  "date": "2026-10-20",
+  "api": "androidpublisher.v3",
+  "service": "Android Publisher",
+  "title": "In-App Product Subscriptions Deprecated",
+  "summary": "The `InAppProduct` resource in the Android Publisher API is deprecating subscription-related fields and the subscription `purchaseType`. Developers should now use the dedicated Subscriptions API for managing subscriptions.",
+  "details": "Several fields within the `InAppProduct` schema, including `gracePeriod`, `subscriptionPeriod`, `subscriptionTaxesAndComplianceSettings`, and `trialPeriod`, are now marked as deprecated. Additionally, the `purchaseType` enum value that represented subscriptions is deprecated, with its description explicitly stating: \"Subscriptions are no longer supported in the InAppProducts API. Use the Subscriptions API instead.\" The `benefits` field in `InAppProductListing` is also deprecated. This signals a clear migration path for subscription management away from `InAppProduct` to the specialized Subscriptions API.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 8,
+  "tags": [
+    "deprecation",
+    "subscriptions",
+    "android"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.inappproduct.properties.graceperiod.deprecated",
+    "schemas.inappproduct.properties.purchasetype.enumdeprecated[0]",
+    "schemas.inappproduct.properties.purchasetype.enumdeprecated[1]",
+    "schemas.inappproduct.properties.purchasetype.enumdeprecated[2]",
+    "schemas.inappproduct.properties.purchasetype.enumdescriptions[2]",
+    "schemas.inappproduct.properties.subscriptionperiod.deprecated",
+    "schemas.inappproduct.properties.subscriptiontaxesandcompliancesettings.deprecated",
+    "schemas.inappproduct.properties.trialperiod.deprecated",
+    "schemas.inappproductlisting.properties.benefits.deprecated"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-20T14:50:47.415Z"
+}
