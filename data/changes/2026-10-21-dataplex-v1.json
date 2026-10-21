@@ -1,0 +1,24 @@
+{
+  "id": "2026-10-21-dataplex-v1",
+  "date": "2026-10-21",
+  "api": "dataplex.v1",
+  "service": "Dataplex",
+  "title": "Dataplex Data Docs Get Custom Instructions",
+  "summary": "Dataplex now allows developers to provide custom instructions when generating data documentation. This new optional field offers more control over the documentation process.",
+  "details": "The `GoogleCloudDataplexV1DataDocumentationSpec` schema has been extended with a new optional `customInstructions` field. This string field, with a maximum length of 2,048 characters, enables users to specify tailored guidance for how data documentation should be generated, potentially improving relevance and accuracy.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 5,
+  "tags": [
+    "documentation",
+    "metadata"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.googleclouddataplexv1datadocumentationspec.properties.custominstructions.description",
+    "schemas.googleclouddataplexv1datadocumentationspec.properties.custominstructions.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-21T09:54:26.019Z"
+}
