@@ -1,5 +1,35 @@
 [
   {
+    "id": "2026-10-21-looker-v1",
+    "date": "2026-10-21",
+    "api": "looker.v1",
+    "service": "Looker Core",
+    "title": "Breaking: Custom Domains & Instances Get Read-Only Fields; New Export Timestamp for ESA",
+    "summary": "The `CustomDomain.state` and `Instance.maintenanceSchedule` properties are now read-only, which is a breaking change for any automation modifying them. Additionally, `ExportMetadata` gains a new `exportTime` field to track Elite System Activity (ESA) BigQuery dataset migrations.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking-change",
+      "looker",
+      "custom-domains",
+      "instances",
+      "export",
+      "migration"
+    ],
+    "extracted_methods": [
+      "CustomDomain.state",
+      "Instance.maintenanceSchedule"
+    ],
+    "target_paths": [
+      "schemas.customdomain.properties.state.readonly",
+      "schemas.exportmetadata.properties.exporttime.description",
+      "schemas.exportmetadata.properties.exporttime.type",
+      "schemas.instance.properties.maintenanceschedule.readonly"
+    ],
+    "generated_at": "2026-10-21T15:02:58.124Z"
+  },
+  {
     "id": "2026-10-21-dataplex-v1",
     "date": "2026-10-21",
     "api": "dataplex.v1",
