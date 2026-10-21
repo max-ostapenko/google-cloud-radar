@@ -1,0 +1,33 @@
+{
+  "id": "2026-10-21-looker-v1",
+  "date": "2026-10-21",
+  "api": "looker.v1",
+  "service": "Looker Core",
+  "title": "Breaking: Custom Domains & Instances Get Read-Only Fields; New Export Timestamp for ESA",
+  "summary": "The `CustomDomain.state` and `Instance.maintenanceSchedule` properties are now read-only, which is a breaking change for any automation modifying them. Additionally, `ExportMetadata` gains a new `exportTime` field to track Elite System Activity (ESA) BigQuery dataset migrations.",
+  "details": "Developers, be aware of two breaking changes: the `state` property within the `CustomDomain` schema and the `maintenanceSchedule` property within the `Instance` schema have both been made read-only. Any existing code attempting to modify these fields will now fail and must be updated to reflect their immutable status. On the non-breaking front, the `ExportMetadata` schema now includes a new `exportTime` property. This field, typed as a string, provides the Unix epoch in microseconds when an export was created, specifically to aid in identifying cloned source Elite System Activity (ESA) BigQuery datasets for O2C direct dataset migrations. This enhances the migration capabilities previously introduced for ESA.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "looker",
+    "custom-domains",
+    "instances",
+    "export",
+    "migration"
+  ],
+  "extracted_methods": [
+    "CustomDomain.state",
+    "Instance.maintenanceSchedule"
+  ],
+  "target_paths": [
+    "schemas.customdomain.properties.state.readonly",
+    "schemas.exportmetadata.properties.exporttime.description",
+    "schemas.exportmetadata.properties.exporttime.type",
+    "schemas.instance.properties.maintenanceschedule.readonly"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-21T15:02:58.124Z"
+}
