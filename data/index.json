@@ -1,5 +1,26 @@
 [
   {
+    "id": "2026-10-21-dataplex-v1",
+    "date": "2026-10-21",
+    "api": "dataplex.v1",
+    "service": "Dataplex",
+    "title": "Dataplex Data Docs Get Custom Instructions",
+    "summary": "Dataplex now allows developers to provide custom instructions when generating data documentation. This new optional field offers more control over the documentation process.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 5,
+    "tags": [
+      "documentation",
+      "metadata"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.googleclouddataplexv1datadocumentationspec.properties.custominstructions.description",
+      "schemas.googleclouddataplexv1datadocumentationspec.properties.custominstructions.type"
+    ],
+    "generated_at": "2026-10-21T09:54:26.019Z"
+  },
+  {
     "id": "2026-10-20-androidpublisher-v3",
     "date": "2026-10-20",
     "api": "androidpublisher.v3",
