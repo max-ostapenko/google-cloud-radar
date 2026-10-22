@@ -1,0 +1,27 @@
+{
+  "id": "2026-10-22-datalineage-v1",
+  "date": "2026-10-22",
+  "api": "datalineage.v1",
+  "service": "Data Lineage",
+  "title": "Data Lineage `runs.list` Method Gains New Scopes",
+  "summary": "The `projects.locations.processes.runs.list` method in the Data Lineage API now supports dedicated `datalineage.read-write` and `datalineage.readonly` OAuth scopes. This provides more granular permission control for listing lineage runs.",
+  "details": "Developers can now use the `https://www.googleapis.com/auth/datalineage.read-write` and `https://www.googleapis.com/auth/datalineage.readonly` OAuth scopes when calling the `projects.locations.processes.runs.list` method. This enhancement allows for more precise access management, ensuring that applications only request the necessary permissions to list lineage run data.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "security",
+    "iam",
+    "permissions"
+  ],
+  "extracted_methods": [
+    "projects.locations.processes.runs.list"
+  ],
+  "target_paths": [
+    "resources.projects.resources.locations.resources.processes.resources.runs.methods.list.scopes[1]",
+    "resources.projects.resources.locations.resources.processes.resources.runs.methods.list.scopes[2]"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-22T19:08:39.464Z"
+}
