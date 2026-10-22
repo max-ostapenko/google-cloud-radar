@@ -1,0 +1,43 @@
+{
+  "id": "2026-10-22-alloydb-v1alpha",
+  "date": "2026-10-22",
+  "api": "alloydb.v1alpha",
+  "service": "AlloyDB",
+  "title": "AlloyDB: CA Certs & Public DNS Info, Breaking Changes",
+  "summary": "AlloyDB now provides crucial CA certificate information for secure PostgreSQL connections and public DNS names for instances. A new `publicDnsEnabled` option allows configuring public DNS. Be aware of breaking changes as `rootCaCert`, `certificateAuthorityInfo`, `networkInfo`, and `publicDnsName` are now read-only.",
+  "details": "AlloyDB introduces new output-only fields to enhance connectivity and security. The `Cluster` resource now includes `certificateAuthorityInfo`, which exposes a new `CertificateAuthorityInfo` schema containing the `rootCaCert`. This PEM-encoded root CA certificate is crucial for establishing secure PostgreSQL client connections using `sslmode=verify-full` or `sslmode=verify-ca`. Similarly, the `Instance` resource now provides `networkInfo`, which includes a new `InstanceNetworkInfo` schema with the `publicDnsName` for public connectivity. Additionally, you can now configure public DNS for instances via the new `publicDnsEnabled` boolean field within `InstanceNetworkConfig`.\n\n**Breaking Change Alert:** Several properties have been transitioned to read-only status. Specifically, attempts to set `rootCaCert` within `CertificateAuthorityInfo`, the entire `certificateAuthorityInfo` object within `Cluster`, the `networkInfo` object within `Instance`, and `publicDnsName` within `InstanceNetworkInfo` will now result in errors. These fields are now strictly output-only, providing information but not allowing configuration. Developers must update their API calls to remove any attempts to modify these properties.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "networking",
+    "security",
+    "breaking-change"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.certificateauthorityinfo.description",
+    "schemas.certificateauthorityinfo.id",
+    "schemas.certificateauthorityinfo.properties.rootcacert.description",
+    "schemas.certificateauthorityinfo.properties.rootcacert.readonly",
+    "schemas.certificateauthorityinfo.properties.rootcacert.type",
+    "schemas.certificateauthorityinfo.type",
+    "schemas.cluster.properties.certificateauthorityinfo.$ref",
+    "schemas.cluster.properties.certificateauthorityinfo.description",
+    "schemas.cluster.properties.certificateauthorityinfo.readonly",
+    "schemas.instance.properties.networkinfo.$ref",
+    "schemas.instance.properties.networkinfo.description",
+    "schemas.instance.properties.networkinfo.readonly",
+    "schemas.instancenetworkconfig.properties.publicdnsenabled.description",
+    "schemas.instancenetworkconfig.properties.publicdnsenabled.type",
+    "schemas.instancenetworkinfo.description",
+    "schemas.instancenetworkinfo.id",
+    "schemas.instancenetworkinfo.properties.publicdnsname.description",
+    "schemas.instancenetworkinfo.properties.publicdnsname.readonly",
+    "schemas.instancenetworkinfo.properties.publicdnsname.type",
+    "schemas.instancenetworkinfo.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-22T23:05:33.829Z"
+}

@@ -1,0 +1,43 @@
+{
+  "id": "2026-10-22-alloydb-v1beta",
+  "date": "2026-10-22",
+  "api": "alloydb.v1beta",
+  "service": "AlloyDB",
+  "title": "AlloyDB Exposes CA & Network Info (Read-Only)",
+  "summary": "AlloyDB v1beta now exposes cluster Certificate Authority (CA) details and instance network information as read-only properties. Developers should note that several new fields, including CA certificates and instance network details, are now explicitly output-only, which is a breaking change if you were attempting to set them.",
+  "details": "This update introduces new read-only fields for enhanced visibility into your AlloyDB clusters and instances. The `Cluster` schema now includes `certificateAuthorityInfo`, which contains the `rootCaCert` for client authentication. Similarly, the `Instance` schema gains `networkInfo`, providing output-only details like `publicDnsName` for public connectivity. Additionally, `InstanceNetworkConfig` now supports a configurable `publicDnsEnabled` boolean. Be aware that `rootCaCert` within `CertificateAuthorityInfo`, `certificateAuthorityInfo` on `Cluster`, `networkInfo` on `Instance`, and `publicDnsName` within `InstanceNetworkInfo` have all been explicitly marked as read-only. Any existing code attempting to write to these properties will now encounter errors and must be updated.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "networking",
+    "security",
+    "breaking-change"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.certificateauthorityinfo.description",
+    "schemas.certificateauthorityinfo.id",
+    "schemas.certificateauthorityinfo.properties.rootcacert.description",
+    "schemas.certificateauthorityinfo.properties.rootcacert.readonly",
+    "schemas.certificateauthorityinfo.properties.rootcacert.type",
+    "schemas.certificateauthorityinfo.type",
+    "schemas.cluster.properties.certificateauthorityinfo.$ref",
+    "schemas.cluster.properties.certificateauthorityinfo.description",
+    "schemas.cluster.properties.certificateauthorityinfo.readonly",
+    "schemas.instance.properties.networkinfo.$ref",
+    "schemas.instance.properties.networkinfo.description",
+    "schemas.instance.properties.networkinfo.readonly",
+    "schemas.instancenetworkconfig.properties.publicdnsenabled.description",
+    "schemas.instancenetworkconfig.properties.publicdnsenabled.type",
+    "schemas.instancenetworkinfo.description",
+    "schemas.instancenetworkinfo.id",
+    "schemas.instancenetworkinfo.properties.publicdnsname.description",
+    "schemas.instancenetworkinfo.properties.publicdnsname.readonly",
+    "schemas.instancenetworkinfo.properties.publicdnsname.type",
+    "schemas.instancenetworkinfo.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-22T23:05:33.833Z"
+}
