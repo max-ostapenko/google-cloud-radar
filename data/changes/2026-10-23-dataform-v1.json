@@ -1,0 +1,40 @@
+{
+  "id": "2026-10-23-dataform-v1",
+  "date": "2026-10-23",
+  "api": "dataform.v1",
+  "service": "Dataform",
+  "title": "New Async Compilation Method in Dataform",
+  "summary": "Dataform now offers a new asynchronous method, `createLongRunning`, for creating compilation results, returning an `Operation` for tracking. This method requires a `parent` parameter.",
+  "details": "A new method, `projects.locations.repositories.compilationResults.createLongRunning`, has been added to the Dataform API. This method allows for the asynchronous creation of `CompilationResult` resources, returning a long-running `Operation` that developers can poll for completion. The `parent` parameter, specifying the repository, is strictly required when calling this new method. Developers integrating with this new asynchronous compilation feature must ensure the `parent` parameter is always provided.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 7,
+  "tags": [
+    "new feature",
+    "asynchronous",
+    "compilation"
+  ],
+  "extracted_methods": [
+    "projects.locations.repositories.compilationresults.createlongrunning"
+  ],
+  "target_paths": [
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.description",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.flatpath",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.httpmethod",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.id",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.parameterorder[0]",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.parameters.parent.description",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.parameters.parent.location",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.parameters.parent.pattern",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.parameters.parent.required",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.parameters.parent.type",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.path",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.request.$ref",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.response.$ref",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.scopes[0]",
+    "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.scopes[1]"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-23T18:58:11.060Z"
+}
