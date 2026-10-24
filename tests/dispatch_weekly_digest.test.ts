@@ -4,6 +4,7 @@ import path from 'node:path';
 import { describe, it, expect, vi } from 'vitest';
 import {
   renderWeeklyDigestHtml,
+  renderWeeklyDigestText,
   filterChangesForSubscriber,
   loadRecentChanges,
 } from '../scripts/dispatch_weekly_digest.ts';
@@ -49,6 +50,18 @@ describe('dispatch_weekly_digest', () => {
       'https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1'
     );
     expect(html).toContain('https://google-cloud-radar.com/?action=alerts');
+  });
+
+  it('renders weekly digest plaintext fallback correctly (b60ae957)', () => {
+    const text = renderWeeklyDigestText(sampleChanges, 'Week of August 31, 2026');
+    expect(text).toContain('GOOGLE CLOUD RADAR — WEEKLY INTELLIGENCE DIGEST');
+    expect(text).toContain('Week of August 31, 2026');
+    expect(text).toContain('⚠️ BREAKING CHANGES:');
+    expect(text).toContain('* [Vertex AI] Vertex AI: Breaking Changes & Agent IAM Controls');
+    expect(text).toContain('RECENT API ADDITIONS & EVOLUTIONS:');
+    expect(text).toContain('* [BigQuery] BigQuery adds fine-grained reservation parameters');
+    expect(text).toContain('https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1');
+    expect(text).toContain('https://google-cloud-radar.com/?action=alerts');
   });
 
   it('filters changes for subscriber based on service preferences', () => {

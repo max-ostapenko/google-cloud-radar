@@ -156,13 +156,17 @@ describe('dispatch_email_alerts', () => {
     });
   });
 
-  it('sends email successfully via Resend', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify({ id: 'msg_12345' }), {
+  it('sends email successfully via Resend with RFC 8058 headers', async () => {
+    let capturedBody: any = null;
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementationOnce(async (_url, init) => {
+      if (init?.body) {
+        capturedBody = JSON.parse(init.body as string);
+      }
+      return new Response(JSON.stringify({ id: 'msg_12345' }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
-      })
-    );
+      });
+    });
 
     const success = await sendResendEmail({
       apiKey: 're_test_key',
@@ -170,18 +174,24 @@ describe('dispatch_email_alerts', () => {
       toEmail: 'test@example.com',
       subject: 'Test Subject',
       htmlContent: '<p>Test</p>',
+      textContent: 'Test',
     });
 
     expect(success).toBe(true);
     expect(fetchSpy).toHaveBeenCalledOnce();
+    expect(capturedBody).toBeDefined();
+    expect(capturedBody.headers).toBeDefined();
+    expect(capturedBody.headers['List-Unsubscribe']).toContain('https://google-cloud-radar.com/?action=alerts&unsubscribe=true');
+    expect(capturedBody.headers['List-Unsubscribe-Post']).toBe('List-Unsubscribe=One-Click');
+    expect(capturedBody.text).toBe('Test');
     fetchSpy.mockRestore();
   });
 
   describe('formatAlertSubject', () => {
-    it('formats subject for single change', () => {
+    it('formats subject for single change without duplicate prefix (82f62c05)', () => {
       const subject = formatAlertSubject([sampleChange]);
       expect(subject).toBe(
-        '⚠️ [Breaking Alert] Vertex AI: Vertex AI: Breaking Changes & Agent IAM Controls'
+        '⚠️ [Breaking Alert] Vertex AI: Breaking Changes & Agent IAM Controls'
       );
     });
 

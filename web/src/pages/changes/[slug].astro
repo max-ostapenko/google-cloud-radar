@@ -30,12 +30,22 @@ const formattedDate = new Date(entry.date + "T00:00:00Z").toLocaleDateString(
 );
 
 // JSON-LD TechArticle schema for rich SEO
+const permalinkUrl = `https://google-cloud-radar.com/changes/${entry.slug}`;
+const ogImageUrl = `https://google-cloud-radar.com/changes/${entry.slug}/og.png`;
+
 const schemaData = {
   "@context": "https://schema.org",
   "@type": "TechArticle",
   headline: entry.title,
   description: entry.summary,
-  datePublished: entry.date,
+  datePublished: `${entry.date}T00:00:00Z`,
+  dateModified: `${entry.date}T00:00:00Z`,
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": permalinkUrl,
+  },
+  url: permalinkUrl,
+  image: ogImageUrl,
   author: {
     "@type": "Organization",
     name: "Google Cloud Radar",
@@ -45,6 +55,10 @@ const schemaData = {
     "@type": "Organization",
     name: "Google Cloud Radar",
     url: "https://google-cloud-radar.com",
+    logo: {
+      "@type": "ImageObject",
+      url: "https://google-cloud-radar.com/favicon.svg",
+    },
   },
   keywords: [
     entry.service,

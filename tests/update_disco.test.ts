@@ -317,5 +317,19 @@ describe('Update Disco', () => {
       expect(sorted.enum).toEqual(['B', 'A', 'C']);
       expect(sorted.enumDescriptions).toEqual(['desc B', 'desc A', 'desc C']);
     });
+
+    it('sorts arrays of objects deterministically even when keys have different insertion orders (a24525a7)', () => {
+      // Objects lacking standard name/id/location/endpointUrl
+      const item1 = { z_prop: 'val1', a_prop: { nested_b: 2, nested_a: 1 } };
+      const item2 = { a_prop: { nested_a: 1, nested_b: 2 }, z_prop: 'val1' };
+
+      const inputA = { items: [item1, { other: 'first' }] };
+      const inputB = { items: [{ other: 'first' }, item2] };
+
+      const sortedA = update_disco.sortKeys(inputA);
+      const sortedB = update_disco.sortKeys(inputB);
+
+      expect(JSON.stringify(sortedA)).toBe(JSON.stringify(sortedB));
+    });
   });
 });

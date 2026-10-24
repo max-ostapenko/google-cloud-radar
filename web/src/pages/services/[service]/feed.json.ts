@@ -51,7 +51,7 @@ export const GET: APIRoute = async ({ props }) => {
 
   return new Response(JSON.stringify(responsePayload, null, 2), {
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/feed+json; charset=utf-8',
       'Cache-Control': 'public, max-age=300, s-maxage=600',
       'Access-Control-Allow-Origin': '*',
     },

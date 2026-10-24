@@ -45,6 +45,14 @@ const defaultSchema = {
     name: "Google Cloud Radar",
     url: "https://github.com/max-ostapenko/google-cloud-radar",
   },
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: "https://google-cloud-radar.com/?q={search_term_string}",
+    },
+    "query-input": "required name=search_term_string",
+  },
 };
 
 const jsonLd = schemaData
@@ -62,6 +70,39 @@ const jsonLd = schemaData
     <link rel="canonical" href={canonicalURL} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate icon" href="/favicon.ico" />
+
+    <!-- Canonical Host Enforcement / Preview & Firebase default domain protection -->
+    <script is:inline>
+      if (typeof window !== 'undefined' && (window.location.hostname.endsWith('.web.app') || window.location.hostname.endsWith('.firebaseapp.com'))) {
+        var metaRobots = document.createElement('meta');
+        metaRobots.name = 'robots';
+        metaRobots.content = 'noindex, nofollow';
+        document.head.appendChild(metaRobots);
+        if (!window.location.hostname.includes('--')) {
+          window.location.replace('https://google-cloud-radar.com' + window.location.pathname + window.location.search + window.location.hash);
+        }
+      }
+    </script>
+
+    <!-- Feed Autodiscovery -->
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={activeServiceSlug ? `${title} — RSS Feed` : "Google Cloud Radar — RSS 2.0 Feed"}
+      href={activeServiceSlug ? `/services/${activeServiceSlug}/rss.xml` : "/rss.xml"}
+    />
+    <link
+      rel="alternate"
+      type="application/atom+xml"
+      title={activeServiceSlug ? `${title} — Atom Feed` : "Google Cloud Radar — Atom 1.0 Feed"}
+      href={activeServiceSlug ? `/services/${activeServiceSlug}/atom.xml` : "/atom.xml"}
+    />
+    <link
+      rel="alternate"
+      type="application/feed+json"
+      title={activeServiceSlug ? `${title} — JSON Feed` : "Google Cloud Radar — JSON Feed 1.1"}
+      href={activeServiceSlug ? `/services/${activeServiceSlug}/feed.json` : "/api/feed.json"}
+    />
 
     <!-- Google Fonts Preconnect & Async Load -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -103,13 +144,6 @@ const jsonLd = schemaData
     <meta
       name="twitter:image"
       content={new URL(ogImage, canonicalURL.origin)}
-    />
-
-    <!-- Favicon / Icon -->
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z' fill='%234285F4'/></svg>"
     />
 
     <!-- Structured Data -->

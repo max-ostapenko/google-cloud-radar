@@ -301,6 +301,67 @@ export function renderWeeklyDigestHtml(changes: any[], weekLabel?: string): stri
 `;
 }
 
+export function renderWeeklyDigestText(changes: any[], weekLabel?: string): string {
+  if (!weekLabel) {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    });
+    weekLabel = `Week of ${formattedDate}`;
+  }
+
+  const breakingChanges = changes.filter((c) => c.breaking);
+  const nonBreakingChanges = changes.filter((c) => !c.breaking);
+
+  const lines = [
+    `GOOGLE CLOUD RADAR — WEEKLY INTELLIGENCE DIGEST`,
+    `===============================================`,
+    weekLabel,
+    '',
+    `Summary: ${changes.length} API changes (${breakingChanges.length} breaking, ${nonBreakingChanges.length} non-breaking)`,
+    '',
+  ];
+
+  if (breakingChanges.length > 0) {
+    lines.push('⚠️ BREAKING CHANGES:');
+    lines.push('-------------------');
+    for (const c of breakingChanges.slice(0, 10)) {
+      const svcName = c.service || c.service_name || 'Google Cloud';
+      const title = c.title || 'Breaking API Change';
+      const slug = c.slug || c.id || '';
+      lines.push(`* [${svcName}] ${title}`);
+      if (c.summary) lines.push(`  ${c.summary}`);
+      if (Array.isArray(c.breaking_reasons) && c.breaking_reasons.length > 0) {
+        lines.push(`  Reason: ${c.breaking_reasons[0]}`);
+      }
+      lines.push(`  Details: https://google-cloud-radar.com/changes/${slug}`);
+      lines.push('');
+    }
+  }
+
+  if (nonBreakingChanges.length > 0) {
+    lines.push('RECENT API ADDITIONS & EVOLUTIONS:');
+    lines.push('---------------------------------');
+    for (const c of nonBreakingChanges.slice(0, 10)) {
+      const svcName = c.service || c.service_name || 'Google Cloud';
+      const title = c.title || 'API Update';
+      const slug = c.slug || c.id || '';
+      lines.push(`* [${svcName}] ${title}`);
+      if (c.summary) lines.push(`  ${c.summary}`);
+      lines.push(`  Details: https://google-cloud-radar.com/changes/${slug}`);
+      lines.push('');
+    }
+  }
+
+  lines.push('-----------------------------------------------');
+  lines.push('Manage alerts & preferences: https://google-cloud-radar.com/?action=alerts');
+  lines.push('Unsubscribe: https://google-cloud-radar.com/?action=alerts&unsubscribe=true');
+
+  return lines.join('\n');
+}
+
 export async function fetchFirestoreWeeklySubscribers(
   projectId: string = DEFAULT_GCP_PROJECT,
   databaseId: string = DEFAULT_FIRESTORE_DB
@@ -438,12 +499,14 @@ export async function runDispatchWeeklyDigest(options?: {
     }
 
     const isDev = isDevEnvironment();
+    const textBody = renderWeeklyDigestText(changes, weekLabel);
     const success = await sendResendEmail({
       apiKey: apiKey!,
       fromEmail,
       toEmail: testEmail,
       subject,
       htmlContent: htmlBody,
+      textContent: textBody,
       allowDevFallback: isDev || Boolean(testEmail),
     });
 
@@ -488,12 +551,14 @@ export async function runDispatchWeeklyDigest(options?: {
     }
 
     const htmlBody = renderWeeklyDigestHtml(subChanges, weekLabel);
+    const textBody = renderWeeklyDigestText(subChanges, weekLabel);
     const sent = await sendResendEmail({
       apiKey: apiKey!,
       fromEmail,
       toEmail: email,
       subject,
       htmlContent: htmlBody,
+      textContent: textBody,
       allowDevFallback: isDev,
     });
 

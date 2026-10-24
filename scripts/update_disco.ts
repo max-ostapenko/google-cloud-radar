@@ -45,6 +45,17 @@ export const PRESERVE_ARRAY_ORDER = new Set([
   'enumDeprecated',
 ]);
 
+export function deterministicStringify(val: any): string {
+  if (val === null || typeof val !== 'object') {
+    return JSON.stringify(val);
+  }
+  if (Array.isArray(val)) {
+    return '[' + val.map(deterministicStringify).join(',') + ']';
+  }
+  const keys = Object.keys(val).sort();
+  return '{' + keys.map((k) => JSON.stringify(k) + ':' + deterministicStringify(val[k])).join(',') + '}';
+}
+
 export function sortKeys(value: any, keyName?: string): any {
   if (Array.isArray(value)) {
     const mapped = value.map((item) => sortKeys(item));
@@ -58,8 +69,8 @@ export function sortKeys(value: any, keyName?: string): any {
     // Sort arrays of objects deterministically by identifier or serialized content
     if (mapped.every((x) => x !== null && typeof x === 'object' && !Array.isArray(x))) {
       return [...mapped].sort((a, b) => {
-        const keyA = a.name || a.id || a.location || a.endpointUrl || JSON.stringify(a);
-        const keyB = b.name || b.id || b.location || b.endpointUrl || JSON.stringify(b);
+        const keyA = a.name || a.id || a.location || a.endpointUrl || deterministicStringify(a);
+        const keyB = b.name || b.id || b.location || b.endpointUrl || deterministicStringify(b);
         return String(keyA).localeCompare(String(keyB));
       });
     }

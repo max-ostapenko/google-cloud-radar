@@ -37,6 +37,7 @@ export const GET: APIRoute = async () => {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'public, max-age=300, s-maxage=600',
+      'Access-Control-Allow-Origin': '*',
     },
   });
 };

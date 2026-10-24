@@ -82,11 +82,18 @@ export async function sendResendEmail(options: SendEmailOptions): Promise<boolea
     'User-Agent': 'Google-Cloud-Radar-Dispatcher/1.0',
   };
 
+  const unsubscribeUrl = `https://google-cloud-radar.com/?action=alerts&unsubscribe=true&email=${encodeURIComponent(toEmail)}`;
+  const unsubscribeMailto = 'mailto:alerts@google-cloud-radar.com?subject=unsubscribe';
+
   const payload: Record<string, any> = {
     from: fromEmail,
     to: [toEmail],
     subject,
     html: htmlContent,
+    headers: {
+      'List-Unsubscribe': `<${unsubscribeUrl}>, <${unsubscribeMailto}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    },
   };
   if (textContent) {
     payload.text = textContent;
@@ -135,8 +142,25 @@ export function formatAlertSubject(changes: Array<Record<string, any>>): string 
   }
   if (changes.length === 1) {
     const c = changes[0];
-    const serviceName = c.service || c.service_name || 'Google Cloud';
-    return `⚠️ [Breaking Alert] ${serviceName}: ${c.title || 'Breaking Change Detected'}`;
+    const serviceName = String(c.service || c.service_name || 'Google Cloud').trim();
+    let title = String(c.title || 'Breaking Change Detected').trim();
+
+    // Avoid duplicating service prefixes (e.g. "Vertex AI: Vertex AI: ...") (82f62c05)
+    const escapedService = serviceName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const servicePrefixRegex = new RegExp(`^${escapedService}\\s*[:\\-–—]\\s*`, 'i');
+    if (servicePrefixRegex.test(title)) {
+      title = title.replace(servicePrefixRegex, '');
+    } else {
+      const shortName = serviceName.replace(/^Google\s+|^Cloud\s+/i, '').trim();
+      if (shortName.length > 2) {
+        const escapedShort = shortName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const shortPrefixRegex = new RegExp(`^${escapedShort}\\s*[:\\-–—]\\s*`, 'i');
+        if (shortPrefixRegex.test(title)) {
+          title = title.replace(shortPrefixRegex, '');
+        }
+      }
+    }
+    return `⚠️ [Breaking Alert] ${serviceName}: ${title}`;
   }
   const services = Array.from(
     new Set(changes.map((c) => c.service || c.service_name || 'Google Cloud'))
@@ -303,6 +327,48 @@ export function renderBreakingChangesEmailHtml(changes: Array<Record<string, any
 </body>
 </html>
 `;
+}
+
+export function renderBreakingChangesEmailText(changes: Array<Record<string, any>>): string {
+  if (changes.length === 0) return '';
+  const isSingle = changes.length === 1;
+  const lines: string[] = [
+    isSingle ? '⚠️ GOOGLE CLOUD RADAR BREAKING CHANGE ALERT' : `⚠️ GOOGLE CLOUD RADAR — ${changes.length} BREAKING CHANGES DETECTED`,
+    '========================================================================',
+    '',
+  ];
+
+  for (const c of changes) {
+    const rawService = c.service || c.service_name || 'Google Cloud Service';
+    const rawTitle = c.title || `${rawService} Breaking Change Detected`;
+    const rawSummary = c.summary || '';
+    const rawApi = c.api || '';
+    const rawDate = c.date || new Date().toISOString().slice(0, 10);
+    const rawSlug = String(c.slug || c.id || '');
+    const diffUrl = `https://google-cloud-radar.com/changes/${encodeURIComponent(rawSlug)}`;
+    const extractedMethods: string[] = Array.isArray(c.extracted_methods) ? c.extracted_methods : [];
+
+    lines.push(`* [${rawService}] ${rawTitle}`);
+    lines.push(`  API: ${rawApi} · Date: ${rawDate}`);
+    if (rawSummary) {
+      lines.push(`  Summary: ${rawSummary}`);
+    }
+    if (extractedMethods.length > 0) {
+      lines.push(`  Impacted Methods: ${extractedMethods.slice(0, 8).join(', ')}`);
+    }
+    lines.push(`  View Diff: ${diffUrl}`);
+    lines.push('');
+  }
+
+  lines.push('------------------------------------------------------------------------');
+  lines.push('Manage alerts: https://google-cloud-radar.com/?action=alerts');
+  lines.push('Unsubscribe: https://google-cloud-radar.com/?action=alerts&unsubscribe=true');
+
+  return lines.join('\n');
+}
+
+export function renderBreakingEmailText(change: Record<string, any>): string {
+  return renderBreakingChangesEmailText([change]);
 }
 
 export function renderBreakingEmailHtml(change: Record<string, any>): string {
@@ -506,12 +572,14 @@ export async function runDispatchEmailAlerts(options?: {
     }
 
     const isDev = isDevEnvironment();
+    const textBody = renderBreakingChangesEmailText(targetChanges);
     const success = await sendResendEmail({
       apiKey: apiKey!,
       fromEmail,
       toEmail: testEmail,
       subject,
       htmlContent: htmlBody,
+      textContent: textBody,
       allowDevFallback: isDev || Boolean(testEmail),
     });
 
@@ -572,12 +640,14 @@ export async function runDispatchEmailAlerts(options?: {
       continue;
     }
 
+    const textBody = renderBreakingChangesEmailText(eligibleChanges);
     const sent = await sendResendEmail({
       apiKey: apiKey!,
       fromEmail,
       toEmail: email,
       subject,
       htmlContent: htmlBody,
+      textContent: textBody,
       allowDevFallback: isDev,
     });
 

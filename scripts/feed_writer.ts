@@ -102,6 +102,30 @@ export function getRecentFeedEntries(
   return [existingTodayContent, recentHistory];
 }
 
+export function isSameInsight(existing: Record<string, any>, incoming: Record<string, any>): boolean {
+  if (!existing || Object.keys(existing).length === 0) return true;
+  if (existing.id && incoming.id && existing.id === incoming.id) return true;
+  if (existing.title && incoming.title && existing.title.trim().toLowerCase() === incoming.title.trim().toLowerCase()) {
+    return true;
+  }
+  const existingMethods = new Set((existing.extracted_methods || []).map((m: string) => String(m).toLowerCase()));
+  const incomingMethods = (incoming.extracted_methods || []).map((m: string) => String(m).toLowerCase());
+  if (existingMethods.size > 0 && incomingMethods.some((m: string) => existingMethods.has(m))) {
+    return true;
+  }
+  const existingPaths = new Set((existing.target_paths || []).map((p: string) => String(p).toLowerCase()));
+  const incomingPaths = (incoming.target_paths || []).map((p: string) => String(p).toLowerCase());
+  if (existingPaths.size > 0 && incomingPaths.some((p: string) => existingPaths.has(p))) {
+    return true;
+  }
+  if (existingMethods.size === 0 && incomingMethods.length === 0 && existingPaths.size === 0 && incomingPaths.length === 0) {
+    if (existing.title === incoming.title || existing.summary === incoming.summary) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function writeInsight(
   insight: Record<string, any>,
   insightDate?: string,
@@ -125,9 +149,6 @@ export function writeInsight(
   fs.mkdirSync(changesDir, { recursive: true });
 
   const baseSlug = makeSlug(api, resolvedDate);
-  const filePath = path.join(changesDir, `${baseSlug}.json`);
-  const finalSlug = baseSlug;
-
   const apiId = api ? api.split('.')[0].toLowerCase() : '';
   const canonicalMeta = findServiceMeta(apiId) || findServiceMeta(insight.service_name || insight.service || '');
   const serviceName = canonicalMeta?.name || insight.service_name || insight.service || 'Google Cloud';
@@ -148,6 +169,40 @@ export function writeInsight(
   }
 
   const targetPaths = insight.target_paths || insight.extracted_paths || [];
+
+  let finalSlug = insight.id || insight.slug || baseSlug;
+  let filePath = path.join(changesDir, `${finalSlug}.json`);
+
+  // Detect whether this is an update to an existing record or a distinct change on the same date (793bacc5)
+  if (!insight.id && !insight.slug && fs.existsSync(filePath)) {
+    let existingDoc: Record<string, any> = {};
+    try {
+      existingDoc = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    } catch {}
+
+    const isSame = isSameInsight(existingDoc, {
+      id: insight.id,
+      title,
+      summary,
+      extracted_methods: extractedMethods,
+      target_paths: targetPaths,
+    });
+
+    if (!isSame) {
+      let suffix = 2;
+      while (fs.existsSync(path.join(changesDir, `${baseSlug}-${suffix}.json`))) {
+        try {
+          const suffixedDoc = JSON.parse(fs.readFileSync(path.join(changesDir, `${baseSlug}-${suffix}.json`), 'utf-8'));
+          if (isSameInsight(suffixedDoc, { id: insight.id, title, summary, extracted_methods: extractedMethods, target_paths: targetPaths })) {
+            break;
+          }
+        } catch {}
+        suffix++;
+      }
+      finalSlug = `${baseSlug}-${suffix}`;
+      filePath = path.join(changesDir, `${finalSlug}.json`);
+    }
+  }
 
   const isUpdate = fs.existsSync(filePath);
   let existing: Record<string, any> = {};
