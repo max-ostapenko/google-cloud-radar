@@ -23,11 +23,58 @@ const count60d = entries.filter((e) => e.date >= min60d).length;
 
 const min90d = new Date(firstDate.getTime() - 90 * 86400000).toISOString().slice(0, 10);
 const count90d = entries.filter((e) => e.date >= min90d).length;
+
+// Structured Data: WebSite with SearchAction and DataFeed for real-time change stream
+const schemaData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://google-cloud-radar.com/#website",
+      name: "Google Cloud Radar",
+      url: "https://google-cloud-radar.com",
+      description: "Live pre-release intelligence for Google Cloud and Google APIs. Track silent method additions, schema changes, and breaking changes before official documentation catches up.",
+      publisher: {
+        "@type": "Organization",
+        name: "Google Cloud Radar",
+        url: "https://github.com/max-ostapenko/google-cloud-radar",
+      },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: "https://google-cloud-radar.com/?q={search_term_string}",
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "DataFeed",
+      "@id": "https://google-cloud-radar.com/#datafeed",
+      name: "Google Cloud Radar Live API Feed",
+      description: "Continuous real-time stream of Google Cloud API schema diffs and breaking changes.",
+      url: "https://google-cloud-radar.com",
+      dataFeedElement: entries.slice(0, 30).map((entry) => ({
+        "@type": "DataFeedItem",
+        dateModified: `${entry.date}T00:00:00Z`,
+        item: {
+          "@type": "TechArticle",
+          headline: entry.title,
+          url: `https://google-cloud-radar.com/changes/${entry.slug}`,
+          datePublished: `${entry.date}T00:00:00Z`,
+          dateModified: `${entry.date}T00:00:00Z`,
+          description: entry.summary,
+        },
+      })),
+    },
+  ],
+};
 ---
 
 <BaseLayout
   title="Google Cloud Radar — Real-Time Google API & Breaking Change Tracker"
   description="Live pre-release intelligence for Google Cloud and Google APIs. Track silent method additions, schema changes, and breaking changes before official documentation catches up."
+  schemaData={schemaData}
 >
   <div class="feed-header">
     <Breadcrumbs items={[{ label: 'Radar Feed' }]} />

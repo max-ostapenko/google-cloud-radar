@@ -97,6 +97,36 @@ describe('Feed Writer', () => {
     expect(index[0].interesting_score).toBe(7);
   });
 
+  it('write_insight creates unique slugs for distinct API updates on the same date (793bacc5)', () => {
+    const insight1 = makeInsight('bigquery.v2', 6, false, {
+      title: 'BigQuery: Added Jobs Flag',
+      extracted_methods: ['jobs.insert'],
+      target_paths: ['schemas.Job.properties.flag'],
+    });
+    const insight2 = makeInsight('bigquery.v2', 8, true, {
+      title: 'BigQuery: Tables API Deprecation',
+      extracted_methods: ['tables.delete'],
+      target_paths: ['methods.tables.delete'],
+    });
+
+    const slug1 = feed_writer.writeInsight(insight1, '2026-04-17', TMP_DATA_DIR);
+    const slug2 = feed_writer.writeInsight(insight2, '2026-04-17', TMP_DATA_DIR);
+
+    expect(slug1).toBe('2026-04-17-bigquery-v2');
+    expect(slug2).toBe('2026-04-17-bigquery-v2-2');
+
+    const path1 = path.join(TMP_DATA_DIR, 'changes/2026-04-17-bigquery-v2.json');
+    const path2 = path.join(TMP_DATA_DIR, 'changes/2026-04-17-bigquery-v2-2.json');
+    expect(fs.existsSync(path1)).toBe(true);
+    expect(fs.existsSync(path2)).toBe(true);
+
+    const indexPath = path.join(TMP_DATA_DIR, 'index.json');
+    const index = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
+    expect(index.length).toBe(2);
+    expect(index.map((e: any) => e.id)).toContain('2026-04-17-bigquery-v2');
+    expect(index.map((e: any) => e.id)).toContain('2026-04-17-bigquery-v2-2');
+  });
+
   it('write_insight preserves release correlation status and lead time on update (2911bb03)', () => {
     feed_writer.writeInsight(makeInsight(), '2026-04-17', TMP_DATA_DIR);
     const jsonPath = path.join(TMP_DATA_DIR, 'changes/2026-04-17-bigquery-v2.json');

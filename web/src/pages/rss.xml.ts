@@ -20,6 +20,9 @@ export async function GET(context: APIContext) {
     title: 'Google Cloud Radar — Real-Time Google API & Cloud Feed',
     description: 'Automated pre-release intelligence for Google APIs and Cloud services. Live API changes and breaking changes tracked from the Google Discovery Service.',
     site: siteUrl,
+    xmlns: {
+      atom: 'http://www.w3.org/2005/Atom',
+    },
     items: entries.map((entry) => ({
       title: `${entry.breaking ? '⚠️ [BREAKING] ' : ''}${entry.title}`,
       pubDate: new Date(entry.date),
@@ -34,6 +37,6 @@ export async function GET(context: APIContext) {
         <interesting_score>${escapeXml(entry.interesting_score)}</interesting_score>
       `,
     })),
-    customData: `<language>en-us</language>`,
+    customData: `<language>en-us</language><atom:link href="${siteUrl}/rss.xml" rel="self" type="application/rss+xml" />`,
   });
 }

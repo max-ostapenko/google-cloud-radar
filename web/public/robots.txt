@@ -1,4 +1,25 @@
+# Default Crawlers
 User-agent: *
 Allow: /
 
+# Dedicated AI Search & Agent Directives
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# Sitemaps & Context Pointers
 Sitemap: https://google-cloud-radar.com/sitemap-index.xml
+
+# LLM Context File (https://llmstxt.org)
+# llms.txt: https://google-cloud-radar.com/llms.txt
