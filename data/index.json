@@ -1,5 +1,50 @@
 [
   {
+    "id": "2026-10-24-composer-v1beta1",
+    "date": "2026-10-24",
+    "api": "composer.v1beta1",
+    "service": "Cloud Composer",
+    "title": "ImageVersion now indicates Development Mode support",
+    "summary": "The `ImageVersion` schema in Cloud Composer now includes a `devModeSupported` boolean property. This allows developers to programmatically check if a specific image version supports creating environments in `DEVELOPMENT` mode.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 5,
+    "tags": [
+      "composer",
+      "schema",
+      "feature"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.imageversion.properties.devmodesupported.description",
+      "schemas.imageversion.properties.devmodesupported.type"
+    ],
+    "generated_at": "2026-10-24T13:54:10.592Z"
+  },
+  {
+    "id": "2026-10-24-composer-v1",
+    "date": "2026-10-24",
+    "api": "composer.v1",
+    "service": "Cloud Composer",
+    "title": "Composer ImageVersion now indicates dev mode support",
+    "summary": "The `ImageVersion` schema in Cloud Composer now includes a `devModeSupported` boolean property. This new field indicates whether a specific image version can be used to create environments in `DEVELOPMENT` mode.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "new-feature",
+      "schema-change"
+    ],
+    "extracted_methods": [
+      "schemas.ImageVersion.properties.devModeSupported"
+    ],
+    "target_paths": [
+      "schemas.imageversion.properties.devmodesupported.description",
+      "schemas.imageversion.properties.devmodesupported.type"
+    ],
+    "generated_at": "2026-10-24T13:54:10.583Z"
+  },
+  {
     "id": "2026-10-23-discoveryengine-v1beta",
     "date": "2026-10-23",
     "api": "discoveryengine.v1beta",

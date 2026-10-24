@@ -1,0 +1,25 @@
+{
+  "id": "2026-10-24-composer-v1beta1",
+  "date": "2026-10-24",
+  "api": "composer.v1beta1",
+  "service": "Cloud Composer",
+  "title": "ImageVersion now indicates Development Mode support",
+  "summary": "The `ImageVersion` schema in Cloud Composer now includes a `devModeSupported` boolean property. This allows developers to programmatically check if a specific image version supports creating environments in `DEVELOPMENT` mode.",
+  "details": "A new boolean property, `devModeSupported`, has been added to the `ImageVersion` schema. This property indicates whether it's possible to create a Cloud Composer environment in `DEVELOPMENT` mode using that particular image version. This provides more granular information for environment provisioning workflows.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 5,
+  "tags": [
+    "composer",
+    "schema",
+    "feature"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.imageversion.properties.devmodesupported.description",
+    "schemas.imageversion.properties.devmodesupported.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-24T13:54:10.592Z"
+}
