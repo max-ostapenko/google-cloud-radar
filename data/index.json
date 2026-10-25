@@ -1,5 +1,38 @@
 [
   {
+    "id": "2026-10-25-bigquerydatatransfer-v1",
+    "date": "2026-10-25",
+    "api": "bigquerydatatransfer.v1",
+    "service": "BigQuery Data Transfer Service",
+    "title": "Refined OAuth Scopes for Transfer Config Management",
+    "summary": "The BigQuery Data Transfer Service now recommends more granular `bigquery` OAuth scopes for creating and patching transfer configurations. The broader `cloud-platform` scope remains supported as an alternative.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "security",
+      "oauth",
+      "permissions"
+    ],
+    "extracted_methods": [
+      "projects.locations.transferconfigs.create",
+      "projects.locations.transferconfigs.patch",
+      "projects.transferconfigs.create",
+      "projects.transferconfigs.patch"
+    ],
+    "target_paths": [
+      "resources.projects.resources.locations.resources.transferconfigs.methods.create.scopes[0]",
+      "resources.projects.resources.locations.resources.transferconfigs.methods.create.scopes[1]",
+      "resources.projects.resources.locations.resources.transferconfigs.methods.patch.scopes[0]",
+      "resources.projects.resources.locations.resources.transferconfigs.methods.patch.scopes[1]",
+      "resources.projects.resources.transferconfigs.methods.create.scopes[0]",
+      "resources.projects.resources.transferconfigs.methods.create.scopes[1]",
+      "resources.projects.resources.transferconfigs.methods.patch.scopes[0]",
+      "resources.projects.resources.transferconfigs.methods.patch.scopes[1]"
+    ],
+    "generated_at": "2026-10-25T03:56:19.509Z"
+  },
+  {
     "id": "2026-10-24-composer-v1beta1",
     "date": "2026-10-24",
     "api": "composer.v1beta1",
