@@ -12,7 +12,7 @@ terraform {
     }
   }
   backend "gcs" {
-    bucket = "max-ostapenko-terraform-state"
+    bucket = "terraform-state-max-ostapenko"
     prefix = "google-cloud-radar"
   }
 }
