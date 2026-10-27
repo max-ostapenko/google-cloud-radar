@@ -30,7 +30,9 @@
     "resources.projects.resources.transferconfigs.methods.patch.scopes[0]",
     "resources.projects.resources.transferconfigs.methods.patch.scopes[1]"
   ],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-10-25T03:56:19.509Z"
+  "status": "released",
+  "lead_time_days": 1,
+  "generated_at": "2026-10-25T03:56:19.509Z",
+  "official_release_date": "2026-10-26",
+  "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#October_26_2026"
 }
