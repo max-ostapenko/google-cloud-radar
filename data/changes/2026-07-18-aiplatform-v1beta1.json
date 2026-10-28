@@ -19,7 +19,9 @@
   "extracted_methods": [
     "publishers.v1.responses"
   ],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-07-18T03:00:00Z"
+  "status": "released",
+  "lead_time_days": 100,
+  "generated_at": "2026-07-18T03:00:00Z",
+  "official_release_date": "2026-10-26",
+  "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#October_26_2026"
 }
