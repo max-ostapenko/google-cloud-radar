@@ -75,7 +75,9 @@
     "schemas.queryinsightsinstanceinfo.properties.recordclientaddress.type",
     "schemas.queryinsightsinstanceinfo.type"
   ],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-10-02T10:58:30.043Z"
+  "status": "released",
+  "lead_time_days": 26,
+  "generated_at": "2026-10-02T10:58:30.043Z",
+  "official_release_date": "2026-10-28",
+  "official_release_notes_url": "https://docs.cloud.google.com/alloydb/docs/release-notes#October_28_2026"
 }
