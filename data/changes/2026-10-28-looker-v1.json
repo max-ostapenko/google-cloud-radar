@@ -1,0 +1,25 @@
+{
+  "id": "2026-10-28-looker-v1",
+  "date": "2026-10-28",
+  "api": "looker.v1",
+  "service": "Looker Core",
+  "title": "Looker Exports Get ESA Migration Token",
+  "summary": "The `ExportMetadata` schema now includes an `esaMigrationToken` field, providing an opaque capability token for O2C Elite System Activity (ESA) direct dataset migrations. This enhances the secure handling of cloned source datasets during import.",
+  "details": "The `ExportMetadata` schema has been extended with a new `esaMigrationToken` property, typed as a string. This token is crucial for O2C Elite System Activity (ESA) direct dataset migrations, acting as an opaque capability token minted by the exporter. It's used to grant access to cloned source datasets when presented back to Looker Original during the import process, streamlining secure data transfer.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "migration",
+    "export",
+    "security"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.exportmetadata.properties.esamigrationtoken.description",
+    "schemas.exportmetadata.properties.esamigrationtoken.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-28T20:09:10.070Z"
+}
