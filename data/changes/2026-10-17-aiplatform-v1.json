@@ -1963,7 +1963,9 @@
     "schemas.googlecloudaiplatformv1schemapromptspecstructuredprompt.properties.contentmetadata.items.$ref",
     "schemas.googlecloudaiplatformv1schemapromptspecstructuredprompt.properties.contentmetadata.type"
   ],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-10-17T09:06:41.556Z"
+  "status": "released",
+  "lead_time_days": 11,
+  "generated_at": "2026-10-17T09:06:41.556Z",
+  "official_release_date": "2026-10-28",
+  "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#October_28_2026"
 }
