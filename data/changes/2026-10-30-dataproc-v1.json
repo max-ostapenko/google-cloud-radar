@@ -1,0 +1,35 @@
+{
+  "id": "2026-10-30-dataproc-v1",
+  "date": "2026-10-30",
+  "api": "dataproc.v1",
+  "service": "Cloud Dataproc",
+  "title": "Dataproc Adds Advanced Cluster Scheduling Controls",
+  "summary": "Dataproc clusters can now be configured with a `SchedulingConfig` to define resource allocation behavior. This new feature allows specifying a `requestedRunDuration` for cluster lifetime and a `schedulingTimeout` for resource provisioning.",
+  "details": "The `ClusterConfig` schema now includes an optional `schedulingConfig` property, which references the newly introduced `SchedulingConfig` schema. This new configuration object provides two key parameters: `requestedRunDuration`, which sets the maximum desired lifetime for provisioned resources (min 10 mins, max 7 days), and `schedulingTimeout`, which defines how long Dataproc should wait for resources to become available before failing the cluster creation request (max 13 days). These additions offer greater control over cluster lifecycle and resource allocation, enabling more efficient and cost-effective management of transient or time-bound workloads.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 8,
+  "tags": [
+    "scheduling",
+    "cluster management",
+    "resource allocation",
+    "cost optimization"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.clusterconfig.properties.schedulingconfig.$ref",
+    "schemas.clusterconfig.properties.schedulingconfig.description",
+    "schemas.schedulingconfig.description",
+    "schemas.schedulingconfig.id",
+    "schemas.schedulingconfig.properties.requestedrunduration.description",
+    "schemas.schedulingconfig.properties.requestedrunduration.format",
+    "schemas.schedulingconfig.properties.requestedrunduration.type",
+    "schemas.schedulingconfig.properties.schedulingtimeout.description",
+    "schemas.schedulingconfig.properties.schedulingtimeout.format",
+    "schemas.schedulingconfig.properties.schedulingtimeout.type",
+    "schemas.schedulingconfig.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-30T05:02:51.544Z"
+}
