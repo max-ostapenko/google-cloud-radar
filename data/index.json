@@ -162,6 +162,29 @@
     "generated_at": "2026-10-30T05:02:51.540Z"
   },
   {
+    "id": "2026-10-30-bigquerydatapolicy-v2",
+    "date": "2026-10-30",
+    "api": "bigquerydatapolicy.v2",
+    "service": "BigQuery Data Policy",
+    "title": "BigQuery Data Policy Adds SQL Matching Conditions",
+    "summary": "BigQuery Data Policy now supports defining policies with a `matchingCondition` property, allowing SQL expression strings to dynamically apply policies based on data governance tags. This enables more granular and automated data control.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 8,
+    "tags": [
+      "data governance",
+      "bigquery",
+      "policy",
+      "sql"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.datapolicy.properties.matchingcondition.description",
+      "schemas.datapolicy.properties.matchingcondition.type"
+    ],
+    "generated_at": "2026-10-30T23:31:47.956Z"
+  },
+  {
     "id": "2026-10-30-aiplatform-v1beta1",
     "date": "2026-10-30",
     "api": "aiplatform.v1beta1",
