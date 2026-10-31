@@ -1,0 +1,32 @@
+{
+  "id": "2026-10-31-alloydb-v1",
+  "date": "2026-10-31",
+  "api": "alloydb.v1",
+  "service": "AlloyDB",
+  "title": "AlloyDB Autoscaling Adds Connection Count Metric",
+  "summary": "AlloyDB read pool autoscaling now supports scaling based on the number of active connections. This new `ConnectionsCount` policy allows you to define a `targetCount` for connections, providing more fine-grained control over read replica scaling.",
+  "details": "The `Policy` schema for AlloyDB read pool autoscaling has been extended with an optional `connectionsCount` property. This new property references the `ConnectionsCount` schema, which includes a `targetCount` field of type `string` (formatted as `int64`). Developers can now configure their read pools to scale up or down to maintain a desired number of connections, complementing the existing CPU utilization and schedule-based autoscaling options.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "autoscaling",
+    "read replicas",
+    "performance",
+    "database"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.connectionscount.description",
+    "schemas.connectionscount.id",
+    "schemas.connectionscount.properties.targetcount.description",
+    "schemas.connectionscount.properties.targetcount.format",
+    "schemas.connectionscount.properties.targetcount.type",
+    "schemas.connectionscount.type",
+    "schemas.policy.properties.connectionscount.$ref",
+    "schemas.policy.properties.connectionscount.description"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-31T19:10:38.594Z"
+}

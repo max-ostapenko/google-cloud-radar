@@ -1,0 +1,27 @@
+{
+  "id": "2026-10-31-integrations-v1",
+  "date": "2026-10-31",
+  "api": "integrations.v1",
+  "service": "Application Integration",
+  "title": "New DATA_LAYER Error Code Added",
+  "summary": "The `CrmlogErrorCode` schema in Google Cloud Integrations now includes a new `DATA_LAYER` enum value for `commonErrorCode`. This provides more specific error categorization for integration issues.",
+  "details": "Developers can now use or expect the `DATA_LAYER` error code when dealing with `CrmlogErrorCode` objects. This new enum value, added to `schemas.CrmlogErrorCode.properties.commonErrorCode`, helps in identifying issues originating from the data layer within integrations, allowing for more granular error handling and logging.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 5,
+  "tags": [
+    "integrations",
+    "error-handling"
+  ],
+  "extracted_methods": [
+    "schemas.CrmlogErrorCode.properties.commonErrorCode"
+  ],
+  "target_paths": [
+    "schemas.crmlogerrorcode.properties.commonerrorcode.enum[62]",
+    "schemas.crmlogerrorcode.properties.commonerrorcode.enumdeprecated[62]",
+    "schemas.crmlogerrorcode.properties.commonerrorcode.enumdescriptions[62]"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-31T19:10:38.605Z"
+}
