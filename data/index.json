@@ -1,5 +1,28 @@
 [
   {
+    "id": "2026-10-31-integrations-v1",
+    "date": "2026-10-31",
+    "api": "integrations.v1",
+    "service": "Application Integration",
+    "title": "New DATA_LAYER Error Code for CRM Logs",
+    "summary": "The `CrmlogErrorCode` schema in Application Integration now includes a new `DATA_LAYER` enum value for `commonErrorCode`. This expands the set of identifiable error types for CRM log entries.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 4,
+    "tags": [
+      "schema",
+      "enum",
+      "error-handling"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.crmlogerrorcode.properties.commonerrorcode.enum[62]",
+      "schemas.crmlogerrorcode.properties.commonerrorcode.enumdeprecated[62]",
+      "schemas.crmlogerrorcode.properties.commonerrorcode.enumdescriptions[62]"
+    ],
+    "generated_at": "2026-10-31T23:12:06.092Z"
+  },
+  {
     "id": "2026-10-31-bigquerydatapolicy-v2",
     "date": "2026-10-31",
     "api": "bigquerydatapolicy.v2",
