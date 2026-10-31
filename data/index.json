@@ -1,5 +1,29 @@
 [
   {
+    "id": "2026-10-31-integrations-v1",
+    "date": "2026-10-31",
+    "api": "integrations.v1",
+    "service": "Application Integration",
+    "title": "New DATA_LAYER Error Code Added",
+    "summary": "The `CrmlogErrorCode` schema in Google Cloud Integrations now includes a new `DATA_LAYER` enum value for `commonErrorCode`. This provides more specific error categorization for integration issues.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 5,
+    "tags": [
+      "integrations",
+      "error-handling"
+    ],
+    "extracted_methods": [
+      "schemas.CrmlogErrorCode.properties.commonErrorCode"
+    ],
+    "target_paths": [
+      "schemas.crmlogerrorcode.properties.commonerrorcode.enum[62]",
+      "schemas.crmlogerrorcode.properties.commonerrorcode.enumdeprecated[62]",
+      "schemas.crmlogerrorcode.properties.commonerrorcode.enumdescriptions[62]"
+    ],
+    "generated_at": "2026-10-31T19:10:38.605Z"
+  },
+  {
     "id": "2026-10-31-bigquerydatapolicy-v2",
     "date": "2026-10-31",
     "api": "bigquerydatapolicy.v2",
@@ -21,6 +45,91 @@
       "schemas.datapolicy.properties.matchingcondition.type"
     ],
     "generated_at": "2026-10-31T04:49:16.022Z"
+  },
+  {
+    "id": "2026-10-31-alloydb-v1beta",
+    "date": "2026-10-31",
+    "api": "alloydb.v1beta",
+    "service": "AlloyDB",
+    "title": "AlloyDB Autoscaling Adds Connection Count Policy",
+    "summary": "AlloyDB v1beta now allows you to configure autoscaling policies based on the number of active connections. A new `ConnectionsCount` schema and a `connectionsCount` property within the `Policy` schema enable this.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 7,
+    "tags": [
+      "autoscaling",
+      "policy",
+      "connections"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.connectionscount.description",
+      "schemas.connectionscount.id",
+      "schemas.connectionscount.properties.targetcount.description",
+      "schemas.connectionscount.properties.targetcount.format",
+      "schemas.connectionscount.properties.targetcount.type",
+      "schemas.connectionscount.type",
+      "schemas.policy.properties.connectionscount.$ref",
+      "schemas.policy.properties.connectionscount.description"
+    ],
+    "generated_at": "2026-10-31T19:10:38.601Z"
+  },
+  {
+    "id": "2026-10-31-alloydb-v1alpha",
+    "date": "2026-10-31",
+    "api": "alloydb.v1alpha",
+    "service": "AlloyDB",
+    "title": "AlloyDB Autoscaling: Scale by Connection Count",
+    "summary": "AlloyDB v1alpha now supports autoscaling based on connection count. Configure a `connectionsCount` policy within your autoscaling `Policy` to automatically adjust instance capacity based on active connections.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 7,
+    "tags": [
+      "autoscaling",
+      "connections",
+      "resource management"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.connectionscount.description",
+      "schemas.connectionscount.id",
+      "schemas.connectionscount.properties.targetcount.description",
+      "schemas.connectionscount.properties.targetcount.format",
+      "schemas.connectionscount.properties.targetcount.type",
+      "schemas.connectionscount.type",
+      "schemas.policy.properties.connectionscount.$ref",
+      "schemas.policy.properties.connectionscount.description"
+    ],
+    "generated_at": "2026-10-31T19:10:38.598Z"
+  },
+  {
+    "id": "2026-10-31-alloydb-v1",
+    "date": "2026-10-31",
+    "api": "alloydb.v1",
+    "service": "AlloyDB",
+    "title": "AlloyDB Autoscaling Adds Connection Count Metric",
+    "summary": "AlloyDB read pool autoscaling now supports scaling based on the number of active connections. This new `ConnectionsCount` policy allows you to define a `targetCount` for connections, providing more fine-grained control over read replica scaling.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 7,
+    "tags": [
+      "autoscaling",
+      "read replicas",
+      "performance",
+      "database"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.connectionscount.description",
+      "schemas.connectionscount.id",
+      "schemas.connectionscount.properties.targetcount.description",
+      "schemas.connectionscount.properties.targetcount.format",
+      "schemas.connectionscount.properties.targetcount.type",
+      "schemas.connectionscount.type",
+      "schemas.policy.properties.connectionscount.$ref",
+      "schemas.policy.properties.connectionscount.description"
+    ],
+    "generated_at": "2026-10-31T19:10:38.594Z"
   },
   {
     "id": "2026-10-30-sqladmin-v1beta4",
