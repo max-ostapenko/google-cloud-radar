@@ -1,0 +1,26 @@
+{
+  "id": "2026-10-31-bigquerydatapolicy-v2",
+  "date": "2026-10-31",
+  "api": "bigquerydatapolicy.v2",
+  "service": "BigQuery Data Policy",
+  "title": "BigQuery Data Policy: Advanced Matching Conditions",
+  "summary": "The BigQuery Data Policy API now supports a new `matchingCondition` property within the `DataPolicy` resource. This allows developers to define data policies using SQL expressions, enabling more dynamic and fine-grained control based on column tags.",
+  "details": "Developers can now specify a `matchingCondition` as a SQL expression string in the `DataPolicy` schema. This new capability introduces Data Governance Tag matcher functions like `COLUMN_HAS_TAG_KEY(keyName STRING)` and `COLUMN_MATCH_TAG(keyName STRING, valueShortName STRING)`. These functions allow policies to target columns based on the presence or specific value of data governance tags, providing powerful new ways to enforce data policies dynamically.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "Data Policy",
+    "BigQuery",
+    "Data Governance",
+    "SQL"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.datapolicy.properties.matchingcondition.description",
+    "schemas.datapolicy.properties.matchingcondition.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-10-31T04:49:16.022Z"
+}
