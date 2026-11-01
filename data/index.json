@@ -1,5 +1,33 @@
 [
   {
+    "id": "2026-11-01-alloydb-v1alpha",
+    "date": "2026-11-01",
+    "api": "alloydb.v1alpha",
+    "service": "AlloyDB",
+    "title": "AlloyDB Autoscaling Now Supports Connection Count Policies",
+    "summary": "AlloyDB introduces a new `connectionsCount` policy for autoscaling, allowing you to scale instances based on the target number of active connections. This provides finer-grained control over resource allocation.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 7,
+    "tags": [
+      "AlloyDB",
+      "Autoscaling",
+      "Database"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.connectionscount.description",
+      "schemas.connectionscount.id",
+      "schemas.connectionscount.properties.targetcount.description",
+      "schemas.connectionscount.properties.targetcount.format",
+      "schemas.connectionscount.properties.targetcount.type",
+      "schemas.connectionscount.type",
+      "schemas.policy.properties.connectionscount.$ref",
+      "schemas.policy.properties.connectionscount.description"
+    ],
+    "generated_at": "2026-11-01T16:40:29.800Z"
+  },
+  {
     "id": "2026-10-31-integrations-v1",
     "date": "2026-10-31",
     "api": "integrations.v1",
