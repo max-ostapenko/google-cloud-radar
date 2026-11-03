@@ -1,0 +1,49 @@
+{
+  "id": "2026-11-03-dataform-v1beta1",
+  "date": "2026-11-03",
+  "api": "dataform.v1beta1",
+  "service": "Dataform",
+  "title": "Dataform: Async Workspace Creation & Concurrency Control",
+  "summary": "Dataform now offers an asynchronous method for creating workspaces, `createLongRunning`, which requires a `parent` parameter. You can also set a `concurrentActionsLimit` in `InvocationConfig` for finer control over workflow execution.",
+  "details": "Developers can now use the `projects.locations.repositories.workspaces.createLongRunning` method to asynchronously create new workspaces, receiving an `Operation` to track its progress. This method mandates the `parent` parameter to specify the repository in the format `projects/*/locations/*/repositories/*`. While the API diff notes this as a breaking change due to the `parent` parameter being strictly required, this only applies to new integrations with this specific method and does not affect existing API usage. Furthermore, the `InvocationConfig` schema gains an optional `concurrentActionsLimit` field, allowing users to define the maximum number of actions that can run simultaneously within an invocation. The `WorkflowInvocationAction` state enum also now includes `QUEUED` to indicate actions awaiting concurrency slots.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "new feature",
+    "asynchronous",
+    "workflow",
+    "concurrency"
+  ],
+  "extracted_methods": [
+    "projects.locations.repositories.workspaces.createlongrunning"
+  ],
+  "target_paths": [
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.description",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.flatpath",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.httpmethod",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.id",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameterorder[0]",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.description",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.location",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.pattern",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.required",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.type",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.workspaceid.description",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.workspaceid.location",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.workspaceid.type",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.path",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.request.$ref",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.response.$ref",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.scopes[0]",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.scopes[1]",
+    "schemas.invocationconfig.properties.concurrentactionslimit.description",
+    "schemas.invocationconfig.properties.concurrentactionslimit.format",
+    "schemas.invocationconfig.properties.concurrentactionslimit.type",
+    "schemas.workflowinvocationaction.properties.state.enum[7]",
+    "schemas.workflowinvocationaction.properties.state.enumdescriptions[7]"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-03T17:40:02.039Z"
+}
