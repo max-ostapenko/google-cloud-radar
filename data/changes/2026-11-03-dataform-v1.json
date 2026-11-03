@@ -1,0 +1,30 @@
+{
+  "id": "2026-11-03-dataform-v1",
+  "date": "2026-11-03",
+  "api": "dataform.v1",
+  "service": "Dataform",
+  "title": "Dataform Workflows Get Concurrency Control",
+  "summary": "Dataform now allows developers to set a maximum concurrent actions limit for workflow invocations. A new `QUEUED` state for actions provides visibility into concurrency-related delays.",
+  "details": "The `InvocationConfig` schema has been extended with an optional `concurrentActionsLimit` property (integer, `int32`). This allows you to specify the maximum number of actions that can run simultaneously within a workflow invocation. Additionally, the `WorkflowInvocationAction.state` enum now includes a `QUEUED` value, indicating that an action is awaiting an available concurrency slot. This enhancement provides finer control over resource utilization and better insights into workflow execution flow.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "new-feature",
+    "workflow-management",
+    "concurrency"
+  ],
+  "extracted_methods": [
+    "WorkflowInvocationAction.state"
+  ],
+  "target_paths": [
+    "schemas.invocationconfig.properties.concurrentactionslimit.description",
+    "schemas.invocationconfig.properties.concurrentactionslimit.format",
+    "schemas.invocationconfig.properties.concurrentactionslimit.type",
+    "schemas.workflowinvocationaction.properties.state.enum[7]",
+    "schemas.workflowinvocationaction.properties.state.enumdescriptions[7]"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-03T17:40:02.035Z"
+}
