@@ -121,6 +121,11 @@
     },
     {
       "description": "Regional Endpoint",
+      "endpointUrl": "https://pubsub.europe-west15.rep.googleapis.com/",
+      "location": "europe-west15"
+    },
+    {
+      "description": "Regional Endpoint",
       "endpointUrl": "https://pubsub.europe-west2.rep.googleapis.com/",
       "location": "europe-west2"
     },
@@ -1798,7 +1803,7 @@
       }
     }
   },
-  "revision": "20261013",
+  "revision": "20261027",
   "rootUrl": "https://pubsub.googleapis.com/",
   "schemas": {
     "AIInference": {
