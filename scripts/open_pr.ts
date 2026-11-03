@@ -135,36 +135,54 @@ export function createPr(branch: string): string {
   return prNumber;
 }
 
-export function updatePr(prNumber: string, githubToken?: string): void {
-  if (githubToken) {
-    console.log('Enabling auto-merge ...');
-    runCmd('gh', ['pr', 'merge', prNumber, '--repo', REPO_NAME, '--auto', '--squash']);
-  }
-
+export function mergePr(prNumber: string, githubToken?: string): void {
   const approvalToken = process.env[APPROVAL_TOKEN_ENV];
-  if (!approvalToken) {
-    console.log('No approval token provided; skipping auto-approval');
-  } else {
+  if (approvalToken) {
     process.env[MAIN_TOKEN_ENV] = approvalToken;
     console.log('Approving pull request ...');
-    runCmd('gh', [
-      'pr',
-      'review',
-      prNumber,
-      '--repo',
-      REPO_NAME,
-      '--approve',
-      '--body',
-      APPROVAL_MESSAGE,
-    ]);
+    runCmd(
+      'gh',
+      [
+        'pr',
+        'review',
+        prNumber,
+        '--repo',
+        REPO_NAME,
+        '--approve',
+        '--body',
+        APPROVAL_MESSAGE,
+      ],
+      { check: false }
+    );
     if (githubToken) {
       process.env[MAIN_TOKEN_ENV] = githubToken;
     } else {
       delete process.env[MAIN_TOKEN_ENV];
     }
-    console.log('Done with automerge setup');
+  }
+
+  console.log('Directly merging pull request ...');
+  const maxAttempts = 5;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      runCmd(
+        'gh',
+        ['pr', 'merge', prNumber, '--repo', REPO_NAME, '--squash', '--delete-branch'],
+        { check: true }
+      );
+      console.log(`Successfully merged pull request #${prNumber}.`);
+      return;
+    } catch (err) {
+      if (attempt === maxAttempts) {
+        throw err;
+      }
+      console.log(`Merge attempt ${attempt} failed, waiting before retrying...`);
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, attempt * 2000);
+    }
   }
 }
+
+export const updatePr = mergePr;
 
 export function main(): void {
   if (hasChanges()) {
@@ -178,7 +196,7 @@ export function main(): void {
     const branch = commitChanges();
     pushChanges(branch);
     const prNumber = createPr(branch);
-    updatePr(prNumber, githubToken);
+    mergePr(prNumber, githubToken);
     console.log('Complete.');
   } else {
     console.log('No git changes. Bailing.');

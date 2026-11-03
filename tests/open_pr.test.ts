@@ -6,6 +6,8 @@ import {
   APPROVAL_MESSAGE,
   REPO_NAME,
   GIT_USER_NAME,
+  mergePr,
+  updatePr,
 } from '../scripts/open_pr.ts';
 
 describe('open_pr', () => {
@@ -23,5 +25,10 @@ describe('open_pr', () => {
     expect(APPROVAL_MESSAGE).toBe('Rubber-stamped automated update of discovery documents!');
     expect(REPO_NAME).toBe('max-ostapenko/google-cloud-radar');
     expect(GIT_USER_NAME).toBe('max-ostapenko');
+  });
+
+  it('exports mergePr and aliases updatePr to mergePr', () => {
+    expect(typeof mergePr).toBe('function');
+    expect(updatePr).toBe(mergePr);
   });
 });
