@@ -111,6 +111,21 @@
     },
     {
       "description": "Regional Endpoint",
+      "endpointUrl": "https://pubsub.europe-west10.rep.googleapis.com/",
+      "location": "europe-west10"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://pubsub.europe-west12.rep.googleapis.com/",
+      "location": "europe-west12"
+    },
+    {
+      "description": "Regional Endpoint",
+      "endpointUrl": "https://pubsub.europe-west15.rep.googleapis.com/",
+      "location": "europe-west15"
+    },
+    {
+      "description": "Regional Endpoint",
       "endpointUrl": "https://pubsub.europe-west2.rep.googleapis.com/",
       "location": "europe-west2"
     },
@@ -138,16 +153,6 @@
       "description": "Regional Endpoint",
       "endpointUrl": "https://pubsub.europe-west9.rep.googleapis.com/",
       "location": "europe-west9"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://pubsub.europe-west10.rep.googleapis.com/",
-      "location": "europe-west10"
-    },
-    {
-      "description": "Regional Endpoint",
-      "endpointUrl": "https://pubsub.europe-west12.rep.googleapis.com/",
-      "location": "europe-west12"
     },
     {
       "description": "Regional Endpoint",
@@ -689,7 +694,7 @@
       }
     }
   },
-  "revision": "20260915",
+  "revision": "20261027",
   "rootUrl": "https://pubsub.googleapis.com/",
   "schemas": {
     "AcknowledgeRequest": {
