@@ -1,0 +1,27 @@
+{
+  "id": "2026-11-05-youtube-v3",
+  "date": "2026-11-05",
+  "api": "youtube.v3",
+  "service": "YouTube Data API",
+  "title": "YouTube Shorts Thumbnails Now Available",
+  "summary": "The `ThumbnailDetails` schema now includes a new `shortsAspectRatio` property, providing access to 9:16 aspect ratio thumbnails specifically for YouTube Shorts. This allows developers to better display Shorts content.",
+  "details": "A new property, `shortsAspectRatio`, has been added to the `schemas.ThumbnailDetails` object. This property is of type `Thumbnail` and is described as 'The Shorts aspect ratio (9:16) image for this resource.' Developers can now retrieve specific thumbnails optimized for the vertical 9:16 aspect ratio used by YouTube Shorts, improving the presentation of Shorts content in their applications.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "thumbnails",
+    "youtube shorts",
+    "schema update"
+  ],
+  "extracted_methods": [
+    "schemas.ThumbnailDetails"
+  ],
+  "target_paths": [
+    "schemas.thumbnaildetails.properties.shortsaspectratio.$ref",
+    "schemas.thumbnaildetails.properties.shortsaspectratio.description"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-05T05:52:49.324Z"
+}
