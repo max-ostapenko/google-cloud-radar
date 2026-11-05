@@ -6007,9 +6007,9 @@
       "version": "v1"
     },
     {
-      "description": "",
+      "description": "The Places API allows developers to access a variety of search and retrieval endpoints for a Place.",
       "discoveryRestUrl": "https://places.googleapis.com/$discovery/rest?version=v1",
-      "documentationLink": "https://mapsplatform.google.com/maps-products/#places-section",
+      "documentationLink": "https://developers.google.com/maps/documentation/places/web-service",
       "icons": {
         "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
         "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
