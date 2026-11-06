@@ -422,7 +422,9 @@
     "schemas.googlecloudaiplatformv1beta1listfilesresponse.properties.next_page.type",
     "schemas.googlecloudaiplatformv1beta1listfilesresponse.type"
   ],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-10-30T05:02:51.536Z"
+  "status": "released",
+  "lead_time_days": 7,
+  "generated_at": "2026-10-30T05:02:51.536Z",
+  "official_release_date": "2026-11-06",
+  "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#November_06_2026"
 }

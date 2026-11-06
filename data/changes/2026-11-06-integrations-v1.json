@@ -1,0 +1,47 @@
+{
+  "id": "2026-11-06-integrations-v1",
+  "date": "2026-11-06",
+  "api": "integrations.v1",
+  "service": "Application Integration",
+  "title": "New Workflow Text Proto & Publish Validation",
+  "summary": "Application Integration now supports a `WORKFLOW_TEXTPROTO` file format for specific upload/download operations, enabling a new way to manage integration definitions. Additionally, a `validateOnly` option has been added to the publish request, allowing pre-flight checks without actual deployment.",
+  "details": "Developers can now leverage a new `WORKFLOW_TEXTPROTO` enum value for the `fileFormat` parameter across several download methods, including `projects.locations.integrations.versions.download`, `projects.locations.integrations.versions.testCases.download`, `projects.locations.products.integrations.versions.download`, and `projects.locations.templates.download`. This format is also available in `fileFormat` properties for `GenerateOpenApiSpecRequest`, `UploadIntegrationVersionRequest`, `UploadTemplateRequest`, and `UploadTestCaseRequest`. Note that this format is currently restricted to allowlisted projects for integration version upload and download.\n\nFor improved deployment safety, the `GoogleCloudIntegrationsV1alphaPublishIntegrationVersionRequest` now includes an optional `validateOnly` boolean parameter. Setting this to `true` will perform a validation check on your integration version's configuration without actually publishing it, preventing unintended state changes or deployments of invalid configurations.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "integrations",
+    "workflow",
+    "validation",
+    "file formats"
+  ],
+  "extracted_methods": [
+    "projects.locations.integrations.versions.download",
+    "projects.locations.integrations.versions.testcases.download",
+    "projects.locations.products.integrations.versions.download",
+    "projects.locations.templates.download"
+  ],
+  "target_paths": [
+    "resources.projects.resources.locations.resources.integrations.resources.versions.methods.download.parameters.fileformat.enum[3]",
+    "resources.projects.resources.locations.resources.integrations.resources.versions.methods.download.parameters.fileformat.enumdescriptions[3]",
+    "resources.projects.resources.locations.resources.integrations.resources.versions.resources.testcases.methods.download.parameters.fileformat.enum[3]",
+    "resources.projects.resources.locations.resources.integrations.resources.versions.resources.testcases.methods.download.parameters.fileformat.enumdescriptions[3]",
+    "resources.projects.resources.locations.resources.products.resources.integrations.resources.versions.methods.download.parameters.fileformat.enum[3]",
+    "resources.projects.resources.locations.resources.products.resources.integrations.resources.versions.methods.download.parameters.fileformat.enumdescriptions[3]",
+    "resources.projects.resources.locations.resources.templates.methods.download.parameters.fileformat.enum[3]",
+    "resources.projects.resources.locations.resources.templates.methods.download.parameters.fileformat.enumdescriptions[3]",
+    "schemas.googlecloudintegrationsv1alphagenerateopenapispecrequest.properties.fileformat.enum[3]",
+    "schemas.googlecloudintegrationsv1alphagenerateopenapispecrequest.properties.fileformat.enumdescriptions[3]",
+    "schemas.googlecloudintegrationsv1alphapublishintegrationversionrequest.properties.validateonly.description",
+    "schemas.googlecloudintegrationsv1alphapublishintegrationversionrequest.properties.validateonly.type",
+    "schemas.googlecloudintegrationsv1alphauploadintegrationversionrequest.properties.fileformat.enum[3]",
+    "schemas.googlecloudintegrationsv1alphauploadintegrationversionrequest.properties.fileformat.enumdescriptions[3]",
+    "schemas.googlecloudintegrationsv1alphauploadtemplaterequest.properties.fileformat.enum[3]",
+    "schemas.googlecloudintegrationsv1alphauploadtemplaterequest.properties.fileformat.enumdescriptions[3]",
+    "schemas.googlecloudintegrationsv1alphauploadtestcaserequest.properties.fileformat.enum[3]",
+    "schemas.googlecloudintegrationsv1alphauploadtestcaserequest.properties.fileformat.enumdescriptions[3]"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-06T20:46:27.225Z"
+}
