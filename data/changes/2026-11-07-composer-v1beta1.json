@@ -1,0 +1,40 @@
+{
+  "id": "2026-11-07-composer-v1beta1",
+  "date": "2026-11-07",
+  "api": "composer.v1beta1",
+  "service": "Cloud Composer",
+  "title": "Composer Adds X-Extra Large Size & Scheduled Hibernation",
+  "summary": "Cloud Composer environments can now be provisioned in an X-Extra Large size. Additionally, `DEVELOPMENT` mode environments can configure scheduled hibernation and resumption, enabling cost savings and automated management.",
+  "details": "Developers can now provision Cloud Composer environments with an `ENVIRONMENT_SIZE_X_EXTRA_LARGE` option, providing more capacity for demanding workflows. More significantly, a new `scheduledHibernationConfig` property has been added to the `EnvironmentConfig` schema. This allows you to define cron-based schedules for automatically hibernating and resuming `DEVELOPMENT` mode environments. The new `ScheduledHibernationConfig` schema includes `enabled` (boolean), `hibernationSchedules` (array of cron strings), `resumptionSchedules` (array of cron strings), and `timeZone` to manage environment lifecycle, offering significant cost savings and operational efficiency for non-production environments.",
+  "impact": "high",
+  "breaking": false,
+  "interesting_score": 9,
+  "tags": [
+    "Compute",
+    "Orchestration",
+    "Cost Management"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.environmentconfig.properties.environmentsize.enum[5]",
+    "schemas.environmentconfig.properties.environmentsize.enumdescriptions[5]",
+    "schemas.environmentconfig.properties.scheduledhibernationconfig.$ref",
+    "schemas.environmentconfig.properties.scheduledhibernationconfig.description",
+    "schemas.scheduledhibernationconfig.description",
+    "schemas.scheduledhibernationconfig.id",
+    "schemas.scheduledhibernationconfig.properties.enabled.description",
+    "schemas.scheduledhibernationconfig.properties.enabled.type",
+    "schemas.scheduledhibernationconfig.properties.hibernationschedules.description",
+    "schemas.scheduledhibernationconfig.properties.hibernationschedules.items.type",
+    "schemas.scheduledhibernationconfig.properties.hibernationschedules.type",
+    "schemas.scheduledhibernationconfig.properties.resumptionschedules.description",
+    "schemas.scheduledhibernationconfig.properties.resumptionschedules.items.type",
+    "schemas.scheduledhibernationconfig.properties.resumptionschedules.type",
+    "schemas.scheduledhibernationconfig.properties.timezone.description",
+    "schemas.scheduledhibernationconfig.properties.timezone.type",
+    "schemas.scheduledhibernationconfig.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-07T05:20:03.144Z"
+}
