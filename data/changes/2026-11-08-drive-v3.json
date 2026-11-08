@@ -1,0 +1,25 @@
+{
+  "id": "2026-11-08-drive-v3",
+  "date": "2026-11-08",
+  "api": "drive.v3",
+  "service": "Google Drive API",
+  "title": "New Revision ID for File Approvals",
+  "summary": "The `Approval` schema in the Google Drive API now includes an `approvedRevisionId` property, providing the file's revision ID upon successful approval.",
+  "details": "Developers can now access the `approvedRevisionId` within the `Approval` schema. This new string property will be populated with the specific revision ID of the file at the moment an approval is successfully completed. This enhancement provides more granular tracking and auditing capabilities for approved files, allowing you to pinpoint the exact version that received approval.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "schema",
+    "files",
+    "approvals"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.approval.properties.approvedrevisionid.description",
+    "schemas.approval.properties.approvedrevisionid.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-08T16:33:31.652Z"
+}
