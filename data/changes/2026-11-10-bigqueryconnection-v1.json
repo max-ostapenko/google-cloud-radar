@@ -1,0 +1,35 @@
+{
+  "id": "2026-11-10-bigqueryconnection-v1",
+  "date": "2026-11-10",
+  "api": "bigqueryconnection.v1",
+  "service": "BigQuery Connection API",
+  "title": "Breaking: Service Account IDs Read-Only; Private Connectivity for AWS/Azure",
+  "summary": "The `serviceAccountId` fields in `AwsAccessRole` and `AzureProperties` are now read-only, a breaking change. New `serviceDirectoryService` fields enable private network connections to AWS and Azure via Cross-Cloud Interconnect.",
+  "details": "The `serviceAccountId` property within the `AwsAccessRole` and `AzureProperties` schemas has been changed to `readOnly`. This means any existing code attempting to set or modify these fields will now fail. Developers must update their connection creation/update logic to no longer provide a value for `serviceAccountId`, as it is now an output-only field representing the connection's identity. This is a breaking change. Alongside this, new `serviceDirectoryService` fields have been introduced in both `AwsProperties` and `AzureProperties`. These optional fields allow you to specify a Service Directory resource name, enabling private network routing for your BigQuery connections to AWS and Azure via Cross-Cloud Interconnect. This enhances security and performance for external data sources.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "networking",
+    "security",
+    "aws",
+    "azure"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.awsaccessrole.properties.serviceaccountid.description",
+    "schemas.awsaccessrole.properties.serviceaccountid.readonly",
+    "schemas.awsaccessrole.properties.serviceaccountid.type",
+    "schemas.awsproperties.properties.servicedirectoryservice.description",
+    "schemas.awsproperties.properties.servicedirectoryservice.type",
+    "schemas.azureproperties.properties.serviceaccountid.description",
+    "schemas.azureproperties.properties.serviceaccountid.readonly",
+    "schemas.azureproperties.properties.serviceaccountid.type",
+    "schemas.azureproperties.properties.servicedirectoryservice.description",
+    "schemas.azureproperties.properties.servicedirectoryservice.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-10T17:34:35.293Z"
+}

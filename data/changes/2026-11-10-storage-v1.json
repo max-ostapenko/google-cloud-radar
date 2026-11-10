@@ -1,0 +1,49 @@
+{
+  "id": "2026-11-10-storage-v1",
+  "date": "2026-11-10",
+  "api": "storage.v1",
+  "service": "Cloud Storage",
+  "title": "Anywhere Cache 'pause' method removed; Rapid Cache info added",
+  "summary": "The `anywhereCaches.pause` method has been removed from the Cloud Storage API, which is a breaking change for integrations managing Anywhere Cache instances. Additionally, the `BucketStorageLayout` schema now includes `rapidCacheInfo` to expose details about Rapid Cache configurations.",
+  "details": "Developers using the `storage.v1` API should note the removal of the `anywhereCaches.pause` method. This method, along with its `bucket` and `anywhereCacheId` parameters, is no longer available, meaning any code attempting to pause Anywhere Cache instances will now fail. Please update your integrations to remove calls to this method. On the feature front, the `BucketStorageLayout` schema has been extended with a new `rapidCacheInfo` object. This object contains a `cacheType` property, which will indicate the type of cache (e.g., `rapid-cache`, `rapid-cache-ultra`) if a Rapid Cache is present for the bucket. This provides more visibility into your bucket's storage layout and caching configurations.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "storage",
+    "anywhere-cache",
+    "bucket-layout",
+    "caching"
+  ],
+  "extracted_methods": [
+    "anywherecaches.pause"
+  ],
+  "target_paths": [
+    "resources.anywherecaches.methods.pause.description",
+    "resources.anywherecaches.methods.pause.httpmethod",
+    "resources.anywherecaches.methods.pause.id",
+    "resources.anywherecaches.methods.pause.parameterorder[0]",
+    "resources.anywherecaches.methods.pause.parameterorder[1]",
+    "resources.anywherecaches.methods.pause.parameters.anywherecacheid.description",
+    "resources.anywherecaches.methods.pause.parameters.anywherecacheid.location",
+    "resources.anywherecaches.methods.pause.parameters.anywherecacheid.required",
+    "resources.anywherecaches.methods.pause.parameters.anywherecacheid.type",
+    "resources.anywherecaches.methods.pause.parameters.bucket.description",
+    "resources.anywherecaches.methods.pause.parameters.bucket.location",
+    "resources.anywherecaches.methods.pause.parameters.bucket.required",
+    "resources.anywherecaches.methods.pause.parameters.bucket.type",
+    "resources.anywherecaches.methods.pause.path",
+    "resources.anywherecaches.methods.pause.response.$ref",
+    "resources.anywherecaches.methods.pause.scopes[0]",
+    "resources.anywherecaches.methods.pause.scopes[1]",
+    "resources.anywherecaches.methods.pause.scopes[2]",
+    "schemas.bucketstoragelayout.properties.rapidcacheinfo.description",
+    "schemas.bucketstoragelayout.properties.rapidcacheinfo.properties.cachetype.description",
+    "schemas.bucketstoragelayout.properties.rapidcacheinfo.properties.cachetype.type",
+    "schemas.bucketstoragelayout.properties.rapidcacheinfo.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-10T17:34:35.299Z"
+}

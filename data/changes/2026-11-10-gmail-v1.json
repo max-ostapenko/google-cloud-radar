@@ -151,7 +151,9 @@
     "resources.users.resources.threads.methods.untrash.scopes[2]",
     "resources.users.resources.threads.methods.untrash.scopes[3]"
   ],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-11-10T06:40:27.227Z"
+  "status": "released",
+  "lead_time_days": 0,
+  "generated_at": "2026-11-10T06:40:27.227Z",
+  "official_release_date": "2026-11-10",
+  "official_release_notes_url": "http://workspaceupdates.googleblog.com/2026/11/schedule-meetings-in-single-click-from-conversations-in-Google-Chat.html"
 }
