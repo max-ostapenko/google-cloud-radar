@@ -1,5 +1,51 @@
 [
   {
+    "id": "2026-11-10-storage-v1",
+    "date": "2026-11-10",
+    "api": "storage.v1",
+    "service": "Cloud Storage",
+    "title": "Anywhere Cache 'pause' method removed; Rapid Cache info added",
+    "summary": "The `anywhereCaches.pause` method has been removed from the Cloud Storage API, which is a breaking change for integrations managing Anywhere Cache instances. Additionally, the `BucketStorageLayout` schema now includes `rapidCacheInfo` to expose details about Rapid Cache configurations.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking-change",
+      "storage",
+      "anywhere-cache",
+      "bucket-layout",
+      "caching"
+    ],
+    "extracted_methods": [
+      "anywherecaches.pause"
+    ],
+    "target_paths": [
+      "resources.anywherecaches.methods.pause.description",
+      "resources.anywherecaches.methods.pause.httpmethod",
+      "resources.anywherecaches.methods.pause.id",
+      "resources.anywherecaches.methods.pause.parameterorder[0]",
+      "resources.anywherecaches.methods.pause.parameterorder[1]",
+      "resources.anywherecaches.methods.pause.parameters.anywherecacheid.description",
+      "resources.anywherecaches.methods.pause.parameters.anywherecacheid.location",
+      "resources.anywherecaches.methods.pause.parameters.anywherecacheid.required",
+      "resources.anywherecaches.methods.pause.parameters.anywherecacheid.type",
+      "resources.anywherecaches.methods.pause.parameters.bucket.description",
+      "resources.anywherecaches.methods.pause.parameters.bucket.location",
+      "resources.anywherecaches.methods.pause.parameters.bucket.required",
+      "resources.anywherecaches.methods.pause.parameters.bucket.type",
+      "resources.anywherecaches.methods.pause.path",
+      "resources.anywherecaches.methods.pause.response.$ref",
+      "resources.anywherecaches.methods.pause.scopes[0]",
+      "resources.anywherecaches.methods.pause.scopes[1]",
+      "resources.anywherecaches.methods.pause.scopes[2]",
+      "schemas.bucketstoragelayout.properties.rapidcacheinfo.description",
+      "schemas.bucketstoragelayout.properties.rapidcacheinfo.properties.cachetype.description",
+      "schemas.bucketstoragelayout.properties.rapidcacheinfo.properties.cachetype.type",
+      "schemas.bucketstoragelayout.properties.rapidcacheinfo.type"
+    ],
+    "generated_at": "2026-11-10T17:34:35.299Z"
+  },
+  {
     "id": "2026-11-10-gmail-v1",
     "date": "2026-11-10",
     "api": "gmail.v1",
@@ -152,6 +198,96 @@
       "resources.users.resources.threads.methods.untrash.scopes[3]"
     ],
     "generated_at": "2026-11-10T06:40:27.227Z"
+  },
+  {
+    "id": "2026-11-10-bigqueryconnection-v1",
+    "date": "2026-11-10",
+    "api": "bigqueryconnection.v1",
+    "service": "BigQuery Connection API",
+    "title": "Breaking: Service Account IDs Read-Only; Private Connectivity for AWS/Azure",
+    "summary": "The `serviceAccountId` fields in `AwsAccessRole` and `AzureProperties` are now read-only, a breaking change. New `serviceDirectoryService` fields enable private network connections to AWS and Azure via Cross-Cloud Interconnect.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 9,
+    "tags": [
+      "breaking-change",
+      "networking",
+      "security",
+      "aws",
+      "azure"
+    ],
+    "extracted_methods": [],
+    "target_paths": [
+      "schemas.awsaccessrole.properties.serviceaccountid.description",
+      "schemas.awsaccessrole.properties.serviceaccountid.readonly",
+      "schemas.awsaccessrole.properties.serviceaccountid.type",
+      "schemas.awsproperties.properties.servicedirectoryservice.description",
+      "schemas.awsproperties.properties.servicedirectoryservice.type",
+      "schemas.azureproperties.properties.serviceaccountid.description",
+      "schemas.azureproperties.properties.serviceaccountid.readonly",
+      "schemas.azureproperties.properties.serviceaccountid.type",
+      "schemas.azureproperties.properties.servicedirectoryservice.description",
+      "schemas.azureproperties.properties.servicedirectoryservice.type"
+    ],
+    "generated_at": "2026-11-10T17:34:35.293Z"
+  },
+  {
+    "id": "2026-11-10-bigquery-v2",
+    "date": "2026-11-10",
+    "api": "bigquery.v2",
+    "service": "BigQuery",
+    "title": "Routine Package Details & IAM Policy Members Added, Several Fields Now Read-Only",
+    "summary": "BigQuery now provides detailed information about installed packages within routine build statuses and introduces a new schema for IAM policy members on tables. Be aware of breaking changes as several properties across `InstalledPackage`, `ResourcePolicyMember`, `RoutineBuildStatus`, and `Table` schemas have been made read-only.",
+    "impact": "high",
+    "breaking": true,
+    "interesting_score": 8,
+    "tags": [
+      "IAM",
+      "UDFs",
+      "Schemas",
+      "Breaking Change"
+    ],
+    "extracted_methods": [
+      "InstalledPackage.name",
+      "InstalledPackage.sourceRepository",
+      "InstalledPackage.version",
+      "ResourcePolicyMember.iamPolicyNamePrincipal",
+      "ResourcePolicyMember.iamPolicyUidPrincipal",
+      "RoutineBuildStatus.installedPackages"
+    ],
+    "target_paths": [
+      "schemas.arrowserializationoptions.properties.buffercompression.enumdescriptions[1]",
+      "schemas.installedpackage.description",
+      "schemas.installedpackage.id",
+      "schemas.installedpackage.properties.name.description",
+      "schemas.installedpackage.properties.name.readonly",
+      "schemas.installedpackage.properties.name.type",
+      "schemas.installedpackage.properties.sourcerepository.description",
+      "schemas.installedpackage.properties.sourcerepository.readonly",
+      "schemas.installedpackage.properties.sourcerepository.type",
+      "schemas.installedpackage.properties.version.description",
+      "schemas.installedpackage.properties.version.readonly",
+      "schemas.installedpackage.properties.version.type",
+      "schemas.installedpackage.type",
+      "schemas.queryrequest.properties.queryresultsformat.enumdescriptions[2]",
+      "schemas.resourcepolicymember.description",
+      "schemas.resourcepolicymember.id",
+      "schemas.resourcepolicymember.properties.iampolicynameprincipal.description",
+      "schemas.resourcepolicymember.properties.iampolicynameprincipal.readonly",
+      "schemas.resourcepolicymember.properties.iampolicynameprincipal.type",
+      "schemas.resourcepolicymember.properties.iampolicyuidprincipal.description",
+      "schemas.resourcepolicymember.properties.iampolicyuidprincipal.readonly",
+      "schemas.resourcepolicymember.properties.iampolicyuidprincipal.type",
+      "schemas.resourcepolicymember.type",
+      "schemas.routinebuildstatus.properties.installedpackages.description",
+      "schemas.routinebuildstatus.properties.installedpackages.items.$ref",
+      "schemas.routinebuildstatus.properties.installedpackages.readonly",
+      "schemas.routinebuildstatus.properties.installedpackages.type",
+      "schemas.table.properties.policymember.$ref",
+      "schemas.table.properties.policymember.description",
+      "schemas.table.properties.policymember.readonly"
+    ],
+    "generated_at": "2026-11-10T17:34:35.284Z"
   },
   {
     "id": "2026-11-08-drive-v3",

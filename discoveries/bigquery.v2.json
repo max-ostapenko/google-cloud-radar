@@ -2399,7 +2399,7 @@
       }
     }
   },
-  "revision": "20261030",
+  "revision": "20261107",
   "rootUrl": "https://bigquery.googleapis.com/",
   "schemas": {
     "AggregateClassificationMetrics": {
@@ -2850,7 +2850,7 @@
       "type": "object"
     },
     "ArrowRecordBatch": {
-      "description": "Arrow RecordBatch. This feature is not yet available.",
+      "description": "Arrow RecordBatch. [Preview](https://cloud.google.com/products/#product-launch-stages)",
       "id": "ArrowRecordBatch",
       "properties": {
         "serializedRecordBatch": {
@@ -2862,7 +2862,7 @@
       "type": "object"
     },
     "ArrowSchema": {
-      "description": "Arrow schema as specified in https://arrow.apache.org/docs/python/api/datatypes.html and serialized to bytes using IPC: https://arrow.apache.org/docs/format/Columnar.html#serialization-and-interprocess-communication-ipc See code samples on how this message can be deserialized. This feature is not yet available.",
+      "description": "Arrow schema as specified in https://arrow.apache.org/docs/python/api/datatypes.html and serialized to bytes using IPC: https://arrow.apache.org/docs/format/Columnar.html#serialization-and-interprocess-communication-ipc See code samples on how this message can be deserialized. [Preview](https://cloud.google.com/products/#product-launch-stages)",
       "id": "ArrowSchema",
       "properties": {
         "serializedSchema": {
@@ -2874,7 +2874,7 @@
       "type": "object"
     },
     "ArrowSerializationOptions": {
-      "description": "Contains options specific to Arrow Serialization. This feature is not yet available.",
+      "description": "Contains options specific to Arrow Serialization. [Preview](https://cloud.google.com/products/#product-launch-stages)",
       "id": "ArrowSerializationOptions",
       "properties": {
         "bufferCompression": {
@@ -2886,7 +2886,7 @@
           ],
           "enumDescriptions": [
             "If unspecified no compression will be used.",
-            "LZ4 Frame (https://github.com/lz4/lz4/blob/dev/doc/lz4_Frame_format.md)",
+            "[LZ4 Frame](https://github.com/lz4/lz4/blob/dev/doc/lz4_Frame_format.md)",
             "Zstandard compression."
           ],
           "type": "string"
@@ -5694,6 +5694,28 @@
           "format": "float",
           "readOnly": true,
           "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "InstalledPackage": {
+      "description": " Information about a package installed in the routine execution environment.",
+      "id": "InstalledPackage",
+      "properties": {
+        "name": {
+          "description": "Output only. The name of the installed package.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "sourceRepository": {
+          "description": "Output only. The source repository from which this package was installed. Populated only when the package was installed from an additional package repository. E.g. 'https://my-region-python.pkg.dev/my-project/my-repo/simple'",
+          "readOnly": true,
+          "type": "string"
+        },
+        "version": {
+          "description": "Output only. The version of the installed package.",
+          "readOnly": true,
+          "type": "string"
         }
       },
       "type": "object"
@@ -8510,7 +8532,7 @@
           "type": "array"
         },
         "queryResultsFormat": {
-          "description": "Optional. The query results format. If the value is anything other than `STRUCT_ENCODING` or unspecified: * The schema of the results will be provided in `QueryResponse.results_schema` field. * The results of the first page will be provided in `QueryResponse.results` field. * The `QueryResponse.rows` will not be populated. * The `QueryResponse.schema` for `QueryResponse.rows` will also not be populated since it is the schema of the `QueryResponse.rows`. This feature is not yet available.",
+          "description": "Optional. The query results format. If the value is anything other than `STRUCT_ENCODING` or unspecified: * The schema of the results is provided in the `QueryResponse.results_schema` field. * The results of the first page are provided in the `QueryResponse.results` field. * The `QueryResponse.rows` is not populated. * The `QueryResponse.schema` for `QueryResponse.rows` is not populated since it is the schema of the `QueryResponse.rows`. [Preview](https://cloud.google.com/products/#product-launch-stages)",
           "enum": [
             "QUERY_RESULTS_FORMAT_UNSPECIFIED",
             "STRUCT_ENCODING",
@@ -8519,7 +8541,7 @@
           "enumDescriptions": [
             "If unspecified it will default to struct `QueryResponse.rows` (`STRUCT_ENCODING`)",
             "Default encoding of results as struct in `QueryResponse.rows`",
-            "Arrow is a standard open source column-based message format. See https://arrow.apache.org/ for more details."
+            "Arrow is a standard open source column-based message format. See the Apache Arrow documentation for more details."
           ],
           "type": "string"
         },
@@ -8628,7 +8650,7 @@
           "type": "string"
         },
         "pageRowCount": {
-          "description": "Output only. The number of rows out of `total_rows` returned in this response. This feature is not yet available.",
+          "description": "Output only. The number of rows out of `total_rows` returned in this response. [Preview](https://cloud.google.com/products/#product-launch-stages)",
           "format": "int64",
           "readOnly": true,
           "type": "string"
@@ -8999,6 +9021,23 @@
       },
       "type": "object"
     },
+    "ResourcePolicyMember": {
+      "description": "Output-only policy member strings of a Google Cloud resource's built-in identity.",
+      "id": "ResourcePolicyMember",
+      "properties": {
+        "iamPolicyNamePrincipal": {
+          "description": "Output only. IAM policy binding member referring to a Google Cloud resource by user-assigned name (https://google.aip.dev/122). If a resource is deleted and recreated with the same name, the binding will be applicable to the new resource. Example: `principal://parametermanager.googleapis.com/projects/12345/name/locations/us-central1-a/parameters/my-parameter`",
+          "readOnly": true,
+          "type": "string"
+        },
+        "iamPolicyUidPrincipal": {
+          "description": "Output only. IAM policy binding member referring to a Google Cloud resource by system-assigned unique identifier (https://google.aip.dev/148#uid). If a resource is deleted and recreated with the same name, the binding will not be applicable to the new resource Example: `principal://parametermanager.googleapis.com/projects/12345/uid/locations/us-central1-a/parameters/a918fed5`",
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "RestrictionConfig": {
       "id": "RestrictionConfig",
       "properties": {
@@ -9222,6 +9261,14 @@
           "format": "int64",
           "readOnly": true,
           "type": "string"
+        },
+        "installedPackages": {
+          "description": "Output only. The list of installed packages in the routine's execution environment. Populated only after the build succeeds.",
+          "items": {
+            "$ref": "InstalledPackage"
+          },
+          "readOnly": true,
+          "type": "array"
         }
       },
       "type": "object"
@@ -10248,6 +10295,11 @@
         "partitionDefinition": {
           "$ref": "PartitioningDefinition",
           "description": "Optional. The partition information for all table formats, including managed partitioned tables, hive partitioned tables, iceberg partitioned, and metastore partitioned tables. This field is only populated for metastore partitioned tables. For other table formats, this is an output only field."
+        },
+        "policyMember": {
+          "$ref": "ResourcePolicyMember",
+          "description": "Output only. Contains the resource identity token of the view that users can use to include in their policy bindings for authorization. This should be set only for views.",
+          "readOnly": true
         },
         "rangePartitioning": {
           "$ref": "RangePartitioning",
