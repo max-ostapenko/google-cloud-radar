@@ -1,5 +1,70 @@
 [
   {
+    "id": "2026-11-11-pubsub-v1",
+    "date": "2026-11-11",
+    "api": "pubsub.v1",
+    "service": "Cloud Pub/Sub",
+    "title": "Pub/Sub Adds Zstd Compression Support",
+    "summary": "Cloud Pub/Sub now supports Zstd as a compression algorithm for messages. Developers can leverage Zstd for potentially better compression ratios and performance, offering more options for optimizing message throughput and storage.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "messaging",
+      "compression",
+      "pubsub"
+    ],
+    "extracted_methods": [
+      "schemas.Compression"
+    ],
+    "target_paths": [
+      "schemas.compression.properties.compressionalgorithm.enum[2]",
+      "schemas.compression.properties.compressionalgorithm.enumdescriptions[2]"
+    ],
+    "generated_at": "2026-11-11T12:31:46.327Z"
+  },
+  {
+    "id": "2026-11-11-dataform-v1",
+    "date": "2026-11-11",
+    "api": "dataform.v1",
+    "service": "Dataform",
+    "title": "Dataform Workspaces Get Async Creation, `parent` Now Required",
+    "summary": "Dataform introduces `createLongRunning` for asynchronous Workspace creation. This new method requires the `parent` parameter, which is a breaking change if you were previously omitting it in early integrations.",
+    "impact": "medium",
+    "breaking": true,
+    "interesting_score": 8,
+    "tags": [
+      "new-feature",
+      "breaking-change",
+      "workspaces",
+      "async"
+    ],
+    "extracted_methods": [
+      "projects.locations.repositories.workspaces.createlongrunning"
+    ],
+    "target_paths": [
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.description",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.flatpath",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.httpmethod",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.id",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameterorder[0]",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.description",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.location",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.pattern",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.required",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.type",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.workspaceid.description",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.workspaceid.location",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.workspaceid.type",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.path",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.request.$ref",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.response.$ref",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.scopes[0]",
+      "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.scopes[1]"
+    ],
+    "generated_at": "2026-11-11T12:31:46.318Z"
+  },
+  {
     "id": "2026-11-10-storage-v1",
     "date": "2026-11-10",
     "api": "storage.v1",

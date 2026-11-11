@@ -1,0 +1,44 @@
+{
+  "id": "2026-11-11-dataform-v1",
+  "date": "2026-11-11",
+  "api": "dataform.v1",
+  "service": "Dataform",
+  "title": "Dataform Workspaces Get Async Creation, `parent` Now Required",
+  "summary": "Dataform introduces `createLongRunning` for asynchronous Workspace creation. This new method requires the `parent` parameter, which is a breaking change if you were previously omitting it in early integrations.",
+  "details": "Developers can now asynchronously create Dataform Workspaces using the new `projects.locations.repositories.workspaces.createLongRunning` method. This method returns a long-running `Operation` for tracking the creation process. The `parent` parameter, specifying the repository path, and `workspaceId` are both required for this new method. \n\n**Breaking Change:** The `parent` parameter for `projects.locations.repositories.workspaces.createLongRunning` is now strictly required. If you were using an earlier version of this API where `parent` was optional for this method, your calls will now fail until you provide this parameter.",
+  "impact": "medium",
+  "breaking": true,
+  "interesting_score": 8,
+  "tags": [
+    "new-feature",
+    "breaking-change",
+    "workspaces",
+    "async"
+  ],
+  "extracted_methods": [
+    "projects.locations.repositories.workspaces.createlongrunning"
+  ],
+  "target_paths": [
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.description",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.flatpath",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.httpmethod",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.id",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameterorder[0]",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.description",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.location",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.pattern",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.required",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.parent.type",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.workspaceid.description",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.workspaceid.location",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.parameters.workspaceid.type",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.path",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.request.$ref",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.response.$ref",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.scopes[0]",
+    "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.scopes[1]"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-11T12:31:46.318Z"
+}

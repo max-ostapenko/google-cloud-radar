@@ -1,0 +1,27 @@
+{
+  "id": "2026-11-11-pubsub-v1",
+  "date": "2026-11-11",
+  "api": "pubsub.v1",
+  "service": "Cloud Pub/Sub",
+  "title": "Pub/Sub Adds Zstd Compression Support",
+  "summary": "Cloud Pub/Sub now supports Zstd as a compression algorithm for messages. Developers can leverage Zstd for potentially better compression ratios and performance, offering more options for optimizing message throughput and storage.",
+  "details": "The `schemas.Compression` object's `compressionAlgorithm` property now includes `ZSTD` as an available enum value. This allows publishers to specify Zstd compression for their messages, which can lead to more efficient data transfer and storage compared to other algorithms, depending on the data characteristics.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "messaging",
+    "compression",
+    "pubsub"
+  ],
+  "extracted_methods": [
+    "schemas.Compression"
+  ],
+  "target_paths": [
+    "schemas.compression.properties.compressionalgorithm.enum[2]",
+    "schemas.compression.properties.compressionalgorithm.enumdescriptions[2]"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-11T12:31:46.327Z"
+}
