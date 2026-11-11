@@ -322,7 +322,9 @@
     "schemas.googleclouddiscoveryenginev1enginefeaturepolicymember.properties.verification.type",
     "schemas.googleclouddiscoveryenginev1enginefeaturepolicymember.type"
   ],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-11-08T05:17:31.798Z"
+  "status": "released",
+  "lead_time_days": 2,
+  "generated_at": "2026-11-08T05:17:31.798Z",
+  "official_release_date": "2026-11-10",
+  "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#November_10_2026"
 }
