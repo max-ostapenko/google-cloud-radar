@@ -4927,21 +4927,6 @@
     },
     {
       "description": "Programmatically manage your Merchant Center Accounts.",
-      "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=accounts_v1beta",
-      "documentationLink": "https://developers.google.com/merchant/api",
-      "icons": {
-        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-      },
-      "id": "merchantapi:accounts_v1beta",
-      "kind": "discovery#directoryItem",
-      "name": "merchantapi",
-      "preferred": false,
-      "title": "Merchant API",
-      "version": "accounts_v1beta"
-    },
-    {
-      "description": "Programmatically manage your Merchant Center Accounts.",
       "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=conversions_v1",
       "documentationLink": "https://developers.google.com/merchant/api",
       "icons": {
@@ -4954,21 +4939,6 @@
       "preferred": false,
       "title": "Merchant API",
       "version": "conversions_v1"
-    },
-    {
-      "description": "Programmatically manage your Merchant Center Accounts.",
-      "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=conversions_v1beta",
-      "documentationLink": "https://developers.google.com/merchant/api",
-      "icons": {
-        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-      },
-      "id": "merchantapi:conversions_v1beta",
-      "kind": "discovery#directoryItem",
-      "name": "merchantapi",
-      "preferred": false,
-      "title": "Merchant API",
-      "version": "conversions_v1beta"
     },
     {
       "description": "Programmatically manage your Merchant Center Accounts.",
@@ -4987,21 +4957,6 @@
     },
     {
       "description": "Programmatically manage your Merchant Center Accounts.",
-      "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=datasources_v1beta",
-      "documentationLink": "https://developers.google.com/merchant/api",
-      "icons": {
-        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-      },
-      "id": "merchantapi:datasources_v1beta",
-      "kind": "discovery#directoryItem",
-      "name": "merchantapi",
-      "preferred": false,
-      "title": "Merchant API",
-      "version": "datasources_v1beta"
-    },
-    {
-      "description": "Programmatically manage your Merchant Center Accounts.",
       "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=inventories_v1",
       "documentationLink": "https://developers.google.com/merchant/api",
       "icons": {
@@ -5014,21 +4969,6 @@
       "preferred": false,
       "title": "Merchant API",
       "version": "inventories_v1"
-    },
-    {
-      "description": "Programmatically manage your Merchant Center Accounts.",
-      "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=inventories_v1beta",
-      "documentationLink": "https://developers.google.com/merchant/api",
-      "icons": {
-        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-      },
-      "id": "merchantapi:inventories_v1beta",
-      "kind": "discovery#directoryItem",
-      "name": "merchantapi",
-      "preferred": false,
-      "title": "Merchant API",
-      "version": "inventories_v1beta"
     },
     {
       "description": "Programmatically manage your Merchant Center Accounts.",
@@ -5047,21 +4987,6 @@
     },
     {
       "description": "Programmatically manage your Merchant Center Accounts.",
-      "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=issueresolution_v1beta",
-      "documentationLink": "https://developers.google.com/merchant/api",
-      "icons": {
-        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-      },
-      "id": "merchantapi:issueresolution_v1beta",
-      "kind": "discovery#directoryItem",
-      "name": "merchantapi",
-      "preferred": false,
-      "title": "Merchant API",
-      "version": "issueresolution_v1beta"
-    },
-    {
-      "description": "Programmatically manage your Merchant Center Accounts.",
       "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=lfp_v1",
       "documentationLink": "https://developers.google.com/merchant/api",
       "icons": {
@@ -5074,21 +4999,6 @@
       "preferred": false,
       "title": "Merchant API",
       "version": "lfp_v1"
-    },
-    {
-      "description": "Programmatically manage your Merchant Center Accounts.",
-      "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=lfp_v1beta",
-      "documentationLink": "https://developers.google.com/merchant/api",
-      "icons": {
-        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-      },
-      "id": "merchantapi:lfp_v1beta",
-      "kind": "discovery#directoryItem",
-      "name": "merchantapi",
-      "preferred": false,
-      "title": "Merchant API",
-      "version": "lfp_v1beta"
     },
     {
       "description": "Programmatically manage your Merchant Center Accounts.",
@@ -5122,21 +5032,6 @@
     },
     {
       "description": "Programmatically manage your Merchant Center Accounts.",
-      "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=notifications_v1beta",
-      "documentationLink": "https://developers.google.com/merchant/api",
-      "icons": {
-        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-      },
-      "id": "merchantapi:notifications_v1beta",
-      "kind": "discovery#directoryItem",
-      "name": "merchantapi",
-      "preferred": false,
-      "title": "Merchant API",
-      "version": "notifications_v1beta"
-    },
-    {
-      "description": "Programmatically manage your Merchant Center Accounts.",
       "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=ordertracking_v1",
       "documentationLink": "https://developers.google.com/merchant/api",
       "icons": {
@@ -5149,21 +5044,6 @@
       "preferred": false,
       "title": "Merchant API",
       "version": "ordertracking_v1"
-    },
-    {
-      "description": "Programmatically manage your Merchant Center Accounts.",
-      "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=ordertracking_v1beta",
-      "documentationLink": "https://developers.google.com/merchant/api",
-      "icons": {
-        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-      },
-      "id": "merchantapi:ordertracking_v1beta",
-      "kind": "discovery#directoryItem",
-      "name": "merchantapi",
-      "preferred": false,
-      "title": "Merchant API",
-      "version": "ordertracking_v1beta"
     },
     {
       "description": "Programmatically manage your Merchant Center Accounts.",
@@ -5182,21 +5062,6 @@
     },
     {
       "description": "Programmatically manage your Merchant Center Accounts.",
-      "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=products_v1beta",
-      "documentationLink": "https://developers.google.com/merchant/api",
-      "icons": {
-        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-      },
-      "id": "merchantapi:products_v1beta",
-      "kind": "discovery#directoryItem",
-      "name": "merchantapi",
-      "preferred": false,
-      "title": "Merchant API",
-      "version": "products_v1beta"
-    },
-    {
-      "description": "Programmatically manage your Merchant Center Accounts.",
       "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=promotions_v1",
       "documentationLink": "https://developers.google.com/merchant/api",
       "icons": {
@@ -5209,21 +5074,6 @@
       "preferred": false,
       "title": "Merchant API",
       "version": "promotions_v1"
-    },
-    {
-      "description": "Programmatically manage your Merchant Center Accounts.",
-      "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=promotions_v1beta",
-      "documentationLink": "https://developers.google.com/merchant/api",
-      "icons": {
-        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-      },
-      "id": "merchantapi:promotions_v1beta",
-      "kind": "discovery#directoryItem",
-      "name": "merchantapi",
-      "preferred": false,
-      "title": "Merchant API",
-      "version": "promotions_v1beta"
     },
     {
       "description": "Programmatically manage your Merchant Center Accounts.",
@@ -5242,21 +5092,6 @@
     },
     {
       "description": "Programmatically manage your Merchant Center Accounts.",
-      "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=quota_v1beta",
-      "documentationLink": "https://developers.google.com/merchant/api",
-      "icons": {
-        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-      },
-      "id": "merchantapi:quota_v1beta",
-      "kind": "discovery#directoryItem",
-      "name": "merchantapi",
-      "preferred": false,
-      "title": "Merchant API",
-      "version": "quota_v1beta"
-    },
-    {
-      "description": "Programmatically manage your Merchant Center Accounts.",
       "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=reports_v1",
       "documentationLink": "https://developers.google.com/merchant/api",
       "icons": {
@@ -5266,39 +5101,9 @@
       "id": "merchantapi:reports_v1",
       "kind": "discovery#directoryItem",
       "name": "merchantapi",
-      "preferred": false,
-      "title": "Merchant API",
-      "version": "reports_v1"
-    },
-    {
-      "description": "Programmatically manage your Merchant Center Accounts.",
-      "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=reports_v1beta",
-      "documentationLink": "https://developers.google.com/merchant/api",
-      "icons": {
-        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-      },
-      "id": "merchantapi:reports_v1beta",
-      "kind": "discovery#directoryItem",
-      "name": "merchantapi",
-      "preferred": false,
-      "title": "Merchant API",
-      "version": "reports_v1beta"
-    },
-    {
-      "description": "Programmatically manage your Merchant Center Accounts.",
-      "discoveryRestUrl": "https://merchantapi.googleapis.com/$discovery/rest?version=reviews_v1beta",
-      "documentationLink": "https://developers.google.com/merchant/api",
-      "icons": {
-        "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-        "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-      },
-      "id": "merchantapi:reviews_v1beta",
-      "kind": "discovery#directoryItem",
-      "name": "merchantapi",
       "preferred": true,
       "title": "Merchant API",
-      "version": "reviews_v1beta"
+      "version": "reports_v1"
     },
     {
       "description": "The Dataproc Metastore API is used to manage the lifecycle and configuration of metastore services.",
