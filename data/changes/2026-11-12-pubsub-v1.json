@@ -1,0 +1,27 @@
+{
+  "id": "2026-11-12-pubsub-v1",
+  "date": "2026-11-12",
+  "api": "pubsub.v1",
+  "service": "Cloud Pub/Sub",
+  "title": "Zstd Compression Option Rolled Back",
+  "summary": "The recently added Zstd compression algorithm option for Pub/Sub messages has been removed. Developers using or planning to use Zstd compression should revert to other supported algorithms.",
+  "details": "The `ZSTD` enum value has been removed from the `compressionAlgorithm` property within the `schemas.Compression` object. This effectively rolls back the Zstd compression support that was recently introduced. Any applications configured to use `ZSTD` for message compression will now encounter errors and should be updated to use `GZIP` or no compression.",
+  "impact": "high",
+  "breaking": true,
+  "interesting_score": 9,
+  "tags": [
+    "breaking-change",
+    "rollback",
+    "compression"
+  ],
+  "extracted_methods": [
+    "schemas.Compression"
+  ],
+  "target_paths": [
+    "schemas.compression.properties.compressionalgorithm.enum[2]",
+    "schemas.compression.properties.compressionalgorithm.enumdescriptions[2]"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-12T18:00:18.471Z"
+}
