@@ -1,0 +1,31 @@
+{
+  "id": "2026-11-13-storage-v1",
+  "date": "2026-11-13",
+  "api": "storage.v1",
+  "service": "Cloud Storage",
+  "title": "Object Zonal Availability Info Added",
+  "summary": "Cloud Storage objects now expose `zonalAvailabilityInfo` in their metadata, detailing their presence in Rapid Cache Ultra (RCU) zonal caches. This includes a list of `availableZones` where the object has a zonal copy.",
+  "details": "The `Object` schema in the `storage.v1` API has been extended with a new top-level property, `zonalAvailabilityInfo`. This object provides details about an object's availability within Rapid Cache Ultra (RCU) zonal caches. Specifically, it includes an `availableZones` array, which lists the zones (e.g., 'us-central1-a') where a zonal copy of the object exists. This information will populate once the object is loaded into the cache, offering greater visibility into data locality for performance-sensitive applications.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 6,
+  "tags": [
+    "storage",
+    "metadata",
+    "caching",
+    "rapid-cache-ultra"
+  ],
+  "extracted_methods": [
+    "storage.v1"
+  ],
+  "target_paths": [
+    "schemas.object.properties.zonalavailabilityinfo.description",
+    "schemas.object.properties.zonalavailabilityinfo.properties.availablezones.description",
+    "schemas.object.properties.zonalavailabilityinfo.properties.availablezones.items.type",
+    "schemas.object.properties.zonalavailabilityinfo.properties.availablezones.type",
+    "schemas.object.properties.zonalavailabilityinfo.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-13T12:55:21.278Z"
+}
