@@ -121,7 +121,7 @@ export class DocumentInfo {
       this.revision = this.json.revision ?? null;
 
       const sorted = sortKeys(this.json);
-      this.json_string = JSON.stringify(sorted, null, 2);
+      this.json_string = JSON.stringify(sorted, null, 2) + '\n';
 
       const withoutRev = { ...sorted };
       delete withoutRev.revision;
@@ -287,14 +287,15 @@ export function updateFiles(
 export function updateIndex(indexDocument: DocumentInfo, targetDir = '.'): void {
   const filename = indexDocument.filename;
   const fullPath = path.join(targetDir, filename);
+  const targetBuf = Buffer.from(indexDocument.json_string, 'utf-8');
   if (fs.existsSync(fullPath)) {
     const existingContent = fs.readFileSync(fullPath);
-    if (existingContent.equals(indexDocument.content)) {
+    if (existingContent.equals(targetBuf)) {
       return;
     }
   }
   console.log(`UPDATING index file ${filename}`);
-  fs.writeFileSync(fullPath, Buffer.from(indexDocument.json_string));
+  fs.writeFileSync(fullPath, targetBuf);
 }
 
 export async function main(): Promise<void> {

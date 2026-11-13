@@ -117,9 +117,10 @@ export function createPr(branch: string): string {
     { check: true }
   );
 
+  const urlMatch = prOutput.match(/\/pull\/(\d+)/);
   const lines = prOutput.split('\n').filter(Boolean);
-  const lastLine = lines[lines.length - 1];
-  const prNumber = lastLine.split('/').pop() || '';
+  const lastLine = lines[lines.length - 1] || '';
+  const prNumber = urlMatch ? urlMatch[1] : (lastLine.split('/').pop()?.match(/^\d+$/)?.[0] || '');
   console.log(`Pull request number is ${prNumber}.`);
 
   for (let count = 0; count < 5; count++) {
@@ -190,7 +191,7 @@ export function main(): void {
     ensureGitIdentity();
     const githubToken = process.env[MAIN_TOKEN_ENV];
     const username = GIT_USER_NAME;
-    const forkRepoName = REPO_NAME.replace('googleapis/', `${username}/`);
+    const forkRepoName = REPO_NAME.replace(/^[^/]+\//, `${username}/`);
     ensureGitRemote(githubToken, username, forkRepoName);
 
     const branch = commitChanges();

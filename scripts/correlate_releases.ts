@@ -26,6 +26,9 @@ export function calculateLeadTime(canaryDateStr: string, gaDateStr: string): num
   try {
     const d1 = new Date(canaryDateStr.slice(0, 10) + 'T00:00:00Z');
     const d2 = new Date(gaDateStr.slice(0, 10) + 'T00:00:00Z');
+    if (Number.isNaN(d1.getTime()) || Number.isNaN(d2.getTime())) {
+      return 0;
+    }
     const diffDays = Math.round((d2.getTime() - d1.getTime()) / (1000 * 3600 * 24));
     return Math.max(0, diffDays);
   } catch {
@@ -252,8 +255,20 @@ export async function fetchFeedEntries(feedUrl: string, archive?: Record<string,
     console.warn(`Could not fetch live feed from ${feedUrl}: ${err.message}`);
   }
 
-  // Merge with archive
-  if (archive && archive[feedUrl]) {
+  // Merge live entries into archive and archive entries into result (40191c37)
+  if (archive) {
+    if (!archive[feedUrl]) {
+      archive[feedUrl] = [];
+    }
+    const archSeen = new Set(archive[feedUrl].map((e) => `${e.date}-${e.title}`));
+    for (const liveItem of entries) {
+      const key = `${liveItem.date}-${liveItem.title}`;
+      if (!archSeen.has(key)) {
+        archive[feedUrl].push(liveItem);
+        archSeen.add(key);
+      }
+    }
+
     const seen = new Set(entries.map((e) => `${e.date}-${e.title}`));
     for (const archItem of archive[feedUrl]) {
       const key = `${archItem.date}-${archItem.title}`;
@@ -314,7 +329,13 @@ export async function runCorrelation(options: {
         const releaseEntries = await fetchFeedEntries(feedUrl, archive);
         const match = matchChangeAgainstReleases(doc, releaseEntries);
         if (match) {
-          const leadTime = calculateLeadTime(doc.date || doc.id.slice(0, 10), match.date);
+          const detectedDate = String(
+            doc.first_detected ||
+              doc.date ||
+              doc.first_detected_at ||
+              (doc.id && /^\d{4}-\d{2}-\d{2}/.test(String(doc.id)) ? String(doc.id).slice(0, 10) : '')
+          ).slice(0, 10);
+          const leadTime = calculateLeadTime(detectedDate, match.date);
           matchedResults.push({
             slug: doc.id || doc.slug || file.replace('.json', ''),
             filePath,

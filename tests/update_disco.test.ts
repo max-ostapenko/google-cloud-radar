@@ -12,7 +12,7 @@ const DISCOVERY_0001_CONTENT = Buffer.from(`{
   "data": "foo"
 }`);
 
-const DISCOVERY_0001_CONTENT_SORTED = Buffer.from(`{\n  "data": "foo",\n  "revision": "0001"\n}`);
+const DISCOVERY_0001_CONTENT_SORTED = Buffer.from(`{\n  "data": "foo",\n  "revision": "0001"\n}\n`);
 
 const DISCOVERY_0001A_CONTENT = Buffer.from(`{
   "revision": "0001",
@@ -24,7 +24,7 @@ const DISCOVERY_0002_CONTENT = Buffer.from(`{
   "data": "bar"
 }`);
 
-const DISCOVERY_0002_CONTENT_SORTED = Buffer.from(`{\n  "data": "bar",\n  "revision": "0002"\n}`);
+const DISCOVERY_0002_CONTENT_SORTED = Buffer.from(`{\n  "data": "bar",\n  "revision": "0002"\n}\n`);
 
 const DISCOVERY_0003_CONTENT = Buffer.from(`{
   "revision": "0003",
@@ -61,7 +61,7 @@ const INDEX_2_CONTENT = Buffer.from(`{
   ]
 }`);
 
-const INDEX_2_CONTENT_SORTED = Buffer.from(`{\n  "items": [\n    {\n      "discoveryRestUrl": "https://example.com/service1_v1.json",\n      "name": "service1",\n      "version": "v1"\n    },\n    {\n      "discoveryRestUrl": "https://example.com/service1_v2.json",\n      "name": "service1",\n      "version": "v2"\n    }\n  ]\n}`);
+const INDEX_2_CONTENT_SORTED = Buffer.from(`{\n  "items": [\n    {\n      "discoveryRestUrl": "https://example.com/service1_v1.json",\n      "name": "service1",\n      "version": "v1"\n    },\n    {\n      "discoveryRestUrl": "https://example.com/service1_v2.json",\n      "name": "service1",\n      "version": "v2"\n    }\n  ]\n}\n`);
 
 describe('Update Disco', () => {
   beforeEach(() => {
