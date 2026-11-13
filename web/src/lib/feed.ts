@@ -532,6 +532,10 @@ export async function getAllFeedEntries(): Promise<FeedEntry[]> {
 }
 
 export async function getActiveDataSource(): Promise<{ type: 'database' | 'filesystem'; label: string }> {
+  const localEntries = getLocalFeedEntries();
+  if (localEntries && localEntries.length > 0) {
+    return { type: 'filesystem', label: 'Local Filesystem (data/changes/*.json)' };
+  }
   const dbEntries = await fetchFromFirestore();
   if (dbEntries && dbEntries.length > 0) {
     return { type: 'database', label: `Connected to Mock Firestore (localhost:${DB_HOST.split(':')[1] || '8080'})` };
