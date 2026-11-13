@@ -1,5 +1,33 @@
 [
   {
+    "id": "2026-11-13-storage-v1",
+    "date": "2026-11-13",
+    "api": "storage.v1",
+    "service": "Cloud Storage",
+    "title": "Object Zonal Availability Info Added",
+    "summary": "Cloud Storage objects now expose `zonalAvailabilityInfo` in their metadata, detailing their presence in Rapid Cache Ultra (RCU) zonal caches. This includes a list of `availableZones` where the object has a zonal copy.",
+    "impact": "medium",
+    "breaking": false,
+    "interesting_score": 6,
+    "tags": [
+      "storage",
+      "metadata",
+      "caching",
+      "rapid-cache-ultra"
+    ],
+    "extracted_methods": [
+      "storage.v1"
+    ],
+    "target_paths": [
+      "schemas.object.properties.zonalavailabilityinfo.description",
+      "schemas.object.properties.zonalavailabilityinfo.properties.availablezones.description",
+      "schemas.object.properties.zonalavailabilityinfo.properties.availablezones.items.type",
+      "schemas.object.properties.zonalavailabilityinfo.properties.availablezones.type",
+      "schemas.object.properties.zonalavailabilityinfo.type"
+    ],
+    "generated_at": "2026-11-13T12:55:21.278Z"
+  },
+  {
     "id": "2026-11-12-pubsub-v1",
     "date": "2026-11-12",
     "api": "pubsub.v1",
