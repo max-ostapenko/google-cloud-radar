@@ -15,6 +15,9 @@ interface Props {
   ogImage?: string;
   schemaData?: Record<string, any>;
   showSidebar?: boolean;
+  noindex?: boolean;
+  prevUrl?: string;
+  nextUrl?: string;
 }
 
 const {
@@ -26,6 +29,9 @@ const {
   ogImage = "/og-image.png",
   schemaData,
   showSidebar = true,
+  noindex = false,
+  prevUrl,
+  nextUrl,
 } = Astro.props;
 
 const rawPath = Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\/+$/, '');
@@ -67,7 +73,13 @@ const jsonLd = schemaData
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalURL} />
+    {noindex ? (
+      <meta name="robots" content="noindex, nofollow" />
+    ) : (
+      <link rel="canonical" href={canonicalURL} />
+    )}
+    {prevUrl && <link rel="prev" href={prevUrl} />}
+    {nextUrl && <link rel="next" href={nextUrl} />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate icon" href="/favicon.ico" />
 

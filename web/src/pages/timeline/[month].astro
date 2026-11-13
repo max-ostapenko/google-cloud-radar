@@ -34,12 +34,46 @@ const highImpactCount = group.entries.filter((e) => e.impact === 'high').length;
 
 const pageTitle = `Google Cloud API Changes — ${group.label} (${group.totalCount} Updates, ${breakingCount} Breaking Alerts)`;
 const pageDesc = `Detailed Google Cloud and Google API changelog for ${group.label}. Tracking ${group.totalCount} method additions, schema updates, and ${breakingCount} breaking alerts across ${services.length} monitored APIs.`;
+
+const siteOrigin = (Astro.site ? Astro.site.toString() : 'https://google-cloud-radar.com').replace(/\/+$/, '');
+const currentMonthIdx = monthGroups.findIndex((g) => g.key === group.key);
+const prevGroup = currentMonthIdx > 0 ? monthGroups[currentMonthIdx - 1] : null;
+const nextGroup = currentMonthIdx >= 0 && currentMonthIdx < monthGroups.length - 1 ? monthGroups[currentMonthIdx + 1] : null;
+const prevUrl = prevGroup ? `${siteOrigin}/timeline/${prevGroup.key}` : undefined;
+const nextUrl = nextGroup ? `${siteOrigin}/timeline/${nextGroup.key}` : undefined;
+
+const schemaData = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: pageTitle,
+  description: pageDesc,
+  url: `${siteOrigin}/timeline/${group.key}`,
+  isPartOf: {
+    "@type": "WebSite",
+    "@id": `${siteOrigin}/#website`,
+    name: "Google Cloud Radar",
+    url: siteOrigin,
+  },
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: group.totalCount,
+    itemListElement: group.entries.slice(0, 50).map((entry, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      url: `${siteOrigin}/changes/${entry.slug}`,
+      name: `${entry.service}: ${entry.title}`,
+    })),
+  },
+};
 ---
 
 <BaseLayout 
   title={pageTitle}
   description={pageDesc}
-  image="https://google-cloud-radar.com/og-image.png"
+  ogImage="https://google-cloud-radar.com/og-image.png"
+  schemaData={schemaData}
+  prevUrl={prevUrl}
+  nextUrl={nextUrl}
 >
   <div class="timeline-page-container">
     <!-- Breadcrumbs -->
