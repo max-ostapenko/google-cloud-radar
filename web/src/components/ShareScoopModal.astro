@@ -29,7 +29,7 @@
         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
         </svg>
-        <span>Twitter / X</span>
+        <span>X</span>
       </button>
       <button type="button" class="tab-btn" data-tab="linkedin">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
@@ -48,6 +48,13 @@
           <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm5.8 11.2a1.8 1.8 0 0 1-2.4.2 7.6 7.6 0 0 0-6.8 0 1.8 1.8 0 0 1-2.4-.2 1.9 1.9 0 0 1 .3-2.6 1.8 1.8 0 0 1 2-.1 6.5 6.5 0 0 1 2.3-.6l1.3-4.1 3.2.7a1.3 1.3 0 0 1 1.3 1.3 1.3 1.3 0 0 1-1.3 1.3 1.3 1.3 0 0 1-1.3-1.1l-2.6-.6-1 3.4a6.6 6.6 0 0 1 2.4.6 1.8 1.8 0 0 1 2 .1 1.9 1.9 0 0 1 .3 2.6z"/>
         </svg>
         <span>Reddit</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="agent">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+        <span>Agent / MD</span>
       </button>
     </div>
 
@@ -150,6 +157,22 @@
         </div>
       </div>
     </div>
+
+    <div class="tab-panel" data-panel="agent">
+      <textarea id="shareAgentTextarea" class="snippet-textarea" readonly rows="9"></textarea>
+      <div class="panel-actions">
+        <span id="shareAgentCount" class="char-count">Agent Markdown</span>
+        <div class="action-buttons">
+          <button type="button" class="copy-btn" id="shareAgentCopyBtn">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            <span>Copy Agent Prompt</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -182,13 +205,20 @@
     const redditTitle = document.getElementById('shareRedditTitleInput') as HTMLInputElement;
     const redditBody = document.getElementById('shareRedditBodyTextarea') as HTMLTextAreaElement;
     const redditIntent = document.getElementById('shareRedditIntentBtn') as HTMLAnchorElement;
+    const agentArea = document.getElementById('shareAgentTextarea') as HTMLTextAreaElement;
+    const agentCount = document.getElementById('shareAgentCount');
 
     function openModal(data: SharePayload) {
       const permalink = `https://google-cloud-radar.com/changes/${data.slug}`;
       const methods = data.methods || [];
-      const methodHighlight = methods.length > 0 ? methods[0] : data.api;
 
-      const twitterText = `Google Cloud API Radar: Updates detected for ${data.service} (${data.api})${data.isBreaking ? ' [BREAKING]' : ''} ahead of official release notes!\n\n"${data.title}"\nTargeted Method: ${methodHighlight}\n\nTrack the pre-release diff on Google Cloud Radar:\n${permalink}\n\n#GCP #GoogleCloud #DevOps #CloudArchitecture`;
+      const tweetPrefix = `${data.isBreaking ? '[BREAKING] ' : ''}${data.service} (${data.api}): `;
+      const tweetSuffix = `\n\n${permalink}\n#GCP #GoogleCloud`;
+      const maxTitleLen = Math.max(20, 280 - tweetPrefix.length - tweetSuffix.length);
+      const shortTitle = data.title.length > maxTitleLen
+        ? data.title.slice(0, maxTitleLen - 1) + '…'
+        : data.title;
+      const twitterText = `${tweetPrefix}${shortTitle}${tweetSuffix}`;
 
       const linkedInText = `Google Cloud API Update Signal: ${data.service}\n\nUnreleased changes detected in ${data.service} Google Discovery APIs before official release documentation:\n\nKey Details:\n• Update: ${data.title}\n• API: ${data.api}\n• Impact: ${data.isBreaking ? '[BREAKING] Breaking Change' : 'New Feature / Method Extensions'}\n${methods.length > 0 ? `• Key Methods: ${methods.slice(0, 3).join(', ')}\n` : ''}\nSummary:\n${data.summary}\n\nInspect the full schema diff and crowd-sourced impact signals on Google Cloud Radar:\n${permalink}\n\n#GoogleCloud #GCP #CloudArchitecture #SoftwareEngineering #DevOps`;
 
@@ -197,9 +227,26 @@
       const rTitle = `[Google Cloud Radar] ${data.service}: ${data.title}${data.isBreaking ? ' [Breaking Change]' : ''}`;
       const rBody = `New API changes detected for **${data.service}** (\`${data.api}\`) ahead of official release notes:\n\n**Summary:**\n${data.summary}\n\n${methods.length > 0 ? `**Methods Updated:**\n${methods.map((m) => `- \`${m}\``).join('\n')}\n` : ''}Tracked live on Google Cloud Radar:\n${permalink}`;
 
+      const agentText = [
+        '---',
+        `service: ${data.service}`,
+        `api: ${data.api}`,
+        `breaking: ${Boolean(data.isBreaking)}`,
+        `url: ${permalink}`,
+        '---',
+        '',
+        `# ${data.service}: ${data.title}`,
+        '',
+        data.summary,
+        ...(methods.length > 0 ? ['', '## Impacted Methods', ...methods.map((m) => `- \`${m}\``)] : []),
+        '',
+        '## Action',
+        `Review our codebase for usage of \`${data.api}\`${methods.length > 0 ? ' and the impacted methods above' : ''}, and assess compatibility with this update.`,
+      ].join('\n');
+
       if (twitterArea) twitterArea.value = twitterText;
-      if (twitterCount) twitterCount.textContent = `${twitterText.length} chars`;
-      if (twitterIntent) twitterIntent.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}`;
+      if (twitterCount) twitterCount.textContent = `${twitterText.length}/280 chars`;
+      if (twitterIntent) twitterIntent.href = `https://x.com/intent/post?text=${encodeURIComponent(twitterText)}`;
 
       if (linkedInArea) linkedInArea.value = linkedInText;
       if (linkedInCount) linkedInCount.textContent = `${linkedInText.length} chars`;
@@ -209,6 +256,8 @@
       if (redditTitle) redditTitle.value = rTitle;
       if (redditBody) redditBody.value = rBody;
       if (redditIntent) redditIntent.href = `https://www.reddit.com/r/googlecloud/submit?title=${encodeURIComponent(rTitle)}&text=${encodeURIComponent(rBody)}`;
+      if (agentArea) agentArea.value = agentText;
+      if (agentCount) agentCount.textContent = `${agentText.length} chars · Agent Markdown`;
 
       backdrop.style.display = 'flex';
       backdrop.setAttribute('aria-hidden', 'false');
@@ -297,6 +346,7 @@
     setupCopyBtn('shareLinkedInCopyBtn', () => linkedInArea?.value || '');
     setupCopyBtn('shareSlackCopyBtn', () => slackArea?.value || '');
     setupCopyBtn('shareRedditCopyBtn', () => `${redditTitle?.value || ''}\n\n${redditBody?.value || ''}`);
+    setupCopyBtn('shareAgentCopyBtn', () => agentArea?.value || '');
   }
 
   initGlobalShareModal();
