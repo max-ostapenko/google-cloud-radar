@@ -10,10 +10,13 @@ import Breadcrumbs from "../components/Breadcrumbs.astro";
   noindex={true}
 >
   <div class="not-found-container">
-    <Breadcrumbs items={[
-      { label: "Radar Feed", href: "/" },
-      { label: "404 Not Found" },
-    ]} />
+    <Breadcrumbs
+      items={[
+        { label: "Radar Feed", href: "/" },
+        { label: "404 Not Found" },
+      ]}
+      emitSchema={false}
+    />
 
     <div class="not-found-card">
       <div class="not-found-code">404</div>

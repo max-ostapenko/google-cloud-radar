@@ -54,13 +54,17 @@ const apisWithMeta = apisUsed.map((api) => {
 
 const primaryDocLink = `https://cloud.google.com/products`;
 
+const serviceParts = [
+  serviceInfo.ecosystem,
+  serviceInfo.category && serviceInfo.category !== serviceInfo.ecosystem
+    ? serviceInfo.category
+    : null,
+  serviceInfo.service,
+].filter(Boolean);
+
 const breadcrumbItems = [
   { label: "Radar Feed", href: "/" },
-  ...(serviceInfo.ecosystem ? [{ label: serviceInfo.ecosystem }] : []),
-  ...(serviceInfo.category && serviceInfo.category !== serviceInfo.ecosystem
-    ? [{ label: serviceInfo.category }]
-    : []),
-  { label: serviceInfo.service },
+  { label: serviceParts.join(" / ") },
 ];
 ---
 
