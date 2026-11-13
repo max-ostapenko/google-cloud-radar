@@ -566,5 +566,177 @@ describe('Diff Preprocessor', () => {
       expect(diff_preprocessor.isNoisePath('resources.tables.methods.get.parameters.tableId')).toBe(false);
     });
   });
+
+  it('detects entire schema removal (77e1dd28)', () => {
+    const old = {
+      schemas: {
+        Status: { type: 'object', properties: { code: { type: 'integer' } } },
+        KeepMe: { type: 'string' },
+      },
+    };
+    const next = {
+      schemas: {
+        KeepMe: { type: 'string' },
+      },
+    };
+    const result = diff_preprocessor.buildStructuredDiff(
+      'test.v1.json',
+      JSON.stringify(old),
+      JSON.stringify(next)
+    );
+    expect(result).not.toBeNull();
+    expect(result!.is_breaking).toBe(true);
+    expect(result!.breaking_reasons).toContain("Removed schema 'Status'");
+  });
+
+  it('detects array item type and $ref mutations (c101333c)', () => {
+    const old = {
+      schemas: {
+        Job: {
+          properties: {
+            tags: { type: 'array', items: { type: 'string' } },
+            refs: { type: 'array', items: { $ref: 'OldRef' } },
+          },
+        },
+      },
+    };
+    const next = {
+      schemas: {
+        Job: {
+          properties: {
+            tags: { type: 'array', items: { type: 'integer' } },
+            refs: { type: 'array', items: { $ref: 'NewRef' } },
+          },
+        },
+      },
+    };
+    const result = diff_preprocessor.buildStructuredDiff(
+      'test.v1.json',
+      JSON.stringify(old),
+      JSON.stringify(next)
+    );
+    expect(result).not.toBeNull();
+    expect(result!.is_breaking).toBe(true);
+    expect(result!.breaking_reasons).toContain(
+      "Array property 'tags' in schema 'Job' changed item type from 'string' to 'integer'"
+    );
+    expect(result!.breaking_reasons).toContain(
+      "Array property 'refs' in schema 'Job' changed item referenced type from 'OldRef' to 'NewRef'"
+    );
+  });
+
+  it('detects OAuth2 scope removals (eb08f54e)', () => {
+    const old = {
+      auth: {
+        oauth2: {
+          scopes: {
+            'https://www.googleapis.com/auth/cloud-platform': { description: 'Full access' },
+            'https://www.googleapis.com/auth/readonly': { description: 'Read only' },
+          },
+        },
+      },
+    };
+    const next = {
+      auth: {
+        oauth2: {
+          scopes: {
+            'https://www.googleapis.com/auth/cloud-platform': { description: 'Full access' },
+          },
+        },
+      },
+    };
+    const result = diff_preprocessor.buildStructuredDiff(
+      'test.v1.json',
+      JSON.stringify(old),
+      JSON.stringify(next)
+    );
+    expect(result).not.toBeNull();
+    expect(result!.is_breaking).toBe(true);
+    expect(result!.breaking_reasons).toContain(
+      "Removed OAuth2 scope 'https://www.googleapis.com/auth/readonly'"
+    );
+  });
+
+  it('detects method request and response schema $ref changes (28516393)', () => {
+    const old = {
+      resources: {
+        jobs: {
+          methods: {
+            insert: {
+              httpMethod: 'POST',
+              request: { $ref: 'JobV1' },
+              response: { $ref: 'JobResponseV1' },
+            },
+          },
+        },
+      },
+    };
+    const next = {
+      resources: {
+        jobs: {
+          methods: {
+            insert: {
+              httpMethod: 'POST',
+              request: { $ref: 'JobV2' },
+              response: { $ref: 'JobResponseV2' },
+            },
+          },
+        },
+      },
+    };
+    const result = diff_preprocessor.buildStructuredDiff(
+      'test.v1.json',
+      JSON.stringify(old),
+      JSON.stringify(next)
+    );
+    expect(result).not.toBeNull();
+    expect(result!.is_breaking).toBe(true);
+    expect(result!.breaking_reasons).toContain("Method 'insert' request schema changed from 'JobV1' to 'JobV2'");
+    expect(result!.breaking_reasons).toContain(
+      "Method 'insert' response schema changed from 'JobResponseV1' to 'JobResponseV2'"
+    );
+  });
+
+  it('detects method parameter type, location, format, and repeated changes (813ac203)', () => {
+    const old = {
+      resources: {
+        jobs: {
+          methods: {
+            list: {
+              httpMethod: 'GET',
+              parameters: {
+                limit: { type: 'string', location: 'query', format: 'int32', repeated: false },
+              },
+            },
+          },
+        },
+      },
+    };
+    const next = {
+      resources: {
+        jobs: {
+          methods: {
+            list: {
+              httpMethod: 'GET',
+              parameters: {
+                limit: { type: 'integer', location: 'path', format: 'int64', repeated: true },
+              },
+            },
+          },
+        },
+      },
+    };
+    const result = diff_preprocessor.buildStructuredDiff(
+      'test.v1.json',
+      JSON.stringify(old),
+      JSON.stringify(next)
+    );
+    expect(result).not.toBeNull();
+    expect(result!.is_breaking).toBe(true);
+    expect(result!.breaking_reasons).toContain("Parameter 'limit' changed type from 'string' to 'integer'");
+    expect(result!.breaking_reasons).toContain("Parameter 'limit' changed location from 'query' to 'path'");
+    expect(result!.breaking_reasons).toContain("Parameter 'limit' changed format from 'int32' to 'int64'");
+    expect(result!.breaking_reasons).toContain("Parameter 'limit' changed repeated from 'false' to 'true'");
+  });
 });
 

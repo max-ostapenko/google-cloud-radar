@@ -235,6 +235,30 @@ export function detectBreakingChanges(
       }
     }
 
+    // Removed entire schema definition (77e1dd28)
+    if (parts[0] === 'schemas' && parts.length >= 2) {
+      const schemaName = parts[1];
+      const schemaPrefix = `schemas.${schemaName}`;
+      if (!Object.keys(newFlat).some((k) => k === schemaPrefix || k.startsWith(`${schemaPrefix}.`))) {
+        const reason = `Removed schema '${schemaName}'`;
+        if (!reasons.includes(reason)) reasons.push(reason);
+        continue;
+      }
+    }
+
+    // Removed OAuth2 scope (eb08f54e)
+    if (p.startsWith('auth.oauth2.scopes.')) {
+      const rest = p.slice('auth.oauth2.scopes.'.length);
+      const scopeUrl = rest.endsWith('.description')
+        ? rest.slice(0, -'.description'.length)
+        : rest;
+      const scopePrefix = `auth.oauth2.scopes.${scopeUrl}`;
+      if (!Object.keys(newFlat).some((k) => k === scopePrefix || k.startsWith(`${scopePrefix}.`))) {
+        const reason = `Removed OAuth2 scope '${scopeUrl}'`;
+        if (!reasons.includes(reason)) reasons.push(reason);
+      }
+    }
+
     // Removed schema property
     if (parts.includes('schemas') && parts.includes('properties')) {
       const sIdx = parts.indexOf('schemas');
@@ -278,7 +302,20 @@ export function detectBreakingChanges(
       }
     }
 
-    // Schema property type, $ref, or readOnly changes
+    // Parameter attribute changes (type, location, format, repeated) (813ac203)
+    if (parts.includes('parameters') && !parts.includes('schemas')) {
+      const pIdx = parts.indexOf('parameters');
+      if (parts.length === pIdx + 3) {
+        const paramName = parts[pIdx + 1];
+        const attr = parts[pIdx + 2];
+        if (['type', 'location', 'format', 'repeated'].includes(attr) && oldVal !== newVal) {
+          const reason = `Parameter '${paramName}' changed ${attr} from '${oldVal}' to '${newVal}'`;
+          if (!reasons.includes(reason)) reasons.push(reason);
+        }
+      }
+    }
+
+    // Schema property type, $ref, readOnly, or array item type/$ref changes (c101333c)
     if (parts.includes('schemas') && parts.includes('properties')) {
       const sIdx = parts.indexOf('schemas');
       const pIdx = parts.indexOf('properties');
@@ -296,11 +333,20 @@ export function detectBreakingChanges(
         } else if (attr === 'readOnly' && (oldVal === false || oldVal === null) && newVal === true) {
           const reason = `Property '${propName}' in schema '${schemaName}' was made read-only / immutable`;
           if (!reasons.includes(reason)) reasons.push(reason);
+        } else if (attr === 'items' && parts.length > pIdx + 3) {
+          const itemAttr = parts[pIdx + 3];
+          if (itemAttr === 'type' && oldVal !== newVal) {
+            const reason = `Array property '${propName}' in schema '${schemaName}' changed item type from '${oldVal}' to '${newVal}'`;
+            if (!reasons.includes(reason)) reasons.push(reason);
+          } else if (itemAttr === '$ref' && oldVal !== newVal) {
+            const reason = `Array property '${propName}' in schema '${schemaName}' changed item referenced type from '${oldVal}' to '${newVal}'`;
+            if (!reasons.includes(reason)) reasons.push(reason);
+          }
         }
       }
     }
 
-    // Method HTTP verb or URI path template change
+    // Method HTTP verb, URI path template, or request/response schema $ref change (28516393)
     if (parts.includes('methods')) {
       const mIdx = parts.indexOf('methods');
       if (parts.length > mIdx + 2) {
@@ -311,6 +357,14 @@ export function detectBreakingChanges(
           if (!reasons.includes(reason)) reasons.push(reason);
         } else if (attr === 'path' && oldVal !== newVal) {
           const reason = `Method '${methodName}' URI path template changed from '${oldVal}' to '${newVal}'`;
+          if (!reasons.includes(reason)) reasons.push(reason);
+        } else if (
+          (attr === 'response' || attr === 'request') &&
+          parts.length > mIdx + 3 &&
+          parts[mIdx + 3] === '$ref' &&
+          oldVal !== newVal
+        ) {
+          const reason = `Method '${methodName}' ${attr} schema changed from '${oldVal}' to '${newVal}'`;
           if (!reasons.includes(reason)) reasons.push(reason);
         }
       }
