@@ -238,6 +238,17 @@ const schemaData = {
     </div>
   </div>
 
+  <script is:inline>
+    if (localStorage.getItem('gcr_alerts_subscribed') === 'true') {
+      const hero = document.getElementById('feedHeroBanner');
+      if (hero) hero.style.display = 'none';
+      const cta = document.getElementById('feed-alerts-cta-btn');
+      if (cta) cta.classList.add('is-subscribed');
+      const ctaText = document.getElementById('feed-alerts-cta-text');
+      if (ctaText) ctaText.textContent = 'Alerts Active';
+    }
+  </script>
+
   <!-- Grouped Monthly Feed Stream -->
   <div class="feed-timeline" id="cards-container">
     {monthGroups.map((group, index) => (
@@ -272,7 +283,6 @@ const schemaData = {
 
 <script>
   import MiniSearch from 'minisearch';
-  import { onAuthChange, getUserAlertPreferences } from '../lib/firebase';
 
   // DOM Elements
   const searchInput = document.getElementById('global-search-input') as HTMLInputElement;
@@ -363,47 +373,58 @@ const schemaData = {
     }
   }
 
-  // Initialize MiniSearch
-  const documents: any[] = [];
-  cards.forEach((card) => {
-    const slug = card.getAttribute('data-slug') || '';
-    const title = card.querySelector('.change-title')?.textContent || '';
-    const service = card.querySelector('.service-name')?.textContent || '';
-    const summary = card.querySelector('.change-summary')?.textContent || '';
-    const category = card.getAttribute('data-category') || '';
-    const text = card.getAttribute('data-text') || '';
-    const breaking = card.getAttribute('data-breaking') === 'true';
-    const impact = card.getAttribute('data-impact') || 'medium';
+  // Lazy MiniSearch initialization (avoids synchronous 249-card indexing on initial load)
+  let miniSearchInstance: MiniSearch | null = null;
+  function getMiniSearch(): MiniSearch {
+    if (miniSearchInstance) return miniSearchInstance;
 
-    documents.push({
-      id: slug,
-      slug,
-      title,
-      service,
-      summary,
-      category,
-      text,
-      breaking,
-      impact,
+    const documents: any[] = [];
+    cards.forEach((card) => {
+      const slug = card.getAttribute('data-slug') || '';
+      const title = card.querySelector('.change-title')?.textContent || '';
+      const service = card.querySelector('.service-name')?.textContent || '';
+      const summary = card.querySelector('.change-summary')?.textContent || '';
+      const category = card.getAttribute('data-category') || '';
+      const text = card.getAttribute('data-text') || '';
+      const breaking = card.getAttribute('data-breaking') === 'true';
+      const impact = card.getAttribute('data-impact') || 'medium';
+
+      documents.push({
+        id: slug,
+        slug,
+        title,
+        service,
+        summary,
+        category,
+        text,
+        breaking,
+        impact,
+      });
     });
-  });
 
-  const miniSearch = new MiniSearch({
-    fields: ['text', 'title', 'service', 'summary', 'category', 'slug'],
-    storeFields: ['id'],
-    searchOptions: {
-      boost: {
-        service: 3.0,
-        title: 2.5,
-        text: 1.8,
-        summary: 1.0,
+    miniSearchInstance = new MiniSearch({
+      fields: ['text', 'title', 'service', 'summary', 'category', 'slug'],
+      storeFields: ['id'],
+      searchOptions: {
+        boost: {
+          service: 3.0,
+          title: 2.5,
+          text: 1.8,
+          summary: 1.0,
+        },
+        fuzzy: 0.25,
+        prefix: true,
+        combineWith: 'AND',
       },
-      fuzzy: 0.25,
-      prefix: true,
-      combineWith: 'AND',
-    },
-  });
-  miniSearch.addAll(documents);
+    });
+    miniSearchInstance.addAll(documents);
+    return miniSearchInstance;
+  }
+
+  searchInput?.addEventListener('focus', () => getMiniSearch(), { once: true });
+  if ('requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(() => getMiniSearch(), { timeout: 2000 });
+  }
 
   function getDateRangeForTimeline(timeline: string): { minDate: string; maxDate: string } {
     if (timeline === 'all') {
@@ -544,7 +565,7 @@ const schemaData = {
     const isSearching = searchQuery.trim().length > 0;
 
     if (isSearching) {
-      const searchResults = miniSearch.search(searchQuery.trim(), {
+      const searchResults = getMiniSearch().search(searchQuery.trim(), {
         fuzzy: 0.25,
         prefix: true,
       });
@@ -779,19 +800,27 @@ const schemaData = {
     }
   }
 
-  onAuthChange(async (user: any) => {
-    if (user) {
-      try {
-        const prefs = await getUserAlertPreferences(user);
-        const isSubscribed = Boolean(prefs?.breakingAlerts || prefs?.weeklyDigest);
-        setSubscribedState(isSubscribed);
-      } catch (err) {
-        console.warn('Could not read user alert preferences', err);
+  const initFeedAuthSync = async () => {
+    const { onAuthChange, getUserAlertPreferences } = await import('../lib/firebase');
+    onAuthChange(async (user: any) => {
+      if (user) {
+        try {
+          const prefs = await getUserAlertPreferences(user);
+          const isSubscribed = Boolean(prefs?.breakingAlerts || prefs?.weeklyDigest);
+          setSubscribedState(isSubscribed);
+        } catch (err) {
+          console.warn('Could not read user alert preferences', err);
+        }
+      } else {
+        setSubscribedState(false);
       }
-    } else {
-      setSubscribedState(false);
-    }
-  });
+    });
+  };
+  if ('requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(initFeedAuthSync, { timeout: 2000 });
+  } else {
+    setTimeout(initFeedAuthSync, 1500);
+  }
 
   window.addEventListener('radar_alert_prefs_update', (e: any) => {
     const isSubscribed = Boolean(e.detail?.breakingAlerts || e.detail?.weeklyDigest);
@@ -863,6 +892,13 @@ const schemaData = {
 <style>
   .feed-header {
     margin-bottom: 24px;
+  }
+
+  /* Defer layout/paint for off-screen feed cards below the fold */
+  .month-section:nth-of-type(n+2) :global(.change-card),
+  .month-section:first-of-type :global(.change-card:nth-child(n+6)) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto 220px;
   }
 
   /* Merged Hero & Alerts Banner */

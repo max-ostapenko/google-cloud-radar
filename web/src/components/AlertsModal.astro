@@ -167,13 +167,7 @@ const sortedServices = [...services].sort((a, b) => {
 </div>
 
 <script>
-  import {
-    signInWithGoogle,
-    onAuthChange,
-    getUserAlertPreferences,
-    saveUserAlertPreferences,
-    type UserAlertPreferences,
-  } from '../lib/firebase';
+  import type { UserAlertPreferences } from '../lib/firebase';
 
   function initAlertsModal() {
     const backdrop = document.getElementById('alertsModalBackdrop');
@@ -199,11 +193,22 @@ const sortedServices = [...services].sort((a, b) => {
 
     let currentUser: any = null;
 
+    let firebaseAuthSubscribed = false;
+    async function ensureFirebaseAuth() {
+      const { onAuthChange } = await import('../lib/firebase');
+      if (firebaseAuthSubscribed) return;
+      firebaseAuthSubscribed = true;
+      onAuthChange((user) => {
+        syncUserPrefs(user);
+      });
+    }
+
     function openModal() {
       if (backdrop) {
         backdrop.style.display = 'flex';
         backdrop.setAttribute('aria-hidden', 'false');
       }
+      ensureFirebaseAuth();
     }
 
     function closeModal() {
@@ -250,6 +255,7 @@ const sortedServices = [...services].sort((a, b) => {
       if (userName) userName.textContent = user.displayName || 'Google Cloud Engineer';
       if (userEmail) userEmail.textContent = user.email || '';
 
+      const { getUserAlertPreferences } = await import('../lib/firebase');
       const prefs: UserAlertPreferences = await getUserAlertPreferences(user);
       if (prefBreaking) prefBreaking.checked = prefs.breakingAlerts;
       if (prefWeekly) prefWeekly.checked = prefs.weeklyDigest;
@@ -268,12 +274,9 @@ const sortedServices = [...services].sort((a, b) => {
       });
     }
 
-    onAuthChange((user) => {
-      syncUserPrefs(user);
-    });
-
     googleSignInBtn?.addEventListener('click', async () => {
       try {
+        const { signInWithGoogle, saveUserAlertPreferences } = await import('../lib/firebase');
         const user = await signInWithGoogle();
         if (user) {
           await syncUserPrefs(user);
@@ -305,6 +308,7 @@ const sortedServices = [...services].sort((a, b) => {
 
       if (saveBtnText) saveBtnText.textContent = 'Saving...';
       try {
+        const { saveUserAlertPreferences } = await import('../lib/firebase');
         await saveUserAlertPreferences(currentUser, updatedPrefs);
         if (saveBtnText) saveBtnText.textContent = 'Preferences Saved!';
         setTimeout(() => {
@@ -321,6 +325,7 @@ const sortedServices = [...services].sort((a, b) => {
       if (!currentUser) return;
       if (prefBreaking) prefBreaking.checked = false;
       if (prefWeekly) prefWeekly.checked = false;
+      const { saveUserAlertPreferences } = await import('../lib/firebase');
       await saveUserAlertPreferences(currentUser, {
         breakingAlerts: false,
         weeklyDigest: false,

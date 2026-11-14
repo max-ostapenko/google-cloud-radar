@@ -108,8 +108,6 @@ const { currentPath = '/' } = Astro.props;
 </header>
 
 <script>
-  import { signInWithGoogle, signOutUser, onAuthChange } from '../lib/firebase';
-
   function initHeaderAuth() {
     const signInBtn = document.getElementById('headerSignInBtn');
     const userMenu = document.getElementById('headerUserMenu');
@@ -147,6 +145,7 @@ const { currentPath = '/' } = Astro.props;
 
     signInBtn?.addEventListener('click', async () => {
       try {
+        const { signInWithGoogle } = await import('../lib/firebase');
         const user = await signInWithGoogle();
         if (user) {
           updateUI(user);
@@ -157,6 +156,7 @@ const { currentPath = '/' } = Astro.props;
     });
 
     signOutBtn?.addEventListener('click', async () => {
+      const { signOutUser } = await import('../lib/firebase');
       await signOutUser();
       updateUI(null);
       if (dropdown) dropdown.style.display = 'none';
@@ -173,9 +173,17 @@ const { currentPath = '/' } = Astro.props;
       if (dropdown) dropdown.style.display = 'none';
     });
 
-    onAuthChange((user) => {
-      updateUI(user);
-    });
+    const hydrateAuth = async () => {
+      const { onAuthChange } = await import('../lib/firebase');
+      onAuthChange((user) => {
+        updateUI(user);
+      });
+    };
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(hydrateAuth, { timeout: 2000 });
+    } else {
+      setTimeout(hydrateAuth, 1500);
+    }
   }
 
   initHeaderAuth();

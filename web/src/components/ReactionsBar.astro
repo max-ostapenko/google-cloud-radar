@@ -41,15 +41,7 @@ const { slug, helpfulCount = 0, notHelpfulCount = 0 } = Astro.props;
 </div>
 
 <script>
-  import {
-    getFirebaseAuth,
-    signInWithGoogle,
-    onAuthChange,
-    toggleUserReaction,
-    listenToChange,
-    listenToUserReactions,
-    type ReactionType,
-  } from '../lib/firebase';
+  import type { ReactionType } from '../lib/firebase';
 
   function updateButtons(container: HTMLElement, userVotes: Record<string, boolean>) {
     const buttons = container.querySelectorAll<HTMLButtonElement>('.reaction-btn');
@@ -88,25 +80,64 @@ const { slug, helpfulCount = 0, notHelpfulCount = 0 } = Astro.props;
 
       updateButtons(container, userVotes);
 
-      // Listen to live total change counts from Firestore
-      listenToChange(slug, (changeData) => {
-        if (changeData?.reaction_counts) {
-          const buttons = container.querySelectorAll<HTMLButtonElement>('.reaction-btn');
-          buttons.forEach((btn) => {
-            const type = btn.getAttribute('data-type') as ReactionType;
-            if (type && changeData.reaction_counts?.[type] !== undefined) {
-              const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
-              const val = Math.max(0, changeData.reaction_counts[type]);
-              if (countBadge) {
-                countBadge.textContent = String(val);
-                countBadge.style.display = (val > 0 || userVotes[type]) ? 'inline-block' : 'none';
+      // Attach Firestore listeners only when card approaches viewport and after idle
+      const attachListeners = async () => {
+        if (container.dataset.listening) return;
+        container.dataset.listening = 'true';
+        const { listenToChange, getFirebaseAuth, listenToUserReactions } = await import('../lib/firebase');
+
+        listenToChange(slug, (changeData) => {
+          if (changeData?.reaction_counts) {
+            const buttons = container.querySelectorAll<HTMLButtonElement>('.reaction-btn');
+            buttons.forEach((btn) => {
+              const type = btn.getAttribute('data-type') as ReactionType;
+              if (type && changeData.reaction_counts?.[type] !== undefined) {
+                const countBadge = btn.querySelector('.reaction-count') as HTMLElement;
+                const val = Math.max(0, changeData.reaction_counts[type]);
+                if (countBadge) {
+                  countBadge.textContent = String(val);
+                  countBadge.style.display = (val > 0 || userVotes[type]) ? 'inline-block' : 'none';
+                }
+                if (val > 0) btn.classList.add('has-count');
+                else if (!userVotes[type]) btn.classList.remove('has-count');
               }
-              if (val > 0) btn.classList.add('has-count');
-              else if (!userVotes[type]) btn.classList.remove('has-count');
-            }
+            });
+          }
+        });
+
+        const currentUser = getFirebaseAuth().currentUser;
+        if (currentUser) {
+          listenToUserReactions(slug, currentUser.uid, (liveVotes) => {
+            try {
+              localStorage.setItem(storageKey, JSON.stringify(liveVotes));
+            } catch {}
+            updateButtons(container, liveVotes);
           });
         }
-      });
+      };
+
+      const scheduleAttach = () => {
+        if ('IntersectionObserver' in window) {
+          const observer = new IntersectionObserver(
+            (entries) => {
+              if (entries.some((entry) => entry.isIntersecting)) {
+                observer.disconnect();
+                attachListeners();
+              }
+            },
+            { rootMargin: '200px' }
+          );
+          observer.observe(container);
+        } else {
+          attachListeners();
+        }
+      };
+
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(scheduleAttach, { timeout: 2000 });
+      } else {
+        setTimeout(scheduleAttach, 1500);
+      }
 
       const buttons = container.querySelectorAll<HTMLButtonElement>('.reaction-btn');
       buttons.forEach((btn) => {
@@ -117,6 +148,7 @@ const { slug, helpfulCount = 0, notHelpfulCount = 0 } = Astro.props;
           e.preventDefault();
           e.stopPropagation();
 
+          const { getFirebaseAuth, signInWithGoogle, toggleUserReaction } = await import('../lib/firebase');
           const auth = getFirebaseAuth();
           let user = auth.currentUser;
           if (!user) {
@@ -165,28 +197,36 @@ const { slug, helpfulCount = 0, notHelpfulCount = 0 } = Astro.props;
     });
   }
 
-  // Register onAuthChange listener once globally across all reaction containers
+  // Register onAuthChange listener once globally after idle
   let authListenerRegistered = false;
   if (!authListenerRegistered) {
     authListenerRegistered = true;
-    onAuthChange((user) => {
-      const containers = document.querySelectorAll<HTMLElement>('.reactions-bar-container');
-      containers.forEach((container) => {
-        const slug = container.dataset.slug;
-        if (!slug) return;
-        if (user) {
-          listenToUserReactions(slug, user.uid, (liveVotes) => {
-            const storageKey = `gcp_radar_reactions_${slug}`;
-            try {
-              localStorage.setItem(storageKey, JSON.stringify(liveVotes));
-            } catch {}
-            updateButtons(container, liveVotes);
-          });
-        } else {
-          updateButtons(container, {});
-        }
+    const registerAuthSync = async () => {
+      const { onAuthChange, listenToUserReactions } = await import('../lib/firebase');
+      onAuthChange((user) => {
+        const containers = document.querySelectorAll<HTMLElement>('.reactions-bar-container');
+        containers.forEach((container) => {
+          const slug = container.dataset.slug;
+          if (!slug) return;
+          if (user && container.dataset.listening) {
+            listenToUserReactions(slug, user.uid, (liveVotes) => {
+              const storageKey = `gcp_radar_reactions_${slug}`;
+              try {
+                localStorage.setItem(storageKey, JSON.stringify(liveVotes));
+              } catch {}
+              updateButtons(container, liveVotes);
+            });
+          } else if (!user) {
+            updateButtons(container, {});
+          }
+        });
       });
-    });
+    };
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(registerAuthSync, { timeout: 2000 });
+    } else {
+      setTimeout(registerAuthSync, 1500);
+    }
   }
 
   initReactionsBar();

@@ -53,14 +53,7 @@ const isService = variant === 'service';
 </div>
 
 <script>
-  import {
-    getFirebaseAuth,
-    signInWithGoogle,
-    onAuthChange,
-    getUserAlertPreferences,
-    saveUserAlertPreferences,
-    type UserAlertPreferences,
-  } from '../lib/firebase';
+  import type { UserAlertPreferences } from '../lib/firebase';
 
   function escapeHtml(str: string): string {
     return str
@@ -157,6 +150,12 @@ const isService = variant === 'service';
         }
 
         // Service variant: 1-click subscribe to this service
+        const {
+          getFirebaseAuth,
+          signInWithGoogle,
+          getUserAlertPreferences,
+          saveUserAlertPreferences,
+        } = await import('../lib/firebase');
         let user = currentUser || getFirebaseAuth().currentUser;
         if (!user) {
           try {
@@ -185,14 +184,22 @@ const isService = variant === 'service';
         updateCardState(user, updatedPrefs);
       });
 
-      onAuthChange(async (user) => {
-        if (user) {
-          const prefs = await getUserAlertPreferences(user);
-          updateCardState(user, prefs);
-        } else {
-          updateCardState(null, null);
-        }
-      });
+      const hydrateSubscriptionCard = async () => {
+        const { onAuthChange, getUserAlertPreferences } = await import('../lib/firebase');
+        onAuthChange(async (user) => {
+          if (user) {
+            const prefs = await getUserAlertPreferences(user);
+            updateCardState(user, prefs);
+          } else {
+            updateCardState(null, null);
+          }
+        });
+      };
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(hydrateSubscriptionCard, { timeout: 2000 });
+      } else {
+        setTimeout(hydrateSubscriptionCard, 1500);
+      }
 
       window.addEventListener('radar_alert_prefs_update', (e: any) => {
         if (e.detail) {
