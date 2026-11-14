@@ -8,55 +8,35 @@ export interface BreadcrumbItem {
 interface Props {
   items: BreadcrumbItem[];
   class?: string;
+  emitSchema?: boolean;
 }
 
-const { items, class: className = '' } = Astro.props;
+const { items, class: className = '', emitSchema = true } = Astro.props;
 
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://google-cloud-radar.com';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
 
 // Build Google-compliant BreadcrumbList structured data (JSON-LD).
-// Google Search Console requires that every intermediate breadcrumb item has a valid, absolute URL ('item').
-// Non-navigable visual tags (e.g. ecosystem or category labels without dedicated index pages)
-// remain visible in the human UI trail, but are omitted from the Search Engine hierarchy to prevent
-// "Missing field 'item' (in 'itemListElement')" errors in Google Search Console.
-// The final breadcrumb represents the current page and resolves to the canonical URL if href is omitted.
-const schemaBreadcrumbItems = items
-  .map((item, index) => {
-    const isLast = index === items.length - 1;
-    let url: string | null = null;
+// Every intermediate item has an explicit href; the final item resolves to canonicalUrl.
+const schemaBreadcrumbItems = items.map((item) => ({
+  name: item.label,
+  url: item.href ? new URL(item.href, siteUrl).href : canonicalUrl,
+}));
 
-    if (item.href) {
-      url = new URL(item.href, siteUrl).href;
-    } else if (isLast) {
-      url = canonicalUrl;
-    }
-
-    if (!url) return null;
-
-    return {
-      name: item.label,
-      url,
-    };
-  })
-  .filter((item): item is { name: string; url: string } => item !== null);
-
-// Only output schema if there is a meaningful multi-level hierarchy (2+ items with URLs).
-// Google guidelines advise against emitting BreadcrumbList for single root/home items.
-const shouldEmitSchema = schemaBreadcrumbItems.length >= 2;
-
-const breadcrumbSchema = shouldEmitSchema
-  ? {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: schemaBreadcrumbItems.map((item, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        name: item.name,
-        item: item.url,
-      })),
-    }
-  : null;
+// Only output schema if enabled and there is a multi-level hierarchy (2+ items).
+const breadcrumbSchema =
+  emitSchema && schemaBreadcrumbItems.length >= 2
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: schemaBreadcrumbItems.map((item, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: item.name,
+          item: item.url,
+        })),
+      }
+    : null;
 ---
 
 <nav class={`breadcrumb-nav ${className}`} aria-label="Breadcrumb">
@@ -64,17 +44,11 @@ const breadcrumbSchema = shouldEmitSchema
     {items.map((item, index) => {
       const isLast = index === items.length - 1;
       return (
-        <li 
-          class={`breadcrumb-item ${isLast ? 'current' : ''} ${!item.href && !isLast ? 'crumb-dim' : ''}`}
+        <li
+          class={`breadcrumb-item ${isLast ? 'current' : ''}`}
           aria-current={isLast ? 'page' : undefined}
         >
-          {isLast ? (
-            item.isCode ? (
-              <code class="crumb-code">{item.label}</code>
-            ) : (
-              <span class="crumb-text" title={item.label}>{item.label}</span>
-            )
-          ) : item.href ? (
+          {!isLast && item.href ? (
             <a href={item.href} class="crumb-link">
               {item.isCode ? (
                 <code class="crumb-code">{item.label}</code>
@@ -85,7 +59,7 @@ const breadcrumbSchema = shouldEmitSchema
           ) : item.isCode ? (
             <code class="crumb-code">{item.label}</code>
           ) : (
-            <span class="crumb-text">{item.label}</span>
+            <span class="crumb-text" title={item.label}>{item.label}</span>
           )}
         </li>
       );
@@ -117,11 +91,13 @@ const breadcrumbSchema = shouldEmitSchema
   .breadcrumb-item {
     display: inline-flex;
     align-items: center;
-    max-width: 320px;
+    max-width: 420px;
+    min-width: 0;
   }
 
   .breadcrumb-item + .breadcrumb-item::before {
     content: '/';
+    content: '/' / '';
     margin: 0 8px;
     color: var(--border-strong);
     user-select: none;
@@ -130,6 +106,13 @@ const breadcrumbSchema = shouldEmitSchema
 
   .breadcrumb-item.current {
     max-width: 420px;
+  }
+
+  @media (max-width: 640px) {
+    .breadcrumb-item,
+    .breadcrumb-item.current {
+      max-width: 100%;
+    }
   }
 
   .crumb-link {
@@ -144,11 +127,6 @@ const breadcrumbSchema = shouldEmitSchema
   .crumb-link:hover {
     color: var(--google-blue);
     text-decoration: underline;
-  }
-
-  .crumb-dim {
-    color: var(--text-tertiary);
-    white-space: nowrap;
   }
 
   .crumb-text {
