@@ -1,5 +1,5 @@
 ---
-import { slugify, type FeedEntry } from '../lib/feed';
+import { getApiBaseAndVersion, slugify, type FeedEntry } from '../lib/feed';
 import ReactionsBar from './ReactionsBar.astro';
 
 interface Props {
@@ -18,19 +18,23 @@ const formattedDate = new Date(entry.date + 'T00:00:00Z').toLocaleDateString('en
 // Reactions & Community Signals (progressive disclosure: counts hidden when 0)
 const helpfulCount = entry.reaction_counts?.like_change ?? 0;
 const notHelpfulCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
+const siblings = entry.siblingVersions && entry.siblingVersions.length > 1 ? entry.siblingVersions : null;
+const { baseApi } = getApiBaseAndVersion(entry.api);
+const allApisText = siblings ? siblings.map((s) => s.api).join(' ') : entry.api;
+const allTitlesText = siblings ? siblings.map((s) => `${s.api} ${s.title}`).join(' ') : `${entry.api} ${entry.title}`;
 ---
 
 <article 
   class={`change-card ${entry.breaking ? 'is-breaking' : ''}`}
   data-slug={entry.slug}
   data-service={entry.service.toLowerCase()}
-  data-api={entry.api.toLowerCase()}
+  data-api={allApisText.toLowerCase()}
   data-category={entry.category.toLowerCase()}
   data-breaking={entry.breaking ? 'true' : 'false'}
   data-impact={entry.impact}
   data-date={entry.date}
   data-score={entry.interesting_score}
-  data-text={`${entry.title} ${entry.summary} ${entry.api} ${entry.service} ${entry.tags.join(' ')}`.toLowerCase()}
+  data-text={`${allTitlesText} ${entry.summary} ${entry.service} ${entry.tags.join(' ')}`.toLowerCase()}
 >
   <div class="card-top">
     <div class="card-meta-left">
@@ -38,7 +42,23 @@ const notHelpfulCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
         <span class="service-icon-dot"></span>
         <span class="service-name">{entry.service}</span>
       </a>
-      <span class="api-code" title="Discovery API Identifier">`{entry.api}`</span>
+      {siblings ? (
+        <span class="card-version-pills" aria-label={`API versions updated on ${formattedDate}`}>
+          <span class="api-base-name">{baseApi}</span>
+          {siblings.map((sib) => (
+            <a
+              href={`/changes/${sib.slug}`}
+              class={`version-pill ${sib.breaking ? 'is-breaking' : ''}`}
+              title={`View ${sib.api} impact: ${sib.title}`}
+            >
+              <code>{sib.version}</code>
+              {sib.breaking && <span aria-label="breaking">⚠️</span>}
+            </a>
+          ))}
+        </span>
+      ) : (
+        <span class="api-code" title="Discovery API Identifier">`{entry.api}`</span>
+      )}
       <span class="meta-separator">•</span>
       <time datetime={entry.date} class="entry-date">{formattedDate}</time>
     </div>
@@ -236,6 +256,48 @@ const notHelpfulCount = entry.reaction_counts?.false_positive_or_duplicate ?? 0;
     padding: 1px 6px;
     border-radius: 4px;
     border: 1px solid var(--border-subtle);
+  }
+
+  .card-version-pills {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .api-base-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  .version-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface-hover);
+    padding: 1px 7px;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .version-pill:hover {
+    color: var(--google-blue);
+    background-color: var(--google-blue-subtle);
+    border-color: var(--google-blue-border);
+    text-decoration: none;
+  }
+
+  .version-pill.is-breaking {
+    color: var(--google-red);
+    background-color: var(--google-red-subtle);
+    border-color: var(--google-red-border);
   }
 
   .meta-separator {

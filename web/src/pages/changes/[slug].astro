@@ -93,6 +93,9 @@ const hasBadges = Boolean(
 );
 
 const shouldIndex = isIndexableChange(entry);
+const canonicalOverride = entry.primarySiblingSlug
+  ? `https://google-cloud-radar.com/changes/${entry.primarySiblingSlug}`
+  : undefined;
 ---
 
 <BaseLayout
@@ -105,6 +108,7 @@ const shouldIndex = isIndexableChange(entry);
   schemaData={schemaData}
   noindex={!shouldIndex}
   robots={!shouldIndex ? "noindex, follow" : undefined}
+  canonicalUrl={canonicalOverride}
 >
   <div class="change-detail-container">
     <!-- Breadcrumb Navigation -->
@@ -243,6 +247,30 @@ const shouldIndex = isIndexableChange(entry);
       </div>
 
       <h1 class="change-title">{entry.title}</h1>
+
+      {
+        entry.siblingVersions && entry.siblingVersions.length > 1 && (
+          <nav class="sibling-versions-bar" aria-label="Same-day API versions">
+            <span class="sibling-versions-label">API Versions ({formattedDate}):</span>
+            <div class="sibling-versions-list">
+              {entry.siblingVersions.map((sib) => {
+                const isActive = sib.slug === entry.slug;
+                return (
+                  <a
+                    href={`/changes/${sib.slug}`}
+                    class={`sibling-version-pill ${isActive ? 'is-active' : ''} ${sib.breaking ? 'is-breaking' : ''}`}
+                    aria-current={isActive ? 'page' : undefined}
+                    title={`View ${sib.api} impact: ${sib.title}`}
+                  >
+                    <code>{sib.version}</code>
+                    {sib.breaking && <span class="sibling-breaking-mark" title="Breaking change in this version">⚠️</span>}
+                  </a>
+                );
+              })}
+            </div>
+          </nav>
+        )
+      }
 
       {
         entry.extractedMethods && entry.extractedMethods.length > 0 && (
@@ -509,6 +537,75 @@ const shouldIndex = isIndexableChange(entry);
 
   .lead-time-highlight strong {
     color: var(--google-yellow);
+  }
+
+  /* Same-Day API Version Switcher inside Hero */
+  .sibling-versions-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    margin-bottom: 4px;
+  }
+
+  .sibling-versions-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-tertiary);
+  }
+
+  .sibling-versions-list {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .sibling-version-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    background-color: var(--bg-surface-hover);
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .sibling-version-pill code {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+
+  .sibling-version-pill:hover {
+    border-color: var(--google-blue-border);
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue);
+    text-decoration: none;
+  }
+
+  .sibling-version-pill.is-active {
+    background-color: var(--google-blue);
+    border-color: var(--google-blue);
+    color: #ffffff;
+  }
+
+  .sibling-version-pill.is-breaking:not(.is-active) {
+    border-color: var(--google-red-border);
+    background-color: var(--google-red-subtle);
+    color: var(--google-red);
+  }
+
+  .sibling-breaking-mark {
+    font-size: 11px;
+    line-height: 1;
   }
 
   /* Methods Strip inside Hero */

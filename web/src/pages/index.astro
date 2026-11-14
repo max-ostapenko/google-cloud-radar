@@ -2,9 +2,9 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ChangeCard from '../components/ChangeCard.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
-import { getAllFeedEntries, groupEntriesByMonth } from '../lib/feed';
+import { deduplicateFeedSiblingVersions, getAllFeedEntries, groupEntriesByMonth } from '../lib/feed';
 
-const entries = await getAllFeedEntries();
+const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
 const monthGroups = groupEntriesByMonth(entries);
 
 const breakingCount = entries.filter((e) => e.breaking).length;

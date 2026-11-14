@@ -2,10 +2,10 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ChangeCard from '../../components/ChangeCard.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
-import { getAllFeedEntries, groupEntriesByMonth, type FeedEntry, type MonthGroup } from '../../lib/feed';
+import { deduplicateFeedSiblingVersions, getAllFeedEntries, groupEntriesByMonth, type FeedEntry, type MonthGroup } from '../../lib/feed';
 
 export async function getStaticPaths() {
-  const entries = await getAllFeedEntries();
+  const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
   const monthGroups = groupEntriesByMonth(entries);
   const services = Array.from(new Set(entries.map((e) => e.service)));
 

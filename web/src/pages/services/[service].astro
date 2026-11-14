@@ -4,6 +4,7 @@ import ChangeCard from '../../components/ChangeCard.astro';
 import SubscriptionCard from '../../components/SubscriptionCard.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import {
+  deduplicateFeedSiblingVersions,
   getAllFeedEntries,
   getServicesList,
   slugify,
@@ -15,14 +16,15 @@ export async function getStaticPaths() {
   const services = await getServicesList();
 
   return services.map((s) => {
-    const serviceEntries = allEntries.filter(
+    const rawServiceEntries = allEntries.filter(
       (e) => slugify(e.service) === s.slug,
     );
     return {
       params: { service: s.slug },
       props: {
         serviceInfo: s,
-        entries: serviceEntries,
+        entries: deduplicateFeedSiblingVersions(rawServiceEntries),
+        allApis: Array.from(new Set(rawServiceEntries.map((e) => e.api))),
       },
     };
   });
@@ -37,14 +39,15 @@ interface Props {
     ecosystem?: string;
   };
   entries: FeedEntry[];
+  allApis: string[];
 }
 
-const { serviceInfo, entries } = Astro.props;
+const { serviceInfo, entries, allApis } = Astro.props;
 
 const breakingCount = entries.filter((e) => e.breaking).length;
 const highImpactCount = entries.filter((e) => e.impact === "high").length;
 
-const apisUsed = Array.from(new Set(entries.map((e) => e.api)));
+const apisUsed = allApis.length > 0 ? allApis : Array.from(new Set(entries.map((e) => e.api)));
 const apisWithMeta = apisUsed.map((api) => {
   return {
     api,

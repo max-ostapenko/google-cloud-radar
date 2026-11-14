@@ -283,6 +283,16 @@ export function getDiscoveryMetaForApi(apiOrService: string): { discoveryRestUrl
   return {};
 }
 
+export interface SiblingVersionInfo {
+  slug: string;
+  api: string;
+  version: string;
+  breaking: boolean;
+  impact: 'low' | 'medium' | 'high';
+  title: string;
+  isPrimary: boolean;
+}
+
 export interface FeedEntry extends FeedEntryMeta {
   status: ChangeStatus;
   reaction_counts: ReactionCounts;
@@ -293,6 +303,8 @@ export interface FeedEntry extends FeedEntryMeta {
   detailsHtml: string;
   extractedMethods: string[];
   targetPaths?: string[];
+  siblingVersions?: SiblingVersionInfo[];
+  primarySiblingSlug?: string;
   ecosystem: Ecosystem;
   category: ServiceCategory;
 }
@@ -516,12 +528,14 @@ export function getLocalFeedEntries(): FeedEntry[] {
     }
   }
 
-  cachedLocalEntries = entries.sort((a, b) => {
-    if (b.date !== a.date) {
-      return b.date.localeCompare(a.date);
-    }
-    return b.slug.localeCompare(a.slug);
-  });
+  cachedLocalEntries = enrichWithSiblingVersions(
+    entries.sort((a, b) => {
+      if (b.date !== a.date) {
+        return b.date.localeCompare(a.date);
+      }
+      return b.slug.localeCompare(a.slug);
+    })
+  );
   return cachedLocalEntries;
 }
 
@@ -532,10 +546,12 @@ export async function getAllFeedEntries(): Promise<FeedEntry[]> {
   }
   const dbEntries = await fetchFromFirestore();
   if (dbEntries && dbEntries.length > 0) {
-    return dbEntries.sort((a, b) => {
-      if (b.date !== a.date) return b.date.localeCompare(a.date);
-      return b.slug.localeCompare(a.slug);
-    });
+    return enrichWithSiblingVersions(
+      dbEntries.sort((a, b) => {
+        if (b.date !== a.date) return b.date.localeCompare(a.date);
+        return b.slug.localeCompare(a.slug);
+      })
+    );
   }
   return [];
 }
@@ -693,4 +709,80 @@ export function isIndexableChange(entry: {
 }): boolean {
   const proseLen = `${entry.summary || ''} ${entry.rawContent || entry.details || ''}`.trim().length;
   return Boolean(entry.breaking || (Number(entry.interesting_score ?? 5) >= 6 && proseLen >= 500));
+}
+
+export function getApiBaseAndVersion(api: string): { baseApi: string; version: string } {
+  const raw = (api || '').trim();
+  const lastDot = raw.lastIndexOf('.');
+  if (lastDot === -1) return { baseApi: raw, version: 'v1' };
+  const prefix = raw.slice(0, lastDot);
+  const suffix = raw.slice(lastDot + 1);
+  // Handle sub-APIs like admin.directory_v1 vs admin.datatransfer_v1
+  const subMatch = suffix.match(/^(.+)_(v\d+[a-z0-9]*)$/i);
+  if (subMatch) {
+    return { baseApi: `${prefix}.${subMatch[1]}`, version: subMatch[2] };
+  }
+  return { baseApi: prefix, version: suffix };
+}
+
+export function getVersionStabilityRank(version: string): number {
+  const v = (version || '').toLowerCase();
+  if (/^v\d+$/.test(v)) return 0; // Stable GA (v1, v2, v3)
+  if (/^v\d+(p\d+|b\d+)$/.test(v)) return 1; // Point release (v1b3)
+  if (v.includes('beta')) return 2; // Beta (v1beta, v1beta1)
+  if (v.includes('alpha')) return 3; // Alpha (v1alpha, v1alpha1)
+  return 4;
+}
+
+export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
+  const groups = new Map<string, FeedEntry[]>();
+  for (const entry of entries) {
+    const { baseApi } = getApiBaseAndVersion(entry.api);
+    const key = `${entry.date}|${baseApi}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(entry);
+  }
+
+  for (const members of groups.values()) {
+    if (members.length <= 1) continue;
+    const sorted = [...members].sort((a, b) => {
+      const rankDiff =
+        getVersionStabilityRank(getApiBaseAndVersion(a.api).version) -
+        getVersionStabilityRank(getApiBaseAndVersion(b.api).version);
+      if (rankDiff !== 0) return rankDiff;
+      const breakingDiff = (b.breaking ? 1 : 0) - (a.breaking ? 1 : 0);
+      if (breakingDiff !== 0) return breakingDiff;
+      const scoreDiff = (b.interesting_score ?? 0) - (a.interesting_score ?? 0);
+      if (scoreDiff !== 0) return scoreDiff;
+      return a.slug.localeCompare(b.slug);
+    });
+
+    const primary = sorted[0];
+    const siblingList: SiblingVersionInfo[] = sorted.map((m, idx) => ({
+      slug: m.slug,
+      api: m.api,
+      version: m.version || getApiBaseAndVersion(m.api).version,
+      breaking: m.breaking,
+      impact: m.impact,
+      title: m.title,
+      isPrimary: idx === 0,
+    }));
+
+    for (let idx = 0; idx < sorted.length; idx++) {
+      const member = sorted[idx];
+      member.siblingVersions = siblingList;
+      if (idx > 0 && !(member.breaking && !primary.breaking)) {
+        member.primarySiblingSlug = primary.slug;
+      }
+    }
+  }
+
+  return entries;
+}
+
+export function deduplicateFeedSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
+  return entries.filter((entry) => {
+    if (!entry.siblingVersions || entry.siblingVersions.length <= 1) return true;
+    return entry.siblingVersions[0].slug === entry.slug;
+  });
 }
