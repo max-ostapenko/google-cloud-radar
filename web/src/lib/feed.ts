@@ -30,6 +30,7 @@ export interface ReactionCounts {
 
 export interface FeedEntryMeta {
   slug: string;
+  docId?: string;
   date: string;
   api: string;
   service: string;
@@ -400,7 +401,8 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       const documentationLink = f.documentation_link?.stringValue || discoMeta.documentationLink;
 
       return {
-        slug: id,
+        slug: getVersionlessChangeSlug(id, api, dateStr),
+        docId: id,
         date: dateStr,
         api,
         version,
@@ -467,15 +469,16 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const fileContent = fs.readFileSync(filePath, 'utf-8');
       const doc = JSON.parse(fileContent);
 
-      const slug = doc.id || doc.slug || file.replace(/\.json$/, '');
-      const api = doc.api || slug.split('-').slice(3).join('-').replace(/_v\d+$/, '');
+      const rawSlug = doc.id || doc.slug || file.replace(/\.json$/, '');
+      const api = doc.api || rawSlug.split('-').slice(3).join('-').replace(/_v\d+$/, '');
       const rawService = doc.service || doc.service_name || '';
       const apiPrefix = api ? api.split('.')[0].split(':')[0].toLowerCase() : '';
       const canonicalMeta = (apiPrefix && findServiceMeta(apiPrefix)) || (rawService && findServiceMeta(rawService));
       const service = canonicalMeta?.name || rawService || 'Google Cloud';
       const service_id = slugify(service);
       const version = api.split('.').pop() || 'v1';
-      const dateStr = String(doc.date || slug.slice(0, 10)).slice(0, 10);
+      const dateStr = String(doc.date || rawSlug.slice(0, 10)).slice(0, 10);
+      const slug = getVersionlessChangeSlug(rawSlug, api, dateStr);
       const impact = (doc.impact || 'medium').toLowerCase() as 'low' | 'medium' | 'high';
       const breaking = Boolean(doc.breaking || doc.is_breaking);
       const tags = Array.isArray(doc.tags) ? doc.tags : [];
@@ -501,6 +504,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
 
       entries.push({
         slug,
+        docId: rawSlug,
         date: dateStr,
         api,
         version,
@@ -539,7 +543,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
       if (b.date !== a.date) {
         return b.date.localeCompare(a.date);
       }
-      return b.slug.localeCompare(a.slug);
+      return (b.docId || b.slug).localeCompare(a.docId || a.slug);
     })
   );
   return cachedLocalEntries;
@@ -555,7 +559,7 @@ export async function getAllFeedEntries(): Promise<FeedEntry[]> {
     return enrichWithSiblingVersions(
       dbEntries.sort((a, b) => {
         if (b.date !== a.date) return b.date.localeCompare(a.date);
-        return b.slug.localeCompare(a.slug);
+        return (b.docId || b.slug).localeCompare(a.docId || a.slug);
       })
     );
   }
@@ -741,6 +745,17 @@ export function getApiBaseAndVersion(api: string): { baseApi: string; version: s
   return { baseApi: prefix, version: suffix };
 }
 
+export function getVersionlessChangeSlug(rawSlug: string, api: string, date: string): string {
+  const { baseApi, version } = getApiBaseAndVersion(api);
+  if (version) {
+    const escapedVer = version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const stripped = rawSlug.replace(new RegExp(`[-_]${escapedVer}(?=-\\d+$|$)`, 'i'), '');
+    if (stripped && stripped !== rawSlug) return stripped;
+  }
+  const cleanBase = baseApi.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return `${date}-${cleanBase}`;
+}
+
 export function getVersionStabilityRank(version: string): number {
   const v = (version || '').toLowerCase();
   if (/^v\d+$/.test(v)) return 0; // Stable GA (v1, v2, v3)
@@ -753,8 +768,7 @@ export function getVersionStabilityRank(version: string): number {
 export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
   const groups = new Map<string, FeedEntry[]>();
   for (const entry of entries) {
-    const { baseApi } = getApiBaseAndVersion(entry.api);
-    const key = `${entry.date}|${baseApi}`;
+    const key = entry.slug;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key)!.push(entry);
   }
@@ -770,12 +784,12 @@ export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
       if (breakingDiff !== 0) return breakingDiff;
       const scoreDiff = (b.interesting_score ?? 0) - (a.interesting_score ?? 0);
       if (scoreDiff !== 0) return scoreDiff;
-      return a.slug.localeCompare(b.slug);
+      return (a.docId || a.api).localeCompare(b.docId || b.api);
     });
 
     const primary = sorted[0];
     const siblingList: SiblingVersionInfo[] = sorted.map((m, idx) => ({
-      slug: m.slug,
+      slug: primary.slug,
       api: m.api,
       version: m.version || getApiBaseAndVersion(m.api).version,
       breaking: m.breaking,
@@ -812,7 +826,7 @@ export function deduplicateFeedSiblingVersions(entries: FeedEntry[]): FeedEntry[
   return entries
     .filter((entry) => {
       if (!entry.siblingVersions || entry.siblingVersions.length <= 1) return true;
-      return entry.siblingVersions[0].slug === entry.slug;
+      return entry.siblingVersions[0].api === entry.api;
     })
     .map((entry) => {
       const siblings = entry.siblingVersions;
@@ -918,11 +932,16 @@ export function partitionSiblingNarratives(siblings: SiblingVersionInfo[]): Sibl
 
   if (siblings.length <= 1) {
     for (const sib of siblings) {
-      uniqueHtmlBySlug[sib.slug] = sib.detailsHtml;
-      uniqueCountBySlug[sib.slug] = (sib.rawContent || sib.summary)
+      const paraCount = (sib.rawContent || sib.summary)
         .split(/\n\n+/)
         .map((p) => p.trim())
         .filter(Boolean).length;
+      uniqueHtmlBySlug[sib.version] = sib.detailsHtml;
+      uniqueHtmlBySlug[sib.api] = sib.detailsHtml;
+      uniqueHtmlBySlug[sib.slug] = sib.detailsHtml;
+      uniqueCountBySlug[sib.version] = paraCount;
+      uniqueCountBySlug[sib.api] = paraCount;
+      uniqueCountBySlug[sib.slug] = paraCount;
     }
     return { sharedHtml: '', sharedCount: 0, uniqueHtmlBySlug, uniqueCountBySlug };
   }
@@ -963,8 +982,11 @@ export function partitionSiblingNarratives(siblings: SiblingVersionInfo[]): Sibl
 
   if (sharedParagraphs.length === 0) {
     for (let k = 0; k < siblings.length; k++) {
-      uniqueHtmlBySlug[siblings[k].slug] = siblings[k].detailsHtml;
-      uniqueCountBySlug[siblings[k].slug] = paragraphLists[k].length;
+      const sib = siblings[k];
+      uniqueHtmlBySlug[sib.version] = sib.detailsHtml;
+      uniqueHtmlBySlug[sib.api] = sib.detailsHtml;
+      uniqueCountBySlug[sib.version] = paragraphLists[k].length;
+      uniqueCountBySlug[sib.api] = paragraphLists[k].length;
     }
     return { sharedHtml: '', sharedCount: 0, uniqueHtmlBySlug, uniqueCountBySlug };
   }
@@ -973,14 +995,18 @@ export function partitionSiblingNarratives(siblings: SiblingVersionInfo[]): Sibl
   const introSentenceRegex = /^(Developers building on|This is a substantial update|Here is a summary)[^.\n]*[:.]\s*$/i;
 
   for (let k = 0; k < siblings.length; k++) {
+    const sib = siblings[k];
     const uniqueParas = paragraphLists[k].filter(
       (p, j) => !matchedIndices[k].has(j) && !introSentenceRegex.test(p)
     );
-    uniqueCountBySlug[siblings[k].slug] = uniqueParas.length;
-    uniqueHtmlBySlug[siblings[k].slug] =
+    const uniqueHtml =
       uniqueParas.length > 0
         ? (safeMarkdownParser.parse(uniqueParas.join('\n\n'), { async: false }) as string)
         : '';
+    uniqueCountBySlug[sib.version] = uniqueParas.length;
+    uniqueCountBySlug[sib.api] = uniqueParas.length;
+    uniqueHtmlBySlug[sib.version] = uniqueHtml;
+    uniqueHtmlBySlug[sib.api] = uniqueHtml;
   }
 
   return {

@@ -103,9 +103,9 @@ const sharedMethods = hasSiblings
   : [];
 const sharedMethodSet = new Set(sharedMethods);
 
-const uniqueMethodsBySlug: Record<string, string[]> = {};
+const uniqueMethodsByVersion: Record<string, string[]> = {};
 for (const sib of siblings) {
-  uniqueMethodsBySlug[sib.slug] = sib.extractedMethods.filter((method) => !sharedMethodSet.has(method));
+  uniqueMethodsByVersion[sib.version] = sib.extractedMethods.filter((method) => !sharedMethodSet.has(method));
 }
 
 const sharedVersionNames = siblings.map((s) => s.version).join(', ');
@@ -162,13 +162,14 @@ const shouldIndex = isIndexableChange(entry);
                   target="_blank"
                   rel="noopener noreferrer"
                   class="meta-api-link"
+                  data-hero-api-link
                   title="View Raw Google Discovery JSON"
                 >
-                  <code>{entry.api}</code>
+                  <code data-hero-api>{entry.api}</code>
                   <span class="api-ext">↗</span>
                 </a>
               ) : (
-                <code class="meta-code">{entry.api}</code>
+                <code class="meta-code" data-hero-api>{entry.api}</code>
               )
             }
           </div>
@@ -308,9 +309,9 @@ const shouldIndex = isIndexableChange(entry);
           <div class="version-tabs-container">
             <div class="version-tabs-bar" role="tablist" aria-label="API Versions">
               {siblings.map((sib) => {
-                const isActive = sib.slug === entry.slug;
-                const uniqueCount = uniqueMethodsBySlug[sib.slug]?.length ?? 0;
-                const specificNarrativeCount = narrativePartition.uniqueCountBySlug[sib.slug] ?? 0;
+                const isActive = sib.api === entry.api;
+                const uniqueCount = uniqueMethodsByVersion[sib.version]?.length ?? 0;
+                const specificNarrativeCount = narrativePartition.uniqueCountBySlug[sib.version] ?? 0;
                 return (
                   <a
                     href={`#version=${sib.version}`}
@@ -320,6 +321,8 @@ const shouldIndex = isIndexableChange(entry);
                     aria-selected={isActive ? "true" : "false"}
                     data-version-tab={sib.version}
                     data-tab-title={sib.title}
+                    data-tab-api={sib.api}
+                    data-tab-discovery={sib.discoveryRestUrl || ""}
                     class={`version-tab-btn ${isActive ? "is-active" : ""} ${sib.breaking ? "is-breaking" : ""}`}
                     title={`View ${sib.api}: ${sib.title}`}
                   >
@@ -347,10 +350,10 @@ const shouldIndex = isIndexableChange(entry);
 
             <div class="version-tab-panels">
               {siblings.map((sib) => {
-                const isActive = sib.slug === entry.slug;
-                const uniqueMethods = uniqueMethodsBySlug[sib.slug] || [];
-                const uniqueHtml = narrativePartition.uniqueHtmlBySlug[sib.slug] || "";
-                const uniqueParaCount = narrativePartition.uniqueCountBySlug[sib.slug] ?? 0;
+                const isActive = sib.api === entry.api;
+                const uniqueMethods = uniqueMethodsByVersion[sib.version] || [];
+                const uniqueHtml = narrativePartition.uniqueHtmlBySlug[sib.version] || "";
+                const uniqueParaCount = narrativePartition.uniqueCountBySlug[sib.version] ?? 0;
                 return (
                   <section
                     role="tabpanel"
@@ -508,7 +511,7 @@ const shouldIndex = isIndexableChange(entry);
       <footer class="content-footer">
         <div class="footer-left">
           <ReactionsBar
-            slug={entry.slug}
+            slug={entry.docId || entry.slug}
             helpfulCount={entry.reaction_counts?.like_change ?? 0}
             notHelpfulCount={entry.reaction_counts?.false_positive_or_duplicate ?? 0}
           />
@@ -563,10 +566,15 @@ const shouldIndex = isIndexableChange(entry);
   const tabs = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-version-tab]'));
   const panels = Array.from(document.querySelectorAll<HTMLElement>('[data-version-panel]'));
   const heroTitle = document.querySelector<HTMLElement>('.change-title');
+  const heroApiCode = document.querySelector<HTMLElement>('[data-hero-api]');
+  const heroApiLink = document.querySelector<HTMLAnchorElement>('[data-hero-api-link]');
+  const breadcrumbCode = document.querySelector<HTMLElement>('.breadcrumb-item.current code');
 
   function activateTab(tab: HTMLAnchorElement, updateUrl = true) {
     const version = tab.getAttribute('data-version-tab');
     const tabTitle = tab.getAttribute('data-tab-title');
+    const tabApi = tab.getAttribute('data-tab-api');
+    const tabDiscovery = tab.getAttribute('data-tab-discovery');
     if (!version) return;
 
     for (const candidate of tabs) {
@@ -584,6 +592,18 @@ const shouldIndex = isIndexableChange(entry);
     if (heroTitle && tabTitle) {
       heroTitle.textContent = tabTitle;
       document.title = `${tabTitle} — Google Cloud Radar`;
+    }
+
+    if (heroApiCode && tabApi) {
+      heroApiCode.textContent = tabApi;
+    }
+
+    if (heroApiLink && tabDiscovery) {
+      heroApiLink.href = tabDiscovery;
+    }
+
+    if (breadcrumbCode && tabApi) {
+      breadcrumbCode.textContent = tabApi;
     }
 
     if (updateUrl) {

@@ -149,7 +149,7 @@ const allTitlesText = siblings ? siblings.map((s) => `${s.api} ${s.title}`).join
   <div class="card-footer-row" data-slug={entry.slug}>
     <div class="card-footer-left">
       <ReactionsBar
-        slug={entry.slug}
+        slug={entry.docId || entry.slug}
         helpfulCount={helpfulCount}
         notHelpfulCount={notHelpfulCount}
       />

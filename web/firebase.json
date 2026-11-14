@@ -84,6 +84,16 @@
         "source": "/changes/2026-08-30-aiplatform-v1*",
         "destination": "/services/vertex-ai",
         "type": 301
+      },
+      {
+        "regex": "^/changes/([0-9]{4}-[0-9]{2}-[0-9]{2}-.+)-(v[0-9]+[a-z0-9]*|alpha|beta)/og\\.png$",
+        "destination": "/changes/:1/og.png",
+        "type": 301
+      },
+      {
+        "regex": "^/changes/([0-9]{4}-[0-9]{2}-[0-9]{2}-.+)-(v[0-9]+[a-z0-9]*|alpha|beta)(?:/|\\.html)?$",
+        "destination": "/changes/:1#version=:2",
+        "type": 301
       }
     ],
     "headers": [

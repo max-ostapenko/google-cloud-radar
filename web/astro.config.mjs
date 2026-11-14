@@ -8,6 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const changesDirPath = path.resolve(__dirname, '../data/changes');
 const indexFilePath = path.resolve(__dirname, '../data/index.json');
 const changeMap = new Map();
+const rawDocs = [];
 
 if (fs.existsSync(changesDirPath)) {
   try {
@@ -15,8 +16,8 @@ if (fs.existsSync(changesDirPath)) {
     for (const file of files) {
       try {
         const doc = JSON.parse(fs.readFileSync(path.join(changesDirPath, file), 'utf8'));
-        const slug = doc.id || doc.slug || file.replace('.json', '');
-        changeMap.set(slug, doc);
+        const rawSlug = doc.id || doc.slug || file.replace('.json', '');
+        rawDocs.push({ rawSlug, doc });
       } catch (err) {
         console.warn(`Failed to parse ${file} for sitemap serialization:`, err.message);
       }
@@ -29,7 +30,7 @@ if (fs.existsSync(changesDirPath)) {
     const raw = JSON.parse(fs.readFileSync(indexFilePath, 'utf8'));
     for (const item of raw) {
       if (item.id || item.slug) {
-        changeMap.set(item.id || item.slug, item);
+        rawDocs.push({ rawSlug: item.id || item.slug, doc: item });
       }
     }
   } catch (err) {
@@ -48,6 +49,17 @@ function getApiBaseAndVersion(api) {
   return { baseApi: prefix, version: suffix };
 }
 
+function getVersionlessChangeSlug(rawSlug, api, date) {
+  const { baseApi, version } = getApiBaseAndVersion(api);
+  if (version) {
+    const escapedVer = version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const stripped = rawSlug.replace(new RegExp(`[-_]${escapedVer}(?=-\\d+$|$)`, 'i'), '');
+    if (stripped && stripped !== rawSlug) return stripped;
+  }
+  const cleanBase = baseApi.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return `${date}-${cleanBase}`;
+}
+
 function getVersionStabilityRank(version) {
   const v = (version || '').toLowerCase();
   if (/^v\d+$/.test(v)) return 0;
@@ -57,16 +69,14 @@ function getVersionStabilityRank(version) {
   return 4;
 }
 
-const nonPrimarySiblingSlugs = new Set();
 const siblingGroups = new Map();
-for (const [slug, doc] of changeMap.entries()) {
-  const { baseApi } = getApiBaseAndVersion(doc.api || '');
-  const key = `${doc.date || ''}|${baseApi}`;
-  if (!siblingGroups.has(key)) siblingGroups.set(key, []);
-  siblingGroups.get(key).push({ slug, doc });
+for (const item of rawDocs) {
+  const dateStr = String(item.doc.date || item.rawSlug.slice(0, 10)).slice(0, 10);
+  const versionlessSlug = getVersionlessChangeSlug(item.rawSlug, item.doc.api || '', dateStr);
+  if (!siblingGroups.has(versionlessSlug)) siblingGroups.set(versionlessSlug, []);
+  siblingGroups.get(versionlessSlug).push(item);
 }
-for (const members of siblingGroups.values()) {
-  if (members.length <= 1) continue;
+for (const [versionlessSlug, members] of siblingGroups.entries()) {
   members.sort((a, b) => {
     const rankDiff =
       getVersionStabilityRank(getApiBaseAndVersion(a.doc.api).version) -
@@ -76,16 +86,15 @@ for (const members of siblingGroups.values()) {
     if (breakingDiff !== 0) return breakingDiff;
     const scoreDiff = (b.doc.interesting_score ?? 0) - (a.doc.interesting_score ?? 0);
     if (scoreDiff !== 0) return scoreDiff;
-    return a.slug.localeCompare(b.slug);
+    return a.rawSlug.localeCompare(b.rawSlug);
   });
   const primary = members[0];
-  primary.doc.breaking = members.some((m) => m.doc.breaking);
-  primary.doc.details = members
-    .map((m) => `${m.doc.summary || ''} ${m.doc.details || ''}`.trim())
-    .join(' ');
-  for (let i = 1; i < members.length; i++) {
-    nonPrimarySiblingSlugs.add(members[i].slug);
-  }
+  changeMap.set(versionlessSlug, {
+    ...primary.doc,
+    breaking: members.some((m) => Boolean(m.doc.breaking || m.doc.is_breaking)),
+    interesting_score: Math.max(...members.map((m) => Number(m.doc.interesting_score ?? 5))),
+    details: members.map((m) => `${m.doc.summary || ''} ${m.doc.details || ''}`.trim()).join(' '),
+  });
 }
 
 function isIndexableChangeDoc(doc) {
@@ -106,7 +115,6 @@ export default defineConfig({
         const changeMatch = page.match(/\/changes\/([^/]+)/);
         if (changeMatch) {
           const slug = changeMatch[1];
-          if (nonPrimarySiblingSlugs.has(slug)) return false;
           const doc = changeMap.get(slug);
           if (doc && !isIndexableChangeDoc(doc)) return false;
         }
