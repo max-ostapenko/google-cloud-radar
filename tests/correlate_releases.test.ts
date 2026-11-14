@@ -151,4 +151,37 @@ describe('Correlate Releases', () => {
     expect(primary).not.toBeNull();
     expect(primary).toBe(urls[0]);
   });
+
+  it('syncs data/index.json manifest after release correlation (b0cce428)', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'radar-correlate-'));
+    try {
+      const indexPath = path.join(tmpDir, 'index.json');
+      fs.writeFileSync(
+        indexPath,
+        JSON.stringify([
+          { id: '2026-10-01-test-v1', status: 'canary', lead_time_days: null },
+          { id: '2026-10-02-other-v1', status: 'canary', lead_time_days: null },
+        ]),
+        'utf-8'
+      );
+
+      const changed = correlate_releases.syncIndexManifest(tmpDir, [
+        {
+          slug: '2026-10-01-test-v1',
+          releaseInfo: { date: '2026-10-04', url: 'https://cloud.google.com/release-notes' },
+          leadTimeDays: 3,
+        },
+      ]);
+
+      expect(changed).toBe(true);
+      const updated = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
+      expect(updated[0].status).toBe('released');
+      expect(updated[0].lead_time_days).toBe(3);
+      expect(updated[0].official_release_date).toBe('2026-10-04');
+      expect(updated[0].official_release_notes_url).toBe('https://cloud.google.com/release-notes');
+      expect(updated[1].status).toBe('canary');
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
 });

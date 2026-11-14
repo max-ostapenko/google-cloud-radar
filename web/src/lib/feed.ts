@@ -292,6 +292,7 @@ export interface FeedEntry extends FeedEntryMeta {
   summary: string;
   detailsHtml: string;
   extractedMethods: string[];
+  targetPaths?: string[];
   ecosystem: Ecosystem;
   category: ServiceCategory;
 }
@@ -360,6 +361,11 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         extractedMethods = f.extracted_methods.arrayValue.values.map((v: any) => v.stringValue).filter(Boolean);
       }
 
+      let targetPaths: string[] = [];
+      if (f.target_paths?.arrayValue?.values) {
+        targetPaths = f.target_paths.arrayValue.values.map((v: any) => v.stringValue).filter(Boolean);
+      }
+
       let stats = undefined;
       if (f.stats?.stringValue) {
         try {
@@ -401,6 +407,7 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         summary,
         detailsHtml: htmlContent,
         extractedMethods,
+        targetPaths,
         ecosystem,
         category,
       };
@@ -458,6 +465,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const summary = doc.summary || '';
       const details = doc.details || summary;
       const extractedMethods = Array.isArray(doc.extracted_methods) ? doc.extracted_methods : [];
+      const targetPaths = Array.isArray(doc.target_paths) ? doc.target_paths : [];
 
       const htmlContent = safeMarkdownParser.parse(details || summary, { async: false }) as string;
       const ecosystem = canonicalMeta?.ecosystem || (doc.ecosystem as Ecosystem) || getEcosystemForService(service || api);
@@ -499,6 +507,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
         summary,
         detailsHtml: htmlContent,
         extractedMethods,
+        targetPaths,
         ecosystem,
         category,
       });

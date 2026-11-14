@@ -213,6 +213,43 @@ export function updateJsonFile(filePath: string, releaseInfo: any, leadTimeDays:
   }
 }
 
+export function syncIndexManifest(
+  dataDir: string,
+  updates: Array<{ slug: string; releaseInfo: any; leadTimeDays: number }>
+): boolean {
+  if (updates.length === 0) return false;
+  const indexPath = path.join(dataDir, 'index.json');
+  if (!fs.existsSync(indexPath)) return false;
+
+  try {
+    const index = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
+    if (!Array.isArray(index)) return false;
+
+    const updateMap = new Map(updates.map((u) => [u.slug, u]));
+    let changed = false;
+
+    for (const entry of index) {
+      const slug = entry?.id || entry?.slug;
+      const match = slug ? updateMap.get(slug) : undefined;
+      if (!match) continue;
+
+      entry.status = 'released';
+      entry.lead_time_days = match.leadTimeDays;
+      entry.official_release_date = match.releaseInfo.date;
+      entry.official_release_notes_url = match.releaseInfo.url || '';
+      changed = true;
+    }
+
+    if (changed) {
+      fs.writeFileSync(indexPath, JSON.stringify(index, null, 2) + '\n', 'utf-8');
+    }
+    return changed;
+  } catch (err: any) {
+    console.error(`Error syncing index manifest ${indexPath}: ${err.message}`);
+    return false;
+  }
+}
+
 export async function updateFirestoreRelease(
   firestore: Firestore,
   slug: string,
@@ -362,6 +399,9 @@ export async function runCorrelation(options: {
     }
   }
 
+  if (!options.dryRun && matchedResults.length > 0) {
+    syncIndexManifest(dataDir, matchedResults);
+  }
   saveReleaseArchive(archivePath, archive);
   return matchedResults;
 }
@@ -370,7 +410,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
   const projectIdx = args.indexOf('--project');
-  const projectId = projectIdx !== -1 ? args[projectIdx + 1] : process.env.GCP_PROJECT || 'gcp-cloud-radar';
+  const projectId = projectIdx !== -1 ? args[projectIdx + 1] : process.env.GCP_PROJECT || undefined;
   const databaseIdx = args.indexOf('--database');
   const databaseId = databaseIdx !== -1 ? args[databaseIdx + 1] : 'radar';
 

@@ -169,9 +169,22 @@ export function detectBreakingChanges(
       parts.includes('parameters') &&
       (newVal === true || newVal === 'true')
     ) {
-      const paramName = parts.length >= 2 ? parts[parts.length - 2] : 'parameter';
-      const reason = `Parameter '${paramName}' was changed to strictly required`;
-      if (!reasons.includes(reason)) reasons.push(reason);
+      // Only flag as breaking if the parent method already existed; new methods with required params are additive (50fb807f)
+      let isNewMethod = false;
+      if (parts.includes('methods')) {
+        const mIdx = parts.indexOf('methods');
+        if (parts.length > mIdx + 1) {
+          const methodPrefix = parts.slice(0, mIdx + 2).join('.');
+          isNewMethod = !Object.keys(oldFlat).some(
+            (k) => k === methodPrefix || k.startsWith(`${methodPrefix}.`)
+          );
+        }
+      }
+      if (!isNewMethod) {
+        const paramName = parts.length >= 2 ? parts[parts.length - 2] : 'parameter';
+        const reason = `Parameter '${paramName}' was changed to strictly required`;
+        if (!reasons.includes(reason)) reasons.push(reason);
+      }
     } else if (
       parts[parts.length - 1] === 'readOnly' &&
       parts.includes('schemas') &&

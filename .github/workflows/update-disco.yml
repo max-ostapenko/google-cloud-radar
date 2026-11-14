@@ -20,8 +20,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      RESEND_FROM_EMAIL: ${{ vars.RESEND_FROM_EMAIL || 'Google Cloud Radar <alerts@google-cloud-radar.com>' }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v7
@@ -53,6 +51,6 @@ jobs:
             release-notes-archive-${{ runner.os }}-
             release-notes-archive-
 
-      - name: Update discoveries, extract diffs, correlate releases, sync Firestore DB, dispatch email alerts, and open PR
+      - name: Update discoveries, extract diffs, correlate releases, and open PR
         run: |
-          npm run update:disco && npm run diff:feed && npm run correlate -- --database radar && npm run seed:firestore -- --project gcp-cloud-radar --database radar && npm run alerts:email -- --project gcp-cloud-radar --database radar && npm run pr:open
+          npm run update:disco && npm run diff:feed && npm run correlate && npm run pr:open

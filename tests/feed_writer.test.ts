@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import * as feed_writer from '../scripts/feed_writer.ts';
+import * as seed_prod_firestore from '../scripts/seed_prod_firestore.ts';
 import * as update_disco from '../scripts/update_disco.ts';
 
 const TMP_DATA_DIR = path.join(os.tmpdir(), 'radar_test_feed_data');
@@ -199,5 +200,87 @@ describe('compareRevisions', () => {
     expect(update_disco.compareRevisions('alpha', 'beta')).toBeLessThan(0);
     expect(update_disco.compareRevisions('beta', 'alpha')).toBeGreaterThan(0);
     expect(update_disco.compareRevisions('same', 'same')).toBe(0);
+  });
+
+  it('rebuildIndexFromChanges syncs status and lead_time_days from changes/*.json', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'radar-rebuild-index-'));
+    try {
+      const changesDir = path.join(tmpDir, 'changes');
+      fs.mkdirSync(changesDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(changesDir, '2026-10-01-bigquery-v2.json'),
+        JSON.stringify({
+          id: '2026-10-01-bigquery-v2',
+          date: '2026-10-01',
+          api: 'bigquery.v2',
+          service: 'BigQuery',
+          title: 'BigQuery Release',
+          summary: 'Summary',
+          details: 'Details',
+          impact: 'medium',
+          breaking: false,
+          interesting_score: 7,
+          tags: ['bigquery'],
+          extracted_methods: [],
+          target_paths: ['schemas.Job'],
+          status: 'released',
+          lead_time_days: 4,
+          official_release_date: '2026-10-05',
+          official_release_notes_url: 'https://cloud.google.com/release-notes',
+          generated_at: '2026-10-01T00:00:00.000Z',
+        }),
+        'utf-8'
+      );
+
+      const rebuilt = feed_writer.rebuildIndexFromChanges(tmpDir);
+      expect(rebuilt.length).toBe(1);
+      expect(rebuilt[0].status).toBe('released');
+      expect(rebuilt[0].lead_time_days).toBe(4);
+      expect(rebuilt[0].official_release_date).toBe('2026-10-05');
+
+      const diskIndex = JSON.parse(fs.readFileSync(path.join(tmpDir, 'index.json'), 'utf-8'));
+      expect(diskIndex).toHaveLength(1);
+      expect(diskIndex[0].status).toBe('released');
+      expect(diskIndex[0].lead_time_days).toBe(4);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('parseJsonChangeFile preserves AST paths and URLs without resetting reaction_counts (d116eab0)', () => {
+    const tmpFile = path.join(os.tmpdir(), `radar-seed-test-${Date.now()}.json`);
+    try {
+      fs.writeFileSync(
+        tmpFile,
+        JSON.stringify({
+          id: '2026-10-03-run-v2',
+          date: '2026-10-03',
+          api: 'run.v2',
+          service: 'Cloud Run',
+          title: 'Cloud Run Update',
+          summary: 'Summary',
+          details: 'Details',
+          impact: 'medium',
+          breaking: false,
+          interesting_score: 6,
+          tags: ['cloud-run'],
+          extracted_methods: ['run.v2.services.create'],
+          target_paths: ['schemas.Service.properties.template'],
+          discovery_rest_url: 'https://run.googleapis.com/$discovery/rest?version=v2',
+          documentation_link: 'https://cloud.google.com/run/',
+        }),
+        'utf-8'
+      );
+
+      const doc = seed_prod_firestore.parseJsonChangeFile(tmpFile);
+      expect(doc.target_paths).toEqual(['schemas.Service.properties.template']);
+      expect(doc.discovery_rest_url).toBe('https://run.googleapis.com/$discovery/rest?version=v2');
+      expect(doc.documentation_link).toBe('https://cloud.google.com/run/');
+      expect(doc.reaction_counts).toBeUndefined();
+      expect(doc.comments_count).toBeUndefined();
+      expect(doc.stats).toBeUndefined();
+    } finally {
+      if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
+    }
   });
 });
