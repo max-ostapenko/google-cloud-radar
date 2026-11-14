@@ -712,7 +712,17 @@ export function isIndexableChange(entry: {
   summary?: string;
   rawContent?: string;
   details?: string;
+  siblingVersions?: SiblingVersionInfo[];
 }): boolean {
+  if (entry.siblingVersions && entry.siblingVersions.length > 1) {
+    const anyBreaking = entry.breaking || entry.siblingVersions.some((s) => s.breaking);
+    if (anyBreaking) return true;
+    const combinedProseLen = entry.siblingVersions
+      .map((s) => `${s.summary || ''} ${s.rawContent || ''}`.trim())
+      .join(' ')
+      .trim().length;
+    return Number(entry.interesting_score ?? 5) >= 6 && combinedProseLen >= 500;
+  }
   const proseLen = `${entry.summary || ''} ${entry.rawContent || entry.details || ''}`.trim().length;
   return Boolean(entry.breaking || (Number(entry.interesting_score ?? 5) >= 6 && proseLen >= 500));
 }
@@ -783,7 +793,7 @@ export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
     for (let idx = 0; idx < sorted.length; idx++) {
       const member = sorted[idx];
       member.siblingVersions = siblingList;
-      if (idx > 0 && !(member.breaking && !primary.breaking)) {
+      if (idx > 0) {
         member.primarySiblingSlug = primary.slug;
       }
     }

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getAllFeedEntries } from '../lib/feed';
+import { deduplicateFeedSiblingVersions, getAllFeedEntries } from '../lib/feed';
 
 function escapeXml(str: unknown): string {
   if (str === null || str === undefined) return '';
@@ -12,7 +12,7 @@ function escapeXml(str: unknown): string {
 }
 
 export const GET: APIRoute = async (context) => {
-  const entries = await getAllFeedEntries();
+  const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
   const siteUrl = (context.site ? context.site.toString() : 'https://google-cloud-radar.com').replace(/\/+$/, '');
   const latestDate = entries[0]?.date ? `${entries[0].date}T00:00:00Z` : new Date().toISOString();
 

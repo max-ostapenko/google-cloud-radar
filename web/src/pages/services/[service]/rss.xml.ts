@@ -1,10 +1,10 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
-import { getAllFeedEntries, getServicesList, slugify } from '../../../lib/feed';
+import { deduplicateFeedSiblingVersions, getAllFeedEntries, getServicesList, slugify } from '../../../lib/feed';
 
 export async function getStaticPaths() {
   const services = await getServicesList();
-  const allEntries = await getAllFeedEntries();
+  const allEntries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
 
   return services.map((svc) => {
     const serviceEntries = allEntries.filter(

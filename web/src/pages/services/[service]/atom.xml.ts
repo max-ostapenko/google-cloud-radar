@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getAllFeedEntries, getServicesList, slugify } from '../../../lib/feed';
+import { deduplicateFeedSiblingVersions, getAllFeedEntries, getServicesList, slugify } from '../../../lib/feed';
 
 function escapeXml(str: unknown): string {
   if (str === null || str === undefined) return '';
@@ -13,7 +13,7 @@ function escapeXml(str: unknown): string {
 
 export async function getStaticPaths() {
   const services = await getServicesList();
-  const allEntries = await getAllFeedEntries();
+  const allEntries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
 
   return services.map((svc) => {
     const serviceEntries = allEntries.filter(

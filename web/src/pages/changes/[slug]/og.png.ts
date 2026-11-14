@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { getAllFeedEntries, type FeedEntry } from '../../../lib/feed';
+import { deduplicateFeedSiblingVersions, getAllFeedEntries, type FeedEntry } from '../../../lib/feed';
 
 export async function getStaticPaths() {
-  const entries = await getAllFeedEntries();
+  const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
   return entries.map((entry) => ({
     params: { slug: entry.slug },
     props: { entry },

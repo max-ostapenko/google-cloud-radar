@@ -79,11 +79,12 @@ for (const members of siblingGroups.values()) {
     return a.slug.localeCompare(b.slug);
   });
   const primary = members[0];
+  primary.doc.breaking = members.some((m) => m.doc.breaking);
+  primary.doc.details = members
+    .map((m) => `${m.doc.summary || ''} ${m.doc.details || ''}`.trim())
+    .join(' ');
   for (let i = 1; i < members.length; i++) {
-    const m = members[i];
-    if (!(m.doc.breaking && !primary.doc.breaking)) {
-      nonPrimarySiblingSlugs.add(m.slug);
-    }
+    nonPrimarySiblingSlugs.add(members[i].slug);
   }
 }
 

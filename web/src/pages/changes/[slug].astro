@@ -2,10 +2,10 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ReactionsBar from "../../components/ReactionsBar.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
-import { getAllFeedEntries, isIndexableChange, partitionSiblingNarratives, slugify, type FeedEntry } from "../../lib/feed";
+import { deduplicateFeedSiblingVersions, getAllFeedEntries, isIndexableChange, partitionSiblingNarratives, slugify, type FeedEntry } from "../../lib/feed";
 
 export async function getStaticPaths() {
-  const entries = await getAllFeedEntries();
+  const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
   return entries.map((entry) => ({
     params: { slug: entry.slug },
     props: { entry },
@@ -112,9 +112,6 @@ const sharedVersionNames = siblings.map((s) => s.version).join(', ');
 const narrativePartition = hasSiblings ? partitionSiblingNarratives(siblings) : null;
 
 const shouldIndex = isIndexableChange(entry);
-const canonicalOverride = entry.primarySiblingSlug
-  ? `https://google-cloud-radar.com/changes/${entry.primarySiblingSlug}`
-  : undefined;
 ---
 
 <BaseLayout
@@ -127,7 +124,6 @@ const canonicalOverride = entry.primarySiblingSlug
   schemaData={schemaData}
   noindex={!shouldIndex}
   robots={!shouldIndex ? "noindex, follow" : undefined}
-  canonicalUrl={canonicalOverride}
 >
   <div class="change-detail-container">
     <!-- Breadcrumb Navigation -->
@@ -317,12 +313,12 @@ const canonicalOverride = entry.primarySiblingSlug
                 const specificNarrativeCount = narrativePartition.uniqueCountBySlug[sib.slug] ?? 0;
                 return (
                   <a
-                    href={`/changes/${sib.slug}`}
+                    href={`#version=${sib.version}`}
                     role="tab"
-                    id={`tab-${sib.slug}`}
-                    aria-controls={`panel-${sib.slug}`}
+                    id={`tab-${sib.version}`}
+                    aria-controls={`panel-${sib.version}`}
                     aria-selected={isActive ? "true" : "false"}
-                    data-version-tab={sib.slug}
+                    data-version-tab={sib.version}
                     data-tab-title={sib.title}
                     class={`version-tab-btn ${isActive ? "is-active" : ""} ${sib.breaking ? "is-breaking" : ""}`}
                     title={`View ${sib.api}: ${sib.title}`}
@@ -358,9 +354,9 @@ const canonicalOverride = entry.primarySiblingSlug
                 return (
                   <section
                     role="tabpanel"
-                    id={`panel-${sib.slug}`}
-                    aria-labelledby={`tab-${sib.slug}`}
-                    data-version-panel={sib.slug}
+                    id={`panel-${sib.version}`}
+                    aria-labelledby={`tab-${sib.version}`}
+                    data-version-panel={sib.version}
                     class={`version-tab-panel ${isActive ? "is-active" : ""}`}
                     hidden={!isActive}
                   >
@@ -568,11 +564,10 @@ const canonicalOverride = entry.primarySiblingSlug
   const panels = Array.from(document.querySelectorAll<HTMLElement>('[data-version-panel]'));
   const heroTitle = document.querySelector<HTMLElement>('.change-title');
 
-  function activateTab(tab: HTMLAnchorElement) {
-    const slug = tab.getAttribute('data-version-tab');
+  function activateTab(tab: HTMLAnchorElement, updateUrl = true) {
+    const version = tab.getAttribute('data-version-tab');
     const tabTitle = tab.getAttribute('data-tab-title');
-    const href = tab.getAttribute('href');
-    if (!slug) return;
+    if (!version) return;
 
     for (const candidate of tabs) {
       const selected = candidate === tab;
@@ -581,7 +576,7 @@ const canonicalOverride = entry.primarySiblingSlug
     }
 
     for (const panel of panels) {
-      const matches = panel.getAttribute('data-version-panel') === slug;
+      const matches = panel.getAttribute('data-version-panel') === version;
       panel.classList.toggle('is-active', matches);
       panel.hidden = !matches;
     }
@@ -591,10 +586,25 @@ const canonicalOverride = entry.primarySiblingSlug
       document.title = `${tabTitle} — Google Cloud Radar`;
     }
 
-    if (href) {
-      window.history.replaceState(null, '', href);
+    if (updateUrl) {
+      window.history.replaceState(null, '', `#version=${version}`);
     }
   }
+
+  function syncTabFromHash() {
+    const match = window.location.hash.match(/^#(?:version=)?([a-z0-9_.-]+)$/i);
+    if (!match) return;
+    const requested = match[1].toLowerCase();
+    const targetTab = tabs.find(
+      (candidate) => candidate.getAttribute('data-version-tab')?.toLowerCase() === requested
+    );
+    if (targetTab) {
+      activateTab(targetTab, false);
+    }
+  }
+
+  syncTabFromHash();
+  window.addEventListener('hashchange', syncTabFromHash);
 
   for (const tab of tabs) {
     tab.addEventListener('click', (event) => {
@@ -602,7 +612,7 @@ const canonicalOverride = entry.primarySiblingSlug
         return;
       }
       event.preventDefault();
-      activateTab(tab);
+      activateTab(tab, true);
     });
 
     tab.addEventListener('keydown', (event) => {
@@ -615,7 +625,7 @@ const canonicalOverride = entry.primarySiblingSlug
           : (idx - 1 + tabs.length) % tabs.length;
       const nextTab = tabs[nextIdx];
       nextTab.focus();
-      activateTab(nextTab);
+      activateTab(nextTab, true);
     });
   }
 </script>

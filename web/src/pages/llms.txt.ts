@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { getAllFeedEntries } from '../lib/feed';
+import { deduplicateFeedSiblingVersions, getAllFeedEntries } from '../lib/feed';
 
 export const GET: APIRoute = async () => {
-  const entries = await getAllFeedEntries();
+  const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
 
   const lines = [
     '# Google Cloud Radar',

@@ -1,6 +1,6 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
-import { getAllFeedEntries } from '../lib/feed';
+import { deduplicateFeedSiblingVersions, getAllFeedEntries } from '../lib/feed';
 
 function escapeXml(str: unknown): string {
   if (str === null || str === undefined) return '';
@@ -13,7 +13,7 @@ function escapeXml(str: unknown): string {
 }
 
 export async function GET(context: APIContext) {
-  const entries = await getAllFeedEntries();
+  const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
   const siteUrl = (context.site ? context.site.toString() : 'https://google-cloud-radar.com').replace(/\/+$/, '');
 
   return rss({

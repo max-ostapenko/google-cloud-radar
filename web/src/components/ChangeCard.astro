@@ -47,7 +47,7 @@ const allTitlesText = siblings ? siblings.map((s) => `${s.api} ${s.title}`).join
           <span class="api-base-name">{baseApi}</span>
           {siblings.map((sib) => (
             <a
-              href={`/changes/${sib.slug}`}
+              href={`/changes/${entry.slug}#version=${sib.version}`}
               class={`version-pill ${sib.breaking ? 'is-breaking' : ''}`}
               title={`View ${sib.api} impact: ${sib.title}`}
             >
@@ -101,7 +101,7 @@ const allTitlesText = siblings ? siblings.map((s) => `${s.api} ${s.title}`).join
         <div class="card-version-row">
           <div class="card-version-row-header">
             <a
-              href={`/changes/${sib.slug}`}
+              href={`/changes/${entry.slug}#version=${sib.version}`}
               class={`card-version-tag ${sib.breaking ? 'is-breaking' : ''}`}
             >
               {sib.version}
@@ -116,7 +116,7 @@ const allTitlesText = siblings ? siblings.map((s) => `${s.api} ${s.title}`).join
             <span class="card-version-methods">
               {sib.extractedMethods.length} methods
             </span>
-            <a href={`/changes/${sib.slug}`} class="card-version-title">
+            <a href={`/changes/${entry.slug}#version=${sib.version}`} class="card-version-title">
               {sib.title}
             </a>
           </div>
