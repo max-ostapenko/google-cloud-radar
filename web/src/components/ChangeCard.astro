@@ -95,8 +95,41 @@ const allTitlesText = siblings ? siblings.map((s) => `${s.api} ${s.title}`).join
     </a>
   </h3>
 
-  {entry.summary && (
-    <p class="card-summary">{entry.summary}</p>
+  {siblings && siblings.length > 1 ? (
+    <div class="card-version-breakdown">
+      {siblings.map((sib) => (
+        <div class="card-version-row">
+          <div class="card-version-row-header">
+            <a
+              href={`/changes/${sib.slug}`}
+              class={`card-version-tag ${sib.breaking ? 'is-breaking' : ''}`}
+            >
+              {sib.version}
+            </a>
+            {sib.breaking ? (
+              <span class="card-version-badge is-breaking">Breaking</span>
+            ) : sib.impact !== 'low' ? (
+              <span class={`card-version-badge is-${sib.impact}`}>{sib.impact}</span>
+            ) : (
+              <span class="card-version-badge is-low">Non-breaking</span>
+            )}
+            <span class="card-version-methods">
+              {sib.extractedMethods.length} methods
+            </span>
+            <a href={`/changes/${sib.slug}`} class="card-version-title">
+              {sib.title}
+            </a>
+          </div>
+          {sib.summary && (
+            <p class="card-version-summary">{sib.summary}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  ) : (
+    entry.summary && (
+      <p class="card-summary">{entry.summary}</p>
+    )
   )}
 
   {entry.extractedMethods && entry.extractedMethods.length > 0 && (
@@ -298,6 +331,90 @@ const allTitlesText = siblings ? siblings.map((s) => `${s.api} ${s.title}`).join
     color: var(--google-red);
     background-color: var(--google-red-subtle);
     border-color: var(--google-red-border);
+  }
+
+  .card-version-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .card-version-row {
+    padding: 8px 10px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-page);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .card-version-row-header {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+
+  .card-version-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--google-blue-text);
+    background-color: var(--google-blue-subtle);
+    border: 1px solid var(--google-blue-border);
+    padding: 0 6px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+  }
+
+  .card-version-tag.is-breaking {
+    color: var(--google-red-text);
+    background-color: var(--google-red-subtle);
+    border-color: var(--google-red-border);
+  }
+
+  .card-version-badge {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: capitalize;
+    color: var(--text-secondary);
+  }
+
+  .card-version-badge.is-breaking {
+    color: var(--google-red-text);
+  }
+
+  .card-version-badge.is-high,
+  .card-version-badge.is-medium {
+    color: var(--google-yellow-text);
+  }
+
+  .card-version-methods {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  .card-version-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  .card-version-title:hover {
+    color: var(--google-blue);
+    text-decoration: underline;
+  }
+
+  .card-version-summary {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--text-secondary);
   }
 
   .meta-separator {

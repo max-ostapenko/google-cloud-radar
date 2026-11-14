@@ -290,6 +290,11 @@ export interface SiblingVersionInfo {
   breaking: boolean;
   impact: 'low' | 'medium' | 'high';
   title: string;
+  summary: string;
+  detailsHtml: string;
+  extractedMethods: string[];
+  targetPaths?: string[];
+  discoveryRestUrl?: string;
   isPrimary: boolean;
 }
 
@@ -765,6 +770,11 @@ export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
       breaking: m.breaking,
       impact: m.impact,
       title: m.title,
+      summary: m.summary,
+      detailsHtml: m.detailsHtml,
+      extractedMethods: m.extractedMethods,
+      targetPaths: m.targetPaths,
+      discoveryRestUrl: m.discoveryRestUrl,
       isPrimary: idx === 0,
     }));
 
@@ -780,9 +790,29 @@ export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
   return entries;
 }
 
+const IMPACT_ORDER: Record<'low' | 'medium' | 'high', number> = {
+  low: 0,
+  medium: 1,
+  high: 2,
+};
+
 export function deduplicateFeedSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
-  return entries.filter((entry) => {
-    if (!entry.siblingVersions || entry.siblingVersions.length <= 1) return true;
-    return entry.siblingVersions[0].slug === entry.slug;
-  });
+  return entries
+    .filter((entry) => {
+      if (!entry.siblingVersions || entry.siblingVersions.length <= 1) return true;
+      return entry.siblingVersions[0].slug === entry.slug;
+    })
+    .map((entry) => {
+      const siblings = entry.siblingVersions;
+      if (!siblings || siblings.length <= 1) return entry;
+      const highestImpact = siblings.reduce<'low' | 'medium' | 'high'>(
+        (acc, sib) => (IMPACT_ORDER[sib.impact] > IMPACT_ORDER[acc] ? sib.impact : acc),
+        entry.impact
+      );
+      return {
+        ...entry,
+        breaking: siblings.some((sib) => sib.breaking),
+        impact: highestImpact,
+      };
+    });
 }
