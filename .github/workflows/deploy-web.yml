@@ -7,15 +7,10 @@ on:
     paths:
       - "web/**"
       - "data/**"
+      - "scripts/**"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/deploy-web.yml"
-  workflow_run:
-    workflows: ["Update Discoveries Directory"]
-    types:
-      - completed
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -23,13 +18,14 @@ permissions:
 
 jobs:
   build-and-deploy:
-    if: >
-      github.repository == 'max-ostapenko/google-cloud-radar' &&
-      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+    if: github.repository == 'max-ostapenko/google-cloud-radar'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write # Workload Identity Federation
+    env:
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      RESEND_FROM_EMAIL: ${{ vars.RESEND_FROM_EMAIL || 'Google Cloud Radar <alerts@google-cloud-radar.com>' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -55,3 +51,8 @@ jobs:
       - name: Deploy to Firebase Hosting and Firestore Rules
         working-directory: web
         run: npx -y firebase-tools@latest deploy --only hosting,firestore:rules --project gcp-cloud-radar
+
+      - name: Sync vetted changes to Cloud Firestore and dispatch email alerts
+        run: |
+          npm run seed:firestore -- --project gcp-cloud-radar --database radar
+          npm run alerts:email -- --project gcp-cloud-radar --database radar

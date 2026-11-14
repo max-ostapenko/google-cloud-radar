@@ -410,7 +410,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
   const projectIdx = args.indexOf('--project');
-  const projectId = projectIdx !== -1 ? args[projectIdx + 1] : process.env.GCP_PROJECT || 'gcp-cloud-radar';
+  const projectId = projectIdx !== -1 ? args[projectIdx + 1] : process.env.GCP_PROJECT || undefined;
   const databaseIdx = args.indexOf('--database');
   const databaseId = databaseIdx !== -1 ? args[databaseIdx + 1] : 'radar';
 

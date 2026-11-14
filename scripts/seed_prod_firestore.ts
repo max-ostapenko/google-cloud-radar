@@ -67,18 +67,6 @@ export function parseJsonChangeFile(filePath: string): Record<string, any> {
     tags,
     extracted_methods: extractedMethods,
     target_paths: targetPaths,
-    reaction_counts: {
-      like_change: 0,
-      released: 0,
-      false_positive_or_duplicate: 0,
-    },
-    comments_count: 0,
-    stats: JSON.stringify({
-      views: 100 + interestingScore * 45,
-      subscribers: 10 + interestingScore * 3,
-      upvotes: 5 + interestingScore * 2,
-      impacted_users_count: breaking ? 2 : 0,
-    }),
   };
 
   if (data.official_release_date) {

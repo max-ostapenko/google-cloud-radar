@@ -5,10 +5,26 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const changesDirPath = path.resolve(__dirname, '../data/changes');
 const indexFilePath = path.resolve(__dirname, '../data/index.json');
 const changeMap = new Map();
 
-if (fs.existsSync(indexFilePath)) {
+if (fs.existsSync(changesDirPath)) {
+  try {
+    const files = fs.readdirSync(changesDirPath).filter((f) => f.endsWith('.json'));
+    for (const file of files) {
+      try {
+        const doc = JSON.parse(fs.readFileSync(path.join(changesDirPath, file), 'utf8'));
+        const slug = doc.id || doc.slug || file.replace('.json', '');
+        changeMap.set(slug, doc);
+      } catch (err) {
+        console.warn(`Failed to parse ${file} for sitemap serialization:`, err.message);
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to scan data/changes for sitemap serialization:', err.message);
+  }
+} else if (fs.existsSync(indexFilePath)) {
   try {
     const raw = JSON.parse(fs.readFileSync(indexFilePath, 'utf8'));
     for (const item of raw) {

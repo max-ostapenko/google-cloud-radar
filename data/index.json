@@ -25,6 +25,8 @@
       "schemas.object.properties.zonalavailabilityinfo.properties.availablezones.type",
       "schemas.object.properties.zonalavailabilityinfo.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-13T12:55:21.278Z"
   },
   {
@@ -740,6 +742,8 @@
       "schemas.googlecloudaiplatformv1beta1tuningjob.properties.omniloratuningspec.$ref",
       "schemas.googlecloudaiplatformv1beta1tuningjob.properties.omniloratuningspec.description"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-13T21:18:51.134Z"
   },
   {
@@ -1175,6 +1179,8 @@
       "schemas.googlecloudaiplatformv1servingprofile.properties.scope.enum[4]",
       "schemas.googlecloudaiplatformv1servingprofile.properties.scope.enumdescriptions[4]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-13T21:18:51.126Z"
   },
   {
@@ -1199,6 +1205,8 @@
       "schemas.compression.properties.compressionalgorithm.enum[2]",
       "schemas.compression.properties.compressionalgorithm.enumdescriptions[2]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-12T18:00:18.471Z"
   },
   {
@@ -1243,6 +1251,8 @@
       "schemas.componentmetrics.properties.type.enumdescriptions[4]",
       "schemas.componentmetrics.properties.type.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-12T18:00:18.466Z"
   },
   {
@@ -1378,6 +1388,8 @@
       "schemas.transitiontargetconfig.properties.productid.type",
       "schemas.transitiontargetconfig.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-12T18:00:18.459Z"
   },
   {
@@ -1402,6 +1414,8 @@
       "schemas.compression.properties.compressionalgorithm.enum[2]",
       "schemas.compression.properties.compressionalgorithm.enumdescriptions[2]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-11T12:31:46.327Z"
   },
   {
@@ -1443,6 +1457,8 @@
       "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.scopes[0]",
       "resources.projects.resources.locations.resources.repositories.resources.workspaces.methods.createlongrunning.scopes[1]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-11T12:31:46.318Z"
   },
   {
@@ -1489,6 +1505,8 @@
       "schemas.bucketstoragelayout.properties.rapidcacheinfo.properties.cachetype.type",
       "schemas.bucketstoragelayout.properties.rapidcacheinfo.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-10T17:34:35.299Z"
   },
   {
@@ -1643,7 +1661,11 @@
       "resources.users.resources.threads.methods.untrash.scopes[2]",
       "resources.users.resources.threads.methods.untrash.scopes[3]"
     ],
-    "generated_at": "2026-11-10T06:40:27.227Z"
+    "status": "released",
+    "lead_time_days": 0,
+    "generated_at": "2026-11-10T06:40:27.227Z",
+    "official_release_date": "2026-11-10",
+    "official_release_notes_url": "http://workspaceupdates.googleblog.com/2026/11/schedule-meetings-in-single-click-from-conversations-in-Google-Chat.html"
   },
   {
     "id": "2026-11-10-bigqueryconnection-v1",
@@ -1675,6 +1697,8 @@
       "schemas.azureproperties.properties.servicedirectoryservice.description",
       "schemas.azureproperties.properties.servicedirectoryservice.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-10T17:34:35.293Z"
   },
   {
@@ -1733,6 +1757,8 @@
       "schemas.table.properties.policymember.description",
       "schemas.table.properties.policymember.readonly"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-10T17:34:35.284Z"
   },
   {
@@ -1755,6 +1781,8 @@
       "schemas.approval.properties.approvedrevisionid.description",
       "schemas.approval.properties.approvedrevisionid.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-08T16:33:31.652Z"
   },
   {
@@ -2080,7 +2108,11 @@
       "schemas.googleclouddiscoveryenginev1enginefeaturepolicymember.properties.verification.type",
       "schemas.googleclouddiscoveryenginev1enginefeaturepolicymember.type"
     ],
-    "generated_at": "2026-11-08T05:17:31.798Z"
+    "status": "released",
+    "lead_time_days": 2,
+    "generated_at": "2026-11-08T05:17:31.798Z",
+    "official_release_date": "2026-11-10",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#November_10_2026"
   },
   {
     "id": "2026-11-08-dataplex-v1",
@@ -2136,6 +2168,8 @@
       "schemas.googleclouddataplexv1batchoperationmetadata.properties.verb.type",
       "schemas.googleclouddataplexv1batchoperationmetadata.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-08T23:30:49.703Z"
   },
   {
@@ -2300,6 +2334,8 @@
       "schemas.googleclouddiscoveryenginev1enginefeaturepolicymember.properties.verification.type",
       "schemas.googleclouddiscoveryenginev1enginefeaturepolicymember.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-07T23:31:55.178Z"
   },
   {
@@ -2469,6 +2505,8 @@
       "schemas.googleclouddiscoveryenginev1widgetconfigcustomerprovidedconfig.properties.compliancelevel.enum[4]",
       "schemas.googleclouddiscoveryenginev1widgetconfigcustomerprovidedconfig.properties.compliancelevel.enumdescriptions[4]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-07T23:31:55.173Z"
   },
   {
@@ -3445,6 +3483,8 @@
       "schemas.googleclouddatacatalogv1beta1viewspec.properties.viewquery.type",
       "schemas.googleclouddatacatalogv1beta1viewspec.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-07T16:12:12.418Z"
   },
   {
@@ -4370,6 +4410,8 @@
       "schemas.googleclouddatacatalogv1unstarentryresponse.id",
       "schemas.googleclouddatacatalogv1unstarentryresponse.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-07T16:12:12.409Z"
   },
   {
@@ -4407,6 +4449,8 @@
       "schemas.scheduledhibernationconfig.properties.timezone.type",
       "schemas.scheduledhibernationconfig.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-07T05:20:03.144Z"
   },
   {
@@ -4469,6 +4513,8 @@
       "schemas.resumeenvironmentrequest.id",
       "schemas.resumeenvironmentrequest.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-07T05:20:03.138Z"
   },
   {
@@ -4513,6 +4559,8 @@
       "schemas.googlecloudintegrationsv1alphauploadtestcaserequest.properties.fileformat.enum[3]",
       "schemas.googlecloudintegrationsv1alphauploadtestcaserequest.properties.fileformat.enumdescriptions[3]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-06T20:46:27.225Z"
   },
   {
@@ -4633,6 +4681,8 @@
       "schemas.vectorsearchindexingstats.properties.indexname.type",
       "schemas.vectorsearchindexingstats.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-06T00:54:47.063Z"
   },
   {
@@ -8836,7 +8886,11 @@
       "schemas.googlecloudaiplatformv1beta1xmanagerinstance.properties.authconfig.$ref",
       "schemas.googlecloudaiplatformv1beta1xmanagerinstance.properties.authconfig.description"
     ],
-    "generated_at": "2026-11-06T20:46:27.219Z"
+    "status": "released",
+    "lead_time_days": 0,
+    "generated_at": "2026-11-06T20:46:27.219Z",
+    "official_release_date": "2026-11-06",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#November_06_2026"
   },
   {
     "id": "2026-11-06-aiplatform-v1",
@@ -9068,7 +9122,11 @@
       "schemas.googlecloudaiplatformv1tenant.properties.type.type",
       "schemas.googlecloudaiplatformv1tenant.type"
     ],
-    "generated_at": "2026-11-06T20:46:27.216Z"
+    "status": "released",
+    "lead_time_days": 0,
+    "generated_at": "2026-11-06T20:46:27.216Z",
+    "official_release_date": "2026-11-06",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#November_06_2026"
   },
   {
     "id": "2026-11-05-youtube-v3",
@@ -9092,6 +9150,8 @@
       "schemas.thumbnaildetails.properties.shortsaspectratio.$ref",
       "schemas.thumbnaildetails.properties.shortsaspectratio.description"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-05T05:52:49.324Z"
   },
   {
@@ -9157,6 +9217,8 @@
       "schemas.upgradeeditionresponse.properties.reservations.type",
       "schemas.upgradeeditionresponse.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-05T17:55:12.650Z"
   },
   {
@@ -9313,6 +9375,8 @@
       "schemas.googleclouddiscoveryenginev1project.properties.experiencestate.readonly",
       "schemas.googleclouddiscoveryenginev1project.properties.experiencestate.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-03T17:40:02.049Z"
   },
   {
@@ -9503,6 +9567,8 @@
       "schemas.googleclouddiscoveryenginev1project.properties.experiencestate.readonly",
       "schemas.googleclouddiscoveryenginev1project.properties.experiencestate.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-03T17:40:02.046Z"
   },
   {
@@ -9698,6 +9764,8 @@
       "schemas.googleclouddiscoveryenginev1widgetconfiguisettingsfeaturetoggleinfofeaturetoggle.properties.supportsaccesspolicy.type",
       "schemas.googleclouddiscoveryenginev1widgetconfiguisettingsfeaturetoggleinfofeaturetoggle.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-03T17:40:02.042Z"
   },
   {
@@ -9744,6 +9812,8 @@
       "schemas.workflowinvocationaction.properties.state.enum[7]",
       "schemas.workflowinvocationaction.properties.state.enumdescriptions[7]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-03T17:40:02.039Z"
   },
   {
@@ -9771,6 +9841,8 @@
       "schemas.workflowinvocationaction.properties.state.enum[7]",
       "schemas.workflowinvocationaction.properties.state.enumdescriptions[7]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-03T17:40:02.035Z"
   },
   {
@@ -9800,6 +9872,8 @@
       "schemas.policy.properties.connectionscount.$ref",
       "schemas.policy.properties.connectionscount.description"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-02T20:06:32.337Z"
   },
   {
@@ -9828,6 +9902,8 @@
       "schemas.policy.properties.connectionscount.$ref",
       "schemas.policy.properties.connectionscount.description"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-01T23:26:11.163Z"
   },
   {
@@ -9856,6 +9932,8 @@
       "schemas.policy.properties.connectionscount.$ref",
       "schemas.policy.properties.connectionscount.description"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-11-01T16:40:29.800Z"
   },
   {
@@ -9879,6 +9957,8 @@
       "schemas.crmlogerrorcode.properties.commonerrorcode.enumdeprecated[62]",
       "schemas.crmlogerrorcode.properties.commonerrorcode.enumdescriptions[62]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-31T23:12:06.092Z"
   },
   {
@@ -9902,6 +9982,8 @@
       "schemas.datapolicy.properties.matchingcondition.description",
       "schemas.datapolicy.properties.matchingcondition.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-31T04:49:16.022Z"
   },
   {
@@ -9972,6 +10054,8 @@
       "schemas.workloadcapturesstoprequest.properties.stopworkloadcapturecontext.description",
       "schemas.workloadcapturesstoprequest.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-30T16:36:00.082Z"
   },
   {
@@ -10004,6 +10088,8 @@
       "schemas.schedulingconfig.properties.schedulingtimeout.type",
       "schemas.schedulingconfig.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-30T05:02:51.544Z"
   },
   {
@@ -10064,6 +10150,8 @@
       "schemas.googleclouddataplexv1requestbatchmetadatachangerequest.properties.deferredvalidation.description",
       "schemas.googleclouddataplexv1requestbatchmetadatachangerequest.properties.deferredvalidation.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-30T05:02:51.540Z"
   },
   {
@@ -10489,7 +10577,11 @@
       "schemas.googlecloudaiplatformv1beta1listfilesresponse.properties.next_page.type",
       "schemas.googlecloudaiplatformv1beta1listfilesresponse.type"
     ],
-    "generated_at": "2026-10-30T05:02:51.536Z"
+    "status": "released",
+    "lead_time_days": 7,
+    "generated_at": "2026-10-30T05:02:51.536Z",
+    "official_release_date": "2026-11-06",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#November_06_2026"
   },
   {
     "id": "2026-10-30-aiplatform-v1",
@@ -10759,7 +10851,11 @@
       "schemas.googlecloudaiplatformv1listfilesresponse.properties.next_page.type",
       "schemas.googlecloudaiplatformv1listfilesresponse.type"
     ],
-    "generated_at": "2026-10-30T05:02:51.532Z"
+    "status": "released",
+    "lead_time_days": 7,
+    "generated_at": "2026-10-30T05:02:51.532Z",
+    "official_release_date": "2026-11-06",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#November_06_2026"
   },
   {
     "id": "2026-10-28-sqladmin-v1",
@@ -10830,6 +10926,8 @@
       "schemas.workloadcapturesstoprequest.properties.stopworkloadcapturecontext.description",
       "schemas.workloadcapturesstoprequest.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-28T04:52:06.566Z"
   },
   {
@@ -10852,6 +10950,8 @@
       "schemas.exportmetadata.properties.esamigrationtoken.description",
       "schemas.exportmetadata.properties.esamigrationtoken.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-28T20:09:10.070Z"
   },
   {
@@ -10885,7 +10985,11 @@
       "resources.projects.resources.transferconfigs.methods.patch.scopes[0]",
       "resources.projects.resources.transferconfigs.methods.patch.scopes[1]"
     ],
-    "generated_at": "2026-10-25T03:56:19.509Z"
+    "status": "released",
+    "lead_time_days": 1,
+    "generated_at": "2026-10-25T03:56:19.509Z",
+    "official_release_date": "2026-10-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#October_26_2026"
   },
   {
     "id": "2026-10-24-composer-v1beta1",
@@ -10907,6 +11011,8 @@
       "schemas.imageversion.properties.devmodesupported.description",
       "schemas.imageversion.properties.devmodesupported.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-24T13:54:10.592Z"
   },
   {
@@ -10930,6 +11036,8 @@
       "schemas.imageversion.properties.devmodesupported.description",
       "schemas.imageversion.properties.devmodesupported.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-24T13:54:10.583Z"
   },
   {
@@ -10997,6 +11105,8 @@
       "schemas.googleclouddiscoveryenginev1betaprovisionprojectrequest.properties.idpconfig.$ref",
       "schemas.googleclouddiscoveryenginev1betaprovisionprojectrequest.properties.idpconfig.description"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-23T18:58:11.068Z"
   },
   {
@@ -11065,6 +11175,8 @@
       "schemas.googleclouddiscoveryenginev1alphaprovisionprojectrequest.properties.idpconfig.$ref",
       "schemas.googleclouddiscoveryenginev1alphaprovisionprojectrequest.properties.idpconfig.description"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-23T18:58:11.066Z"
   },
   {
@@ -11130,6 +11242,8 @@
       "schemas.googleclouddiscoveryenginev1provisionprojectrequest.properties.idpconfig.$ref",
       "schemas.googleclouddiscoveryenginev1provisionprojectrequest.properties.idpconfig.description"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-23T18:58:11.064Z"
   },
   {
@@ -11168,6 +11282,8 @@
       "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.scopes[0]",
       "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.scopes[1]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-23T18:58:11.062Z"
   },
   {
@@ -11205,6 +11321,8 @@
       "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.scopes[0]",
       "resources.projects.resources.locations.resources.repositories.resources.compilationresults.methods.createlongrunning.scopes[1]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-23T18:58:11.060Z"
   },
   {
@@ -11229,6 +11347,8 @@
       "resources.projects.resources.locations.resources.processes.resources.runs.methods.list.scopes[1]",
       "resources.projects.resources.locations.resources.processes.resources.runs.methods.list.scopes[2]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-22T19:08:39.464Z"
   },
   {
@@ -11302,6 +11422,8 @@
       "resources.projects.resources.locations.resources.jobs.methods.list.parameters.terminationtimerange.starttime.location",
       "resources.projects.resources.locations.resources.jobs.methods.list.parameters.terminationtimerange.starttime.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-22T23:05:33.836Z"
   },
   {
@@ -11342,6 +11464,8 @@
       "schemas.instancenetworkinfo.properties.publicdnsname.type",
       "schemas.instancenetworkinfo.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-22T23:05:33.833Z"
   },
   {
@@ -11382,6 +11506,8 @@
       "schemas.instancenetworkinfo.properties.publicdnsname.type",
       "schemas.instancenetworkinfo.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-22T23:05:33.829Z"
   },
   {
@@ -11412,6 +11538,8 @@
       "schemas.exportmetadata.properties.exporttime.type",
       "schemas.instance.properties.maintenanceschedule.readonly"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-21T15:02:58.124Z"
   },
   {
@@ -11433,6 +11561,8 @@
       "schemas.googleclouddataplexv1datadocumentationspec.properties.custominstructions.description",
       "schemas.googleclouddataplexv1datadocumentationspec.properties.custominstructions.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-21T09:54:26.019Z"
   },
   {
@@ -11462,6 +11592,8 @@
       "schemas.inappproduct.properties.trialperiod.deprecated",
       "schemas.inappproductlisting.properties.benefits.deprecated"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-20T14:50:47.415Z"
   },
   {
@@ -11496,6 +11628,8 @@
       "schemas.stopworkloadreplaycontext.properties.workloadid.readonly",
       "schemas.stopworkloadreplaycontext.properties.workloadid.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-18T22:18:33.500Z"
   },
   {
@@ -11530,6 +11664,8 @@
       "schemas.stopworkloadreplaycontext.properties.workloadid.readonly",
       "schemas.stopworkloadreplaycontext.properties.workloadid.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-17T09:06:41.565Z"
   },
   {
@@ -11552,6 +11688,8 @@
       "schemas.jobconfigurationextract.properties.securecontext.$ref",
       "schemas.jobconfigurationextract.properties.securecontext.description"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-17T09:06:41.563Z"
   },
   {
@@ -11631,6 +11769,8 @@
       "schemas.googlecloudaiplatformv1beta1schemapromptspecstructuredprompt.properties.contentmetadata.items.$ref",
       "schemas.googlecloudaiplatformv1beta1schemapromptspecstructuredprompt.properties.contentmetadata.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-17T09:06:41.560Z"
   },
   {
@@ -13597,7 +13737,11 @@
       "schemas.googlecloudaiplatformv1schemapromptspecstructuredprompt.properties.contentmetadata.items.$ref",
       "schemas.googlecloudaiplatformv1schemapromptspecstructuredprompt.properties.contentmetadata.type"
     ],
-    "generated_at": "2026-10-17T09:06:41.556Z"
+    "status": "released",
+    "lead_time_days": 11,
+    "generated_at": "2026-10-17T09:06:41.556Z",
+    "official_release_date": "2026-10-28",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#October_28_2026"
   },
   {
     "id": "2026-10-15-composer-v1beta1",
@@ -13631,6 +13775,8 @@
       "schemas.softwareconfig.properties.imageversionrollbacktargets.readonly",
       "schemas.softwareconfig.properties.imageversionrollbacktargets.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-15T03:56:14.556Z"
   },
   {
@@ -13665,6 +13811,8 @@
       "schemas.softwareconfig.properties.imageversionrollbacktargets.readonly",
       "schemas.softwareconfig.properties.imageversionrollbacktargets.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-15T03:56:14.543Z"
   },
   {
@@ -13725,6 +13873,8 @@
       "schemas.channel.properties.type.type",
       "schemas.channel.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-14T04:13:24.909Z"
   },
   {
@@ -13750,6 +13900,8 @@
       "schemas.approval.properties.modifytime.readonly",
       "schemas.approval.properties.status.readonly"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-14T23:04:47.677Z"
   },
   {
@@ -13807,6 +13959,8 @@
       "schemas.googleclouddiscoveryenginev1datastorefederatedsearchconfignotebooklmconfig.properties.notebooks.type",
       "schemas.googleclouddiscoveryenginev1licenseconfig.properties.state.enumdescriptions[5]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-14T15:02:22.077Z"
   },
   {
@@ -13921,6 +14075,8 @@
       "schemas.googleclouddiscoveryenginev1datastorefederatedsearchconfignotebooklmconfig.properties.notebooks.type",
       "schemas.googleclouddiscoveryenginev1licenseconfig.properties.state.enumdescriptions[5]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-14T15:02:22.075Z"
   },
   {
@@ -13977,6 +14133,8 @@
       "schemas.googleclouddiscoveryenginev1feedbackconversationinfo.properties.trajectoryid.type",
       "schemas.googleclouddiscoveryenginev1licenseconfig.properties.state.enumdescriptions[5]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-14T15:02:22.073Z"
   },
   {
@@ -14027,6 +14185,8 @@
       "schemas.sessiontemplate.properties.displayname.description",
       "schemas.sessiontemplate.properties.displayname.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-14T04:13:24.907Z"
   },
   {
@@ -14173,6 +14333,8 @@
       "schemas.googleclouddataplexv1updateentrylinkrequest.properties.entrylink.description",
       "schemas.googleclouddataplexv1updateentrylinkrequest.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-14T23:04:47.674Z"
   },
   {
@@ -14196,6 +14358,8 @@
       "schemas.googleclouddatacataloglineagev1searchlineagestreamingrequestsearchfilters.properties.projects.items.type",
       "schemas.googleclouddatacataloglineagev1searchlineagestreamingrequestsearchfilters.properties.projects.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-14T15:02:22.070Z"
   },
   {
@@ -14237,6 +14401,8 @@
       "schemas.workloadcapture.properties.workloadcapturestate.enumdescriptions[2]",
       "schemas.workloadcapture.properties.workloadcapturestate.enumdescriptions[4]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-13T12:33:49.752Z"
   },
   {
@@ -14292,6 +14458,8 @@
       "schemas.gitremotesettings.properties.accountconnector.description",
       "schemas.gitremotesettings.properties.accountconnector.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-13T12:33:49.750Z"
   },
   {
@@ -14330,6 +14498,8 @@
       "schemas.cluster.properties.edition.enumdescriptions[1]",
       "schemas.cluster.properties.edition.enumdescriptions[2]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-13T12:33:49.747Z"
   },
   {
@@ -14369,6 +14539,8 @@
       "schemas.cluster.properties.edition.enumdescriptions[1]",
       "schemas.cluster.properties.edition.enumdescriptions[2]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-13T12:33:49.745Z"
   },
   {
@@ -14438,6 +14610,8 @@
       "schemas.schedule.properties.timezone.type",
       "schemas.schedule.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-13T12:33:49.743Z"
   },
   {
@@ -14480,6 +14654,8 @@
       "schemas.workloadcapture.properties.workloadcapturestate.enumdescriptions[2]",
       "schemas.workloadcapture.properties.workloadcapturestate.enumdescriptions[4]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-09T23:54:47.017Z"
   },
   {
@@ -14571,6 +14747,8 @@
       "schemas.googlecloudaiplatformv1beta1toolcomputeruse.properties.environment.enumdescriptions[2]",
       "schemas.googlecloudaiplatformv1beta1toolcomputeruse.properties.environment.enumdescriptions[3]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-09T23:54:47.015Z"
   },
   {
@@ -14652,6 +14830,8 @@
       "schemas.googlecloudaiplatformv1toolcomputeruse.properties.environment.enumdescriptions[2]",
       "schemas.googlecloudaiplatformv1toolcomputeruse.properties.environment.enumdescriptions[3]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-09T23:54:47.014Z"
   },
   {
@@ -14674,6 +14854,8 @@
       "schemas.googleinternalcloudcrmeventbusv3posttoqueuewithtriggeridrequest.properties.workflowid.description",
       "schemas.googleinternalcloudcrmeventbusv3posttoqueuewithtriggeridrequest.properties.workflowid.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-08T00:05:30.577Z"
   },
   {
@@ -14741,6 +14923,8 @@
       "schemas.googleinternalcloudcrmeventbusv3posttoqueuewithtriggeridrequest.properties.workflowid.description",
       "schemas.googleinternalcloudcrmeventbusv3posttoqueuewithtriggeridrequest.properties.workflowid.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-08T00:05:30.575Z"
   },
   {
@@ -14774,6 +14958,8 @@
       "schemas.googleclouddiscoveryenginev1betafeedbackconversationinfo.properties.taskname.description",
       "schemas.googleclouddiscoveryenginev1betafeedbackconversationinfo.properties.taskname.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-08T11:53:20.045Z"
   },
   {
@@ -14826,6 +15012,8 @@
       "schemas.googleclouddiscoveryenginev1alphawidgetconfiguisettingsmodelconfiginfo.properties.automodelid.readonly",
       "schemas.googleclouddiscoveryenginev1alphawidgetconfiguisettingsmodelconfiginfo.properties.automodelid.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-08T11:53:20.043Z"
   },
   {
@@ -14862,6 +15050,8 @@
       "schemas.googleclouddiscoveryenginev1widgetconfiguisettingsmodelconfiginfo.properties.automodelid.readonly",
       "schemas.googleclouddiscoveryenginev1widgetconfiguisettingsmodelconfiginfo.properties.automodelid.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-08T11:53:20.041Z"
   },
   {
@@ -15083,6 +15273,8 @@
       "schemas.googleclouddataplexv1unstructureddataprofilespec.properties.graphprofilepublishingenabled.type",
       "schemas.googleclouddataplexv1unstructureddataprofilespec.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-08T00:05:30.573Z"
   },
   {
@@ -15156,6 +15348,8 @@
       "resources.projects.resources.catalogs.resources.namespaces.resources.views.methods.testiampermissions.scopes[0]",
       "resources.projects.resources.catalogs.resources.namespaces.resources.views.methods.testiampermissions.scopes[1]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-08T11:53:20.039Z"
   },
   {
@@ -15185,6 +15379,8 @@
       "schemas.instance.properties.authtype.$ref",
       "schemas.instance.properties.authtype.description"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-06T16:36:01.562Z"
   },
   {
@@ -15215,6 +15411,8 @@
       "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.properties.enabled.type",
       "schemas.bucket.properties.softdeletepolicy.properties.harddeletepause.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-03T18:37:16.195Z"
   },
   {
@@ -15587,7 +15785,11 @@
       "schemas.googlelearningvertexapiinteractionsv1beta1listvoicesresponse.properties.voices.type",
       "schemas.googlelearningvertexapiinteractionsv1beta1listvoicesresponse.type"
     ],
-    "generated_at": "2026-10-03T18:37:16.193Z"
+    "status": "released",
+    "lead_time_days": 9,
+    "generated_at": "2026-10-03T18:37:16.193Z",
+    "official_release_date": "2026-10-12",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#October_12_2026"
   },
   {
     "id": "2026-10-03-aiplatform-v1",
@@ -15828,7 +16030,11 @@
       "schemas.googlecloudaiplatformv1voiceconfig.properties.voice.description",
       "schemas.googlecloudaiplatformv1voiceconfig.properties.voice.type"
     ],
-    "generated_at": "2026-10-03T18:37:16.191Z"
+    "status": "released",
+    "lead_time_days": 9,
+    "generated_at": "2026-10-03T18:37:16.191Z",
+    "official_release_date": "2026-10-12",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#October_12_2026"
   },
   {
     "id": "2026-10-02-dataplex-v1",
@@ -15900,6 +16106,8 @@
       "resources.projects.resources.locations.resources.agenttasks.methods.testiampermissions.scopes[0]",
       "resources.projects.resources.locations.resources.agenttasks.methods.testiampermissions.scopes[1]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-02T04:52:15.073Z"
   },
   {
@@ -15993,6 +16201,8 @@
       "schemas.queryinsightsinstanceinfo.properties.recordclientaddress.type",
       "schemas.queryinsightsinstanceinfo.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-02T10:58:30.046Z"
   },
   {
@@ -16087,6 +16297,8 @@
       "schemas.queryinsightsinstanceinfo.properties.recordclientaddress.type",
       "schemas.queryinsightsinstanceinfo.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-02T10:58:30.045Z"
   },
   {
@@ -16165,7 +16377,11 @@
       "schemas.queryinsightsinstanceinfo.properties.recordclientaddress.type",
       "schemas.queryinsightsinstanceinfo.type"
     ],
-    "generated_at": "2026-10-02T10:58:30.043Z"
+    "status": "released",
+    "lead_time_days": 26,
+    "generated_at": "2026-10-02T10:58:30.043Z",
+    "official_release_date": "2026-10-28",
+    "official_release_notes_url": "https://docs.cloud.google.com/alloydb/docs/release-notes#October_28_2026"
   },
   {
     "id": "2026-10-01-youtube-v3",
@@ -16219,6 +16435,8 @@
       "schemas.commentsnippet.properties.imageurl.readonly",
       "schemas.commentsnippet.properties.imageurl.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-01T23:47:40.114Z"
   },
   {
@@ -16250,6 +16468,8 @@
       "schemas.sqlserverddlconfig.properties.autodeleteoldcaptureinstance.type",
       "schemas.sqlserverddlconfig.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-01T23:47:40.113Z"
   },
   {
@@ -16276,6 +16496,8 @@
       "resources.activities.methods.list.parameters.applicationname.enumdescriptions[41]",
       "resources.activities.methods.list.parameters.applicationname.pattern"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-10-01T23:47:40.108Z"
   },
   {
@@ -16315,6 +16537,8 @@
       "schemas.rowkeyschema.description",
       "schemas.rowkeyschema.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-30T19:54:30.583Z"
   },
   {
@@ -16347,6 +16571,8 @@
       "schemas.salesforcedatacloudproperties.properties.crosscloudcacheoptions.$ref",
       "schemas.salesforcedatacloudproperties.properties.crosscloudcacheoptions.description"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-30T19:54:30.581Z"
   },
   {
@@ -16419,6 +16645,8 @@
       "schemas.virtualclusteroperationmetadata.properties.warnings.type",
       "schemas.virtualclusteroperationmetadata.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-29T16:24:19.986Z"
   },
   {
@@ -16472,6 +16700,8 @@
       "schemas.googlecloudbillingbudgetsv1spendcap.type",
       "schemas.googlecloudbillingbudgetsv1thresholdrule.properties.spendbasis.enumdescriptions[2]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-29T05:02:35.960Z"
   },
   {
@@ -16554,7 +16784,11 @@
       "schemas.policy.properties.bindings.items.properties.role.annotations.required[1]",
       "schemas.policy.properties.bindings.items.properties.role.annotations.required[2]"
     ],
-    "generated_at": "2026-09-28T11:33:26.555Z"
+    "status": "released",
+    "lead_time_days": 15,
+    "generated_at": "2026-09-28T11:33:26.555Z",
+    "official_release_date": "2026-10-13",
+    "official_release_notes_url": "https://docs.cloud.google.com/storage/docs/release-notes#October_13_2026"
   },
   {
     "id": "2026-09-26-bigquery-v2",
@@ -16591,6 +16825,8 @@
       "schemas.securecontext.properties.secureparameterentries.type",
       "schemas.securecontext.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-26T14:15:08.695Z"
   },
   {
@@ -16619,6 +16855,8 @@
       "schemas.googleclouddiscoveryenginev1betaassistanswer.properties.connectordisplaynames.readonly",
       "schemas.googleclouddiscoveryenginev1betaassistanswer.properties.connectordisplaynames.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-25T19:11:33.190Z"
   },
   {
@@ -16645,6 +16883,8 @@
       "schemas.googleclouddiscoveryenginev1alphaauthorizationserversideoauth2.properties.basicauthenticationenabled.description",
       "schemas.googleclouddiscoveryenginev1alphaauthorizationserversideoauth2.properties.basicauthenticationenabled.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-25T19:11:33.185Z"
   },
   {
@@ -16672,6 +16912,8 @@
       "schemas.googleclouddiscoveryenginev1assistanswer.properties.connectordisplaynames.readonly",
       "schemas.googleclouddiscoveryenginev1assistanswer.properties.connectordisplaynames.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-25T19:11:33.184Z"
   },
   {
@@ -16692,6 +16934,8 @@
     "target_paths": [
       "schemas.observabilityinstanceconfig.properties.trackactivequeryplan.deprecated"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-25T10:04:35.870Z"
   },
   {
@@ -16715,6 +16959,8 @@
     "target_paths": [
       "schemas.observabilityinstanceconfig.properties.trackactivequeryplan.deprecated"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-25T10:04:35.869Z"
   },
   {
@@ -16744,6 +16990,8 @@
       "schemas.user.properties.usertype.enumdescriptions[4]",
       "schemas.user.properties.usertype.enumdescriptions[5]"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-25T10:04:35.862Z"
   },
   {
@@ -16774,6 +17022,8 @@
       "schemas.commentthreadsnippet.properties.postid.description",
       "schemas.commentthreadsnippet.properties.postid.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-24T23:06:57.948Z"
   },
   {
@@ -16800,7 +17050,11 @@
       "resources.permissions.methods.delete.description",
       "resources.permissions.methods.update.description"
     ],
-    "generated_at": "2026-09-24T03:58:01.770Z"
+    "status": "released",
+    "lead_time_days": 0,
+    "generated_at": "2026-09-24T03:58:01.770Z",
+    "official_release_date": "2026-09-24",
+    "official_release_notes_url": "http://workspaceupdates.googleblog.com/2026/09/now-in-beta-import-and-convert-your.html"
   },
   {
     "id": "2026-09-24-drive-v2",
@@ -16828,7 +17082,11 @@
       "resources.permissions.methods.patch.description",
       "resources.permissions.methods.update.description"
     ],
-    "generated_at": "2026-09-24T03:58:01.769Z"
+    "status": "released",
+    "lead_time_days": 0,
+    "generated_at": "2026-09-24T03:58:01.769Z",
+    "official_release_date": "2026-09-24",
+    "official_release_notes_url": "http://workspaceupdates.googleblog.com/2026/09/now-in-beta-import-and-convert-your.html"
   },
   {
     "id": "2026-09-24-dataplex-v1",
@@ -17342,7 +17600,11 @@
       "schemas.googleclouddataplexv1resourceaccessspec.properties.writers.type",
       "schemas.googleclouddataplexv1resourceaccessspec.type"
     ],
-    "generated_at": "2026-09-24T23:06:57.947Z"
+    "status": "released",
+    "lead_time_days": 0,
+    "generated_at": "2026-09-24T23:06:57.947Z",
+    "official_release_date": "2026-09-24",
+    "official_release_notes_url": "https://docs.cloud.google.com/knowledge-catalog/docs/release-notes#September_24_2026"
   },
   {
     "id": "2026-09-24-androidpublisher-v3",
@@ -17365,7 +17627,11 @@
     "target_paths": [
       "resources.edits.resources.deobfuscationfiles.methods.upload.mediaupload.maxsize"
     ],
-    "generated_at": "2026-09-24T14:44:46.652Z"
+    "status": "released",
+    "lead_time_days": 19,
+    "generated_at": "2026-09-24T14:44:46.652Z",
+    "official_release_date": "2026-10-13",
+    "official_release_notes_url": "https://android-developers.googleblog.com/2026/10/new-tools-for-discovery-and-engagement.html"
   },
   {
     "id": "2026-09-23-pubsub-v1beta2",
@@ -17397,6 +17663,8 @@
       "schemas.pubsubclienttelemetry.properties.publishoperation.description",
       "schemas.pubsubclienttelemetry.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-23T09:51:24.483Z"
   },
   {
@@ -17430,6 +17698,8 @@
       "schemas.pubsubclienttelemetry.properties.publishoperation.description",
       "schemas.pubsubclienttelemetry.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-23T09:51:24.432Z"
   },
   {
@@ -17462,6 +17732,8 @@
       "schemas.pubsubclienttelemetry.properties.publishoperation.description",
       "schemas.pubsubclienttelemetry.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-23T09:51:24.384Z"
   },
   {
@@ -17495,6 +17767,8 @@
       "schemas.service.properties.lakehouseproxyconfig.description",
       "schemas.service.properties.lakehouseproxyconfig.readonly"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-23T04:03:14.484Z"
   },
   {
@@ -17528,6 +17802,8 @@
       "schemas.service.properties.lakehouseproxyconfig.description",
       "schemas.service.properties.lakehouseproxyconfig.readonly"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-23T04:03:14.463Z"
   },
   {
@@ -17561,6 +17837,8 @@
       "schemas.service.properties.lakehouseproxyconfig.description",
       "schemas.service.properties.lakehouseproxyconfig.readonly"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-23T04:03:14.429Z"
   },
   {
@@ -17587,6 +17865,8 @@
       "schemas.googleclouddiscoveryenginev1betasearchinfo.properties.searchquery.description",
       "schemas.googleclouddiscoveryenginev1betauserevent.properties.attributes.description"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-23T09:51:24.331Z"
   },
   {
@@ -17638,6 +17918,8 @@
       "schemas.googleclouddiscoveryenginev1alphawidgetconfigcollectioncomponent.properties.tag.readonly",
       "schemas.googleclouddiscoveryenginev1alphawidgetconfigcollectioncomponent.properties.tag.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-23T09:51:24.286Z"
   },
   {
@@ -17668,6 +17950,8 @@
       "schemas.googleclouddiscoveryenginev1alphalicenseconfig.properties.billingaccountlicenseconfig.readonly",
       "schemas.googleclouddiscoveryenginev1alphalicenseconfig.properties.billingaccountlicenseconfig.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-23T09:51:24.257Z"
   },
   {
@@ -17688,6 +17972,8 @@
     "target_paths": [
       "schemas.filesearchresult.properties.path.description"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-22T14:30:42.836Z"
   },
   {
@@ -17710,6 +17996,8 @@
       "schemas.updateappstorehostedappresponse.properties.updateid.description",
       "schemas.updateappstorehostedappresponse.properties.updateid.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-22T14:30:42.816Z"
   },
   {
@@ -17750,6 +18038,8 @@
       "schemas.rowkeyschema.description",
       "schemas.rowkeyschema.type"
     ],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-22T18:38:22.555Z"
   },
   {
@@ -17770,6 +18060,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-19T22:14:47.249310+00:00"
   },
   {
@@ -17790,6 +18082,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-19T03:54:43.383271+00:00"
   },
   {
@@ -17813,6 +18107,8 @@
       "projects.locations.agents.patch"
     ],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-19T13:47:25.442932+00:00"
   },
   {
@@ -17834,6 +18130,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-19T13:47:25.440453+00:00"
   },
   {
@@ -17853,6 +18151,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-18T09:29:55.042955+00:00"
   },
   {
@@ -17872,6 +18172,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-18T09:29:55.040623+00:00"
   },
   {
@@ -17891,6 +18193,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-18T03:57:19.403256+00:00"
   },
   {
@@ -17912,6 +18216,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-17T22:45:08.503519+00:00"
   },
   {
@@ -17932,6 +18238,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-17T22:45:08.501579+00:00"
   },
   {
@@ -17955,6 +18263,8 @@
       "WidgetConfig.UiSettings.ModelConfigInfo.ResolvedModel"
     ],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-17T22:45:08.499638+00:00"
   },
   {
@@ -17974,7 +18284,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-09-17T14:47:05.664764+00:00"
+    "status": "released",
+    "lead_time_days": 4,
+    "generated_at": "2026-09-17T14:47:05.664764+00:00",
+    "official_release_date": "2026-09-21",
+    "official_release_notes_url": "https://android-developers.googleblog.com/2026/09/bring-android-game-to-car-screen.html"
   },
   {
     "id": "2026-09-17-analyticshub-v1",
@@ -17994,6 +18308,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-17T22:45:08.497430+00:00"
   },
   {
@@ -18013,6 +18329,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-16T22:45:55.043235+00:00"
   },
   {
@@ -18032,6 +18350,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-16T14:43:25.707948+00:00"
   },
   {
@@ -18051,6 +18371,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-16T14:43:25.706091+00:00"
   },
   {
@@ -18070,6 +18392,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-16T14:43:25.704132+00:00"
   },
   {
@@ -18089,6 +18413,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-16T14:43:25.701619+00:00"
   },
   {
@@ -18108,6 +18434,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-15T09:51:24.710972+00:00"
   },
   {
@@ -18127,6 +18455,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-14T19:46:36.819600+00:00"
   },
   {
@@ -18146,6 +18476,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-14T19:46:36.817312+00:00"
   },
   {
@@ -18166,6 +18498,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-13T18:00:13.327179+00:00"
   },
   {
@@ -18184,6 +18518,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-12T03:53:08.650582+00:00"
   },
   {
@@ -18204,7 +18540,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-09-10T22:21:38.076788+00:00"
+    "status": "released",
+    "lead_time_days": 7,
+    "generated_at": "2026-09-10T22:21:38.076788+00:00",
+    "official_release_date": "2026-09-17",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataform/docs/release-notes#September_17_2026"
   },
   {
     "id": "2026-09-10-dataform-v1",
@@ -18224,6 +18564,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-10T22:21:38.073400+00:00"
   },
   {
@@ -18244,6 +18586,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-09T03:55:08.676490+00:00"
   },
   {
@@ -18264,6 +18608,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-09T03:55:08.674441+00:00"
   },
   {
@@ -18286,6 +18632,8 @@
       "WidgetConfig.UiSettings.ModelConfigInfo.ResolvedModel"
     ],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-09T03:55:08.671600+00:00"
   },
   {
@@ -18304,6 +18652,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-09T14:16:40.853970+00:00"
   },
   {
@@ -18321,6 +18671,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-08T14:16:06.367531+00:00"
   },
   {
@@ -18340,6 +18692,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-07T10:01:20.935748+00:00"
   },
   {
@@ -18359,6 +18713,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-04T09:24:25.588555+00:00"
   },
   {
@@ -18379,6 +18735,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-04T09:24:25.586269+00:00"
   },
   {
@@ -18398,6 +18756,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-04T03:44:27.802791+00:00"
   },
   {
@@ -18416,6 +18776,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-03T20:20:58.844940+00:00"
   },
   {
@@ -18433,6 +18795,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-03T22:25:18.521789+00:00"
   },
   {
@@ -18452,6 +18816,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-02T22:28:31.152287+00:00"
   },
   {
@@ -18472,6 +18838,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-09-02T22:28:31.150016+00:00"
   },
   {
@@ -18492,7 +18860,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-09-01T18:16:10.015590+00:00"
+    "status": "released",
+    "lead_time_days": 0,
+    "generated_at": "2026-09-01T18:16:10.015590+00:00",
+    "official_release_date": "2026-09-01",
+    "official_release_notes_url": "https://android-developers.googleblog.com/2026/09/leverage-gemma-4-android-studio-quail.html"
   },
   {
     "id": "2026-08-29-dataplex-v1",
@@ -18512,6 +18884,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-29T14:58:03.718475+00:00"
   },
   {
@@ -18532,6 +18906,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-29T22:31:04.233823+00:00"
   },
   {
@@ -18552,6 +18928,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-29T22:31:04.232207+00:00"
   },
   {
@@ -18574,6 +18952,8 @@
       "accounts.containers.move_tag_id"
     ],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-27T20:39:41.844467+00:00"
   },
   {
@@ -18593,6 +18973,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-27T20:39:41.842340+00:00"
   },
   {
@@ -18613,6 +18995,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-25T03:00:00Z"
   },
   {
@@ -18633,7 +19017,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-08-25T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 22,
+    "generated_at": "2026-08-25T03:00:00Z",
+    "official_release_date": "2026-09-16",
+    "official_release_notes_url": "http://workspaceupdates.googleblog.com/2026/09/data-regions-support-for-google-apps-script-now-generally-available.html"
   },
   {
     "id": "2026-08-25-libraryagent-v1",
@@ -18652,6 +19040,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-25T03:00:00Z"
   },
   {
@@ -18671,6 +19061,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-25T03:00:00Z"
   },
   {
@@ -18692,6 +19084,8 @@
       "drive.meet.readonly"
     ],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-25T03:00:00Z"
   },
   {
@@ -18711,6 +19105,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-25T03:00:00Z"
   },
   {
@@ -18731,7 +19127,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-08-25T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 0,
+    "generated_at": "2026-08-25T03:00:00Z",
+    "official_release_date": "2026-08-25",
+    "official_release_notes_url": "https://android-developers.googleblog.com/2026/08/ensuring-safety-genai-preventing-non-consensual-intimate-content.html"
   },
   {
     "id": "2026-08-25-admin-reports-v1",
@@ -18751,7 +19151,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-08-25T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 8,
+    "generated_at": "2026-08-25T03:00:00Z",
+    "official_release_date": "2026-09-02",
+    "official_release_notes_url": "http://workspaceupdates.googleblog.com/2026/09/automate-drive-gmail-and-google-chat-actions-with-new-steps-in-Workspace-Studio.html"
   },
   {
     "id": "2026-08-25-admin-directory-v1",
@@ -18771,6 +19175,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-25T03:00:00Z"
   },
   {
@@ -18790,6 +19196,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-25T03:00:00Z"
   },
   {
@@ -18810,6 +19218,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-22T03:00:00Z"
   },
   {
@@ -18831,6 +19241,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-22T03:00:00Z"
   },
   {
@@ -18851,6 +19263,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-22T03:00:00Z"
   },
   {
@@ -18871,6 +19285,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-21T03:00:00Z"
   },
   {
@@ -18890,7 +19306,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-08-19T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 7,
+    "generated_at": "2026-08-19T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-08-19-datacatalog-v1",
@@ -18909,7 +19329,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-08-19T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 7,
+    "generated_at": "2026-08-19T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-08-14-aiplatform-v1beta1",
@@ -18930,6 +19354,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-14T03:00:00Z"
   },
   {
@@ -18951,6 +19377,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-14T03:00:00Z"
   },
   {
@@ -18970,6 +19398,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-13T03:00:00Z"
   },
   {
@@ -18989,6 +19419,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-09T03:00:00Z"
   },
   {
@@ -19009,6 +19441,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-07T03:00:00Z"
   },
   {
@@ -19032,6 +19466,8 @@
       "projects.locations.reasoningEngines.sessions.compact"
     ],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-07T03:00:00Z"
   },
   {
@@ -19053,6 +19489,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-07T03:00:00Z"
   },
   {
@@ -19073,6 +19511,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-08-06T03:00:00Z"
   },
   {
@@ -19093,7 +19533,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-08-06T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 7,
+    "generated_at": "2026-08-06T03:00:00Z",
+    "official_release_date": "2026-08-13",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataform/docs/release-notes#August_13_2026"
   },
   {
     "id": "2026-07-30-analyticshub-v1",
@@ -19111,6 +19555,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-07-30T03:00:00Z"
   },
   {
@@ -19134,6 +19580,8 @@
       "publishers.v1.responses.compact"
     ],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-07-30T03:00:00Z"
   },
   {
@@ -19156,6 +19604,8 @@
       "projects.locations.publishers.v1.responses.compact"
     ],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-07-30T03:00:00Z"
   },
   {
@@ -19176,7 +19626,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-07-26T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 18,
+    "generated_at": "2026-07-26T03:00:00Z",
+    "official_release_date": "2026-08-13",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#August_13_2026"
   },
   {
     "id": "2026-07-26-bigquery-v2",
@@ -19196,7 +19650,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-07-26T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 4,
+    "generated_at": "2026-07-26T03:00:00Z",
+    "official_release_date": "2026-07-30",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#July_30_2026"
   },
   {
     "id": "2026-07-26-aiplatform-v1beta1",
@@ -19217,7 +19675,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-07-26T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 37,
+    "generated_at": "2026-07-26T03:00:00Z",
+    "official_release_date": "2026-09-01",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/release-notes#September_01_2026"
   },
   {
     "id": "2026-07-26-aiplatform-v1",
@@ -19238,6 +19700,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-07-26T03:00:00Z"
   },
   {
@@ -19257,6 +19721,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-07-24T03:00:00Z"
   },
   {
@@ -19280,7 +19746,11 @@
       "publishers.v1.responses"
     ],
     "target_paths": [],
-    "generated_at": "2026-07-18T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 100,
+    "generated_at": "2026-07-18T03:00:00Z",
+    "official_release_date": "2026-10-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#October_26_2026"
   },
   {
     "id": "2026-07-18-aiplatform-v1",
@@ -19302,7 +19772,11 @@
       "projects.locations.publishers.v1.responses"
     ],
     "target_paths": [],
-    "generated_at": "2026-07-18T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 100,
+    "generated_at": "2026-07-18T03:00:00Z",
+    "official_release_date": "2026-10-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#October_26_2026"
   },
   {
     "id": "2026-07-15-dataplex-v1",
@@ -19321,6 +19795,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-07-15T03:00:00Z"
   },
   {
@@ -19342,7 +19818,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-07-14T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 1,
+    "generated_at": "2026-07-14T03:00:00Z",
+    "official_release_date": "2026-07-15",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/release-notes#July_15_2026"
   },
   {
     "id": "2026-07-14-aiplatform-v1",
@@ -19364,7 +19844,11 @@
       "projects.locations.memoryBanks.memories"
     ],
     "target_paths": [],
-    "generated_at": "2026-07-14T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 115,
+    "generated_at": "2026-07-14T03:00:00Z",
+    "official_release_date": "2026-11-06",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/docs/release-notes#November_06_2026"
   },
   {
     "id": "2026-07-09-bigquery-v2",
@@ -19384,7 +19868,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-07-09T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 42,
+    "generated_at": "2026-07-09T03:00:00Z",
+    "official_release_date": "2026-08-20",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#August_20_2026"
   },
   {
     "id": "2026-07-06-bigquerydatatransfer-v1",
@@ -19402,6 +19890,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-07-06T03:00:00Z"
   },
   {
@@ -19423,6 +19913,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-07-06T03:00:00Z"
   },
   {
@@ -19444,7 +19936,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-07-03T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 5,
+    "generated_at": "2026-07-03T03:00:00Z",
+    "official_release_date": "2026-07-08",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/release-notes#July_08_2026"
   },
   {
     "id": "2026-07-03-aiplatform-v1",
@@ -19464,6 +19960,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-07-03T03:00:00Z"
   },
   {
@@ -19484,7 +19982,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-07-02T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 55,
+    "generated_at": "2026-07-02T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-07-01-tagmanager-v2",
@@ -19503,6 +20005,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-07-01T03:00:00Z"
   },
   {
@@ -19524,7 +20028,11 @@
       "projects.locations.reservationGroups.patch"
     ],
     "target_paths": [],
-    "generated_at": "2026-07-01T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 12,
+    "generated_at": "2026-07-01T03:00:00Z",
+    "official_release_date": "2026-07-13",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#July_13_2026"
   },
   {
     "id": "2026-06-30-pagespeedonline-v5",
@@ -19543,6 +20051,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-06-30T03:00:00Z"
   },
   {
@@ -19563,6 +20073,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-06-27T03:00:00Z"
   },
   {
@@ -19586,7 +20098,11 @@
       "projects.locations.semanticGovernancePolicyEngine"
     ],
     "target_paths": [],
-    "generated_at": "2026-06-27T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 2,
+    "generated_at": "2026-06-27T03:00:00Z",
+    "official_release_date": "2026-06-29",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/release-notes#June_29_2026"
   },
   {
     "id": "2026-06-26-bigquery-v2",
@@ -19606,7 +20122,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-06-26T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 34,
+    "generated_at": "2026-06-26T03:00:00Z",
+    "official_release_date": "2026-07-30",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#July_30_2026"
   },
   {
     "id": "2026-06-25-dataplex-v1",
@@ -19625,7 +20145,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-06-25T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 62,
+    "generated_at": "2026-06-25T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-06-24-dataform-v1beta1",
@@ -19642,6 +20166,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-06-24T03:00:00Z"
   },
   {
@@ -19659,6 +20185,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-06-24T03:00:00Z"
   },
   {
@@ -19679,6 +20207,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-06-23T03:00:00Z"
   },
   {
@@ -19699,7 +20229,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-06-23T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 24,
+    "generated_at": "2026-06-23T03:00:00Z",
+    "official_release_date": "2026-07-17",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#July_17_2026"
   },
   {
     "id": "2026-06-23-bigquery-v2",
@@ -19718,6 +20252,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-06-23T03:00:00Z"
   },
   {
@@ -19737,7 +20273,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-06-22T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 42,
+    "generated_at": "2026-06-22T03:00:00Z",
+    "official_release_date": "2026-08-03",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#August_03_2026"
   },
   {
     "id": "2026-06-22-biglake-v1",
@@ -19757,7 +20297,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-06-22T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 21,
+    "generated_at": "2026-06-22T03:00:00Z",
+    "official_release_date": "2026-07-13",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#July_13_2026"
   },
   {
     "id": "2026-06-21-tagmanager-v2",
@@ -19776,6 +20320,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-06-21T03:00:00Z"
   },
   {
@@ -19795,6 +20341,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-06-21T03:00:00Z"
   },
   {
@@ -19815,7 +20363,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-06-21T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 58,
+    "generated_at": "2026-06-21T03:00:00Z",
+    "official_release_date": "2026-08-18",
+    "official_release_notes_url": "https://docs.cloud.google.com/looker/docs/release-notes#August_18_2026"
   },
   {
     "id": "2026-06-21-dataplex-v1",
@@ -19835,7 +20387,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-06-21T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 66,
+    "generated_at": "2026-06-21T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-06-21-dataform-v1beta1",
@@ -19855,6 +20411,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-06-21T03:00:00Z"
   },
   {
@@ -19875,7 +20433,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-06-21T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 8,
+    "generated_at": "2026-06-21T03:00:00Z",
+    "official_release_date": "2026-06-29",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataform/docs/release-notes#June_29_2026"
   },
   {
     "id": "2026-06-21-connectors-v2",
@@ -19894,6 +20456,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-06-21T03:00:00Z"
   },
   {
@@ -19914,7 +20478,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-06-21T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 53,
+    "generated_at": "2026-06-21T03:00:00Z",
+    "official_release_date": "2026-08-13",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#August_13_2026"
   },
   {
     "id": "2026-06-21-bigquery-v2",
@@ -19933,7 +20501,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-06-21T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 4,
+    "generated_at": "2026-06-21T03:00:00Z",
+    "official_release_date": "2026-06-25",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#June_25_2026"
   },
   {
     "id": "2026-06-21-analyticshub-v1",
@@ -19953,6 +20525,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-06-21T03:00:00Z"
   },
   {
@@ -19973,6 +20547,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-06-21T03:00:00Z"
   },
   {
@@ -19993,6 +20569,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-06-21T03:00:00Z"
   },
   {
@@ -20011,7 +20589,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-05-28T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 1,
+    "generated_at": "2026-05-28T03:00:00Z",
+    "official_release_date": "2026-05-29",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#May_29_2026"
   },
   {
     "id": "2026-05-28-bigqueryconnection-v1",
@@ -20032,7 +20614,11 @@
       "configuration.parameters.parameter_id"
     ],
     "target_paths": [],
-    "generated_at": "2026-05-28T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 90,
+    "generated_at": "2026-05-28T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-05-28-bigquery-v2",
@@ -20052,6 +20638,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-05-28T03:00:00Z"
   },
   {
@@ -20073,7 +20661,11 @@
       "projects.locations.changeRequests"
     ],
     "target_paths": [],
-    "generated_at": "2026-05-22T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 3,
+    "generated_at": "2026-05-22T03:00:00Z",
+    "official_release_date": "2026-05-25",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#May_25_2026"
   },
   {
     "id": "2026-05-21-datalineage-v1",
@@ -20092,7 +20684,11 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
-    "generated_at": "2026-05-21T03:00:00Z"
+    "status": "released",
+    "lead_time_days": 97,
+    "generated_at": "2026-05-21T03:00:00Z",
+    "official_release_date": "2026-08-26",
+    "official_release_notes_url": "https://docs.cloud.google.com/dataplex/docs/release-notes#August_26_2026"
   },
   {
     "id": "2026-05-20-dataform-v1beta1",
@@ -20111,6 +20707,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-05-20T03:00:00Z"
   },
   {
@@ -20130,6 +20728,8 @@
     ],
     "extracted_methods": [],
     "target_paths": [],
+    "status": "canary",
+    "lead_time_days": null,
     "generated_at": "2026-05-20T03:00:00Z"
   }
 ]

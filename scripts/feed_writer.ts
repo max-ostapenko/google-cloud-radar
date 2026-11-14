@@ -248,21 +248,7 @@ export function writeInsight(
 
   // Update index
   const index = loadIndex(indexPath);
-  const indexEntry = {
-    id: finalSlug,
-    date: resolvedDate,
-    api,
-    service: serviceName,
-    title,
-    summary,
-    impact,
-    breaking,
-    interesting_score: score,
-    tags,
-    extracted_methods: extractedMethods,
-    target_paths: targetPaths,
-    generated_at: entry.generated_at,
-  };
+  const indexEntry = buildIndexEntry(entry);
 
   let replaced = false;
   for (let i = 0; i < index.length; i++) {
@@ -299,4 +285,71 @@ export function writeInsights(
     }
   }
   return written;
+}
+
+/** Build the canonical data/index.json manifest entry from a change document. */
+export function buildIndexEntry(doc: Record<string, any>): Record<string, any> {
+  const id = doc.id || doc.slug;
+  const targetPaths = doc.target_paths || doc.extracted_paths || [];
+  return {
+    id,
+    date: doc.date,
+    api: doc.api,
+    service: doc.service || doc.service_name,
+    title: doc.title,
+    summary: doc.summary,
+    impact: doc.impact,
+    breaking: Boolean(doc.breaking ?? doc.is_breaking),
+    interesting_score: Number(doc.interesting_score ?? 5),
+    tags: Array.isArray(doc.tags) ? doc.tags : [],
+    extracted_methods: Array.isArray(doc.extracted_methods) ? doc.extracted_methods : [],
+    target_paths: Array.isArray(targetPaths) ? targetPaths : [],
+    status: doc.status ?? 'canary',
+    lead_time_days: doc.lead_time_days !== undefined ? doc.lead_time_days : null,
+    generated_at: doc.generated_at,
+    ...(doc.official_release_date ? { official_release_date: doc.official_release_date } : {}),
+    ...(doc.official_release_notes_url ? { official_release_notes_url: doc.official_release_notes_url } : {}),
+  };
+}
+
+/** Deterministically rebuild data/index.json from data/changes/*.json. */
+export function rebuildIndexFromChanges(dataDir = DEFAULT_DATA_DIR): Record<string, any>[] {
+  const changesDir = path.join(dataDir, 'changes');
+  const indexPath = path.join(dataDir, 'index.json');
+  if (!fs.existsSync(changesDir)) {
+    saveIndex([], indexPath);
+    return [];
+  }
+
+  const files = fs.readdirSync(changesDir).filter((f) => f.endsWith('.json'));
+  const entries: Record<string, any>[] = [];
+
+  for (const file of files) {
+    const filePath = path.join(changesDir, file);
+    try {
+      const doc = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      entries.push(
+        buildIndexEntry({
+          ...doc,
+          id: doc.id || doc.slug || file.replace('.json', ''),
+        })
+      );
+    } catch (err: any) {
+      console.warn(`Skipping malformed change file ${filePath}:`, err.message);
+    }
+  }
+
+  entries.sort((a, b) => {
+    const da = `${a.date || ''}-${a.id || a.slug || ''}`;
+    const db = `${b.date || ''}-${b.id || b.slug || ''}`;
+    return db.localeCompare(da);
+  });
+
+  saveIndex(entries, indexPath);
+  return entries;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const entries = rebuildIndexFromChanges();
+  console.log(`Synced ${entries.length} entries to data/index.json.`);
 }
