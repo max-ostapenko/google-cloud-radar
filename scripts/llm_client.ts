@@ -30,6 +30,11 @@ export const INSIGHT_RESPONSE_SCHEMA = {
       enum: ['low', 'medium', 'high'],
     },
     breaking: { type: Type.BOOLEAN },
+    migration_steps: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: 'Concrete actionable migration steps or code updates for breaking or complex changes',
+    },
     tags: {
       type: Type.ARRAY,
       items: { type: Type.STRING },

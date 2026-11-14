@@ -738,5 +738,78 @@ describe('Diff Preprocessor', () => {
     expect(result!.breaking_reasons).toContain("Parameter 'limit' changed format from 'int32' to 'int64'");
     expect(result!.breaking_reasons).toContain("Parameter 'limit' changed repeated from 'false' to 'true'");
   });
+
+  it('does not flag required parameters on a brand-new method as breaking (50fb807f)', () => {
+    const old = {
+      resources: {
+        jobs: {
+          methods: {
+            list: { httpMethod: 'GET' },
+          },
+        },
+      },
+    };
+    const next = {
+      resources: {
+        jobs: {
+          methods: {
+            list: { httpMethod: 'GET' },
+            create: {
+              httpMethod: 'POST',
+              parameters: {
+                parent: { type: 'string', required: true, location: 'path' },
+              },
+            },
+          },
+        },
+      },
+    };
+    const result = diff_preprocessor.buildStructuredDiff(
+      'test.v1.json',
+      JSON.stringify(old),
+      JSON.stringify(next)
+    );
+    expect(result).not.toBeNull();
+    expect(result!.is_breaking).toBe(false);
+    expect(result!.breaking_reasons).toEqual([]);
+  });
+
+  it('flags new required parameter added to an existing method as breaking', () => {
+    const old = {
+      resources: {
+        jobs: {
+          methods: {
+            list: {
+              httpMethod: 'GET',
+              parameters: { pageSize: { type: 'integer' } },
+            },
+          },
+        },
+      },
+    };
+    const next = {
+      resources: {
+        jobs: {
+          methods: {
+            list: {
+              httpMethod: 'GET',
+              parameters: {
+                pageSize: { type: 'integer' },
+                projectId: { type: 'string', required: true },
+              },
+            },
+          },
+        },
+      },
+    };
+    const result = diff_preprocessor.buildStructuredDiff(
+      'test.v1.json',
+      JSON.stringify(old),
+      JSON.stringify(next)
+    );
+    expect(result).not.toBeNull();
+    expect(result!.is_breaking).toBe(true);
+    expect(result!.breaking_reasons).toContain("Parameter 'projectId' was changed to strictly required");
+  });
 });
 

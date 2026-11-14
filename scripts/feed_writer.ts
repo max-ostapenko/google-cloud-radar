@@ -169,6 +169,9 @@ export function writeInsight(
   }
 
   const targetPaths = insight.target_paths || insight.extracted_paths || [];
+  const migrationSteps = Array.isArray(insight.migration_steps)
+    ? insight.migration_steps.map((s: any) => String(s).trim()).filter(Boolean)
+    : [];
 
   let finalSlug = insight.id || insight.slug || baseSlug;
   let filePath = path.join(changesDir, `${finalSlug}.json`);
@@ -228,6 +231,7 @@ export function writeInsight(
     tags,
     extracted_methods: extractedMethods,
     target_paths: targetPaths,
+    ...(migrationSteps.length > 0 ? { migration_steps: migrationSteps } : {}),
     status: existing.status ?? 'canary',
     lead_time_days: existing.lead_time_days !== undefined ? existing.lead_time_days : null,
     generated_at: existing.generated_at ?? new Date().toISOString(),

@@ -8,7 +8,7 @@ Your job: write a short, engaging update for developers building on GCP.
 ## Rules
 
 - Focus on DEVELOPER IMPACT: what can they now do, build, or avoid breaking?
-- If the input diff includes "breaking_reasons", ensure your "details" clearly explain what breaking changes occurred and what developers need to update.
+- If the input diff includes "breaking_reasons", or introduces required parameters, enum removals, or complex schema changes, ensure your "details" clearly state parameter requirement flags (required vs. optional, defaults, constraints), code impact, and concrete migration steps. Populate `migration_steps` with actionable steps developers must take (or `[]` for purely additive/non-breaking updates).
 - Ignore pure revision/etag bumps, formatting fixes, or description typo corrections
   unless they reveal meaningful intent (e.g., a deprecated notice added to a field)
 - Prefer concrete, specific language:
@@ -68,8 +68,10 @@ Respond with a single valid JSON object. No markdown fences. No extra text. No c
   "service_name": "<human-readable service name, e.g. BigQuery>",
   "title": "<punchy title, 60 chars max>",
   "summary": "<2-3 sentence version for skimmers>",
-  "details": "<1-2 paragraphs with specifics — method names, param names, schema paths>",
+  "details": "<1-2 paragraphs with specifics — method names, param names, requirement flags, schema paths, and code impact>",
   "impact": "<low|medium|high>",
+  "breaking": <true|false>,
+  "migration_steps": ["<concrete action item for breaking or complex changes, or empty array>"],
   "tags": ["<relevant tag>", "..."],
   "interesting_score": <integer 1-10>
 }

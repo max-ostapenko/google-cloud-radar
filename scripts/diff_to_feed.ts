@@ -132,7 +132,7 @@ export async function runDiffToFeed(options: {
     const insight = await analyzeApiDiff(diff, existingTodayContent, recentHistoryContent);
     if (insight) {
       if (diff.is_breaking !== undefined) {
-        insight.breaking = Boolean(diff.is_breaking);
+        insight.breaking = Boolean(insight.breaking || diff.is_breaking);
       }
       const [methods, paths] = extractMethodAndPathMetadata(diff);
       insight.extracted_methods = Array.from(methods).sort();

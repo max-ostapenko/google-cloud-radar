@@ -41,6 +41,7 @@ export function parseJsonChangeFile(filePath: string): Record<string, any> {
   const summary = data.summary || '';
   const details = data.details || summary;
   const extractedMethods = Array.isArray(data.extracted_methods) ? data.extracted_methods : [];
+  const targetPaths = Array.isArray(data.target_paths) ? data.target_paths : [];
 
   const createdIso = `${dateStr}T00:00:00.000Z`;
   const nowIso = new Date().toISOString();
@@ -65,6 +66,7 @@ export function parseJsonChangeFile(filePath: string): Record<string, any> {
     last_updated_at: nowIso,
     tags,
     extracted_methods: extractedMethods,
+    target_paths: targetPaths,
     reaction_counts: {
       like_change: 0,
       released: 0,
@@ -84,6 +86,12 @@ export function parseJsonChangeFile(filePath: string): Record<string, any> {
   }
   if (data.official_release_notes_url) {
     doc.official_release_notes_url = String(data.official_release_notes_url);
+  }
+  if (data.discovery_rest_url) {
+    doc.discovery_rest_url = String(data.discovery_rest_url);
+  }
+  if (data.documentation_link) {
+    doc.documentation_link = String(data.documentation_link);
   }
 
   return doc;
