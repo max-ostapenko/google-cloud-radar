@@ -303,6 +303,21 @@ describe('dispatch_email_alerts', () => {
       const results = loadBreakingChanges(undefined, testDir, 7);
       expect(results.length).toBe(5);
     });
+
+    it('falls back to id for deterministic secondary sorting when slug is omitted (fbdea4d5)', () => {
+      const today = new Date().toISOString().slice(0, 10);
+      fs.writeFileSync(
+        path.join(testDir, 'a.json'),
+        JSON.stringify({ id: 'change-a', date: today, breaking: true })
+      );
+      fs.writeFileSync(
+        path.join(testDir, 'b.json'),
+        JSON.stringify({ id: 'change-b', date: today, breaking: true })
+      );
+
+      const results = loadBreakingChanges(undefined, testDir, 7);
+      expect(results.map((c) => c.id)).toEqual(['change-b', 'change-a']);
+    });
   });
 });
 
