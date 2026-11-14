@@ -43,7 +43,7 @@ export function loadRecentChanges(days: number = 7, customChangesDir?: string): 
   }
 
   const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days);
+  cutoff.setUTCDate(cutoff.getUTCDate() - days);
   const cutoffDate = cutoff.toISOString().slice(0, 10);
 
   const files = fs.readdirSync(dir).filter((f) => f.endsWith('.json')).sort().reverse();
@@ -115,7 +115,7 @@ export function renderWeeklyDigestHtml(changes: any[], weekLabel?: string): stri
       const displayTitle = rawTitle.toLowerCase().startsWith(svcName.toLowerCase())
         ? title
         : `${svcName}: ${title}`;
-      const slug = c.slug || c.id || '';
+      const slug = encodeURIComponent(String(c.slug || c.id || ''));
       const summary = escapeHtml(c.summary || '');
       const reasons: string[] = c.breaking_reasons || [];
       const reasonText = reasons.length > 0
@@ -158,7 +158,7 @@ export function renderWeeklyDigestHtml(changes: any[], weekLabel?: string): stri
     const svcName = escapeHtml(c.service || c.service_name || 'Google Cloud');
     const api = escapeHtml(c.api || '');
     const title = escapeHtml(c.title || '');
-    const slug = c.slug || c.id || '';
+    const slug = encodeURIComponent(String(c.slug || c.id || ''));
     const summary = escapeHtml(c.summary || '');
     const impact = (c.impact || 'low').toUpperCase();
 
@@ -265,7 +265,7 @@ export function renderWeeklyDigestHtml(changes: any[], weekLabel?: string): stri
                 📅 ${weekLabel}
               </div>
               <div style="font-size: 12.5px; color: #5f6368; line-height: 1.5;">
-                Detected <strong>${totalChanges} updates</strong> across <strong>${servicesCount} Google Cloud services</strong>, including <strong>${breakingCount} breaking changes</strong> and <strong>${totalMethods} new API methods</strong>.
+                Detected <strong>${totalChanges} updates</strong> across <strong>${servicesCount} Google Cloud services</strong>, including <strong>${breakingCount} breaking changes</strong> and <strong>${totalMethods} affected API methods</strong>.
               </div>
             </td>
           </tr>
@@ -330,7 +330,7 @@ export function renderWeeklyDigestText(changes: any[], weekLabel?: string): stri
     for (const c of breakingChanges.slice(0, 10)) {
       const svcName = c.service || c.service_name || 'Google Cloud';
       const title = c.title || 'Breaking API Change';
-      const slug = c.slug || c.id || '';
+      const slug = encodeURIComponent(String(c.slug || c.id || ''));
       lines.push(`* [${svcName}] ${title}`);
       if (c.summary) lines.push(`  ${c.summary}`);
       if (Array.isArray(c.breaking_reasons) && c.breaking_reasons.length > 0) {
@@ -347,7 +347,7 @@ export function renderWeeklyDigestText(changes: any[], weekLabel?: string): stri
     for (const c of nonBreakingChanges.slice(0, 10)) {
       const svcName = c.service || c.service_name || 'Google Cloud';
       const title = c.title || 'API Update';
-      const slug = c.slug || c.id || '';
+      const slug = encodeURIComponent(String(c.slug || c.id || ''));
       lines.push(`* [${svcName}] ${title}`);
       if (c.summary) lines.push(`  ${c.summary}`);
       lines.push(`  Details: https://google-cloud-radar.com/changes/${slug}`);

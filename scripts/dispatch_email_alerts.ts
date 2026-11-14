@@ -490,7 +490,7 @@ export function loadBreakingChanges(
   let cutoffDate = '';
   if (maxAgeDays > 0) {
     const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - maxAgeDays);
+    cutoff.setUTCDate(cutoff.getUTCDate() - maxAgeDays);
     cutoffDate = cutoff.toISOString().slice(0, 10);
   }
 
@@ -510,7 +510,7 @@ export function loadBreakingChanges(
   changes.sort((a, b) => {
     const dateComp = String(b.date || '').localeCompare(String(a.date || ''));
     if (dateComp !== 0) return dateComp;
-    return String(b.slug || '').localeCompare(String(a.slug || ''));
+    return String(b.slug || b.id || '').localeCompare(String(a.slug || a.id || ''));
   });
 
   return changes;

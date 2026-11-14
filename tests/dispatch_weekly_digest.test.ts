@@ -146,4 +146,26 @@ describe('dispatch_weekly_digest', () => {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
+
+  it('URL-encodes slugs and labels affected API methods accurately (76b58d9b / 13d2ba23)', () => {
+    const specialChanges = [
+      {
+        ...sampleChanges[0],
+        slug: '2026-08-30/aiplatform v1?beta=1',
+      },
+      {
+        ...sampleChanges[1],
+        slug: '2026-08-28/bigquery v2',
+      },
+    ];
+    const html = renderWeeklyDigestHtml(specialChanges, 'test@example.com');
+    const text = renderWeeklyDigestText(specialChanges);
+
+    expect(html).toContain('https://google-cloud-radar.com/changes/2026-08-30%2Faiplatform%20v1%3Fbeta%3D1');
+    expect(html).toContain('https://google-cloud-radar.com/changes/2026-08-28%2Fbigquery%20v2');
+    expect(text).toContain('https://google-cloud-radar.com/changes/2026-08-30%2Faiplatform%20v1%3Fbeta%3D1');
+    expect(text).toContain('https://google-cloud-radar.com/changes/2026-08-28%2Fbigquery%20v2');
+    expect(html).toContain('affected API methods');
+    expect(html).not.toContain('new API methods');
+  });
 });
