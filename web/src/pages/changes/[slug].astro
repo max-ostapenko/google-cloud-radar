@@ -2,7 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ReactionsBar from "../../components/ReactionsBar.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
-import { getAllFeedEntries, slugify, type FeedEntry } from "../../lib/feed";
+import { getAllFeedEntries, isIndexableChange, slugify, type FeedEntry } from "../../lib/feed";
 
 export async function getStaticPaths() {
   const entries = await getAllFeedEntries();
@@ -91,6 +91,8 @@ const hasBadges = Boolean(
   entry.impact === "high" ||
   entry.impact === "medium"
 );
+
+const shouldIndex = isIndexableChange(entry);
 ---
 
 <BaseLayout
@@ -101,6 +103,8 @@ const hasBadges = Boolean(
   ogImage={`/changes/${entry.slug}/og.png`}
   ogType="article"
   schemaData={schemaData}
+  noindex={!shouldIndex}
+  robots={!shouldIndex ? "noindex, follow" : undefined}
 >
   <div class="change-detail-container">
     <!-- Breadcrumb Navigation -->

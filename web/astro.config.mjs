@@ -37,6 +37,12 @@ if (fs.existsSync(changesDirPath)) {
   }
 }
 
+function isIndexableChangeDoc(doc) {
+  if (!doc) return true;
+  const proseLen = `${doc.summary || ''} ${doc.details || ''}`.trim().length;
+  return Boolean(doc.breaking || (Number(doc.interesting_score ?? 5) >= 6 && proseLen >= 500));
+}
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://google-cloud-radar.com',
@@ -44,7 +50,15 @@ export default defineConfig({
   trailingSlash: 'never',
   integrations: [
     sitemap({
-      filter: (page) => !page.includes('/breaking') && !page.includes('/404'),
+      filter: (page) => {
+        if (page.includes('/breaking') || page.includes('/404')) return false;
+        const changeMatch = page.match(/\/changes\/([^/]+)/);
+        if (changeMatch) {
+          const doc = changeMap.get(changeMatch[1]);
+          if (doc && !isIndexableChangeDoc(doc)) return false;
+        }
+        return true;
+      },
       serialize(item) {
         const changeMatch = item.url.match(/\/changes\/([^/]+)/);
         if (changeMatch) {

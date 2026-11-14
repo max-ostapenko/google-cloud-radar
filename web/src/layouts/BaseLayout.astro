@@ -16,6 +16,7 @@ interface Props {
   schemaData?: Record<string, any>;
   showSidebar?: boolean;
   noindex?: boolean;
+  robots?: string;
   prevUrl?: string;
   nextUrl?: string;
 }
@@ -30,6 +31,7 @@ const {
   schemaData,
   showSidebar = true,
   noindex = false,
+  robots,
   prevUrl,
   nextUrl,
 } = Astro.props;
@@ -74,7 +76,7 @@ const jsonLd = schemaData
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex ? (
-      <meta name="robots" content="noindex, nofollow" />
+      <meta name="robots" content={robots || "noindex, nofollow"} />
     ) : (
       <link rel="canonical" href={canonicalURL} />
     )}

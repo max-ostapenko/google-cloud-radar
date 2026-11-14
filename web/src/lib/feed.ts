@@ -679,3 +679,18 @@ export function groupEntriesByMonth(entries: FeedEntry[]): MonthGroup[] {
     };
   });
 }
+
+/**
+ * Determines whether a standalone change page has sufficient signal and prose depth
+ * for search engine indexing (breaking changes, or score >= 6 with >= 500 chars of prose).
+ */
+export function isIndexableChange(entry: {
+  breaking?: boolean;
+  interesting_score?: number;
+  summary?: string;
+  rawContent?: string;
+  details?: string;
+}): boolean {
+  const proseLen = `${entry.summary || ''} ${entry.rawContent || entry.details || ''}`.trim().length;
+  return Boolean(entry.breaking || (Number(entry.interesting_score ?? 5) >= 6 && proseLen >= 500));
+}
