@@ -291,6 +291,7 @@ export interface SiblingVersionInfo {
   impact: 'low' | 'medium' | 'high';
   title: string;
   summary: string;
+  rawContent: string;
   detailsHtml: string;
   extractedMethods: string[];
   targetPaths?: string[];
@@ -771,6 +772,7 @@ export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
       impact: m.impact,
       title: m.title,
       summary: m.summary,
+      rawContent: m.rawContent,
       detailsHtml: m.detailsHtml,
       extractedMethods: m.extractedMethods,
       targetPaths: m.targetPaths,
@@ -815,4 +817,166 @@ export function deduplicateFeedSiblingVersions(entries: FeedEntry[]): FeedEntry[
         impact: highestImpact,
       };
     });
+}
+
+export interface SiblingNarrativePartition {
+  sharedHtml: string;
+  sharedCount: number;
+  uniqueHtmlBySlug: Record<string, string>;
+  uniqueCountBySlug: Record<string, number>;
+}
+
+const NARRATIVE_STOPWORDS = new Set([
+  'the', 'and', 'for', 'with', 'now', 'new', 'this', 'that', 'are', 'has', 'have',
+  'from', 'can', 'you', 'your', 'api', 'google', 'cloud', 'methods', 'method',
+  'schema', 'schemas', 'property', 'properties', 'field', 'fields', 'update',
+  'updates', 'added', 'support', 'supports', 'developers', 'into', 'more', 'also',
+  'various', 'several', 'including', 'within', 'across', 'allow', 'allows',
+  'allowing', 'enable', 'enables', 'enabling', 'provide', 'provides', 'providing',
+  'such', 'when', 'which', 'these', 'those', 'their', 'been', 'make', 'makes',
+  'making', 'used', 'using',
+]);
+
+function normalizeNarrativeComparisonText(text: string): string {
+  return text
+    .replace(/https:\/\/www\.googleapis\.com\/auth\//gi, '')
+    .replace(/v\d+(?:alpha\d*|beta\d*|p\d+b\d*)?/gi, '');
+}
+
+function countBulletLines(paragraph: string): number {
+  return (paragraph.match(/^\s*[\*-]\s+/gm) || []).length;
+}
+
+function extractParagraphFeatures(paragraph: string): { codeSet: Set<string>; wordSet: Set<string> } {
+  const codeSet = new Set<string>();
+  const backtickMatches = paragraph.matchAll(/`([^`]+)`/g);
+  for (const m of backtickMatches) {
+    const normalized = normalizeNarrativeComparisonText(m[1]).toLowerCase().trim();
+    if (normalized.length >= 3) codeSet.add(normalized);
+  }
+
+  const normalizedText = normalizeNarrativeComparisonText(paragraph).toLowerCase();
+  const wordSet = new Set<string>();
+  const wordMatches = normalizedText.matchAll(/[a-z0-9_.]{3,}/g);
+  for (const m of wordMatches) {
+    if (!NARRATIVE_STOPWORDS.has(m[0])) wordSet.add(m[0]);
+  }
+
+  return { codeSet, wordSet };
+}
+
+function setIntersectionCount(a: Set<string>, b: Set<string>): number {
+  let count = 0;
+  for (const item of a) {
+    if (b.has(item)) count++;
+  }
+  return count;
+}
+
+function narrativeParagraphsMatch(p1: string, p2: string): boolean {
+  if ((countBulletLines(p1) > 1) !== (countBulletLines(p2) > 1)) {
+    return false;
+  }
+
+  const f1 = extractParagraphFeatures(p1);
+  const f2 = extractParagraphFeatures(p2);
+
+  const codeOverlap = setIntersectionCount(f1.codeSet, f2.codeSet);
+  const wordOverlap = setIntersectionCount(f1.wordSet, f2.wordSet);
+
+  const minWords = Math.max(1, Math.min(f1.wordSet.size, f2.wordSet.size));
+  const maxWords = Math.max(1, Math.max(f1.wordSet.size, f2.wordSet.size));
+  const unionWords = Math.max(1, f1.wordSet.size + f2.wordSet.size - wordOverlap);
+
+  const minWordOverlap = wordOverlap / minWords;
+  const maxWordOverlap = wordOverlap / maxWords;
+  const wordJaccard = wordOverlap / unionWords;
+
+  if (codeOverlap >= 2 && minWordOverlap >= 0.35) return true;
+  if (codeOverlap >= 1 && minWordOverlap >= 0.45 && maxWordOverlap >= 0.30) return true;
+  if (minWordOverlap >= 0.55 && wordJaccard >= 0.30) return true;
+  return false;
+}
+
+/**
+ * Splits multi-version sibling change narratives into cross-version shared paragraphs
+ * and per-version unique paragraphs while preserving original details when no overlap exists.
+ */
+export function partitionSiblingNarratives(siblings: SiblingVersionInfo[]): SiblingNarrativePartition {
+  const uniqueHtmlBySlug: Record<string, string> = {};
+  const uniqueCountBySlug: Record<string, number> = {};
+
+  if (siblings.length <= 1) {
+    for (const sib of siblings) {
+      uniqueHtmlBySlug[sib.slug] = sib.detailsHtml;
+      uniqueCountBySlug[sib.slug] = (sib.rawContent || sib.summary)
+        .split(/\n\n+/)
+        .map((p) => p.trim())
+        .filter(Boolean).length;
+    }
+    return { sharedHtml: '', sharedCount: 0, uniqueHtmlBySlug, uniqueCountBySlug };
+  }
+
+  const paragraphLists = siblings.map((sib) =>
+    (sib.rawContent || sib.summary || '')
+      .split(/\n\n+/)
+      .map((p) => p.trim())
+      .filter(Boolean)
+  );
+
+  const sharedParagraphs: string[] = [];
+  const matchedIndices = siblings.map(() => new Set<number>());
+
+  for (let i = 0; i < paragraphLists[0].length; i++) {
+    const p0 = paragraphLists[0][i];
+    const matchesPerOther: number[][] = [];
+    for (let k = 1; k < siblings.length; k++) {
+      const mIdx: number[] = [];
+      for (let j = 0; j < paragraphLists[k].length; j++) {
+        if (narrativeParagraphsMatch(p0, paragraphLists[k][j])) {
+          mIdx.push(j);
+        }
+      }
+      matchesPerOther.push(mIdx);
+    }
+
+    if (matchesPerOther.every((m) => m.length > 0)) {
+      sharedParagraphs.push(p0);
+      matchedIndices[0].add(i);
+      for (let k = 0; k < matchesPerOther.length; k++) {
+        for (const j of matchesPerOther[k]) {
+          matchedIndices[k + 1].add(j);
+        }
+      }
+    }
+  }
+
+  if (sharedParagraphs.length === 0) {
+    for (let k = 0; k < siblings.length; k++) {
+      uniqueHtmlBySlug[siblings[k].slug] = siblings[k].detailsHtml;
+      uniqueCountBySlug[siblings[k].slug] = paragraphLists[k].length;
+    }
+    return { sharedHtml: '', sharedCount: 0, uniqueHtmlBySlug, uniqueCountBySlug };
+  }
+
+  const sharedHtml = safeMarkdownParser.parse(sharedParagraphs.join('\n\n'), { async: false }) as string;
+  const introSentenceRegex = /^(Developers building on|This is a substantial update|Here is a summary)[^.\n]*[:.]\s*$/i;
+
+  for (let k = 0; k < siblings.length; k++) {
+    const uniqueParas = paragraphLists[k].filter(
+      (p, j) => !matchedIndices[k].has(j) && !introSentenceRegex.test(p)
+    );
+    uniqueCountBySlug[siblings[k].slug] = uniqueParas.length;
+    uniqueHtmlBySlug[siblings[k].slug] =
+      uniqueParas.length > 0
+        ? (safeMarkdownParser.parse(uniqueParas.join('\n\n'), { async: false }) as string)
+        : '';
+  }
+
+  return {
+    sharedHtml,
+    sharedCount: sharedParagraphs.length,
+    uniqueHtmlBySlug,
+    uniqueCountBySlug,
+  };
 }

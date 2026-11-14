@@ -2,7 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ReactionsBar from "../../components/ReactionsBar.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
-import { getAllFeedEntries, isIndexableChange, slugify, type FeedEntry } from "../../lib/feed";
+import { getAllFeedEntries, isIndexableChange, partitionSiblingNarratives, slugify, type FeedEntry } from "../../lib/feed";
 
 export async function getStaticPaths() {
   const entries = await getAllFeedEntries();
@@ -92,32 +92,24 @@ const hasBadges = Boolean(
   entry.impact === "medium"
 );
 
-const hasSiblings = Boolean(entry.siblingVersions && entry.siblingVersions.length > 1);
-const orderedSiblings = hasSiblings
-  ? [
-      ...entry.siblingVersions!.filter((s) => s.slug === entry.slug),
-      ...entry.siblingVersions!.filter((s) => s.slug !== entry.slug),
-    ]
-  : [];
+const siblings = entry.siblingVersions || [];
+const hasSiblings = siblings.length > 1;
 
-const siblingMethodSets = orderedSiblings.map((s) => new Set(s.extractedMethods));
+const siblingMethodSets = siblings.map((s) => new Set(s.extractedMethods));
 const sharedMethods = hasSiblings
-  ? (orderedSiblings[0]?.extractedMethods || []).filter((method) =>
+  ? (siblings[0]?.extractedMethods || []).filter((method) =>
       siblingMethodSets.every((set) => set.has(method))
     )
   : [];
 const sharedMethodSet = new Set(sharedMethods);
 
-const versionMethodGroups = orderedSiblings.map((sib) => ({
-  sib,
-  uniqueMethods: sib.extractedMethods.filter((method) => !sharedMethodSet.has(method)),
-}));
-const sharedVersionNames = orderedSiblings.map((s) => s.version).join(', ');
-const hasAnySiblingMethods =
-  versionMethodGroups.some((g) => g.uniqueMethods.length > 0) || sharedMethods.length > 0;
-const totalUniqueMethods = hasSiblings
-  ? new Set(orderedSiblings.flatMap((s) => s.extractedMethods)).size
-  : entry.extractedMethods?.length || 0;
+const uniqueMethodsBySlug: Record<string, string[]> = {};
+for (const sib of siblings) {
+  uniqueMethodsBySlug[sib.slug] = sib.extractedMethods.filter((method) => !sharedMethodSet.has(method));
+}
+
+const sharedVersionNames = siblings.map((s) => s.version).join(', ');
+const narrativePartition = hasSiblings ? partitionSiblingNarratives(siblings) : null;
 
 const shouldIndex = isIndexableChange(entry);
 const canonicalOverride = entry.primarySiblingSlug
@@ -276,94 +268,200 @@ const canonicalOverride = entry.primarySiblingSlug
       <h1 class="change-title">{entry.title}</h1>
 
       {
-        entry.siblingVersions && entry.siblingVersions.length > 1 && (
-          <nav class="sibling-versions-bar" aria-label="Same-day API versions">
-            <span class="sibling-versions-label">API Versions ({formattedDate}):</span>
-            <div class="sibling-versions-list">
-              {entry.siblingVersions.map((sib) => {
+        !hasSiblings && entry.extractedMethods && entry.extractedMethods.length > 0 && (
+          <div class="methods-strip">
+            <div class="methods-strip-header">
+              <svg
+                viewBox="0 0 24 24"
+                width="13"
+                height="13"
+                stroke="currentColor"
+                stroke-width="2"
+                fill="none"
+              >
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg>
+              <span class="methods-strip-title">
+                Modified API Methods ({entry.extractedMethods.length}):
+              </span>
+            </div>
+            <div class="methods-strip-list">
+              {entry.extractedMethods.map((method) => (
+                <button
+                  class="method-chip copy-method-btn"
+                  data-copy={method}
+                  aria-label="Copy method identifier"
+                  title="Click to copy method"
+                  type="button"
+                >
+                  <span class="method-rpc-tag">RPC</span>
+                  <code class="method-name">{method}</code>
+                </button>
+              ))}
+            </div>
+          </div>
+        )
+      }
+    </header>
+
+    <!-- Main Content Card -->
+    <article class="content-card">
+      {
+        hasSiblings && narrativePartition ? (
+          <div class="version-tabs-container">
+            <div class="version-tabs-bar" role="tablist" aria-label="API Versions">
+              {siblings.map((sib) => {
                 const isActive = sib.slug === entry.slug;
+                const uniqueCount = uniqueMethodsBySlug[sib.slug]?.length ?? 0;
+                const specificNarrativeCount = narrativePartition.uniqueCountBySlug[sib.slug] ?? 0;
                 return (
                   <a
                     href={`/changes/${sib.slug}`}
-                    class={`sibling-version-pill ${isActive ? 'is-active' : ''} ${sib.breaking ? 'is-breaking' : ''}`}
-                    aria-current={isActive ? 'page' : undefined}
-                    title={`View ${sib.api} impact: ${sib.title}`}
+                    role="tab"
+                    id={`tab-${sib.slug}`}
+                    aria-controls={`panel-${sib.slug}`}
+                    aria-selected={isActive ? "true" : "false"}
+                    data-version-tab={sib.slug}
+                    data-tab-title={sib.title}
+                    class={`version-tab-btn ${isActive ? "is-active" : ""} ${sib.breaking ? "is-breaking" : ""}`}
+                    title={`View ${sib.api}: ${sib.title}`}
                   >
-                    <code>{sib.version}</code>
-                    {sib.breaking && <span class="sibling-breaking-mark" title="Breaking change in this version">⚠️</span>}
+                    <span class="version-tab-top">
+                      <code class="version-tab-code">{sib.version}</code>
+                      {sib.breaking ? (
+                        <span class="version-tab-badge is-breaking">⚠️ Breaking</span>
+                      ) : (
+                        <span class={`version-tab-badge is-${sib.impact}`}>
+                          {sib.impact}
+                        </span>
+                      )}
+                    </span>
+                    <span class="version-tab-sub">
+                      {uniqueCount > 0
+                        ? `+${uniqueCount} specific method${uniqueCount === 1 ? "" : "s"}`
+                        : specificNarrativeCount > 0
+                          ? "version specifics"
+                          : "shared changes"}
+                    </span>
                   </a>
                 );
               })}
             </div>
-          </nav>
-        )
-      }
 
-      {
-        hasSiblings ? (
-          hasAnySiblingMethods && (
-            <div class="methods-strip">
-              <div class="methods-strip-header">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="13"
-                  height="13"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  fill="none"
-                >
-                  <polyline points="16 18 22 12 16 6" />
-                  <polyline points="8 6 2 12 8 18" />
-                </svg>
-                <span class="methods-strip-title">
-                  Modified API Methods Across Versions ({totalUniqueMethods} unique):
-                </span>
-              </div>
-
-              <div class="methods-version-groups">
-                {versionMethodGroups.map(({ sib, uniqueMethods }) => (
-                  <div class="methods-version-block">
-                    <div class="methods-version-header">
-                      <span class="methods-version-label">
-                        Specific to <code>{sib.api}</code> ({uniqueMethods.length})
-                      </span>
-                      {sib.breaking && (
-                        <span class="methods-version-flag is-breaking">⚠️ Breaking</span>
-                      )}
-                      {sib.slug !== entry.slug && (
-                        <a href={`/changes/${sib.slug}`} class="methods-version-link">
-                          View {sib.version} →
-                        </a>
-                      )}
-                    </div>
-                    {uniqueMethods.length > 0 ? (
-                      <div class="methods-strip-list">
-                        {uniqueMethods.map((method) => (
-                          <button
-                            class="method-chip copy-method-btn"
-                            data-copy={method}
-                            aria-label="Copy method identifier"
-                            title="Click to copy method"
-                            type="button"
+            <div class="version-tab-panels">
+              {siblings.map((sib) => {
+                const isActive = sib.slug === entry.slug;
+                const uniqueMethods = uniqueMethodsBySlug[sib.slug] || [];
+                const uniqueHtml = narrativePartition.uniqueHtmlBySlug[sib.slug] || "";
+                const uniqueParaCount = narrativePartition.uniqueCountBySlug[sib.slug] ?? 0;
+                return (
+                  <section
+                    role="tabpanel"
+                    id={`panel-${sib.slug}`}
+                    aria-labelledby={`tab-${sib.slug}`}
+                    data-version-panel={sib.slug}
+                    class={`version-tab-panel ${isActive ? "is-active" : ""}`}
+                    hidden={!isActive}
+                  >
+                    <header class="version-panel-header">
+                      <div class="version-section-meta">
+                        <code class="version-section-api">{sib.api}</code>
+                        {sib.breaking ? (
+                          <span class="version-risk-badge is-breaking">⚠️ Breaking</span>
+                        ) : sib.impact !== "low" ? (
+                          <span class={`version-risk-badge is-${sib.impact}`}>
+                            {sib.impact} impact
+                          </span>
+                        ) : (
+                          <span class="version-risk-badge is-low">Non-breaking</span>
+                        )}
+                        <span class="version-method-stats">
+                          {sib.extractedMethods.length} total methods · {uniqueMethods.length} version-specific
+                        </span>
+                        {sib.discoveryRestUrl && (
+                          <a
+                            href={sib.discoveryRestUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="version-disco-link"
                           >
-                            <span class="method-rpc-tag">RPC</span>
-                            <code class="method-name">{method}</code>
-                          </button>
-                        ))}
+                            Discovery JSON ↗
+                          </a>
+                        )}
                       </div>
-                    ) : (
-                      <p class="methods-none-note">
-                        No {sib.version}-exclusive methods — all {sib.extractedMethods.length} modified methods are shared across versions below.
-                      </p>
+                      <h2 class="version-section-title">{sib.title}</h2>
+                      {sib.summary && (
+                        <p class="version-panel-summary">{sib.summary}</p>
+                      )}
+                    </header>
+
+                    {(uniqueMethods.length > 0 || sharedMethods.length > 0) && (
+                      <div class="version-panel-methods">
+                        {uniqueMethods.length > 0 ? (
+                          <>
+                            <div class="methods-version-header">
+                              <span class="methods-version-label">
+                                Modified Methods Specific to <code>{sib.api}</code> ({uniqueMethods.length})
+                              </span>
+                            </div>
+                            <div class="methods-strip-list">
+                              {uniqueMethods.map((method) => (
+                                <button
+                                  class="method-chip copy-method-btn"
+                                  data-copy={method}
+                                  aria-label="Copy method identifier"
+                                  title="Click to copy method"
+                                  type="button"
+                                >
+                                  <span class="method-rpc-tag">RPC</span>
+                                  <code class="method-name">{method}</code>
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <p class="methods-none-note">
+                            No {sib.version}-exclusive methods — all {sib.extractedMethods.length} modified methods are shared across versions below.
+                          </p>
+                        )}
+                      </div>
                     )}
-                  </div>
-                ))}
+
+                    {uniqueParaCount > 0 ? (
+                      <div class="markdown-body" set:html={uniqueHtml} />
+                    ) : (
+                      <div class="version-empty-specifics">
+                        <p>
+                          <code>{sib.api}</code> had no additional version-exclusive schema or method changes beyond the shared cross-version updates detailed below.
+                        </p>
+                      </div>
+                    )}
+                  </section>
+                );
+              })}
+            </div>
+
+            {(narrativePartition.sharedCount > 0 || sharedMethods.length > 0) && (
+              <section class="shared-changes-section" aria-label="Shared cross-version changes">
+                <header class="shared-changes-header">
+                  <h3 class="shared-changes-title">
+                    Shared Across Versions ({sharedVersionNames})
+                  </h3>
+                  <span class="shared-changes-badge">
+                    {narrativePartition.sharedCount} shared change{narrativePartition.sharedCount === 1 ? "" : "s"} · {sharedMethods.length} shared method{sharedMethods.length === 1 ? "" : "s"}
+                  </span>
+                </header>
+
+                {narrativePartition.sharedHtml && (
+                  <div class="markdown-body shared-markdown-body" set:html={narrativePartition.sharedHtml} />
+                )}
 
                 {sharedMethods.length > 0 && (
-                  <div class="methods-version-block is-shared">
+                  <div class="shared-methods-block">
                     <div class="methods-version-header">
                       <span class="methods-version-label">
-                        Shared across {sharedVersionNames} ({sharedMethods.length} methods)
+                        Shared Modified Methods ({sharedMethods.length})
                       </span>
                     </div>
                     <div class="methods-strip-list">
@@ -403,93 +501,8 @@ const canonicalOverride = entry.primarySiblingSlug
                     )}
                   </div>
                 )}
-              </div>
-            </div>
-          )
-        ) : (
-          entry.extractedMethods && entry.extractedMethods.length > 0 && (
-            <div class="methods-strip">
-              <div class="methods-strip-header">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="13"
-                  height="13"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  fill="none"
-                >
-                  <polyline points="16 18 22 12 16 6" />
-                  <polyline points="8 6 2 12 8 18" />
-                </svg>
-                <span class="methods-strip-title">
-                  Modified API Methods ({entry.extractedMethods.length}):
-                </span>
-              </div>
-              <div class="methods-strip-list">
-                {entry.extractedMethods.map((method) => (
-                  <button
-                    class="method-chip copy-method-btn"
-                    data-copy={method}
-                    aria-label="Copy method identifier"
-                    title="Click to copy method"
-                    type="button"
-                  >
-                    <span class="method-rpc-tag">RPC</span>
-                    <code class="method-name">{method}</code>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )
-        )
-      }
-    </header>
-
-    <!-- Main Content Card -->
-    <article class="content-card">
-      {
-        hasSiblings ? (
-          <div class="multi-version-sections">
-            {orderedSiblings.map((sib) => (
-              <section
-                class={`version-detail-section ${sib.slug === entry.slug ? "is-current" : ""}`}
-                id={`version-${sib.version}`}
-              >
-                <header class="version-section-header">
-                  <div class="version-section-meta">
-                    <code class="version-section-api">{sib.api}</code>
-                    {sib.slug === entry.slug ? (
-                      <span class="version-current-pill">Current view</span>
-                    ) : (
-                      <a href={`/changes/${sib.slug}`} class="version-switch-pill">
-                        View standalone {sib.version} page →
-                      </a>
-                    )}
-                    {sib.breaking ? (
-                      <span class="version-risk-badge is-breaking">⚠️ Breaking</span>
-                    ) : sib.impact !== "low" ? (
-                      <span class={`version-risk-badge is-${sib.impact}`}>
-                        {sib.impact} impact
-                      </span>
-                    ) : (
-                      <span class="version-risk-badge is-low">Non-breaking</span>
-                    )}
-                    {sib.discoveryRestUrl && (
-                      <a
-                        href={sib.discoveryRestUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="version-disco-link"
-                      >
-                        Discovery JSON ↗
-                      </a>
-                    )}
-                  </div>
-                  <h2 class="version-section-title">{sib.title}</h2>
-                </header>
-                <div class="markdown-body" set:html={sib.detailsHtml} />
               </section>
-            ))}
+            )}
           </div>
         ) : (
           <div class="markdown-body" set:html={entry.htmlContent} />
@@ -549,6 +562,63 @@ const canonicalOverride = entry.primarySiblingSlug
     </article>
   </div>
 </BaseLayout>
+
+<script>
+  const tabs = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-version-tab]'));
+  const panels = Array.from(document.querySelectorAll<HTMLElement>('[data-version-panel]'));
+  const heroTitle = document.querySelector<HTMLElement>('.change-title');
+
+  function activateTab(tab: HTMLAnchorElement) {
+    const slug = tab.getAttribute('data-version-tab');
+    const tabTitle = tab.getAttribute('data-tab-title');
+    const href = tab.getAttribute('href');
+    if (!slug) return;
+
+    for (const candidate of tabs) {
+      const selected = candidate === tab;
+      candidate.classList.toggle('is-active', selected);
+      candidate.setAttribute('aria-selected', selected ? 'true' : 'false');
+    }
+
+    for (const panel of panels) {
+      const matches = panel.getAttribute('data-version-panel') === slug;
+      panel.classList.toggle('is-active', matches);
+      panel.hidden = !matches;
+    }
+
+    if (heroTitle && tabTitle) {
+      heroTitle.textContent = tabTitle;
+      document.title = `${tabTitle} — Google Cloud Radar`;
+    }
+
+    if (href) {
+      window.history.replaceState(null, '', href);
+    }
+  }
+
+  for (const tab of tabs) {
+    tab.addEventListener('click', (event) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+      event.preventDefault();
+      activateTab(tab);
+    });
+
+    tab.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+      event.preventDefault();
+      const idx = tabs.indexOf(tab);
+      const nextIdx =
+        event.key === 'ArrowRight'
+          ? (idx + 1) % tabs.length
+          : (idx - 1 + tabs.length) % tabs.length;
+      const nextTab = tabs[nextIdx];
+      nextTab.focus();
+      activateTab(nextTab);
+    });
+  }
+</script>
 
 <style>
   .change-detail-container {
@@ -721,75 +791,6 @@ const canonicalOverride = entry.primarySiblingSlug
     color: var(--google-yellow);
   }
 
-  /* Same-Day API Version Switcher inside Hero */
-  .sibling-versions-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 14px;
-    margin-bottom: 4px;
-  }
-
-  .sibling-versions-label {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    color: var(--text-tertiary);
-  }
-
-  .sibling-versions-list {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-
-  .sibling-version-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 9px;
-    border-radius: 999px;
-    border: 1px solid var(--border-subtle);
-    background-color: var(--bg-surface-hover);
-    color: var(--text-secondary);
-    font-size: 12px;
-    text-decoration: none;
-    transition: all 0.15s ease;
-  }
-
-  .sibling-version-pill code {
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    font-weight: 600;
-  }
-
-  .sibling-version-pill:hover {
-    border-color: var(--google-blue-border);
-    background-color: var(--google-blue-subtle);
-    color: var(--google-blue);
-    text-decoration: none;
-  }
-
-  .sibling-version-pill.is-active {
-    background-color: var(--google-blue);
-    border-color: var(--google-blue);
-    color: #ffffff;
-  }
-
-  .sibling-version-pill.is-breaking:not(.is-active) {
-    border-color: var(--google-red-border);
-    background-color: var(--google-red-subtle);
-    color: var(--google-red);
-  }
-
-  .sibling-breaking-mark {
-    font-size: 11px;
-    line-height: 1;
-  }
-
   /* Methods Strip inside Hero */
   .methods-strip {
     margin-top: 20px;
@@ -821,33 +822,13 @@ const canonicalOverride = entry.primarySiblingSlug
     flex-wrap: wrap;
   }
 
-  .methods-version-groups {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 10px;
-  }
-
-  .methods-version-block {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 10px 12px;
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    background-color: var(--bg-page);
-  }
-
-  .methods-version-block.is-shared {
-    background-color: var(--bg-surface);
-  }
-
   .methods-version-header {
     display: flex;
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
     font-size: 12px;
+    margin-bottom: 8px;
   }
 
   .methods-version-label {
@@ -864,36 +845,15 @@ const canonicalOverride = entry.primarySiblingSlug
     border: 1px solid var(--border-subtle);
   }
 
-  .methods-version-flag.is-breaking {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--google-red-text);
-    background-color: var(--google-red-subtle);
-    border: 1px solid var(--google-red-border);
-    padding: 1px 7px;
-    border-radius: var(--radius-full);
-  }
-
-  .methods-version-link {
-    margin-left: auto;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--google-blue);
-    text-decoration: none;
-  }
-
-  .methods-version-link:hover {
-    text-decoration: underline;
-  }
-
   .methods-none-note {
+    margin: 0;
     font-size: 12.5px;
     color: var(--text-secondary);
     line-height: 1.5;
   }
 
   .shared-methods-details {
-    margin-top: 2px;
+    margin-top: 8px;
   }
 
   .shared-methods-details summary {
@@ -966,26 +926,119 @@ const canonicalOverride = entry.primarySiblingSlug
     font-size: 15px;
   }
 
-  .multi-version-sections {
+  .version-tabs-container {
     display: flex;
     flex-direction: column;
   }
 
-  .version-detail-section + .version-detail-section {
-    border-top: 1px solid var(--border-subtle);
-  }
-
-  .version-section-header {
-    padding: 20px 32px 14px;
+  .version-tabs-bar {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    padding: 14px 32px 0;
     background-color: var(--bg-page);
     border-bottom: 1px solid var(--border-subtle);
+    overflow-x: auto;
+  }
+
+  .version-tab-btn {
     display: flex;
     flex-direction: column;
+    gap: 4px;
+    padding: 10px 14px 11px;
+    border: 1px solid var(--border-subtle);
+    border-bottom: none;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    background-color: var(--bg-surface-hover);
+    color: var(--text-secondary);
+    text-decoration: none;
+    position: relative;
+    top: 1px;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .version-tab-btn:hover {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  .version-tab-btn.is-active {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border-color: var(--border-subtle);
+    border-top: 2px solid var(--google-blue);
+    padding-top: 9px;
+  }
+
+  .version-tab-btn.is-breaking.is-active {
+    border-top-color: var(--google-red);
+  }
+
+  .version-tab-top {
+    display: flex;
+    align-items: center;
     gap: 8px;
   }
 
-  .version-detail-section.is-current .version-section-header {
-    background-color: var(--google-blue-subtle);
+  .version-tab-code {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: inherit;
+  }
+
+  .version-tab-badge {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: var(--radius-full);
+    text-transform: capitalize;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+  }
+
+  .version-tab-badge.is-breaking {
+    color: var(--google-red-text);
+    background-color: var(--google-red-subtle);
+    border-color: var(--google-red-border);
+  }
+
+  .version-tab-badge.is-high,
+  .version-tab-badge.is-medium {
+    color: var(--google-yellow-text);
+    background-color: var(--google-yellow-subtle);
+    border-color: var(--google-yellow-border);
+  }
+
+  .version-tab-sub {
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+
+  .version-tab-btn.is-active .version-tab-sub {
+    color: var(--text-secondary);
+  }
+
+  .version-tab-panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .version-tab-panel[hidden] {
+    display: none;
+  }
+
+  .version-panel-header {
+    padding: 22px 32px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    background-color: var(--bg-surface);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 
   .version-section-meta {
@@ -1001,31 +1054,16 @@ const canonicalOverride = entry.primarySiblingSlug
     font-size: 12px;
     font-weight: 600;
     color: var(--text-primary);
-    background-color: var(--bg-surface);
+    background-color: var(--bg-page);
     border: 1px solid var(--border-subtle);
     padding: 2px 8px;
     border-radius: var(--radius-sm);
   }
 
-  .version-current-pill {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--google-blue-text);
-    background-color: var(--bg-surface);
-    border: 1px solid var(--google-blue-border);
-    padding: 1px 8px;
-    border-radius: var(--radius-full);
-  }
-
-  .version-switch-pill {
-    font-size: 11.5px;
-    font-weight: 500;
-    color: var(--google-blue);
-    text-decoration: none;
-  }
-
-  .version-switch-pill:hover {
-    text-decoration: underline;
+  .version-method-stats {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
   }
 
   .version-risk-badge {
@@ -1051,7 +1089,7 @@ const canonicalOverride = entry.primarySiblingSlug
 
   .version-risk-badge.is-low {
     color: var(--text-secondary);
-    background-color: var(--bg-surface);
+    background-color: var(--bg-page);
     border: 1px solid var(--border-subtle);
   }
 
@@ -1069,14 +1107,90 @@ const canonicalOverride = entry.primarySiblingSlug
 
   .version-section-title {
     margin: 0;
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 600;
     line-height: 1.35;
     color: var(--text-primary);
   }
 
-  .version-detail-section .markdown-body {
+  .version-panel-summary {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  .version-panel-methods {
+    padding: 14px 32px;
+    background-color: var(--bg-page);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .version-tab-panel .markdown-body {
     padding: 24px 32px 28px;
+  }
+
+  .version-empty-specifics {
+    padding: 20px 32px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .version-empty-specifics p {
+    margin: 0;
+  }
+
+  .version-empty-specifics code {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+  }
+
+  .shared-changes-section {
+    border-top: 2px solid var(--border-subtle);
+    background-color: var(--bg-page);
+  }
+
+  .shared-changes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 18px 32px 14px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .shared-changes-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.1px;
+  }
+
+  .shared-changes-badge {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: 2px 10px;
+    border-radius: var(--radius-full);
+  }
+
+  .shared-markdown-body {
+    padding: 20px 32px 22px;
+  }
+
+  .shared-methods-block {
+    padding: 14px 32px 24px;
+    border-top: 1px solid var(--border-subtle);
   }
 
   .markdown-body :global(h1) {
@@ -1220,8 +1334,23 @@ const canonicalOverride = entry.primarySiblingSlug
     .change-hero {
       padding: 20px;
     }
-    .markdown-body {
+    .markdown-body,
+    .version-tab-panel .markdown-body,
+    .shared-markdown-body {
       padding: 20px;
+    }
+    .version-tabs-bar {
+      padding: 12px 20px 0;
+    }
+    .version-panel-header {
+      padding: 18px 20px 14px;
+    }
+    .version-panel-methods,
+    .version-empty-specifics,
+    .shared-changes-header,
+    .shared-methods-block {
+      padding-left: 20px;
+      padding-right: 20px;
     }
     .content-footer {
       padding: 16px 20px;
