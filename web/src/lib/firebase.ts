@@ -74,6 +74,30 @@ export async function getFirebaseDb(): Promise<Firestore> {
 // Local Mock User Storage Key
 const LOCAL_DEV_USER_KEY = 'gcp_radar_dev_user';
 
+let lastPostHogUid: string | null = null;
+
+function syncPostHogAuth(user: User | null): void {
+  if (typeof window === 'undefined') return;
+  let debugLocal = false;
+  try {
+    debugLocal = window.location.search.includes('posthog_debug=1') || window.localStorage.getItem('posthog_debug') === '1';
+  } catch {}
+  if (isLocalEnvironment() && !debugLocal) return;
+  const ph = (window as any).posthog;
+  if (user && user.uid) {
+    if (lastPostHogUid !== user.uid) {
+      lastPostHogUid = user.uid;
+      ph?.identify?.(user.uid, {
+        ...(user.email ? { email: user.email } : {}),
+        ...(user.displayName ? { name: user.displayName } : {}),
+      });
+    }
+  } else if (lastPostHogUid !== null) {
+    lastPostHogUid = null;
+    ph?.reset?.();
+  }
+}
+
 export async function signInWithGoogle(): Promise<User | null> {
   // If in local development, support direct local dev sign-in without hitting prod auth blocks
   if (isLocalEnvironment()) {
@@ -98,6 +122,7 @@ export async function signInWithGoogle(): Promise<User | null> {
     const googleProvider = new GoogleAuthProvider();
     googleProvider.setCustomParameters({ prompt: 'select_account' });
     const result = await signInWithPopup(authInstance, googleProvider);
+    syncPostHogAuth(result.user);
     return result.user;
   } catch (error: any) {
     if (error.code === 'auth/popup-closed-by-user') {
@@ -121,6 +146,7 @@ export async function signOutUser(): Promise<void> {
   const authInstance = await getFirebaseAuth();
   const { signOut } = await import('firebase/auth');
   await signOut(authInstance);
+  syncPostHogAuth(null);
 }
 
 export function onAuthChange(callback: (user: User | null) => void): () => void {
@@ -147,7 +173,10 @@ export function onAuthChange(callback: (user: User | null) => void): () => void 
     if (!active) return;
     const { onAuthStateChanged } = await import('firebase/auth');
     if (!active) return;
-    unsubscribe = onAuthStateChanged(authInstance, callback);
+    unsubscribe = onAuthStateChanged(authInstance, (user) => {
+      syncPostHogAuth(user);
+      callback(user);
+    });
   }).catch((err) => {
     console.warn('onAuthChange initialization error:', err);
   });
