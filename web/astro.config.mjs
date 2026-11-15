@@ -108,6 +108,9 @@ export default defineConfig({
   site: 'https://google-cloud-radar.com',
   output: 'static',
   trailingSlash: 'never',
+  vite: {
+    envDir: '..',
+  },
   integrations: [
     sitemap({
       filter: (page) => {
