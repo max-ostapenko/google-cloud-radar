@@ -93,6 +93,7 @@ for (const [versionlessSlug, members] of siblingGroups.entries()) {
     ...primary.doc,
     breaking: members.some((m) => Boolean(m.doc.breaking || m.doc.is_breaking)),
     interesting_score: Math.max(...members.map((m) => Number(m.doc.interesting_score ?? 5))),
+    summary: '',
     details: members.map((m) => `${m.doc.summary || ''} ${m.doc.details || ''}`.trim()).join(' '),
   });
 }

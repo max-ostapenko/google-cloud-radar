@@ -290,6 +290,7 @@ export interface SiblingVersionInfo {
   version: string;
   breaking: boolean;
   impact: 'low' | 'medium' | 'high';
+  interesting_score?: number;
   title: string;
   summary: string;
   rawContent: string;
@@ -721,11 +722,15 @@ export function isIndexableChange(entry: {
   if (entry.siblingVersions && entry.siblingVersions.length > 1) {
     const anyBreaking = entry.breaking || entry.siblingVersions.some((s) => s.breaking);
     if (anyBreaking) return true;
+    const maxScore = Math.max(
+      Number(entry.interesting_score ?? 5),
+      ...entry.siblingVersions.map((s) => Number(s.interesting_score ?? 5))
+    );
     const combinedProseLen = entry.siblingVersions
       .map((s) => `${s.summary || ''} ${s.rawContent || ''}`.trim())
       .join(' ')
       .trim().length;
-    return Number(entry.interesting_score ?? 5) >= 6 && combinedProseLen >= 500;
+    return maxScore >= 6 && combinedProseLen >= 500;
   }
   const proseLen = `${entry.summary || ''} ${entry.rawContent || entry.details || ''}`.trim().length;
   return Boolean(entry.breaking || (Number(entry.interesting_score ?? 5) >= 6 && proseLen >= 500));
@@ -794,6 +799,7 @@ export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
       version: m.version || getApiBaseAndVersion(m.api).version,
       breaking: m.breaking,
       impact: m.impact,
+      interesting_score: m.interesting_score,
       title: m.title,
       summary: m.summary,
       rawContent: m.rawContent,
