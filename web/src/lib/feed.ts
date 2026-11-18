@@ -39,6 +39,7 @@ export interface FeedEntryMeta {
   title: string;
   impact: 'low' | 'medium' | 'high';
   breaking: boolean;
+  breaking_reasons?: string[];
   tags: string[];
   interesting_score: number;
   generated_at?: string;
@@ -356,9 +357,25 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       const breaking = Boolean(f.is_breaking?.booleanValue ?? f.breaking?.booleanValue);
       const interesting_score = parseInt(f.interesting_score?.integerValue || '5', 10);
       const status = (f.status?.stringValue || 'canary') as ChangeStatus;
-      const lead_time_days = f.lead_time_days ? parseInt(f.lead_time_days.integerValue, 10) : undefined;
+      const rawLeadTime = f.lead_time_days?.integerValue ?? f.lead_time_days?.doubleValue;
+      const parsedLeadTime =
+        rawLeadTime !== undefined && rawLeadTime !== null && rawLeadTime !== ''
+          ? Number(rawLeadTime)
+          : undefined;
+      const lead_time_days =
+        parsedLeadTime !== undefined && Number.isFinite(parsedLeadTime) ? parsedLeadTime : undefined;
       const official_release_date = f.official_release_date?.timestampValue || f.official_release_date?.stringValue;
       const official_release_notes_url = f.official_release_notes_url?.stringValue;
+
+      let breaking_reasons: string[] | undefined = undefined;
+      if (f.breaking_reasons?.arrayValue?.values) {
+        const parsedReasons = f.breaking_reasons.arrayValue.values
+          .map((v: any) => v.stringValue)
+          .filter(Boolean);
+        if (parsedReasons.length > 0) {
+          breaking_reasons = parsedReasons;
+        }
+      }
 
       let reaction_counts: ReactionCounts = { like_change: 0, released: 0, false_positive_or_duplicate: 0 };
       if (f.reaction_counts?.mapValue?.fields) {
@@ -412,6 +429,7 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         title,
         impact,
         breaking,
+        ...(breaking_reasons ? { breaking_reasons } : {}),
         tags,
         interesting_score,
         status,
@@ -494,9 +512,19 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const category = canonicalMeta?.category || (doc.category as ServiceCategory) || getCategoryForService(service || api);
       const safeCategory = category || '';
       const status = (doc.status || 'canary').toLowerCase() as ChangeStatus;
-      const lead_time_days = doc.lead_time_days ? Number(doc.lead_time_days) : undefined;
+      const rawLeadTime = doc.lead_time_days;
+      const parsedLeadTime =
+        rawLeadTime !== undefined && rawLeadTime !== null && rawLeadTime !== ''
+          ? Number(rawLeadTime)
+          : undefined;
+      const lead_time_days =
+        parsedLeadTime !== undefined && Number.isFinite(parsedLeadTime) ? parsedLeadTime : undefined;
       const official_release_date = doc.official_release_date ? String(doc.official_release_date) : undefined;
       const official_release_notes_url = doc.official_release_notes_url ? String(doc.official_release_notes_url) : undefined;
+      const breaking_reasons =
+        Array.isArray(doc.breaking_reasons) && doc.breaking_reasons.length > 0
+          ? doc.breaking_reasons.map((r: any) => String(r)).filter(Boolean)
+          : undefined;
       const stats = doc.stats || undefined;
 
       const discoMeta = getDiscoveryMetaForApi(api || service);
@@ -514,6 +542,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
         title: doc.title || `${service} API Update`,
         impact,
         breaking,
+        ...(breaking_reasons ? { breaking_reasons } : {}),
         tags,
         interesting_score,
         status,

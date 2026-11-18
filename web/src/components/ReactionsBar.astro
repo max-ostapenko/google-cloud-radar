@@ -105,7 +105,7 @@ const { slug, helpfulCount = 0, notHelpfulCount = 0 } = Astro.props;
           }
         });
 
-        const currentUser = getFirebaseAuth().currentUser;
+        const currentUser = (await getFirebaseAuth()).currentUser;
         if (currentUser) {
           listenToUserReactions(slug, currentUser.uid, (liveVotes) => {
             try {
@@ -149,7 +149,7 @@ const { slug, helpfulCount = 0, notHelpfulCount = 0 } = Astro.props;
           e.stopPropagation();
 
           const { getFirebaseAuth, signInWithGoogle, toggleUserReaction } = await import('../lib/firebase');
-          const auth = getFirebaseAuth();
+          const auth = await getFirebaseAuth();
           let user = auth.currentUser;
           if (!user) {
             try {

@@ -811,5 +811,170 @@ describe('Diff Preprocessor', () => {
     expect(result!.is_breaking).toBe(true);
     expect(result!.breaking_reasons).toContain("Parameter 'projectId' was changed to strictly required");
   });
+
+  it('detects nested schema property removals, type changes, readOnly, and enum removals (ba3d3bec)', () => {
+    const old = {
+      schemas: {
+        ParentSchema: {
+          properties: {
+            config: {
+              type: 'object',
+              properties: {
+                removedNested: { type: 'string' },
+                mutatedNested: { type: 'string' },
+                lockedNested: { type: 'string', readOnly: false },
+                mode: { type: 'string', enum: ['FAST', 'SAFE'] },
+                itemsList: { type: 'array', items: { type: 'string' } },
+              },
+            },
+          },
+        },
+      },
+    };
+    const next = {
+      schemas: {
+        ParentSchema: {
+          properties: {
+            config: {
+              type: 'object',
+              properties: {
+                mutatedNested: { type: 'integer' },
+                lockedNested: { type: 'string', readOnly: true },
+                addedReadOnlyNested: { type: 'string', readOnly: true },
+                mode: { type: 'string', enum: ['FAST'] },
+                itemsList: { type: 'array', items: { type: 'integer' } },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const result = diff_preprocessor.buildStructuredDiff(
+      'test.v1.json',
+      JSON.stringify(old),
+      JSON.stringify(next)
+    );
+
+    expect(result).not.toBeNull();
+    expect(result!.is_breaking).toBe(true);
+    expect(result!.breaking_reasons).toContain("Removed property 'config.removedNested' from schema 'ParentSchema'");
+    expect(result!.breaking_reasons).toContain(
+      "Property 'config.mutatedNested' in schema 'ParentSchema' changed type from 'string' to 'integer'"
+    );
+    expect(result!.breaking_reasons).toContain(
+      "Property 'config.lockedNested' in schema 'ParentSchema' was made read-only / immutable"
+    );
+    expect(result!.breaking_reasons).toContain(
+      "Property 'config.addedReadOnlyNested' in schema 'ParentSchema' was made read-only / immutable"
+    );
+    expect(result!.breaking_reasons).toContain(
+      "Removed enum value 'SAFE' from schema property 'config.mode (schema: ParentSchema)'"
+    );
+    expect(result!.breaking_reasons).toContain(
+      "Array property 'config.itemsList' in schema 'ParentSchema' changed item type from 'string' to 'integer'"
+    );
+  });
+
+  it('flags schema property required=true additions/mutations on existing schemas only (b8d1b75a)', () => {
+    const old = {
+      schemas: {
+        ExistingRequest: {
+          properties: {
+            existingOpt: { type: 'string', required: false },
+          },
+        },
+      },
+    };
+    const next = {
+      schemas: {
+        ExistingRequest: {
+          properties: {
+            existingOpt: { type: 'string', required: true },
+            newlyRequired: { type: 'string', required: true },
+          },
+        },
+        BrandNewRequest: {
+          properties: {
+            id: { type: 'string', required: true },
+          },
+        },
+      },
+    };
+
+    const result = diff_preprocessor.buildStructuredDiff(
+      'test.v1.json',
+      JSON.stringify(old),
+      JSON.stringify(next)
+    );
+
+    expect(result).not.toBeNull();
+    expect(result!.is_breaking).toBe(true);
+    expect(result!.breaking_reasons).toContain(
+      "Property 'existingOpt' in schema 'ExistingRequest' was changed to strictly required"
+    );
+    expect(result!.breaking_reasons).toContain(
+      "Property 'newlyRequired' in schema 'ExistingRequest' was changed to strictly required"
+    );
+    expect(
+      result!.breaking_reasons.some((r: string) => r.includes('BrandNewRequest'))
+    ).toBe(false);
+  });
+
+  it('prioritizes method/parameter paths above lower-signal paths when capping at MAX_ENTRIES_PER_CATEGORY (74154f28)', () => {
+    const oldProps: Record<string, any> = {};
+    const nextProps: Record<string, any> = {};
+    for (let i = 0; i < 70; i++) {
+      const name = `aaaField${String(i).padStart(2, '0')}`;
+      nextProps[name] = { format: 'custom', deprecated: false };
+    }
+    const old = {
+      resources: {
+        jobs: {
+          methods: {
+            query: {
+              httpMethod: 'POST',
+              parameters: { keep: { type: 'string' } },
+            },
+          },
+        },
+      },
+      schemas: {
+        BigSchema: { properties: oldProps },
+      },
+    };
+    const next = {
+      resources: {
+        jobs: {
+          methods: {
+            query: {
+              httpMethod: 'POST',
+              parameters: {
+                keep: { type: 'string' },
+                zzzMandatory: { type: 'string', required: true },
+              },
+            },
+          },
+        },
+      },
+      schemas: {
+        BigSchema: { properties: nextProps },
+      },
+    };
+
+    const result = diff_preprocessor.buildStructuredDiff(
+      'test.v1.json',
+      JSON.stringify(old),
+      JSON.stringify(next)
+    );
+
+    expect(result).not.toBeNull();
+    expect(result!.added.length).toBe(diff_preprocessor.MAX_ENTRIES_PER_CATEGORY);
+    expect(
+      result!.added.some(
+        (e: any) => e.path === 'resources.jobs.methods.query.parameters.zzzMandatory.required'
+      )
+    ).toBe(true);
+  });
 });
 

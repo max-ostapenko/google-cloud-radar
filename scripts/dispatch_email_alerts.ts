@@ -5,6 +5,7 @@
  * Supports Resend API with idempotency tracking in Cloud Firestore.
  */
 
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -42,6 +43,26 @@ export interface SendEmailOptions {
   htmlContent: string;
   textContent?: string;
   allowDevFallback?: boolean;
+  maxRetries?: number;
+  baseDelayMs?: number;
+}
+
+export const EMAIL_SEND_PACING_MS = 250;
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function buildEmailIdempotencyHash(email: string): string {
+  return crypto.createHash('sha256').update(email.trim().toLowerCase()).digest('hex').slice(0, 24);
+}
+
+export function buildAlertDocId(slug: string, email: string): string {
+  return `${slug}_${buildEmailIdempotencyHash(email)}`;
+}
+
+export function buildLegacyEmailKey(email: string): string {
+  return email.replace(/[^a-zA-Z0-9]/g, '_');
 }
 
 export function escapeHtml(str: string): string {
@@ -74,6 +95,8 @@ export async function sendResendEmail(options: SendEmailOptions): Promise<boolea
     htmlContent,
     textContent,
     allowDevFallback = false,
+    maxRetries = 3,
+    baseDelayMs = 1000,
   } = options;
 
   const headers: Record<string, string> = {
@@ -99,41 +122,67 @@ export async function sendResendEmail(options: SendEmailOptions): Promise<boolea
     payload.text = textContent;
   }
 
-  try {
-    const res = await fetch(RESEND_API_URL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-    });
-
-    if (res.ok) {
-      const data: any = await res.json().catch(() => ({}));
-      console.log(`✓ Email successfully sent to ${toEmail} (Resend ID: ${data.id || 'N/A'})`);
-      return true;
-    }
-
-    const errorMsg = await res.text();
-    if (
-      allowDevFallback &&
-      (errorMsg.toLowerCase().includes('domain') || res.status === 403) &&
-      fromEmail !== FALLBACK_SANDBOX_FROM_EMAIL
-    ) {
-      console.warn(
-        `[DEV ENV] Domain in '${fromEmail}' is not yet verified in Resend. Retrying with '${FALLBACK_SANDBOX_FROM_EMAIL}' sandbox domain...`
-      );
-      return sendResendEmail({
-        ...options,
-        fromEmail: FALLBACK_SANDBOX_FROM_EMAIL,
-        allowDevFallback: false,
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await fetch(RESEND_API_URL, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
       });
-    }
 
-    console.error(`✗ Resend API HTTP error sending to ${toEmail} (${res.status}): ${errorMsg}`);
-    return false;
-  } catch (err: any) {
-    console.error(`✗ Failed to send email to ${toEmail}: ${err.message}`);
-    return false;
+      if (res.ok) {
+        const data: any = await res.json().catch(() => ({}));
+        console.log(`✓ Email successfully sent to ${toEmail} (Resend ID: ${data.id || 'N/A'})`);
+        return true;
+      }
+
+      const errorMsg = await res.text();
+      if (
+        allowDevFallback &&
+        (errorMsg.toLowerCase().includes('domain') || res.status === 403) &&
+        fromEmail !== FALLBACK_SANDBOX_FROM_EMAIL
+      ) {
+        console.warn(
+          `[DEV ENV] Domain in '${fromEmail}' is not yet verified in Resend. Retrying with '${FALLBACK_SANDBOX_FROM_EMAIL}' sandbox domain...`
+        );
+        return sendResendEmail({
+          ...options,
+          fromEmail: FALLBACK_SANDBOX_FROM_EMAIL,
+          allowDevFallback: false,
+        });
+      }
+
+      if ((res.status === 429 || res.status >= 500) && attempt < maxRetries) {
+        const retryAfterHeader = res.headers?.get?.('retry-after');
+        const parsedRetryAfter = retryAfterHeader ? Number(retryAfterHeader) : NaN;
+        const waitMs =
+          Number.isFinite(parsedRetryAfter) && parsedRetryAfter > 0
+            ? Math.min(15000, Math.round(parsedRetryAfter * 1000))
+            : baseDelayMs * 2 ** attempt;
+        console.warn(
+          `⚠ Resend API HTTP ${res.status} for ${toEmail} (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${waitMs}ms...`
+        );
+        await sleep(waitMs);
+        continue;
+      }
+
+      console.error(`✗ Resend API HTTP error sending to ${toEmail} (${res.status}): ${errorMsg}`);
+      return false;
+    } catch (err: any) {
+      if (attempt < maxRetries) {
+        const waitMs = baseDelayMs * 2 ** attempt;
+        console.warn(
+          `⚠ Resend network error for ${toEmail} (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${waitMs}ms: ${err.message}`
+        );
+        await sleep(waitMs);
+        continue;
+      }
+      console.error(`✗ Failed to send email to ${toEmail}: ${err.message}`);
+      return false;
+    }
   }
+
+  return false;
 }
 
 export function formatAlertSubject(changes: Array<Record<string, any>>): string {
@@ -399,7 +448,7 @@ export async function fetchFirestoreSubscribers(
   databaseId: string = DEFAULT_FIRESTORE_DB
 ): Promise<Subscriber[]> {
   try {
-    const firestore = new Firestore({ projectId, databaseId: databaseId || '(default)' });
+    const firestore = new Firestore({ projectId, databaseId: databaseId || DEFAULT_FIRESTORE_DB });
     const snapshot = await firestore.collection('users').get();
     const subscribers: Subscriber[] = [];
     for (const doc of snapshot.docs) {
@@ -435,10 +484,23 @@ export async function hasAlertBeenSent(
   slug: string,
   email: string
 ): Promise<boolean> {
-  const docId = `${slug}_${email.replace(/[^a-zA-Z0-9]/g, '_')}`;
+  const docId = buildAlertDocId(slug, email);
   try {
     const doc = await firestore.collection('sent_alerts').doc(docId).get();
-    return doc.exists;
+    if (doc.exists) {
+      return true;
+    }
+
+    const legacyDocId = `${slug}_${buildLegacyEmailKey(email)}`;
+    if (legacyDocId !== docId) {
+      const legacyDoc = await firestore.collection('sent_alerts').doc(legacyDocId).get();
+      if (legacyDoc.exists) {
+        const recordedEmail = String(legacyDoc.data()?.email || '').trim().toLowerCase();
+        return recordedEmail === email.trim().toLowerCase();
+      }
+    }
+
+    return false;
   } catch {
     return false;
   }
@@ -449,7 +511,7 @@ export async function recordAlertSent(
   slug: string,
   email: string
 ): Promise<void> {
-  const docId = `${slug}_${email.replace(/[^a-zA-Z0-9]/g, '_')}`;
+  const docId = buildAlertDocId(slug, email);
   try {
     await firestore.collection('sent_alerts').doc(docId).set(
       {
@@ -600,9 +662,10 @@ export async function runDispatchEmailAlerts(options?: {
     return;
   }
 
-  const firestore = new Firestore({ projectId, databaseId: databaseId || '(default)' });
+  const firestore = new Firestore({ projectId, databaseId: databaseId || DEFAULT_FIRESTORE_DB });
   let totalEmailsSent = 0;
   let totalChangesAlerted = 0;
+  let hasAttemptedSend = false;
   const isDev = isDevEnvironment();
 
   for (const sub of subscribers) {
@@ -639,6 +702,11 @@ export async function runDispatchEmailAlerts(options?: {
       );
       continue;
     }
+
+    if (hasAttemptedSend) {
+      await sleep(EMAIL_SEND_PACING_MS);
+    }
+    hasAttemptedSend = true;
 
     const textBody = renderBreakingChangesEmailText(eligibleChanges);
     const sent = await sendResendEmail({

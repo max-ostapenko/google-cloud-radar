@@ -12,6 +12,8 @@ import { getCategoryForService } from './taxonomy.ts';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+export const DEFAULT_FIRESTORE_DB = 'radar';
+
 export function slugify(text: string): string {
   return text
     .trim()
@@ -69,6 +71,9 @@ export function parseJsonChangeFile(filePath: string): Record<string, any> {
     target_paths: targetPaths,
   };
 
+  if (Array.isArray(data.breaking_reasons) && data.breaking_reasons.length > 0) {
+    doc.breaking_reasons = data.breaking_reasons.map((r: any) => String(r));
+  }
   if (data.official_release_date) {
     doc.official_release_date = String(data.official_release_date);
   }
@@ -105,14 +110,16 @@ export async function seedFirestore(options: {
     return 0;
   }
 
+  const databaseId = options.databaseId || DEFAULT_FIRESTORE_DB;
+
   console.log(
-    `🚀 Starting Firestore migration to project '${options.projectId}' (database: '${options.databaseId || '(default)'}')...`
+    `🚀 Starting Firestore migration to project '${options.projectId}' (database: '${databaseId}')...`
   );
   console.log(`📄 Found ${files.length} change records in ${targetDir}/\n`);
 
   const firestore = new Firestore({
     projectId: options.projectId,
-    databaseId: options.databaseId || '(default)',
+    databaseId,
   });
 
   let successCount = 0;
@@ -149,7 +156,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const projectIdx = args.indexOf('--project');
   const projectId = projectIdx !== -1 ? args[projectIdx + 1] : process.env.GCP_PROJECT || 'gcp-cloud-radar';
   const databaseIdx = args.indexOf('--database');
-  const databaseId = databaseIdx !== -1 ? args[databaseIdx + 1] : 'radar';
+  const databaseId = databaseIdx !== -1 ? args[databaseIdx + 1] : DEFAULT_FIRESTORE_DB;
   const dataDirIdx = args.indexOf('--data-dir');
   const dataDir = dataDirIdx !== -1 ? args[dataDirIdx + 1] : undefined;
 

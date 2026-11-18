@@ -92,6 +92,52 @@ export function getProjectId(): string | null {
   return null;
 }
 
+export function isRetryableGeminiError(err: any): boolean {
+  if (!err) return false;
+  const status = Number(err.status ?? err.statusCode ?? err.code);
+  if ([429, 500, 502, 503, 504].includes(status)) {
+    return true;
+  }
+  const combined = `${err.code ?? ''} ${err.status ?? ''} ${err.message ?? ''}`.toUpperCase();
+  const retryableTokens = [
+    'RESOURCE_EXHAUSTED',
+    'UNAVAILABLE',
+    'DEADLINE_EXCEEDED',
+    'ECONNRESET',
+    'ETIMEDOUT',
+    'FETCH FAILED',
+    'RATE LIMIT',
+    'TIMEOUT',
+    '429',
+    '503',
+  ];
+  return retryableTokens.some((tok) => combined.includes(tok));
+}
+
+export async function callWithRetry<T>(
+  fn: () => Promise<T>,
+  options?: { maxRetries?: number; baseDelayMs?: number }
+): Promise<T> {
+  const maxRetries = options?.maxRetries ?? 3;
+  const baseDelayMs = options?.baseDelayMs ?? 1000;
+
+  let lastError: any;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      lastError = err;
+      if (attempt === maxRetries || !isRetryableGeminiError(err)) {
+        throw err;
+      }
+      const delayMs = baseDelayMs * 2 ** attempt;
+      console.warn(`Transient Gemini error (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delayMs}ms: ${err.message}`);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+  throw lastError;
+}
+
 export async function analyzeApiDiff(
   diff: Record<string, any>,
   existingTodayContent?: string | null,
@@ -133,16 +179,18 @@ export async function analyzeApiDiff(
   console.info(`Sending diff for ${apiName} to Gemini (${MODEL}) ...`);
 
   try {
-    const response = await client.models.generateContent({
-      model: MODEL,
-      contents: userMessage,
-      config: {
-        systemInstruction: systemPrompt,
-        responseMimeType: 'application/json',
-        responseSchema: INSIGHT_RESPONSE_SCHEMA,
-        temperature: 0.3,
-      },
-    });
+    const response = await callWithRetry(() =>
+      client.models.generateContent({
+        model: MODEL,
+        contents: userMessage,
+        config: {
+          systemInstruction: systemPrompt,
+          responseMimeType: 'application/json',
+          responseSchema: INSIGHT_RESPONSE_SCHEMA,
+          temperature: 0.3,
+        },
+      })
+    );
 
     const raw = (response.text || '').trim();
     if (!raw) return null;

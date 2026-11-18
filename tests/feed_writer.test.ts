@@ -283,4 +283,29 @@ describe('compareRevisions', () => {
       if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
     }
   });
+
+  it('persists breaking_reasons and diff_signature across writeInsight, index, and seed_prod_firestore (8de191f3 / 47c5b7f9)', () => {
+    const insight = makeInsight('bigquery.v2', 8, true, {
+      breaking_reasons: ["Removed parameter 'maxResults' from method"],
+      diff_signature: 'deadbeef1234567890abcdef',
+    });
+
+    const slug = feed_writer.writeInsight(insight, '2026-04-17', TMP_DATA_DIR);
+    expect(slug).toBe('2026-04-17-bigquery-v2');
+
+    const jsonPath = path.join(TMP_DATA_DIR, `changes/${slug}.json`);
+    const doc = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+    expect(doc.breaking_reasons).toEqual(["Removed parameter 'maxResults' from method"]);
+    expect(doc.diff_signature).toBe('deadbeef1234567890abcdef');
+
+    const index = JSON.parse(fs.readFileSync(path.join(TMP_DATA_DIR, 'index.json'), 'utf-8'));
+    expect(index[0].breaking_reasons).toEqual(["Removed parameter 'maxResults' from method"]);
+
+    const [, recentHistory] = feed_writer.getRecentFeedEntries('bigquery.v2', '2026-04-18', 3, TMP_DATA_DIR);
+    expect(recentHistory[0].diff_signature).toBe('deadbeef1234567890abcdef');
+    expect(recentHistory[0].breaking).toBe(true);
+
+    const seeded = seed_prod_firestore.parseJsonChangeFile(jsonPath);
+    expect(seeded.breaking_reasons).toEqual(["Removed parameter 'maxResults' from method"]);
+  });
 });

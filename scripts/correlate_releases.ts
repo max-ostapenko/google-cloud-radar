@@ -19,8 +19,110 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+export const DEFAULT_FIRESTORE_DB = 'radar';
 export const ARCHIVE_RETENTION_DAYS = 180;
+export const RELEASE_PRIOR_GRACE_DAYS = 2;
+
+export const GENERIC_METHOD_VERBS = new Set([
+  'get',
+  'list',
+  'create',
+  'insert',
+  'update',
+  'patch',
+  'delete',
+  'remove',
+  'cancel',
+  'export',
+  'import',
+  'search',
+  'submit',
+  'enable',
+  'disable',
+  'resume',
+  'deploy',
+  'verify',
+  'revoke',
+  'invoke',
+  'notify',
+  'lookup',
+  'repair',
+  'resize',
+  'rotate',
+  'revert',
+  'commit',
+  'finish',
+  'attach',
+  'detach',
+  'ingest',
+  'render',
+  'report',
+  'sample',
+  'upload',
+  'stream',
+  'access',
+  'assign',
+  'accept',
+  'reject',
+  'rename',
+  'expand',
+  'extend',
+  'filter',
+  'format',
+  'record',
+  'return',
+  'select',
+  'switch',
+  'toggle',
+  'unlock',
+  'mutate',
+  'modify',
+  'append',
+]);
+
+export const GENERIC_RESOURCE_SEGMENTS = new Set([
+  'projects',
+  'locations',
+  'operations',
+  'resources',
+  'services',
+  'methods',
+  'v1',
+  'v2',
+  'v1beta1',
+  'v1alpha',
+]);
+
 const _FEED_CACHE: Record<string, any[]> = {};
+
+export function parseFeedDate(rawDate: unknown): string {
+  if (!rawDate) return '';
+  const str = String(rawDate).trim();
+  if (!str) return '';
+  const parsed = new Date(str);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toISOString().slice(0, 10);
+  }
+  const isoMatch = str.match(/(\d{4}-\d{2}-\d{2})/);
+  return isoMatch ? isoMatch[1] : '';
+}
+
+function subtractUtcDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr.slice(0, 10) + 'T00:00:00Z');
+  if (Number.isNaN(d.getTime())) return dateStr;
+  d.setUTCDate(d.getUTCDate() - days);
+  return d.toISOString().slice(0, 10);
+}
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function hasWordBoundaryMatch(text: string, token: string): boolean {
+  if (!token) return false;
+  const re = new RegExp(`(?<![a-z0-9_])${escapeRegex(token)}(?![a-z0-9_])`, 'i');
+  return re.test(text);
+}
 
 export function calculateLeadTime(canaryDateStr: string, gaDateStr: string): number {
   try {
@@ -72,7 +174,7 @@ export function parseFeedXml(xmlContent: string): any[] {
       }
 
       const rawDate = item.updated || item.published || '';
-      const dateStr = String(rawDate).slice(0, 10);
+      const dateStr = parseFeedDate(rawDate);
       const content = typeof item.content === 'string' ? item.content : item.content?.['#text'] || item.summary || '';
 
       if (title || content) {
@@ -95,14 +197,7 @@ export function parseFeedXml(xmlContent: string): any[] {
     for (const item of rawItems) {
       const title = typeof item.title === 'string' ? item.title : item.title?.['#text'] || '';
       const url = typeof item.link === 'string' ? item.link : item.link?.['#text'] || item.guid?.['#text'] || '';
-      let dateStr = '';
-      if (item.pubDate) {
-        try {
-          dateStr = new Date(item.pubDate).toISOString().slice(0, 10);
-        } catch {
-          dateStr = String(item.pubDate).slice(0, 10);
-        }
-      }
+      const dateStr = parseFeedDate(item.pubDate);
       const content = typeof item.description === 'string' ? item.description : item.description?.['#text'] || '';
 
       entries.push({
@@ -122,26 +217,46 @@ export function matchChangeAgainstReleases(changeMeta: Record<string, any>, rele
   const firstDetected = String(
     changeMeta.first_detected || changeMeta.date || changeMeta.first_detected_at || ''
   ).slice(0, 10);
+  const minDate = firstDetected ? subtractUtcDays(firstDetected, RELEASE_PRIOR_GRACE_DAYS) : '';
 
   const extractedMethods: string[] = (changeMeta.extracted_methods || []).map((m: string) => m.toLowerCase());
-  const methodLeafs = extractedMethods.map((m) => m.split('.').pop() || m);
 
   for (const release of releaseEntries) {
     const relDate = release.date;
-    if (!relDate || (firstDetected && relDate < firstDetected)) {
-      continue; // Skip releases published strictly before canary detection
+    if (!relDate || (minDate && relDate < minDate)) {
+      continue; // Skip releases older than the prior grace window
     }
 
     const relText = `${release.title} ${release.content}`.toLowerCase();
 
-    // Direct RPC / Method match
-    for (let i = 0; i < extractedMethods.length; i++) {
-      const fullMethod = extractedMethods[i];
-      const leaf = methodLeafs[i];
-      if (fullMethod && relText.includes(fullMethod)) {
+    // Direct RPC / Method match with word boundaries & resource qualification
+    for (const fullMethod of extractedMethods) {
+      if (!fullMethod) continue;
+
+      if (hasWordBoundaryMatch(relText, fullMethod)) {
         return release;
       }
-      if (leaf && leaf.length >= 6 && relText.includes(leaf)) {
+
+      const segments = fullMethod.split('.').filter(Boolean);
+      const leaf = segments[segments.length - 1] || fullMethod;
+
+      if (segments.length >= 2) {
+        const resource = segments[segments.length - 2];
+        const resourcePair = `${resource}.${leaf}`;
+        if (hasWordBoundaryMatch(relText, resourcePair)) {
+          return release;
+        }
+        if (
+          resource.length >= 5 &&
+          !GENERIC_RESOURCE_SEGMENTS.has(resource) &&
+          hasWordBoundaryMatch(relText, resource) &&
+          hasWordBoundaryMatch(relText, leaf)
+        ) {
+          return release;
+        }
+      }
+
+      if (leaf.length >= 6 && !GENERIC_METHOD_VERBS.has(leaf) && hasWordBoundaryMatch(relText, leaf)) {
         return release;
       }
     }
@@ -339,7 +454,7 @@ export async function runCorrelation(options: {
     try {
       firestore = new Firestore({
         projectId: options.projectId,
-        databaseId: options.databaseId || '(default)',
+        databaseId: options.databaseId || DEFAULT_FIRESTORE_DB,
       });
     } catch (err: any) {
       console.warn(`Could not initialise Firestore: ${err.message}`);

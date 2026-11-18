@@ -184,4 +184,74 @@ describe('Correlate Releases', () => {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
+
+  it('handles invalid RSS pubDate safely without storing sliced garbage (e35c9304)', () => {
+    const rssXml = `<?xml version="1.0" encoding="utf-8"?>
+    <rss version="2.0">
+      <channel>
+        <title>Test Feed</title>
+        <item>
+          <title>Bad Date Release</title>
+          <link>https://cloud.google.com/release-notes#bad</link>
+          <pubDate>Not-A-Valid-Timestamp</pubDate>
+          <description>Added feature X.</description>
+        </item>
+        <item>
+          <title>Valid RFC2822 Date Release</title>
+          <link>https://cloud.google.com/release-notes#ok</link>
+          <pubDate>Tue, 15 Sep 2026 10:00:00 GMT</pubDate>
+          <description>Added feature Y.</description>
+        </item>
+      </channel>
+    </rss>`;
+
+    const entries = correlate_releases.parseFeedXml(rssXml);
+    expect(entries).toHaveLength(2);
+    expect(entries[0].date).toBe('');
+    expect(entries[1].date).toBe('2026-09-15');
+  });
+
+  it('matches release notes within 2-day prior grace window and avoids generic verb false positives (9a5ff9bb / 26c22bfd / 0226b22a)', () => {
+    // 2-day prior grace window
+    const changeMetaPrior = {
+      first_detected: '2026-08-10',
+      extracted_methods: ['projects.locations.reasoningEngines.sessions.compact'],
+    };
+    const withinGrace = [
+      { title: 'Session compact GA', date: '2026-08-08', content: 'Added compact method.' },
+    ];
+    const outsideGrace = [
+      { title: 'Session compact GA', date: '2026-08-05', content: 'Added compact method.' },
+    ];
+    expect(correlate_releases.matchChangeAgainstReleases(changeMetaPrior, withinGrace)).not.toBeNull();
+    expect(correlate_releases.matchChangeAgainstReleases(changeMetaPrior, outsideGrace)).toBeNull();
+
+    // Generic verb 'insert' / 'update' / 'delete' must NOT false-match unrelated release notes
+    const genericVerbMeta = {
+      first_detected: '2026-08-01',
+      extracted_methods: ['projects.datasets.tables.insert'],
+    };
+    const unrelatedNote = [
+      {
+        title: 'BigQuery SQL insert optimization',
+        date: '2026-08-05',
+        content: 'You can now delete or update rows faster after insert operations.',
+      },
+    ];
+    expect(correlate_releases.matchChangeAgainstReleases(genericVerbMeta, unrelatedNote)).toBeNull();
+
+    // Standard 3-5 char CRUD methods like buckets.patch DO match when resource + verb appear
+    const crudMeta = {
+      first_detected: '2026-08-01',
+      extracted_methods: ['projects.buckets.patch'],
+    };
+    const crudNote = [
+      {
+        title: 'Cloud Storage buckets.patch supports new retention lock',
+        date: '2026-08-04',
+        content: 'The buckets patch endpoint now supports retention policies.',
+      },
+    ];
+    expect(correlate_releases.matchChangeAgainstReleases(crudMeta, crudNote)).not.toBeNull();
+  });
 });
