@@ -55,7 +55,9 @@
     "schemas.table.properties.policymember.description",
     "schemas.table.properties.policymember.readonly"
   ],
-  "status": "canary",
-  "lead_time_days": null,
-  "generated_at": "2026-11-10T17:34:35.284Z"
+  "status": "released",
+  "lead_time_days": 8,
+  "generated_at": "2026-11-10T17:34:35.284Z",
+  "official_release_date": "2026-11-18",
+  "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#November_18_2026"
 }
