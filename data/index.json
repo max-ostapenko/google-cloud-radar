@@ -1,5 +1,31 @@
 [
   {
+    "id": "2026-11-18-bigqueryreservation-v1",
+    "date": "2026-11-18",
+    "api": "bigqueryreservation.v1",
+    "service": "BigQuery Reservation",
+    "title": "Filter BigQuery Reservations by Group",
+    "summary": "The BigQuery Reservation API's `projects.locations.reservations.list` method now supports an optional `filter` parameter. This allows developers to retrieve reservations specifically by their associated reservation group.",
+    "impact": "low",
+    "breaking": false,
+    "interesting_score": 5,
+    "tags": [
+      "Reservations",
+      "Filtering"
+    ],
+    "extracted_methods": [
+      "projects.locations.reservations.list"
+    ],
+    "target_paths": [
+      "resources.projects.resources.locations.resources.reservations.methods.list.parameters.filter.description",
+      "resources.projects.resources.locations.resources.reservations.methods.list.parameters.filter.location",
+      "resources.projects.resources.locations.resources.reservations.methods.list.parameters.filter.type"
+    ],
+    "status": "canary",
+    "lead_time_days": null,
+    "generated_at": "2026-11-18T02:14:56.004Z"
+  },
+  {
     "id": "2026-11-17-androidpublisher-v3",
     "date": "2026-11-17",
     "api": "androidpublisher.v3",
@@ -4865,9 +4891,11 @@
       "schemas.vectorsearchindexingstats.properties.indexname.type",
       "schemas.vectorsearchindexingstats.type"
     ],
-    "status": "canary",
-    "lead_time_days": null,
-    "generated_at": "2026-11-06T00:54:47.063Z"
+    "status": "released",
+    "lead_time_days": 11,
+    "generated_at": "2026-11-06T00:54:47.063Z",
+    "official_release_date": "2026-11-17",
+    "official_release_notes_url": "https://docs.cloud.google.com/bigquery/docs/release-notes#November_17_2026"
   },
   {
     "id": "2026-11-06-aiplatform-v1beta1",

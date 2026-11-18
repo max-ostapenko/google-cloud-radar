@@ -1,0 +1,27 @@
+{
+  "id": "2026-11-18-bigqueryreservation-v1",
+  "date": "2026-11-18",
+  "api": "bigqueryreservation.v1",
+  "service": "BigQuery Reservation",
+  "title": "Filter BigQuery Reservations by Group",
+  "summary": "The BigQuery Reservation API's `projects.locations.reservations.list` method now supports an optional `filter` parameter. This allows developers to retrieve reservations specifically by their associated reservation group.",
+  "details": "You can now refine your reservation listings using the new `filter` query parameter on `projects.locations.reservations.list`. This optional string parameter currently supports filtering by `reservation_group`. For example, you can use `filter=\"reservation_group=my-group\"` to fetch all reservations belonging to 'my-group'. This addition provides more granular control when managing your BigQuery reservations programmatically.",
+  "impact": "low",
+  "breaking": false,
+  "interesting_score": 5,
+  "tags": [
+    "Reservations",
+    "Filtering"
+  ],
+  "extracted_methods": [
+    "projects.locations.reservations.list"
+  ],
+  "target_paths": [
+    "resources.projects.resources.locations.resources.reservations.methods.list.parameters.filter.description",
+    "resources.projects.resources.locations.resources.reservations.methods.list.parameters.filter.location",
+    "resources.projects.resources.locations.resources.reservations.methods.list.parameters.filter.type"
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-18T02:14:56.004Z"
+}
