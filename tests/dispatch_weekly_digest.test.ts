@@ -7,8 +7,10 @@ import {
   renderWeeklyDigestText,
   filterChangesForSubscriber,
   loadRecentChanges,
+  buildWeeklyDispatchId,
+  hasWeeklyDigestBeenSent,
 } from '../scripts/dispatch_weekly_digest.ts';
-import { sendResendEmail } from '../scripts/dispatch_email_alerts.ts';
+import { buildLegacyEmailKey, sendResendEmail } from '../scripts/dispatch_email_alerts.ts';
 
 describe('dispatch_weekly_digest', () => {
   const sampleChanges = [
@@ -167,5 +169,32 @@ describe('dispatch_weekly_digest', () => {
     expect(text).toContain('https://google-cloud-radar.com/changes/2026-08-28%2Fbigquery%20v2');
     expect(html).toContain('affected API methods');
     expect(html).not.toContain('new API methods');
+  });
+
+  it('builds collision-free weekly dispatch IDs and checks legacy fallback email (6d6de126)', async () => {
+    const id1 = buildWeeklyDispatchId(2026, 46, 'user.name@example.com');
+    const id2 = buildWeeklyDispatchId(2026, 46, 'user_name@example.com');
+    expect(id1).not.toBe(id2);
+
+    const legacyId = `weekly_2026_w46_${buildLegacyEmailKey('user.name@example.com')}`;
+    const mockFirestore: any = {
+      collection: () => ({
+        doc: (docId: string) => ({
+          get: async () => {
+            if (docId === legacyId) {
+              return { exists: true, data: () => ({ recipient_email: 'user.name@example.com' }) };
+            }
+            return { exists: false };
+          },
+        }),
+      }),
+    };
+
+    expect(
+      await hasWeeklyDigestBeenSent(mockFirestore, id1, 'user.name@example.com', legacyId)
+    ).toBe(true);
+    expect(
+      await hasWeeklyDigestBeenSent(mockFirestore, id2, 'user_name@example.com', legacyId)
+    ).toBe(false);
   });
 });

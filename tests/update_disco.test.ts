@@ -331,5 +331,30 @@ describe('Update Disco', () => {
 
       expect(JSON.stringify(sortedA)).toBe(JSON.stringify(sortedB));
     });
+
+    it('uses nullish checks so falsy name="" and id=0 keys are preserved in sort order (a81b556b)', () => {
+      const inputA = {
+        items: [
+          { id: 10, extra: 'ten' },
+          { id: 0, extra: 'zero' },
+          { name: '', extra: 'empty-name' },
+        ],
+      };
+      const inputB = {
+        items: [
+          { name: '', extra: 'empty-name' },
+          { id: 10, extra: 'ten' },
+          { id: 0, extra: 'zero' },
+        ],
+      };
+
+      const sortedA = update_disco.sortKeys(inputA);
+      const sortedB = update_disco.sortKeys(inputB);
+
+      expect(sortedA.items).toEqual(sortedB.items);
+      expect(sortedA.items[0]).toEqual({ name: '', extra: 'empty-name' });
+      expect(sortedA.items[1]).toEqual({ id: 0, extra: 'zero' });
+      expect(sortedA.items[2]).toEqual({ id: 10, extra: 'ten' });
+    });
   });
 });

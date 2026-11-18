@@ -29,6 +29,18 @@ export function deterministicStringify(val: any): string {
   return '{' + keys.map((k) => JSON.stringify(k) + ':' + deterministicStringify(val[k])).join(',') + '}';
 }
 
+const ARRAY_OBJECT_ID_FIELDS = ['name', 'id', 'location', 'endpointUrl'] as const;
+
+export function getArrayObjectSortKey(obj: Record<string, any>): string {
+  for (const field of ARRAY_OBJECT_ID_FIELDS) {
+    const val = obj[field];
+    if (val !== undefined && val !== null) {
+      return String(val);
+    }
+  }
+  return deterministicStringify(obj);
+}
+
 export function sortKeys(value: any, keyName?: string): any {
   if (Array.isArray(value)) {
     const mapped = value.map((item) => sortKeys(item));
@@ -42,9 +54,9 @@ export function sortKeys(value: any, keyName?: string): any {
     // Sort arrays of objects deterministically by identifier or serialized content
     if (mapped.every((x) => x !== null && typeof x === 'object' && !Array.isArray(x))) {
       return [...mapped].sort((a, b) => {
-        const keyA = a.name || a.id || a.location || a.endpointUrl || deterministicStringify(a);
-        const keyB = b.name || b.id || b.location || b.endpointUrl || deterministicStringify(b);
-        return String(keyA).localeCompare(String(keyB));
+        const keyCmp = getArrayObjectSortKey(a).localeCompare(getArrayObjectSortKey(b));
+        if (keyCmp !== 0) return keyCmp;
+        return deterministicStringify(a).localeCompare(deterministicStringify(b));
       });
     }
     return mapped;

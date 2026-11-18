@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
+  computeDiffSignature,
   extractMethodAndPathMetadata,
   isDuplicateDiff,
 } from '../scripts/diff_to_feed.ts';
-import { parseModelJson } from '../scripts/llm_client.ts';
+import { callWithRetry, isRetryableGeminiError, parseModelJson } from '../scripts/llm_client.ts';
 
 describe('Diff To Feed Deduplication', () => {
   it('extract_method_and_path_metadata', () => {
@@ -140,6 +141,83 @@ describe('Diff To Feed Deduplication', () => {
     };
     const [isDup] = isDuplicateDiff(diff, history);
     expect(isDup).toBe(false);
+  });
+
+  it('does not suppress rollbacks or distinct mutations with identical method/path metadata (47c5b7f9)', () => {
+    const initialDiff = {
+      api: 'bigquery.v2',
+      added: [{ path: 'resources.jobs.methods.get.parameters.trace.type', value: 'string' }],
+      removed: [],
+      modified: [],
+      extracted_methods: ['jobs.get'],
+      target_paths: ['resources.jobs.methods.get.parameters.trace.type'],
+    };
+    const initialSig = computeDiffSignature(initialDiff);
+    expect(initialSig).toBeTruthy();
+
+    const history = [
+      {
+        slug: '2026-10-01-bigquery-v2',
+        date: '2026-10-01',
+        extracted_methods: ['jobs.get'],
+        target_paths: ['resources.jobs.methods.get.parameters.trace.type'],
+        diff_signature: initialSig,
+        breaking: false,
+      },
+    ];
+
+    // Rollback (removal) on the exact same method + path must NOT be suppressed
+    const rollbackDiff = {
+      api: 'bigquery.v2',
+      added: [],
+      removed: [{ path: 'resources.jobs.methods.get.parameters.trace.type', old_value: 'string' }],
+      modified: [],
+      is_breaking: true,
+      extracted_methods: ['jobs.get'],
+      target_paths: ['resources.jobs.methods.get.parameters.trace.type'],
+    };
+    expect(isDuplicateDiff(rollbackDiff, history)[0]).toBe(false);
+
+    // Rollback against legacy history without diff_signature must also NOT be suppressed
+    const legacyHistory = [
+      {
+        slug: '2026-10-01-bigquery-v2',
+        date: '2026-10-01',
+        extracted_methods: ['jobs.get'],
+        target_paths: ['resources.jobs.methods.get.parameters.trace.type'],
+        breaking: false,
+      },
+    ];
+    expect(isDuplicateDiff(rollbackDiff, legacyHistory)[0]).toBe(false);
+
+    // Exact same diff signature IS suppressed
+    expect(isDuplicateDiff(initialDiff, history)[0]).toBe(true);
+  });
+});
+
+describe('callWithRetry and isRetryableGeminiError (ba992b7f)', () => {
+  it('identifies transient status codes and network errors as retryable', () => {
+    expect(isRetryableGeminiError({ status: 429, message: 'Too Many Requests' })).toBe(true);
+    expect(isRetryableGeminiError({ status: 503, message: 'Service Unavailable' })).toBe(true);
+    expect(isRetryableGeminiError({ code: 'ETIMEDOUT', message: 'connect ETIMEDOUT' })).toBe(true);
+    expect(isRetryableGeminiError({ status: 400, message: 'Invalid argument' })).toBe(false);
+  });
+
+  it('retries transient failures and succeeds, while failing fast on 400', async () => {
+    const transientFn = vi
+      .fn()
+      .mockRejectedValueOnce({ status: 503, message: 'UNAVAILABLE' })
+      .mockResolvedValueOnce('ok');
+
+    const res = await callWithRetry(transientFn, { maxRetries: 2, baseDelayMs: 1 });
+    expect(res).toBe('ok');
+    expect(transientFn).toHaveBeenCalledTimes(2);
+
+    const badReqFn = vi.fn().mockRejectedValue({ status: 400, message: 'Bad Request' });
+    await expect(callWithRetry(badReqFn, { maxRetries: 2, baseDelayMs: 1 })).rejects.toMatchObject({
+      status: 400,
+    });
+    expect(badReqFn).toHaveBeenCalledTimes(1);
   });
 });
 

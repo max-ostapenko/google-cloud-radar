@@ -151,6 +151,94 @@ export function isDescriptionOnly(pathStr: string): boolean {
   return DESCRIPTION_ONLY_KEYS.has(leaf);
 }
 
+export interface ParsedSchemaPropertyPath {
+  schemaName: string;
+  propPath: string;
+  propPrefix: string;
+  attrParts: string[];
+}
+
+export function parseSchemaPropertyPath(parts: string[]): ParsedSchemaPropertyPath | null {
+  const sIdx = parts.indexOf('schemas');
+  if (sIdx === -1 || parts.length <= sIdx + 3 || parts[sIdx + 2] !== 'properties') {
+    return null;
+  }
+
+  const schemaName = parts[sIdx + 1];
+  const propSegments: string[] = [];
+  let idx = sIdx + 2;
+  let lastPropEndIdx = sIdx + 2;
+
+  while (idx < parts.length) {
+    if (parts[idx] === 'properties' && idx + 1 < parts.length) {
+      propSegments.push(parts[idx + 1]);
+      lastPropEndIdx = idx + 1;
+      idx += 2;
+      continue;
+    }
+    if (
+      parts[idx] === 'items' &&
+      idx + 2 < parts.length &&
+      parts[idx + 1] === 'properties'
+    ) {
+      propSegments.push('items', parts[idx + 2]);
+      lastPropEndIdx = idx + 2;
+      idx += 3;
+      continue;
+    }
+    break;
+  }
+
+  if (propSegments.length === 0) {
+    return null;
+  }
+
+  return {
+    schemaName,
+    propPath: propSegments.join('.'),
+    propPrefix: parts.slice(0, lastPropEndIdx + 1).join('.'),
+    attrParts: parts.slice(lastPropEndIdx + 1),
+  };
+}
+
+const HIGH_SIGNAL_LEAVES = new Set([
+  'httpMethod',
+  'path',
+  'required',
+  'readOnly',
+  'type',
+  '$ref',
+  'format',
+  'repeated',
+  'location',
+]);
+
+export function getDiffPathPriority(pathStr: string): number {
+  const parts = pathStr.split('.');
+  const rawLeaf = parts[parts.length - 1] || '';
+  const leaf = rawLeaf.split('[')[0];
+  if (
+    parts.includes('methods') ||
+    parts.includes('parameters') ||
+    HIGH_SIGNAL_LEAVES.has(leaf) ||
+    pathStr.includes('.enum[')
+  ) {
+    return 0;
+  }
+  if (parts.includes('schemas')) {
+    return 1;
+  }
+  return 2;
+}
+
+export function prioritizeDiffPaths(paths: string[]): string[] {
+  return [...paths].sort((a, b) => {
+    const prioDiff = getDiffPathPriority(a) - getDiffPathPriority(b);
+    if (prioDiff !== 0) return prioDiff;
+    return a.localeCompare(b);
+  });
+}
+
 export function detectBreakingChanges(
   oldFlat: Record<string, any>,
   newFlat: Record<string, any>,
@@ -185,18 +273,24 @@ export function detectBreakingChanges(
         const reason = `Parameter '${paramName}' was changed to strictly required`;
         if (!reasons.includes(reason)) reasons.push(reason);
       }
-    } else if (
-      parts[parts.length - 1] === 'readOnly' &&
-      parts.includes('schemas') &&
-      parts.includes('properties') &&
-      (newVal === true || newVal === 'true')
-    ) {
-      const sIdx = parts.indexOf('schemas');
-      const pIdx = parts.indexOf('properties');
-      const schemaName = parts.length > sIdx + 1 ? parts[sIdx + 1] : 'Schema';
-      const propName = parts.length > pIdx + 1 ? parts[pIdx + 1] : 'property';
-      const reason = `Property '${propName}' in schema '${schemaName}' was made read-only / immutable`;
-      if (!reasons.includes(reason)) reasons.push(reason);
+    } else {
+      const schemaProp = parseSchemaPropertyPath(parts);
+      if (schemaProp && schemaProp.attrParts.length === 1) {
+        const attr = schemaProp.attrParts[0];
+        if (attr === 'readOnly' && (newVal === true || newVal === 'true')) {
+          const reason = `Property '${schemaProp.propPath}' in schema '${schemaProp.schemaName}' was made read-only / immutable`;
+          if (!reasons.includes(reason)) reasons.push(reason);
+        } else if (attr === 'required' && (newVal === true || newVal === 'true')) {
+          const schemaPrefix = `schemas.${schemaProp.schemaName}`;
+          const schemaExisted = Object.keys(oldFlat).some(
+            (k) => k === schemaPrefix || k.startsWith(`${schemaPrefix}.`)
+          );
+          if (schemaExisted) {
+            const reason = `Property '${schemaProp.propPath}' in schema '${schemaProp.schemaName}' was changed to strictly required`;
+            if (!reasons.includes(reason)) reasons.push(reason);
+          }
+        }
+      }
     }
   }
 
@@ -273,20 +367,15 @@ export function detectBreakingChanges(
     }
 
     // Removed schema property
-    if (parts.includes('schemas') && parts.includes('properties')) {
-      const sIdx = parts.indexOf('schemas');
-      const pIdx = parts.indexOf('properties');
-      if (sIdx < pIdx && parts.length > pIdx + 1) {
-        const schemaName = parts[sIdx + 1];
-        const propName = parts[pIdx + 1];
-        if (
-          parts.length === pIdx + 2 ||
-          (parts.length === pIdx + 3 && ['type', '$ref', 'format'].includes(parts[pIdx + 2]))
-        ) {
-          const reason = `Removed property '${propName}' from schema '${schemaName}'`;
-          if (!reasons.includes(reason)) reasons.push(reason);
-        }
-      }
+    const removedSchemaProp = parseSchemaPropertyPath(parts);
+    if (
+      removedSchemaProp &&
+      (removedSchemaProp.attrParts.length === 0 ||
+        (removedSchemaProp.attrParts.length === 1 &&
+          ['type', '$ref', 'format'].includes(removedSchemaProp.attrParts[0])))
+    ) {
+      const reason = `Removed property '${removedSchemaProp.propPath}' from schema '${removedSchemaProp.schemaName}'`;
+      if (!reasons.includes(reason)) reasons.push(reason);
     }
   }
 
@@ -328,33 +417,40 @@ export function detectBreakingChanges(
       }
     }
 
-    // Schema property type, $ref, readOnly, or array item type/$ref changes (c101333c)
-    if (parts.includes('schemas') && parts.includes('properties')) {
-      const sIdx = parts.indexOf('schemas');
-      const pIdx = parts.indexOf('properties');
-      if (sIdx < pIdx && parts.length > pIdx + 2) {
-        const schemaName = parts[sIdx + 1];
-        const propName = parts[pIdx + 1];
-        const attr = parts[pIdx + 2];
-
-        if (attr === 'type' && oldVal !== newVal) {
-          const reason = `Property '${propName}' in schema '${schemaName}' changed type from '${oldVal}' to '${newVal}'`;
+    // Schema property type, $ref, readOnly, required, or array item type/$ref changes (c101333c)
+    const modSchemaProp = parseSchemaPropertyPath(parts);
+    if (modSchemaProp && modSchemaProp.attrParts.length >= 1) {
+      const attr = modSchemaProp.attrParts[0];
+      if (attr === 'type' && modSchemaProp.attrParts.length === 1 && oldVal !== newVal) {
+        const reason = `Property '${modSchemaProp.propPath}' in schema '${modSchemaProp.schemaName}' changed type from '${oldVal}' to '${newVal}'`;
+        if (!reasons.includes(reason)) reasons.push(reason);
+      } else if (attr === '$ref' && modSchemaProp.attrParts.length === 1 && oldVal !== newVal) {
+        const reason = `Property '${modSchemaProp.propPath}' in schema '${modSchemaProp.schemaName}' changed referenced type from '${oldVal}' to '${newVal}'`;
+        if (!reasons.includes(reason)) reasons.push(reason);
+      } else if (
+        attr === 'readOnly' &&
+        modSchemaProp.attrParts.length === 1 &&
+        (oldVal === false || oldVal === null || oldVal === 'false') &&
+        (newVal === true || newVal === 'true')
+      ) {
+        const reason = `Property '${modSchemaProp.propPath}' in schema '${modSchemaProp.schemaName}' was made read-only / immutable`;
+        if (!reasons.includes(reason)) reasons.push(reason);
+      } else if (
+        attr === 'required' &&
+        modSchemaProp.attrParts.length === 1 &&
+        (oldVal === false || oldVal === null || oldVal === 'false') &&
+        (newVal === true || newVal === 'true')
+      ) {
+        const reason = `Property '${modSchemaProp.propPath}' in schema '${modSchemaProp.schemaName}' was changed to strictly required`;
+        if (!reasons.includes(reason)) reasons.push(reason);
+      } else if (attr === 'items' && modSchemaProp.attrParts.length >= 2) {
+        const itemAttr = modSchemaProp.attrParts[1];
+        if (itemAttr === 'type' && oldVal !== newVal) {
+          const reason = `Array property '${modSchemaProp.propPath}' in schema '${modSchemaProp.schemaName}' changed item type from '${oldVal}' to '${newVal}'`;
           if (!reasons.includes(reason)) reasons.push(reason);
-        } else if (attr === '$ref' && oldVal !== newVal) {
-          const reason = `Property '${propName}' in schema '${schemaName}' changed referenced type from '${oldVal}' to '${newVal}'`;
+        } else if (itemAttr === '$ref' && oldVal !== newVal) {
+          const reason = `Array property '${modSchemaProp.propPath}' in schema '${modSchemaProp.schemaName}' changed item referenced type from '${oldVal}' to '${newVal}'`;
           if (!reasons.includes(reason)) reasons.push(reason);
-        } else if (attr === 'readOnly' && (oldVal === false || oldVal === null) && newVal === true) {
-          const reason = `Property '${propName}' in schema '${schemaName}' was made read-only / immutable`;
-          if (!reasons.includes(reason)) reasons.push(reason);
-        } else if (attr === 'items' && parts.length > pIdx + 3) {
-          const itemAttr = parts[pIdx + 3];
-          if (itemAttr === 'type' && oldVal !== newVal) {
-            const reason = `Array property '${propName}' in schema '${schemaName}' changed item type from '${oldVal}' to '${newVal}'`;
-            if (!reasons.includes(reason)) reasons.push(reason);
-          } else if (itemAttr === '$ref' && oldVal !== newVal) {
-            const reason = `Array property '${propName}' in schema '${schemaName}' changed item referenced type from '${oldVal}' to '${newVal}'`;
-            if (!reasons.includes(reason)) reasons.push(reason);
-          }
         }
       }
     }
@@ -413,16 +509,14 @@ export function detectBreakingChanges(
       continue;
     }
 
-    // Schema property enum: schemas.<SchemaName>.properties.<propName>.enum[N]
-    if (parts.includes('schemas') && parts.includes('properties')) {
-      const sIdx = parts.indexOf('schemas');
-      const pIdx = parts.indexOf('properties');
-      if (sIdx < pIdx && parts.length > pIdx + 1) {
-        const prefix = parts.slice(0, pIdx + 2).join('.');
-        const schemaName = parts[sIdx + 1];
-        const propName = parts[pIdx + 1];
-        enumTargets.push({ prefix, name: `${propName} (schema: ${schemaName})`, context: 'schema property' });
-      }
+    // Schema property enum: schemas.<SchemaName>.properties.<propName>[.properties.<nested>].enum[N]
+    const enumSchemaProp = parseSchemaPropertyPath(parts);
+    if (enumSchemaProp) {
+      enumTargets.push({
+        prefix: enumSchemaProp.propPrefix,
+        name: `${enumSchemaProp.propPath} (schema: ${enumSchemaProp.schemaName})`,
+        context: 'schema property',
+      });
     }
   }
 
@@ -538,21 +632,21 @@ export function buildStructuredDiff(
     modified
   );
 
-  const addedEntries = added.sort().slice(0, MAX_ENTRIES_PER_CATEGORY).map((p) => {
+  const addedEntries = prioritizeDiffPaths(added).slice(0, MAX_ENTRIES_PER_CATEGORY).map((p) => {
     const entry: Record<string, any> = { path: p };
     const val = newFlat[p];
     if (val !== null && typeof val !== 'object') entry.value = val;
     return entry;
   });
 
-  const removedEntries = removed.sort().slice(0, MAX_ENTRIES_PER_CATEGORY).map((p) => {
+  const removedEntries = prioritizeDiffPaths(removed).slice(0, MAX_ENTRIES_PER_CATEGORY).map((p) => {
     const entry: Record<string, any> = { path: p };
     const val = oldFlat[p];
     if (val !== null && typeof val !== 'object') entry.old_value = val;
     return entry;
   });
 
-  const modifiedEntries = modified.sort().slice(0, MAX_ENTRIES_PER_CATEGORY).map((p) => ({
+  const modifiedEntries = prioritizeDiffPaths(modified).slice(0, MAX_ENTRIES_PER_CATEGORY).map((p) => ({
     path: p,
     old: oldFlat[p],
     new: newFlat[p],

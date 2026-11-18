@@ -92,6 +92,8 @@ export function getRecentFeedEntries(
           content: contentStr,
           extracted_methods: extractedMethods,
           target_paths: targetPaths,
+          breaking: Boolean(doc.breaking ?? doc.is_breaking),
+          ...(doc.diff_signature ? { diff_signature: doc.diff_signature } : {}),
         });
       }
     } catch (err: any) {
@@ -172,6 +174,7 @@ export function writeInsight(
   const migrationSteps = Array.isArray(insight.migration_steps)
     ? insight.migration_steps.map((s: any) => String(s).trim()).filter(Boolean)
     : [];
+  const rawBreakingReasons = Array.isArray(insight.breaking_reasons) ? insight.breaking_reasons : [];
 
   let finalSlug = insight.id || insight.slug || baseSlug;
   let filePath = path.join(changesDir, `${finalSlug}.json`);
@@ -217,6 +220,17 @@ export function writeInsight(
     }
   }
 
+  const breakingReasons = (
+    rawBreakingReasons.length > 0
+      ? rawBreakingReasons
+      : Array.isArray(existing.breaking_reasons)
+      ? existing.breaking_reasons
+      : []
+  )
+    .map((r: any) => String(r).trim())
+    .filter(Boolean);
+  const diffSignature = insight.diff_signature || existing.diff_signature;
+
   const entry = {
     id: finalSlug,
     date: resolvedDate,
@@ -227,10 +241,12 @@ export function writeInsight(
     details,
     impact,
     breaking,
+    ...(breakingReasons.length > 0 ? { breaking_reasons: breakingReasons } : {}),
     interesting_score: score,
     tags,
     extracted_methods: extractedMethods,
     target_paths: targetPaths,
+    ...(diffSignature ? { diff_signature: diffSignature } : {}),
     ...(migrationSteps.length > 0 ? { migration_steps: migrationSteps } : {}),
     status: existing.status ?? 'canary',
     lead_time_days: existing.lead_time_days !== undefined ? existing.lead_time_days : null,
@@ -300,6 +316,9 @@ export function buildIndexEntry(doc: Record<string, any>): Record<string, any> {
     summary: doc.summary,
     impact: doc.impact,
     breaking: Boolean(doc.breaking ?? doc.is_breaking),
+    ...(Array.isArray(doc.breaking_reasons) && doc.breaking_reasons.length > 0
+      ? { breaking_reasons: doc.breaking_reasons }
+      : {}),
     interesting_score: Number(doc.interesting_score ?? 5),
     tags: Array.isArray(doc.tags) ? doc.tags : [],
     extracted_methods: Array.isArray(doc.extracted_methods) ? doc.extracted_methods : [],

@@ -11,6 +11,9 @@ import {
   sendResendEmail,
   escapeHtml,
   loadBreakingChanges,
+  buildAlertDocId,
+  buildLegacyEmailKey,
+  hasAlertBeenSent,
 } from '../scripts/dispatch_email_alerts.ts';
 
 describe('dispatch_email_alerts', () => {
@@ -317,6 +320,80 @@ describe('dispatch_email_alerts', () => {
 
       const results = loadBreakingChanges(undefined, testDir, 7);
       expect(results.map((c) => c.id)).toEqual(['change-b', 'change-a']);
+    });
+  });
+
+  describe('idempotency keys and Resend retries (6d6de126 / 6e51acc3)', () => {
+    it('generates distinct doc IDs for punctuation-differing emails and verifies legacy fallback email', async () => {
+      const id1 = buildAlertDocId('2026-10-01-bigquery-v2', 'user.name@example.com');
+      const id2 = buildAlertDocId('2026-10-01-bigquery-v2', 'user_name@example.com');
+      const id3 = buildAlertDocId('2026-10-01-bigquery-v2', 'user+alerts@example.com');
+
+      expect(id1).not.toBe(id2);
+      expect(id1).not.toBe(id3);
+      expect(id2).not.toBe(id3);
+      expect(buildAlertDocId('2026-10-01-bigquery-v2', 'User.Name@Example.COM')).toBe(id1);
+
+      const legacyKey = `2026-10-01-bigquery-v2_${buildLegacyEmailKey('user.name@example.com')}`;
+      const mockFirestore: any = {
+        collection: () => ({
+          doc: (docId: string) => ({
+            get: async () => {
+              if (docId === legacyKey) {
+                return { exists: true, data: () => ({ email: 'user.name@example.com' }) };
+              }
+              return { exists: false };
+            },
+          }),
+        }),
+      };
+
+      expect(await hasAlertBeenSent(mockFirestore, '2026-10-01-bigquery-v2', 'user.name@example.com')).toBe(true);
+      expect(await hasAlertBeenSent(mockFirestore, '2026-10-01-bigquery-v2', 'user_name@example.com')).toBe(false);
+    });
+
+    it('retries Resend HTTP 429 and 503 responses and fails fast on 400', async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValueOnce(
+          new Response('rate limited', { status: 429, headers: { 'Retry-After': '0' } })
+        )
+        .mockResolvedValueOnce(new Response('upstream error', { status: 503 }))
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ id: 'msg_retry_ok' }), { status: 200 })
+        );
+
+      const ok = await sendResendEmail({
+        apiKey: 're_test',
+        fromEmail: 'Google Cloud Radar <alerts@google-cloud-radar.com>',
+        toEmail: 'retry@example.com',
+        subject: 'Retry Test',
+        htmlContent: '<p>Test</p>',
+        maxRetries: 3,
+        baseDelayMs: 1,
+      });
+
+      expect(ok).toBe(true);
+      expect(fetchSpy).toHaveBeenCalledTimes(3);
+      fetchSpy.mockRestore();
+
+      const badSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValueOnce(new Response('bad request', { status: 400 }));
+
+      const badOk = await sendResendEmail({
+        apiKey: 're_test',
+        fromEmail: 'Google Cloud Radar <alerts@google-cloud-radar.com>',
+        toEmail: 'bad@example.com',
+        subject: 'Fail Fast',
+        htmlContent: '<p>Test</p>',
+        maxRetries: 3,
+        baseDelayMs: 1,
+      });
+
+      expect(badOk).toBe(false);
+      expect(badSpy).toHaveBeenCalledTimes(1);
+      badSpy.mockRestore();
     });
   });
 });

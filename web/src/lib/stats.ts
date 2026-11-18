@@ -48,7 +48,13 @@ function normalizeCategory(rawCat: string): ServiceCategory {
 
 export async function computeRadarStats(daysWindow: number = 90): Promise<RadarStatsReport> {
   const allEntries = await getAllFeedEntries();
-  
+  return computeRadarStatsFromEntries(allEntries, daysWindow);
+}
+
+export function computeRadarStatsFromEntries(
+  allEntries: FeedEntry[],
+  daysWindow: number = 90
+): RadarStatsReport {
   // Filter for dynamic trailing window (e.g. 90 days / 3 months)
   let filteredEntries = allEntries;
   if (daysWindow > 0) {
@@ -74,7 +80,7 @@ export async function computeRadarStats(daysWindow: number = 90): Promise<RadarS
   for (const entry of filteredEntries) {
     totalMethods += (entry.extractedMethods || []).length;
 
-    if (entry.lead_time_days !== undefined && entry.lead_time_days > 0) {
+    if (entry.lead_time_days !== undefined && entry.lead_time_days !== null && entry.lead_time_days >= 0) {
       totalLeadTimeSum += entry.lead_time_days;
       entriesWithLeadTime += 1;
     }
@@ -105,7 +111,7 @@ export async function computeRadarStats(daysWindow: number = 90): Promise<RadarS
     for (const e of entries) {
       apisSet.add(e.api);
       svcMethods += (e.extractedMethods || []).length;
-      if (e.lead_time_days !== undefined && e.lead_time_days > 0) {
+      if (e.lead_time_days !== undefined && e.lead_time_days !== null && e.lead_time_days >= 0) {
         svcLeadTimeSum += e.lead_time_days;
         svcLeadTimeCount += 1;
       }
@@ -164,7 +170,7 @@ export async function computeRadarStats(daysWindow: number = 90): Promise<RadarS
   ];
 
   for (const entry of filteredEntries) {
-    if (entry.lead_time_days !== undefined && entry.lead_time_days !== null && entry.lead_time_days > 0) {
+    if (entry.lead_time_days !== undefined && entry.lead_time_days !== null && entry.lead_time_days >= 0) {
       const days = entry.lead_time_days;
       if (days < 7) buckets[0].count += 1;
       else if (days <= 14) buckets[1].count += 1;

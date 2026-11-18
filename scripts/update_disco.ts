@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isWatchedApi } from './taxonomy.ts';
+import { getArrayObjectSortKey } from './normalize_discovery.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,9 +70,9 @@ export function sortKeys(value: any, keyName?: string): any {
     // Sort arrays of objects deterministically by identifier or serialized content
     if (mapped.every((x) => x !== null && typeof x === 'object' && !Array.isArray(x))) {
       return [...mapped].sort((a, b) => {
-        const keyA = a.name || a.id || a.location || a.endpointUrl || deterministicStringify(a);
-        const keyB = b.name || b.id || b.location || b.endpointUrl || deterministicStringify(b);
-        return String(keyA).localeCompare(String(keyB));
+        const keyCmp = getArrayObjectSortKey(a).localeCompare(getArrayObjectSortKey(b));
+        if (keyCmp !== 0) return keyCmp;
+        return deterministicStringify(a).localeCompare(deterministicStringify(b));
       });
     }
     return mapped;

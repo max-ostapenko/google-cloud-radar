@@ -156,7 +156,7 @@ const isService = variant === 'service';
           getUserAlertPreferences,
           saveUserAlertPreferences,
         } = await import('../lib/firebase');
-        let user = currentUser || getFirebaseAuth().currentUser;
+        let user = currentUser || (await getFirebaseAuth()).currentUser;
         if (!user) {
           try {
             user = await signInWithGoogle();

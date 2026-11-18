@@ -8,9 +8,42 @@
  *     npx tsx scripts/diff_to_feed.ts --base <ref>      # compare against a specific ref
  */
 
+import crypto from 'node:crypto';
 import { extractStructuredDiffs, extractMethodIdentifiersFromPaths } from './diff_preprocessor.ts';
 import { writeInsights, getRecentFeedEntries } from './feed_writer.ts';
 import { analyzeApiDiff } from './llm_client.ts';
+
+export function computeDiffSignature(diff: Record<string, any>): string | null {
+  const added = Array.isArray(diff.added) ? diff.added : null;
+  const removed = Array.isArray(diff.removed) ? diff.removed : null;
+  const modified = Array.isArray(diff.modified) ? diff.modified : null;
+
+  if (!added && !removed && !modified) {
+    return null;
+  }
+
+  const tokens: string[] = [];
+  for (const e of added || []) {
+    const val = e?.value !== undefined ? JSON.stringify(e.value) : '';
+    tokens.push(`A:${String(e?.path || '').toLowerCase()}:${val}`);
+  }
+  for (const e of removed || []) {
+    const oldVal = e?.old_value !== undefined ? JSON.stringify(e.old_value) : '';
+    tokens.push(`R:${String(e?.path || '').toLowerCase()}:${oldVal}`);
+  }
+  for (const e of modified || []) {
+    const oldVal = e?.old !== undefined ? JSON.stringify(e.old) : '';
+    const newVal = e?.new !== undefined ? JSON.stringify(e.new) : '';
+    tokens.push(`M:${String(e?.path || '').toLowerCase()}:${oldVal}->${newVal}`);
+  }
+
+  if (tokens.length === 0) {
+    return null;
+  }
+
+  tokens.sort();
+  return crypto.createHash('sha256').update(tokens.join('\n')).digest('hex').slice(0, 24);
+}
 
 export function extractMethodAndPathMetadata(diff: Record<string, any>): [Set<string>, Set<string>] {
   const methods = new Set<string>();
@@ -52,6 +85,9 @@ export function isDuplicateDiff(diff: Record<string, any>, recentHistory: any[])
     return [false, ''];
   }
 
+  const diffSig = computeDiffSignature(diff);
+  const hasRemovals = Array.isArray(diff.removed) && diff.removed.length > 0;
+
   for (const entry of recentHistory) {
     const slug = entry.slug || '';
     const dateStr = entry.date || '';
@@ -66,12 +102,28 @@ export function isDuplicateDiff(diff: Record<string, any>, recentHistory: any[])
 
     const setsEqual = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every((x) => b.has(x));
 
-    if (setsEqual(diffMethods, histMethods) && setsEqual(diffPaths, histPaths)) {
-      return [
-        true,
-        `Identical method set (${[...diffMethods].sort().join(', ')}) and target path metadata (${[...diffPaths].sort().join(', ')}) match historical change ${slug} (${dateStr})`,
-      ];
+    if (!setsEqual(diffMethods, histMethods) || !setsEqual(diffPaths, histPaths)) {
+      continue;
     }
+
+    // Distinguish rollbacks, value inversions, and breaking escalations on the same path/method set
+    if (diffSig && entry.diff_signature) {
+      if (diffSig !== entry.diff_signature) {
+        continue;
+      }
+    } else {
+      if (hasRemovals) {
+        continue;
+      }
+      if (diff.is_breaking === true && entry.breaking === false) {
+        continue;
+      }
+    }
+
+    return [
+      true,
+      `Identical method set (${[...diffMethods].sort().join(', ')}) and target path metadata (${[...diffPaths].sort().join(', ')}) match historical change ${slug} (${dateStr})`,
+    ];
   }
 
   return [false, ''];
@@ -133,6 +185,13 @@ export async function runDiffToFeed(options: {
     if (insight) {
       if (diff.is_breaking !== undefined) {
         insight.breaking = Boolean(insight.breaking || diff.is_breaking);
+      }
+      if (Array.isArray(diff.breaking_reasons) && diff.breaking_reasons.length > 0) {
+        insight.breaking_reasons = diff.breaking_reasons;
+      }
+      const diffSig = computeDiffSignature(diff);
+      if (diffSig) {
+        insight.diff_signature = diffSig;
       }
       const [methods, paths] = extractMethodAndPathMetadata(diff);
       insight.extracted_methods = Array.from(methods).sort();

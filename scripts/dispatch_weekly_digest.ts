@@ -11,7 +11,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { Firestore } from '@google-cloud/firestore';
-import { escapeHtml, isDevEnvironment, sendResendEmail } from './dispatch_email_alerts.ts';
+import {
+  buildEmailIdempotencyHash,
+  buildLegacyEmailKey,
+  EMAIL_SEND_PACING_MS,
+  escapeHtml,
+  isDevEnvironment,
+  sendResendEmail,
+  sleep,
+} from './dispatch_email_alerts.ts';
 import { isChangeWatchedBySubscriber } from './taxonomy.ts';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -367,7 +375,7 @@ export async function fetchFirestoreWeeklySubscribers(
   databaseId: string = DEFAULT_FIRESTORE_DB
 ): Promise<WeeklySubscriber[]> {
   try {
-    const firestore = new Firestore({ projectId, databaseId: databaseId || '(default)' });
+    const firestore = new Firestore({ projectId, databaseId: databaseId || DEFAULT_FIRESTORE_DB });
     const snapshot = await firestore.collection('users').get();
     const subscribers: WeeklySubscriber[] = [];
     for (const doc of snapshot.docs) {
@@ -398,13 +406,31 @@ export async function fetchFirestoreWeeklySubscribers(
   }
 }
 
+export function buildWeeklyDispatchId(isoYear: number, isoWeek: number, email: string): string {
+  return `weekly_${isoYear}_w${isoWeek}_${buildEmailIdempotencyHash(email)}`;
+}
+
 export async function hasWeeklyDigestBeenSent(
   firestore: Firestore,
-  dispatchId: string
+  dispatchId: string,
+  email?: string,
+  legacyDispatchId?: string
 ): Promise<boolean> {
   try {
     const doc = await firestore.collection('alert_dispatches').doc(dispatchId).get();
-    return doc.exists;
+    if (doc.exists) {
+      return true;
+    }
+
+    if (email && legacyDispatchId && legacyDispatchId !== dispatchId) {
+      const legacyDoc = await firestore.collection('alert_dispatches').doc(legacyDispatchId).get();
+      if (legacyDoc.exists) {
+        const recordedEmail = String(legacyDoc.data()?.recipient_email || '').trim().toLowerCase();
+        return recordedEmail === email.trim().toLowerCase();
+      }
+    }
+
+    return false;
   } catch {
     return false;
   }
@@ -527,8 +553,9 @@ export async function runDispatchWeeklyDigest(options?: {
     return;
   }
 
-  const firestore = new Firestore({ projectId, databaseId: databaseId || '(default)' });
+  const firestore = new Firestore({ projectId, databaseId: databaseId || DEFAULT_FIRESTORE_DB });
   let totalSent = 0;
+  let hasAttemptedSend = false;
   const isDev = isDevEnvironment();
 
   for (const sub of subscribers) {
@@ -538,10 +565,10 @@ export async function runDispatchWeeklyDigest(options?: {
       continue;
     }
 
-    const cleanEmail = email.replace(/[^a-zA-Z0-9]/g, '_');
-    const dispatchId = `weekly_${isoYear}_w${isoWeek}_${cleanEmail}`;
+    const dispatchId = buildWeeklyDispatchId(isoYear, isoWeek, email);
+    const legacyDispatchId = `weekly_${isoYear}_w${isoWeek}_${buildLegacyEmailKey(email)}`;
 
-    if (await hasWeeklyDigestBeenSent(firestore, dispatchId)) {
+    if (await hasWeeklyDigestBeenSent(firestore, dispatchId, email, legacyDispatchId)) {
       continue;
     }
 
@@ -549,6 +576,11 @@ export async function runDispatchWeeklyDigest(options?: {
       console.log(`[DRY-RUN] Would send weekly digest (${subChanges.length} changes) to ${email}`);
       continue;
     }
+
+    if (hasAttemptedSend) {
+      await sleep(EMAIL_SEND_PACING_MS);
+    }
+    hasAttemptedSend = true;
 
     const htmlBody = renderWeeklyDigestHtml(subChanges, weekLabel);
     const textBody = renderWeeklyDigestText(subChanges, weekLabel);
