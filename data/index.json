@@ -18321,9 +18321,11 @@
       "projects.locations.agents.patch"
     ],
     "target_paths": [],
-    "status": "canary",
-    "lead_time_days": null,
-    "generated_at": "2026-09-19T13:47:25.442932+00:00"
+    "status": "released",
+    "lead_time_days": 53,
+    "generated_at": "2026-09-19T13:47:25.442932+00:00",
+    "official_release_date": "2026-11-11",
+    "official_release_notes_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/release-notes#November_11_2026"
   },
   {
     "id": "2026-09-19-aiplatform-v1",
