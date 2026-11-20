@@ -1,0 +1,46 @@
+{
+  "id": "2026-11-20-dataflow-v1b3",
+  "date": "2026-11-20",
+  "api": "dataflow.v1b3",
+  "service": "Cloud Dataflow",
+  "title": "Dataflow: Job.autoVmSelectionEnabled is Read-Only; New Job Filter Added",
+  "summary": "The `autoVmSelectionEnabled` field in the Dataflow `Job` schema is now read-only, making any attempts to set it a breaking change. Additionally, a new `filterExpression` parameter has been added to job listing methods, though it's not yet functional.",
+  "details": "The `Job` schema's `autoVmSelectionEnabled` property has been marked as `readOnly`. Previously, this field could be set during job creation or update. Now, any API calls attempting to provide a value for `autoVmSelectionEnabled` will result in an error. This field now solely indicates whether Auto VM Selection is enabled for the job, populated by the service. For job listing, an `Optional` `filterExpression` query parameter has been introduced to `projects.jobs.aggregated`, `projects.jobs.list`, and `projects.locations.jobs.list`. This parameter is designed to allow filtering jobs using AIP-160 expressions on fields like `name`, `id`, `type`, and `current_state`. Important: While the parameter is now present in the API definition, the service currently *ignores* it, and it will not filter results until a future release. Developers can start including it in requests, but should not expect filtering behavior yet.",
+  "impact": "high",
+  "breaking": true,
+  "breaking_reasons": [
+    "Property 'autoVmSelectionEnabled' in schema 'Job' was made read-only / immutable"
+  ],
+  "interesting_score": 8,
+  "tags": [
+    "breaking-change",
+    "jobs",
+    "filtering"
+  ],
+  "extracted_methods": [
+    "projects.jobs.aggregated",
+    "projects.jobs.list",
+    "projects.locations.jobs.list"
+  ],
+  "target_paths": [
+    "resources.projects.resources.jobs.methods.aggregated.parameters.filterexpression.description",
+    "resources.projects.resources.jobs.methods.aggregated.parameters.filterexpression.location",
+    "resources.projects.resources.jobs.methods.aggregated.parameters.filterexpression.type",
+    "resources.projects.resources.jobs.methods.list.parameters.filterexpression.description",
+    "resources.projects.resources.jobs.methods.list.parameters.filterexpression.location",
+    "resources.projects.resources.jobs.methods.list.parameters.filterexpression.type",
+    "resources.projects.resources.locations.resources.jobs.methods.list.parameters.filterexpression.description",
+    "resources.projects.resources.locations.resources.jobs.methods.list.parameters.filterexpression.location",
+    "resources.projects.resources.locations.resources.jobs.methods.list.parameters.filterexpression.type",
+    "schemas.job.properties.autovmselectionenabled.description",
+    "schemas.job.properties.autovmselectionenabled.readonly",
+    "schemas.job.properties.autovmselectionenabled.type"
+  ],
+  "diff_signature": "e5cad017813cd9060436de5b",
+  "migration_steps": [
+    "Remove `autoVmSelectionEnabled` from any job creation or update requests. This field is now output-only."
+  ],
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-20T01:42:50.478Z"
+}
