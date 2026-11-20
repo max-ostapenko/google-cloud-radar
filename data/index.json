@@ -1,5 +1,46 @@
 [
   {
+    "id": "2026-11-20-dataflow-v1b3",
+    "date": "2026-11-20",
+    "api": "dataflow.v1b3",
+    "service": "Cloud Dataflow",
+    "title": "Dataflow: Job.autoVmSelectionEnabled is Read-Only; New Job Filter Added",
+    "summary": "The `autoVmSelectionEnabled` field in the Dataflow `Job` schema is now read-only, making any attempts to set it a breaking change. Additionally, a new `filterExpression` parameter has been added to job listing methods, though it's not yet functional.",
+    "impact": "high",
+    "breaking": true,
+    "breaking_reasons": [
+      "Property 'autoVmSelectionEnabled' in schema 'Job' was made read-only / immutable"
+    ],
+    "interesting_score": 8,
+    "tags": [
+      "breaking-change",
+      "jobs",
+      "filtering"
+    ],
+    "extracted_methods": [
+      "projects.jobs.aggregated",
+      "projects.jobs.list",
+      "projects.locations.jobs.list"
+    ],
+    "target_paths": [
+      "resources.projects.resources.jobs.methods.aggregated.parameters.filterexpression.description",
+      "resources.projects.resources.jobs.methods.aggregated.parameters.filterexpression.location",
+      "resources.projects.resources.jobs.methods.aggregated.parameters.filterexpression.type",
+      "resources.projects.resources.jobs.methods.list.parameters.filterexpression.description",
+      "resources.projects.resources.jobs.methods.list.parameters.filterexpression.location",
+      "resources.projects.resources.jobs.methods.list.parameters.filterexpression.type",
+      "resources.projects.resources.locations.resources.jobs.methods.list.parameters.filterexpression.description",
+      "resources.projects.resources.locations.resources.jobs.methods.list.parameters.filterexpression.location",
+      "resources.projects.resources.locations.resources.jobs.methods.list.parameters.filterexpression.type",
+      "schemas.job.properties.autovmselectionenabled.description",
+      "schemas.job.properties.autovmselectionenabled.readonly",
+      "schemas.job.properties.autovmselectionenabled.type"
+    ],
+    "status": "canary",
+    "lead_time_days": null,
+    "generated_at": "2026-11-20T01:42:50.478Z"
+  },
+  {
     "id": "2026-11-18-bigqueryreservation-v1",
     "date": "2026-11-18",
     "api": "bigqueryreservation.v1",
