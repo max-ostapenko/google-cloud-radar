@@ -28,6 +28,21 @@ export interface ReactionCounts {
   false_positive_or_duplicate: number;
 }
 
+export interface AstDiffEntry {
+  path: string;
+  value?: any;
+  old_value?: any;
+  old?: any;
+  new?: any;
+  [key: string]: any;
+}
+
+export interface AstDiff {
+  added: AstDiffEntry[];
+  removed: AstDiffEntry[];
+  changed: AstDiffEntry[];
+}
+
 export interface FeedEntryMeta {
   slug: string;
   docId?: string;
@@ -40,6 +55,8 @@ export interface FeedEntryMeta {
   impact: 'low' | 'medium' | 'high';
   breaking: boolean;
   breaking_reasons?: string[];
+  target_paths?: string[];
+  diff?: AstDiff;
   tags: string[];
   interesting_score: number;
   generated_at?: string;
@@ -401,6 +418,26 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       let targetPaths: string[] = [];
       if (f.target_paths?.arrayValue?.values) {
         targetPaths = f.target_paths.arrayValue.values.map((v: any) => v.stringValue).filter(Boolean);
+      } else if (f.extracted_paths?.arrayValue?.values) {
+        targetPaths = f.extracted_paths.arrayValue.values.map((v: any) => v.stringValue).filter(Boolean);
+      }
+
+      let diff: AstDiff | undefined = undefined;
+      if (f.diff?.stringValue) {
+        try {
+          const parsed = JSON.parse(f.diff.stringValue);
+          if (parsed && typeof parsed === 'object') {
+            diff = {
+              added: Array.isArray(parsed.added) ? parsed.added : [],
+              removed: Array.isArray(parsed.removed) ? parsed.removed : [],
+              changed: Array.isArray(parsed.changed)
+                ? parsed.changed
+                : Array.isArray(parsed.modified)
+                ? parsed.modified
+                : [],
+            };
+          }
+        } catch {}
       }
 
       let stats = undefined;
@@ -447,6 +484,8 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         detailsHtml: htmlContent,
         extractedMethods,
         targetPaths,
+        target_paths: targetPaths,
+        ...(diff ? { diff } : {}),
         ecosystem,
         category,
       };
@@ -505,7 +544,25 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const summary = doc.summary || '';
       const details = doc.details || summary;
       const extractedMethods = Array.isArray(doc.extracted_methods) ? doc.extracted_methods : [];
-      const targetPaths = Array.isArray(doc.target_paths) ? doc.target_paths : [];
+      const targetPaths = Array.isArray(doc.target_paths)
+        ? doc.target_paths
+        : Array.isArray(doc.extracted_paths)
+        ? doc.extracted_paths
+        : Array.isArray(doc.target_schema_paths)
+        ? doc.target_schema_paths
+        : [];
+      let diff: AstDiff | undefined = undefined;
+      if (doc.diff && typeof doc.diff === 'object') {
+        diff = {
+          added: Array.isArray(doc.diff.added) ? doc.diff.added : [],
+          removed: Array.isArray(doc.diff.removed) ? doc.diff.removed : [],
+          changed: Array.isArray(doc.diff.changed)
+            ? doc.diff.changed
+            : Array.isArray(doc.diff.modified)
+            ? doc.diff.modified
+            : [],
+        };
+      }
 
       const htmlContent = safeMarkdownParser.parse(details || summary, { async: false }) as string;
       const ecosystem = canonicalMeta?.ecosystem || (doc.ecosystem as Ecosystem) || getEcosystemForService(service || api);
@@ -560,6 +617,8 @@ export function getLocalFeedEntries(): FeedEntry[] {
         detailsHtml: htmlContent,
         extractedMethods,
         targetPaths,
+        target_paths: targetPaths,
+        ...(diff ? { diff } : {}),
         ecosystem,
         category,
       });
@@ -1050,4 +1109,151 @@ export function partitionSiblingNarratives(siblings: SiblingVersionInfo[]): Sibl
     uniqueHtmlBySlug,
     uniqueCountBySlug,
   };
+}
+
+export interface FeedQueryParams {
+  impact?: string | null;
+  breaking?: boolean | string | null;
+  service?: string | null;
+  api?: string | null;
+  since?: string | null;
+  limit?: number | string | null;
+}
+
+export function parseLimitParam(
+  limitParam: string | number | null | undefined,
+  defaultLimit?: number
+): number | undefined {
+  if (limitParam === undefined || limitParam === null || limitParam === '') {
+    return defaultLimit;
+  }
+  const parsed = typeof limitParam === 'number' ? limitParam : parseInt(String(limitParam), 10);
+  if (isNaN(parsed)) {
+    return defaultLimit;
+  }
+  return Math.min(Math.max(parsed, 1), 100);
+}
+
+export function filterFeedEntries(entries: FeedEntry[], params: FeedQueryParams): FeedEntry[] {
+  let filtered = entries;
+
+  if (params.breaking !== undefined && params.breaking !== null && params.breaking !== '') {
+    const breakingVal = String(params.breaking).toLowerCase().trim();
+    if (breakingVal === 'true' || breakingVal === '1') {
+      filtered = filtered.filter((e) => e.breaking === true);
+    } else if (breakingVal === 'false' || breakingVal === '0') {
+      filtered = filtered.filter((e) => e.breaking === false);
+    }
+  }
+
+  if (params.impact) {
+    const impactVal = String(params.impact).toLowerCase().trim();
+    if (impactVal === 'breaking') {
+      filtered = filtered.filter((e) => e.breaking === true);
+    } else {
+      filtered = filtered.filter((e) => e.impact.toLowerCase() === impactVal);
+    }
+  }
+
+  if (params.service) {
+    const svcQuery = String(params.service).toLowerCase().trim();
+    const svcSlug = slugify(svcQuery);
+    filtered = filtered.filter((e) => {
+      const eServiceLower = e.service.toLowerCase();
+      const eServiceSlug = e.service_id || slugify(e.service);
+      return (
+        eServiceLower === svcQuery ||
+        eServiceSlug === svcSlug ||
+        eServiceLower.includes(svcQuery) ||
+        (e.api && e.api.toLowerCase().includes(svcQuery)) ||
+        Boolean(e.siblingVersions?.some((s) => s.api.toLowerCase().includes(svcQuery)))
+      );
+    });
+  }
+
+  if (params.api) {
+    const apiQuery = String(params.api).toLowerCase().trim();
+    filtered = filtered.filter(
+      (e) =>
+        (e.api && e.api.toLowerCase().includes(apiQuery)) ||
+        Boolean(e.siblingVersions?.some((s) => s.api.toLowerCase().includes(apiQuery)))
+    );
+  }
+
+  if (params.since) {
+    const sinceDate = String(params.since).trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(sinceDate)) {
+      filtered = filtered.filter((e) => e.date >= sinceDate.slice(0, 10));
+    }
+  }
+
+  return filtered;
+}
+
+export function formatMachineFeedEntryDetails(entry: FeedEntry): string[] {
+  const lines: string[] = [];
+
+  if (entry.breaking_reasons && entry.breaking_reasons.length > 0) {
+    lines.push(`- **Breaking Reasons:**`);
+    for (const reason of entry.breaking_reasons) {
+      lines.push(`  - ${reason}`);
+    }
+  }
+
+  const paths = entry.target_paths || entry.targetPaths || [];
+  if (paths.length > 0) {
+    lines.push(`- **Target Paths:**`);
+    for (const p of paths) {
+      lines.push(`  - \`${p}\``);
+    }
+  }
+
+  if (entry.diff) {
+    const { added = [], removed = [], changed = [] } = entry.diff;
+    if (added.length > 0 || removed.length > 0 || changed.length > 0) {
+      lines.push(`- **AST Diff:**`);
+      if (added.length > 0) {
+        lines.push(`  - **Added:**`);
+        for (const item of added) {
+          const str =
+            typeof item === 'string'
+              ? item
+              : item.path
+              ? `${item.path}${item.value !== undefined ? `: ${JSON.stringify(item.value)}` : ''}`
+              : JSON.stringify(item);
+          lines.push(`    - \`${str}\``);
+        }
+      }
+      if (removed.length > 0) {
+        lines.push(`  - **Removed:**`);
+        for (const item of removed) {
+          const str =
+            typeof item === 'string'
+              ? item
+              : item.path
+              ? `${item.path}${item.old_value !== undefined ? ` (was: ${JSON.stringify(item.old_value)})` : ''}`
+              : JSON.stringify(item);
+          lines.push(`    - \`${str}\``);
+        }
+      }
+      if (changed.length > 0) {
+        lines.push(`  - **Changed:**`);
+        for (const item of changed) {
+          const str =
+            typeof item === 'string'
+              ? item
+              : item.path
+              ? `${item.path}${
+                  item.old !== undefined || item.new !== undefined
+                    ? `: ${JSON.stringify(item.old)} -> ${JSON.stringify(item.new)}`
+                    : ''
+                }`
+              : JSON.stringify(item);
+          lines.push(`    - \`${str}\``);
+        }
+      }
+    }
+  }
+
+  return lines;
 }

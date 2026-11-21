@@ -189,6 +189,18 @@ export async function runDiffToFeed(options: {
       if (Array.isArray(diff.breaking_reasons) && diff.breaking_reasons.length > 0) {
         insight.breaking_reasons = diff.breaking_reasons;
       }
+      if (diff.diff || diff.added || diff.removed || diff.modified || diff.changed) {
+        const rawDiff = diff.diff && typeof diff.diff === 'object' ? diff.diff : diff;
+        insight.diff = {
+          added: Array.isArray(rawDiff.added) ? rawDiff.added : [],
+          removed: Array.isArray(rawDiff.removed) ? rawDiff.removed : [],
+          changed: Array.isArray(rawDiff.changed)
+            ? rawDiff.changed
+            : Array.isArray(rawDiff.modified)
+            ? rawDiff.modified
+            : [],
+        };
+      }
       const diffSig = computeDiffSignature(diff);
       if (diffSig) {
         insight.diff_signature = diffSig;

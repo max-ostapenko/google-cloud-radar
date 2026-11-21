@@ -74,6 +74,17 @@ export function parseJsonChangeFile(filePath: string): Record<string, any> {
   if (Array.isArray(data.breaking_reasons) && data.breaking_reasons.length > 0) {
     doc.breaking_reasons = data.breaking_reasons.map((r: any) => String(r));
   }
+  if (data.diff && typeof data.diff === 'object') {
+    doc.diff = JSON.stringify({
+      added: Array.isArray(data.diff.added) ? data.diff.added : [],
+      removed: Array.isArray(data.diff.removed) ? data.diff.removed : [],
+      changed: Array.isArray(data.diff.changed)
+        ? data.diff.changed
+        : Array.isArray(data.diff.modified)
+        ? data.diff.modified
+        : [],
+    });
+  }
   if (data.official_release_date) {
     doc.official_release_date = String(data.official_release_date);
   }

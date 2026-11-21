@@ -1,5 +1,12 @@
 import type { APIRoute } from 'astro';
-import { deduplicateFeedSiblingVersions, getAllFeedEntries, getServicesList, slugify } from '../../../lib/feed';
+import {
+  deduplicateFeedSiblingVersions,
+  filterFeedEntries,
+  getAllFeedEntries,
+  getServicesList,
+  parseLimitParam,
+  slugify,
+} from '../../../lib/feed';
 
 export async function getStaticPaths() {
   const services = await getServicesList();
@@ -19,8 +26,23 @@ export async function getStaticPaths() {
   });
 }
 
-export const GET: APIRoute = async ({ props }) => {
-  const { serviceInfo, entries } = props as { serviceInfo: any; entries: any[] };
+export const GET: APIRoute = async (context) => {
+  const { serviceInfo, entries: rawEntries } = context.props as { serviceInfo: any; entries: any[] };
+  const reqUrl = context?.url ?? (context?.request?.url ? new URL(context.request.url) : null);
+  const impact = reqUrl?.searchParams.get('impact');
+  const breaking = reqUrl?.searchParams.get('breaking');
+  const api = reqUrl?.searchParams.get('api');
+  const since = reqUrl?.searchParams.get('since');
+  const limitParam = reqUrl?.searchParams.get('limit');
+  const limit = parseLimitParam(limitParam);
+
+  const filteredEntries = filterFeedEntries(rawEntries, {
+    impact,
+    breaking,
+    api,
+    since,
+  });
+  const entries = limit ? filteredEntries.slice(0, limit) : filteredEntries;
 
   const responsePayload = {
     version: 'https://jsonfeed.org/version/1.1',
@@ -41,6 +63,9 @@ export const GET: APIRoute = async ({ props }) => {
         api: entry.api,
         impact: entry.impact,
         breaking: entry.breaking,
+        breaking_reasons: entry.breaking_reasons || [],
+        target_paths: entry.target_paths || entry.targetPaths || [],
+        diff: entry.diff || { added: [], removed: [], changed: [] },
         interesting_score: entry.interesting_score,
         category: entry.category,
         status: entry.status,

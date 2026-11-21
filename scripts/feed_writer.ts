@@ -229,6 +229,25 @@ export function writeInsight(
   )
     .map((r: any) => String(r).trim())
     .filter(Boolean);
+  const resolvedTargetPaths =
+    Array.isArray(targetPaths) && targetPaths.length > 0
+      ? targetPaths
+      : Array.isArray(existing.target_paths)
+      ? existing.target_paths
+      : [];
+  const rawDiff = insight.diff || existing.diff;
+  const diffPayload =
+    rawDiff && typeof rawDiff === 'object'
+      ? {
+          added: Array.isArray(rawDiff.added) ? rawDiff.added : [],
+          removed: Array.isArray(rawDiff.removed) ? rawDiff.removed : [],
+          changed: Array.isArray(rawDiff.changed)
+            ? rawDiff.changed
+            : Array.isArray(rawDiff.modified)
+            ? rawDiff.modified
+            : [],
+        }
+      : undefined;
   const diffSignature = insight.diff_signature || existing.diff_signature;
 
   const entry = {
@@ -242,10 +261,11 @@ export function writeInsight(
     impact,
     breaking,
     ...(breakingReasons.length > 0 ? { breaking_reasons: breakingReasons } : {}),
+    ...(diffPayload ? { diff: diffPayload } : {}),
     interesting_score: score,
     tags,
     extracted_methods: extractedMethods,
-    target_paths: targetPaths,
+    target_paths: resolvedTargetPaths,
     ...(diffSignature ? { diff_signature: diffSignature } : {}),
     ...(migrationSteps.length > 0 ? { migration_steps: migrationSteps } : {}),
     status: existing.status ?? 'canary',
@@ -318,6 +338,19 @@ export function buildIndexEntry(doc: Record<string, any>): Record<string, any> {
     breaking: Boolean(doc.breaking ?? doc.is_breaking),
     ...(Array.isArray(doc.breaking_reasons) && doc.breaking_reasons.length > 0
       ? { breaking_reasons: doc.breaking_reasons }
+      : {}),
+    ...(doc.diff && typeof doc.diff === 'object'
+      ? {
+          diff: {
+            added: Array.isArray(doc.diff.added) ? doc.diff.added : [],
+            removed: Array.isArray(doc.diff.removed) ? doc.diff.removed : [],
+            changed: Array.isArray(doc.diff.changed)
+              ? doc.diff.changed
+              : Array.isArray(doc.diff.modified)
+              ? doc.diff.modified
+              : [],
+          },
+        }
       : {}),
     interesting_score: Number(doc.interesting_score ?? 5),
     tags: Array.isArray(doc.tags) ? doc.tags : [],
