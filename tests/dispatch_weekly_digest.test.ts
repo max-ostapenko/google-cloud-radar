@@ -52,6 +52,43 @@ describe('dispatch_weekly_digest', () => {
       'https://google-cloud-radar.com/changes/2026-08-30-aiplatform-v1beta1'
     );
     expect(html).toContain('https://google-cloud-radar.com/?action=alerts');
+    expect(html).not.toContain('Showing 12 of');
+    expect(html).not.toContain('View remaining on Radar');
+  });
+
+  it('appends truncation banner and CTA link when non-breaking updates exceed 12 items', () => {
+    const manyChanges = Array.from({ length: 18 }, (_, i) => ({
+      slug: `2026-08-${String(i + 1).padStart(2, '0')}-service-${i}`,
+      date: '2026-08-28',
+      service: `Service ${i}`,
+      api: `service${i}.v1`,
+      title: `Update ${i} title`,
+      summary: `Summary for update ${i}`,
+      impact: 'low',
+      breaking: false,
+    }));
+
+    const html = renderWeeklyDigestHtml(manyChanges, 'Week of August 31, 2026');
+    expect(html).toContain('Showing 12 of 18 non-breaking updates');
+    expect(html).toContain('View remaining on Radar →');
+    expect(html).toContain('https://google-cloud-radar.com');
+  });
+
+  it('does not append truncation banner when non-breaking updates are 12 or fewer', () => {
+    const twelveChanges = Array.from({ length: 12 }, (_, i) => ({
+      slug: `2026-08-${String(i + 1).padStart(2, '0')}-service-${i}`,
+      date: '2026-08-28',
+      service: `Service ${i}`,
+      api: `service${i}.v1`,
+      title: `Update ${i} title`,
+      summary: `Summary for update ${i}`,
+      impact: 'low',
+      breaking: false,
+    }));
+
+    const html = renderWeeklyDigestHtml(twelveChanges, 'Week of August 31, 2026');
+    expect(html).not.toContain('Showing 12 of');
+    expect(html).not.toContain('View remaining on Radar');
   });
 
   it('renders weekly digest plaintext fallback correctly (b60ae957)', () => {
