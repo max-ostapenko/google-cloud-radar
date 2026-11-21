@@ -20,6 +20,18 @@ const schemaData = {
     name: "Google Cloud Radar",
     url: "https://github.com/max-ostapenko/google-cloud-radar",
   },
+  distribution: [
+    {
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: "https://google-cloud-radar.com/api/feed.json",
+    },
+    {
+      "@type": "DataDownload",
+      encodingFormat: "application/rss+xml",
+      contentUrl: "https://google-cloud-radar.com/rss.xml",
+    },
+  ],
   variableMeasured: [
     "Canary to GA Lead Time in Days",
     "GCP API Revision Frequency",
