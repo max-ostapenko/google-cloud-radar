@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { deduplicateFeedSiblingVersions, getAllFeedEntries } from '../../lib/feed';
+import { buildGcpMetadata, deduplicateFeedSiblingVersions, getAllFeedEntries } from '../../lib/feed';
 
 export const GET: APIRoute = async () => {
   const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
@@ -18,15 +18,7 @@ export const GET: APIRoute = async () => {
       content_text: entry.summary,
       date_published: `${entry.date}T00:00:00Z`,
       tags: entry.tags,
-      _gcp_metadata: {
-        service: entry.service,
-        api: entry.api,
-        impact: entry.impact,
-        breaking: entry.breaking,
-        interesting_score: entry.interesting_score,
-        category: entry.category,
-        methods: entry.extractedMethods,
-      },
+      _gcp_metadata: buildGcpMetadata(entry),
     })),
   };
 

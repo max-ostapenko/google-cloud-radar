@@ -1051,3 +1051,67 @@ export function partitionSiblingNarratives(siblings: SiblingVersionInfo[]): Sibl
     uniqueCountBySlug,
   };
 }
+
+export function escapeXml(str: unknown): string {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+export function buildGcpMetadata(entry: FeedEntry): Record<string, any> {
+  const metadata: Record<string, any> = {
+    service: entry.service,
+    api: entry.api,
+    impact: entry.impact,
+    breaking: entry.breaking,
+    interesting_score: entry.interesting_score,
+    category: entry.category,
+    status: entry.status,
+    methods: entry.extractedMethods || [],
+  };
+
+  if (entry.lead_time_days !== undefined && entry.lead_time_days !== null) {
+    metadata.lead_time_days = entry.lead_time_days;
+  }
+  if (entry.official_release_date) {
+    metadata.official_release_date = entry.official_release_date;
+  }
+  if (entry.official_release_notes_url) {
+    metadata.official_release_notes_url = entry.official_release_notes_url;
+  }
+
+  return metadata;
+}
+
+export function buildRssCustomData(entry: FeedEntry): string {
+  const lines: string[] = [
+    `<category>${escapeXml(entry.category)}</category>`,
+    `<service>${escapeXml(entry.service)}</service>`,
+    `<api>${escapeXml(entry.api)}</api>`,
+    `<impact>${escapeXml(entry.impact)}</impact>`,
+    `<breaking>${escapeXml(entry.breaking)}</breaking>`,
+    `<interesting_score>${escapeXml(entry.interesting_score)}</interesting_score>`,
+  ];
+
+  if (entry.status) {
+    lines.push(`<status>${escapeXml(entry.status)}</status>`);
+  }
+
+  if (entry.lead_time_days !== undefined && entry.lead_time_days !== null) {
+    lines.push(`<lead_time_days>${escapeXml(entry.lead_time_days)}</lead_time_days>`);
+  }
+
+  if (entry.official_release_date) {
+    lines.push(`<official_release_date>${escapeXml(entry.official_release_date)}</official_release_date>`);
+  }
+
+  if (entry.official_release_notes_url) {
+    lines.push(`<official_release_notes_url>${escapeXml(entry.official_release_notes_url)}</official_release_notes_url>`);
+  }
+
+  return lines.map((l) => `        ${l}`).join('\n');
+}

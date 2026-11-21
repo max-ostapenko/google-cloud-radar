@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { deduplicateFeedSiblingVersions, getAllFeedEntries, getServicesList, slugify } from '../../../lib/feed';
+import { buildGcpMetadata, deduplicateFeedSiblingVersions, getAllFeedEntries, getServicesList, slugify } from '../../../lib/feed';
 
 export async function getStaticPaths() {
   const services = await getServicesList();
@@ -36,16 +36,7 @@ export const GET: APIRoute = async ({ props }) => {
       content_text: entry.summary,
       date_published: `${entry.date}T00:00:00Z`,
       tags: entry.tags,
-      _gcp_metadata: {
-        service: entry.service,
-        api: entry.api,
-        impact: entry.impact,
-        breaking: entry.breaking,
-        interesting_score: entry.interesting_score,
-        category: entry.category,
-        status: entry.status,
-        methods: entry.extractedMethods,
-      },
+      _gcp_metadata: buildGcpMetadata(entry),
     })),
   };
 
