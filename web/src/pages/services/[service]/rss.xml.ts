@@ -1,6 +1,6 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
-import { buildRssCustomData, deduplicateFeedSiblingVersions, getAllFeedEntries, getServicesList, slugify } from '../../../lib/feed';
+import { buildRssCustomData, deduplicateFeedSiblingVersions, getAllFeedEntries, getPublishedTimestamp, getServicesList, slugify } from '../../../lib/feed';
 
 export async function getStaticPaths() {
   const services = await getServicesList();
@@ -33,7 +33,7 @@ export async function GET(context: APIContext) {
     },
     items: entries.map((entry) => ({
       title: `${entry.breaking ? '⚠️ [BREAKING] ' : ''}${entry.title}`,
-      pubDate: new Date(entry.date),
+      pubDate: getPublishedTimestamp(entry),
       description: entry.summary,
       link: `${siteUrl}/changes/${entry.slug}`,
       customData: buildRssCustomData(entry),

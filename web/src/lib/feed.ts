@@ -75,6 +75,8 @@ export interface TaxonomyCategory {
 export interface TaxonomyService {
   name: string;
   aliases?: string[];
+  doc_url?: string;
+  docUrl?: string;
   release_feed_url?: string;
   release_feed_urls?: string[];
 }
@@ -91,6 +93,8 @@ export interface WatchedServiceConfig {
   category_id?: string;
   name: string;
   aliases?: string[];
+  doc_url?: string;
+  docUrl?: string;
   release_feed_url?: string;
   release_feed_urls?: string[];
 }
@@ -122,12 +126,15 @@ const servicesRaw = taxonomyData.services as Record<string, TaxonomyService>;
 for (const [svcId, svc] of Object.entries(servicesRaw)) {
   const cat = serviceToCategory.get(svcId);
   const eco = cat ? categoryToEcosystem.get(cat.id) : serviceToEcosystem.get(svcId);
+  const docUrl = svc.docUrl || svc.doc_url;
   watchedServices[svcId] = {
     name: svc.name || svcId,
     ecosystem: eco?.name || 'More',
     category: cat?.name || '',
     category_id: cat?.id || '',
     aliases: svc.aliases || [],
+    doc_url: docUrl,
+    docUrl: docUrl,
     release_feed_url: svc.release_feed_url,
     release_feed_urls: svc.release_feed_urls,
   };
@@ -292,6 +299,7 @@ export interface SiblingVersionInfo {
   breaking: boolean;
   impact: 'low' | 'medium' | 'high';
   interesting_score?: number;
+  generated_at?: string;
   title: string;
   summary: string;
   rawContent: string;
@@ -364,6 +372,7 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
           : undefined;
       const lead_time_days =
         parsedLeadTime !== undefined && Number.isFinite(parsedLeadTime) ? parsedLeadTime : undefined;
+      const generated_at = f.generated_at?.timestampValue || f.generated_at?.stringValue;
       const official_release_date = f.official_release_date?.timestampValue || f.official_release_date?.stringValue;
       const official_release_notes_url = f.official_release_notes_url?.stringValue;
 
@@ -434,6 +443,7 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         interesting_score,
         status,
         lead_time_days,
+        generated_at,
         official_release_date,
         official_release_notes_url,
         reaction_counts,
@@ -519,6 +529,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
           : undefined;
       const lead_time_days =
         parsedLeadTime !== undefined && Number.isFinite(parsedLeadTime) ? parsedLeadTime : undefined;
+      const generated_at = doc.generated_at ? String(doc.generated_at) : undefined;
       const official_release_date = doc.official_release_date ? String(doc.official_release_date) : undefined;
       const official_release_notes_url = doc.official_release_notes_url ? String(doc.official_release_notes_url) : undefined;
       const breaking_reasons =
@@ -547,6 +558,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
         interesting_score,
         status,
         lead_time_days,
+        generated_at,
         official_release_date,
         official_release_notes_url,
         reaction_counts: { like_change: 0, released: 0, false_positive_or_duplicate: 0 },
@@ -613,6 +625,33 @@ export async function getFeedEntryBySlug(slug: string): Promise<FeedEntry | unde
   return entries.find((e) => e.slug === slug);
 }
 
+/**
+ * Helper to compute publication timestamp Date for a feed entry.
+ * If entry.generated_at exists, parses it as a Date.
+ * If only entry.date exists (YYYY-MM-DD), appends T12:00:00.000Z so calendar date remains stable across negative UTC timezones.
+ */
+export function getPublishedTimestamp(entry: FeedEntryMeta): Date {
+  if (entry.generated_at) {
+    const parsed = new Date(entry.generated_at);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  if (entry.date) {
+    const rawDate = String(entry.date).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
+      return new Date(`${rawDate}T12:00:00.000Z`);
+    }
+    const parsed = new Date(rawDate);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  return new Date();
+}
+
 export interface ServiceInfo {
   service: string;
   slug: string;
@@ -620,6 +659,7 @@ export interface ServiceInfo {
   breakingCount: number;
   ecosystem: Ecosystem;
   category: ServiceCategory;
+  docUrl?: string;
 }
 
 const seenServiceNames = new Set<string>();
@@ -638,16 +678,22 @@ for (const meta of Object.values(watchedServices)) {
 
 export async function getServicesList(): Promise<ServiceInfo[]> {
   const entries = await getAllFeedEntries();
-  const map = new Map<string, { service: string; count: number; breakingCount: number; ecosystem: Ecosystem; category: ServiceCategory }>();
+  const map = new Map<string, { service: string; count: number; breakingCount: number; ecosystem: Ecosystem; category: ServiceCategory; docUrl?: string }>();
 
-  for (const item of MONITORED_SERVICES_LIST) {
+  for (const [svcId, item] of Object.entries(watchedServices)) {
     const slug = slugify(item.name);
+    const taxonomyDocUrl = item.docUrl || item.doc_url;
+    const discoMeta = getDiscoveryMetaForApi(svcId);
+    const discoveryDocUrl = discoMeta.documentationLink || getDiscoveryMetaForApi(slug).documentationLink;
+    const docUrl = taxonomyDocUrl || discoveryDocUrl;
+
     map.set(slug, {
       service: item.name,
       count: 0,
       breakingCount: 0,
       ecosystem: item.ecosystem,
       category: item.category,
+      docUrl,
     });
   }
 
@@ -659,10 +705,14 @@ export async function getServicesList(): Promise<ServiceInfo[]> {
       breakingCount: 0,
       ecosystem: entry.ecosystem || getEcosystemForService(entry.service),
       category: entry.category || getCategoryForService(entry.service),
+      docUrl: entry.documentationLink || getDiscoveryMetaForApi(entry.api || entry.service).documentationLink,
     };
     existing.count += 1;
     if (entry.breaking) {
       existing.breakingCount += 1;
+    }
+    if (!existing.docUrl) {
+      existing.docUrl = entry.documentationLink || getDiscoveryMetaForApi(entry.api || entry.service).documentationLink;
     }
     map.set(slug, existing);
   }
@@ -675,6 +725,7 @@ export async function getServicesList(): Promise<ServiceInfo[]> {
       breakingCount: data.breakingCount,
       ecosystem: data.ecosystem,
       category: data.category,
+      docUrl: data.docUrl,
     }))
     .sort((a, b) => {
       if (b.count !== a.count) return b.count - a.count;
@@ -829,6 +880,7 @@ export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
       breaking: m.breaking,
       impact: m.impact,
       interesting_score: m.interesting_score,
+      generated_at: m.generated_at,
       title: m.title,
       summary: m.summary,
       rawContent: m.rawContent,
@@ -874,6 +926,7 @@ export function deduplicateFeedSiblingVersions(entries: FeedEntry[]): FeedEntry[
         ...entry,
         breaking: siblings.some((sib) => sib.breaking),
         impact: highestImpact,
+        generated_at: entry.generated_at || siblings.find((sib) => sib.generated_at)?.generated_at,
       };
     });
 }
