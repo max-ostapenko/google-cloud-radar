@@ -13,6 +13,7 @@ interface Props {
   activeCategory?: string;
   ogType?: string;
   ogImage?: string;
+  image?: string;
   schemaData?: Record<string, any>;
   showSidebar?: boolean;
   noindex?: boolean;
@@ -28,7 +29,6 @@ const {
   activeServiceSlug = "",
   activeCategory = "",
   ogType = "website",
-  ogImage = "/og-image.png",
   schemaData,
   showSidebar = true,
   noindex = false,
@@ -37,6 +37,8 @@ const {
   prevUrl,
   nextUrl,
 } = Astro.props;
+
+const ogImage = Astro.props.ogImage || Astro.props.image || "/og-image.png";
 
 const rawPath = Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\/+$/, '');
 const canonicalURL = new URL(
