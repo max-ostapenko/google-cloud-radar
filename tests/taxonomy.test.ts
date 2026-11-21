@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as taxonomy from '../scripts/taxonomy.ts';
+import { getServicesList, getDiscoveryMetaForApi } from '../web/src/lib/feed.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -287,5 +288,26 @@ describe('Taxonomy', () => {
       expect(watchedServices[serviceKey]).toBeDefined();
       expect(feedUrl.startsWith('http://') || feedUrl.startsWith('https://')).toBe(true);
     }
+  });
+
+  it('dynamic service documentation URLs', async () => {
+    const services = await getServicesList();
+    expect(services.length).toBeGreaterThan(0);
+
+    const bigquery = services.find((s) => s.slug === 'bigquery');
+    expect(bigquery).toBeDefined();
+    expect(bigquery?.docUrl).toBe('https://cloud.google.com/bigquery/');
+
+    const vertexAi = services.find((s) => s.slug === 'vertex-ai');
+    expect(vertexAi).toBeDefined();
+    expect(vertexAi?.docUrl).toBe('https://cloud.google.com/vertex-ai/');
+
+    const cloudStorage = services.find((s) => s.slug === 'cloud-storage');
+    expect(cloudStorage).toBeDefined();
+    expect(cloudStorage?.docUrl).toBe('https://cloud.google.com/storage/docs/apis');
+
+    // Verify fallback via getDiscoveryMetaForApi
+    expect(getDiscoveryMetaForApi('bigquery').documentationLink).toBe('https://cloud.google.com/bigquery/');
+    expect(getDiscoveryMetaForApi('aiplatform').documentationLink).toBe('https://cloud.google.com/vertex-ai/');
   });
 });

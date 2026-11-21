@@ -75,6 +75,8 @@ export interface TaxonomyCategory {
 export interface TaxonomyService {
   name: string;
   aliases?: string[];
+  doc_url?: string;
+  docUrl?: string;
   release_feed_url?: string;
   release_feed_urls?: string[];
 }
@@ -91,6 +93,8 @@ export interface WatchedServiceConfig {
   category_id?: string;
   name: string;
   aliases?: string[];
+  doc_url?: string;
+  docUrl?: string;
   release_feed_url?: string;
   release_feed_urls?: string[];
 }
@@ -122,12 +126,15 @@ const servicesRaw = taxonomyData.services as Record<string, TaxonomyService>;
 for (const [svcId, svc] of Object.entries(servicesRaw)) {
   const cat = serviceToCategory.get(svcId);
   const eco = cat ? categoryToEcosystem.get(cat.id) : serviceToEcosystem.get(svcId);
+  const docUrl = svc.docUrl || svc.doc_url;
   watchedServices[svcId] = {
     name: svc.name || svcId,
     ecosystem: eco?.name || 'More',
     category: cat?.name || '',
     category_id: cat?.id || '',
     aliases: svc.aliases || [],
+    doc_url: docUrl,
+    docUrl: docUrl,
     release_feed_url: svc.release_feed_url,
     release_feed_urls: svc.release_feed_urls,
   };
@@ -640,6 +647,7 @@ export interface ServiceInfo {
   breakingCount: number;
   ecosystem: Ecosystem;
   category: ServiceCategory;
+  docUrl?: string;
 }
 
 const seenServiceNames = new Set<string>();
@@ -658,16 +666,22 @@ for (const meta of Object.values(watchedServices)) {
 
 export async function getServicesList(): Promise<ServiceInfo[]> {
   const entries = await getAllFeedEntries();
-  const map = new Map<string, { service: string; count: number; breakingCount: number; ecosystem: Ecosystem; category: ServiceCategory }>();
+  const map = new Map<string, { service: string; count: number; breakingCount: number; ecosystem: Ecosystem; category: ServiceCategory; docUrl?: string }>();
 
-  for (const item of MONITORED_SERVICES_LIST) {
+  for (const [svcId, item] of Object.entries(watchedServices)) {
     const slug = slugify(item.name);
+    const taxonomyDocUrl = item.docUrl || item.doc_url;
+    const discoMeta = getDiscoveryMetaForApi(svcId);
+    const discoveryDocUrl = discoMeta.documentationLink || getDiscoveryMetaForApi(slug).documentationLink;
+    const docUrl = taxonomyDocUrl || discoveryDocUrl;
+
     map.set(slug, {
       service: item.name,
       count: 0,
       breakingCount: 0,
       ecosystem: item.ecosystem,
       category: item.category,
+      docUrl,
     });
   }
 
@@ -679,10 +693,14 @@ export async function getServicesList(): Promise<ServiceInfo[]> {
       breakingCount: 0,
       ecosystem: entry.ecosystem || getEcosystemForService(entry.service),
       category: entry.category || getCategoryForService(entry.service),
+      docUrl: entry.documentationLink || getDiscoveryMetaForApi(entry.api || entry.service).documentationLink,
     };
     existing.count += 1;
     if (entry.breaking) {
       existing.breakingCount += 1;
+    }
+    if (!existing.docUrl) {
+      existing.docUrl = entry.documentationLink || getDiscoveryMetaForApi(entry.api || entry.service).documentationLink;
     }
     map.set(slug, existing);
   }
@@ -695,6 +713,7 @@ export async function getServicesList(): Promise<ServiceInfo[]> {
       breakingCount: data.breakingCount,
       ecosystem: data.ecosystem,
       category: data.category,
+      docUrl: data.docUrl,
     }))
     .sort((a, b) => {
       if (b.count !== a.count) return b.count - a.count;
@@ -1332,7 +1351,7 @@ export function serializeLlmsEntryLines(
     `- **Summary:** ${entry.summary}`,
   ];
 
-  if (entry.extractedMethods.length > 0) {
+  if (entry.extractedMethods && entry.extractedMethods.length > 0) {
     lines.push(`- **Methods:** ${entry.extractedMethods.join(', ')}`);
   }
   if (officialReleaseNotesUrl) {

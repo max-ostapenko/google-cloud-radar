@@ -234,6 +234,8 @@ describe('Syndication Feed Serializers & Release Lifecycle Metadata', () => {
   });
 
   it('returns valid JSON Feed 1.1 and RSS 2.0 payloads with complete lifecycle metadata across global and per-service endpoints under 200ms', async () => {
+    const allEntries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
+
     const startJson = performance.now();
     const globalJsonRes = await getGlobalJsonFeed({
       site: new URL('https://google-cloud-radar.com'),
@@ -348,7 +350,6 @@ describe('Syndication Feed Serializers & Release Lifecycle Metadata', () => {
     ).toBe(true);
 
     // Global & per-service Atom 1.0 + llms.txt endpoints
-    const allEntries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
     const sampleServiceInfo: ServiceInfo = vertexJsonRoute.props.serviceInfo;
     const sampleServiceEntries = vertexJsonRoute.props.entries;
 
