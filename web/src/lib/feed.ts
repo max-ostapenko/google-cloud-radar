@@ -1051,3 +1051,71 @@ export function partitionSiblingNarratives(siblings: SiblingVersionInfo[]): Sibl
     uniqueCountBySlug,
   };
 }
+
+export function escapeXml(str: unknown): string {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+export function formatFeedContentHtml(entry: FeedEntry): string {
+  const baseHtml =
+    entry.htmlContent ||
+    (safeMarkdownParser.parse(entry.rawContent || entry.summary || '', { async: false }) as string);
+  const methods = entry.extractedMethods || [];
+  if (methods.length === 0) {
+    return baseHtml;
+  }
+
+  const methodItems = methods
+    .map((m) => `<li><code>${escapeXml(m)}</code></li>`)
+    .join('');
+
+  const methodsHtml = `<div class="methods"><h3>Impacted Methods</h3><ul>${methodItems}</ul></div>`;
+  return `${baseHtml}\n${methodsHtml}`;
+}
+
+export function formatRssCustomData(entry: FeedEntry): string {
+  const methodsXml = (entry.extractedMethods || [])
+    .map((m) => `<method>${escapeXml(m)}</method>`)
+    .join('');
+
+  return `
+    <category>${escapeXml(entry.category)}</category>
+    <service>${escapeXml(entry.service)}</service>
+    <api>${escapeXml(entry.api)}</api>
+    <impact>${escapeXml(entry.impact)}</impact>
+    <breaking>${escapeXml(entry.breaking)}</breaking>
+    <interesting_score>${escapeXml(entry.interesting_score)}</interesting_score>
+    <status>${escapeXml(entry.status)}</status>
+    <methods>${methodsXml}</methods>
+  `.trim();
+}
+
+export function formatJsonFeedItem(entry: FeedEntry, siteUrl: string) {
+  const baseUrl = siteUrl.replace(/\/+$/, '');
+  return {
+    id: entry.slug,
+    url: `${baseUrl}/changes/${entry.slug}`,
+    title: entry.title,
+    content_html: formatFeedContentHtml(entry),
+    summary: entry.summary,
+    content_text: entry.summary,
+    date_published: `${entry.date}T00:00:00Z`,
+    tags: entry.tags || [],
+    _gcp_metadata: {
+      service: entry.service,
+      api: entry.api,
+      impact: entry.impact,
+      breaking: entry.breaking,
+      interesting_score: entry.interesting_score,
+      category: entry.category,
+      status: entry.status,
+      methods: entry.extractedMethods || [],
+    },
+  };
+}

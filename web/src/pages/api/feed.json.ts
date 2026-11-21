@@ -1,33 +1,18 @@
 import type { APIRoute } from 'astro';
-import { deduplicateFeedSiblingVersions, getAllFeedEntries } from '../../lib/feed';
+import { deduplicateFeedSiblingVersions, formatJsonFeedItem, getAllFeedEntries } from '../../lib/feed';
 
 export const GET: APIRoute = async () => {
   const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
+  const siteUrl = 'https://google-cloud-radar.com';
 
   const responsePayload = {
     version: 'https://jsonfeed.org/version/1.1',
     title: 'Google Cloud Radar JSON Feed',
-    home_page_url: 'https://google-cloud-radar.com',
-    feed_url: 'https://google-cloud-radar.com/api/feed.json',
+    home_page_url: siteUrl,
+    feed_url: `${siteUrl}/api/feed.json`,
     description: 'Automated pre-release intelligence and real-time diffs for Google APIs and Cloud services.',
     user_comment: 'Sourced from Google Discovery Service.',
-    items: entries.map((entry) => ({
-      id: entry.slug,
-      url: `https://google-cloud-radar.com/changes/${entry.slug}`,
-      title: entry.title,
-      content_text: entry.summary,
-      date_published: `${entry.date}T00:00:00Z`,
-      tags: entry.tags,
-      _gcp_metadata: {
-        service: entry.service,
-        api: entry.api,
-        impact: entry.impact,
-        breaking: entry.breaking,
-        interesting_score: entry.interesting_score,
-        category: entry.category,
-        methods: entry.extractedMethods,
-      },
-    })),
+    items: entries.map((entry) => formatJsonFeedItem(entry, siteUrl)),
   };
 
   return new Response(JSON.stringify(responsePayload, null, 2), {
