@@ -191,7 +191,7 @@ export function getEcosystemForService(serviceOrApi: string): Ecosystem {
 
 export function getCategoryForService(serviceOrApi: string): ServiceCategory {
   const meta = findServiceMeta(serviceOrApi);
-  return meta?.category || 'Data Analytics';
+  return meta?.category || 'Uncategorized';
 }
 
 export interface DiscoveryDirectoryItem {

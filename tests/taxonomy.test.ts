@@ -249,7 +249,7 @@ describe('Taxonomy', () => {
   it('dynamic ecosystem and category resolution', () => {
     for (const [apiName, meta] of Object.entries(watchedServices)) {
       const expectedEco = meta.ecosystem;
-      const expectedCat = meta.category || null;
+      const expectedCat = meta.category || 'Uncategorized';
       const canonicalName = meta.name;
 
       expect(taxonomy.getEcosystemForService(apiName)).toBe(expectedEco);
@@ -263,7 +263,7 @@ describe('Taxonomy', () => {
     }
 
     expect(taxonomy.getEcosystemForService('unknown_service_xyz')).toBe('More');
-    expect(taxonomy.getCategoryForService('unknown_service_xyz')).toBeNull();
+    expect(taxonomy.getCategoryForService('unknown_service_xyz')).toBe('Uncategorized');
   });
 
   it('watched API names list', () => {

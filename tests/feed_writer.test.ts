@@ -50,13 +50,37 @@ describe('Feed Writer', () => {
     expect(doc.api).toBe('bigquery.v2');
     expect(doc.title).toBe('BigQuery adds a useful flag');
     expect(doc.service).toBe('BigQuery');
+    expect(doc.ecosystem).toBe('Databases and analytics');
+    expect(doc.category).toBe('Data Analytics');
 
     const indexPath = path.join(TMP_DATA_DIR, 'index.json');
     const index = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
     expect(index.length).toBe(1);
     expect(index[0].id).toBe('2026-04-17-bigquery-v2');
     expect(index[0].api).toBe('bigquery.v2');
+    expect(index[0].ecosystem).toBe('Databases and analytics');
+    expect(index[0].category).toBe('Data Analytics');
     expect(index[0].tags).toEqual(['bigquery', 'jobs']);
+  });
+
+  it('write_insight populates fallback ecosystem and category for unlisted API', () => {
+    const unlistedInsight = makeInsight('newuncatalogedapi.v1', 5, false, {
+      service_name: 'New Unlisted Service',
+      title: 'New API launch',
+    });
+    const slug = feed_writer.writeInsight(unlistedInsight, '2026-04-17', TMP_DATA_DIR);
+    expect(slug).toBe('2026-04-17-newuncatalogedapi-v1');
+
+    const jsonPath = path.join(TMP_DATA_DIR, 'changes/2026-04-17-newuncatalogedapi-v1.json');
+    const doc = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+    expect(doc.ecosystem).toBe('More');
+    expect(doc.category).toBe('Uncategorized');
+
+    const indexPath = path.join(TMP_DATA_DIR, 'index.json');
+    const index = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
+    const unlistedEntry = index.find((e: any) => e.id === slug);
+    expect(unlistedEntry.ecosystem).toBe('More');
+    expect(unlistedEntry.category).toBe('Uncategorized');
   });
 
   it('write_insight persists methods and target paths', () => {
@@ -237,6 +261,8 @@ describe('compareRevisions', () => {
       expect(rebuilt[0].status).toBe('released');
       expect(rebuilt[0].lead_time_days).toBe(4);
       expect(rebuilt[0].official_release_date).toBe('2026-10-05');
+      expect(rebuilt[0].ecosystem).toBe('Databases and analytics');
+      expect(rebuilt[0].category).toBe('Data Analytics');
 
       const diskIndex = JSON.parse(fs.readFileSync(path.join(tmpDir, 'index.json'), 'utf-8'));
       expect(diskIndex).toHaveLength(1);

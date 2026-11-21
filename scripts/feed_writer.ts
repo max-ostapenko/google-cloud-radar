@@ -6,7 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { findServiceMeta } from './taxonomy.ts';
+import { findServiceMeta, getEcosystemForService, getCategoryForService } from './taxonomy.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -154,6 +154,8 @@ export function writeInsight(
   const apiId = api ? api.split('.')[0].toLowerCase() : '';
   const canonicalMeta = findServiceMeta(apiId) || findServiceMeta(insight.service_name || insight.service || '');
   const serviceName = canonicalMeta?.name || insight.service_name || insight.service || 'Google Cloud';
+  const ecosystem = canonicalMeta?.ecosystem || insight.ecosystem || getEcosystemForService(api);
+  const category = canonicalMeta?.category || insight.category || getCategoryForService(api);
   const title = insight.title || `${serviceName} API Update`;
   const summary = insight.summary || '';
   const details = insight.details || summary;
@@ -236,6 +238,8 @@ export function writeInsight(
     date: resolvedDate,
     api,
     service: serviceName,
+    ecosystem,
+    category,
     title,
     summary,
     details,
@@ -307,11 +311,19 @@ export function writeInsights(
 export function buildIndexEntry(doc: Record<string, any>): Record<string, any> {
   const id = doc.id || doc.slug;
   const targetPaths = doc.target_paths || doc.extracted_paths || [];
+  const api = doc.api || '';
+  const service = doc.service || doc.service_name || '';
+  const apiId = api ? String(api).split('.')[0].toLowerCase() : '';
+  const canonicalMeta = findServiceMeta(apiId) || findServiceMeta(service);
+  const ecosystem = canonicalMeta?.ecosystem || doc.ecosystem || getEcosystemForService(api || service);
+  const category = canonicalMeta?.category || doc.category || getCategoryForService(api || service);
   return {
     id,
     date: doc.date,
     api: doc.api,
     service: doc.service || doc.service_name,
+    ecosystem,
+    category,
     title: doc.title,
     summary: doc.summary,
     impact: doc.impact,

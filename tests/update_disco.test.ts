@@ -243,10 +243,15 @@ describe('Update Disco', () => {
     }));
 
     const indexDoc = new update_disco.DocumentInfo(INDEX_1_CONTENT);
-    const docs = await update_disco.loadDocuments(indexDoc, false);
-    expect(docs.length).toBe(2);
-    expect(docs[0].content).toEqual(DISCOVERY_0001_CONTENT);
-    expect(docs[1].content).toEqual(DISCOVERY_0002_CONTENT);
+    // When whitelistCheck is omitted, it defaults to false and loads unlisted services
+    const docsDefault = await update_disco.loadDocuments(indexDoc);
+    expect(docsDefault.length).toBe(2);
+    expect(docsDefault[0].content).toEqual(DISCOVERY_0001_CONTENT);
+    expect(docsDefault[1].content).toEqual(DISCOVERY_0002_CONTENT);
+
+    // When whitelistCheck is explicitly true, unlisted services (service1, service2) are filtered out
+    const docsFiltered = await update_disco.loadDocuments(indexDoc, true);
+    expect(docsFiltered.length).toBe(0);
   });
 
   it('load documents failures handled gracefully', async () => {

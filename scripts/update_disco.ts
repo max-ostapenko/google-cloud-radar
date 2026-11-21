@@ -164,7 +164,7 @@ export async function loadIndex(
 
 export async function loadDocuments(
   indexDocument: DocumentInfo,
-  whitelistCheck = true
+  whitelistCheck = false
 ): Promise<DocumentInfo[]> {
   console.log('LOADING service documents ...');
   const serviceDocuments: DocumentInfo[] = [];

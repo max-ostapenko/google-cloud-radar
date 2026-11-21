@@ -169,9 +169,9 @@ export function getEcosystemForService(serviceOrApi: string): string {
   return meta?.ecosystem || 'More';
 }
 
-export function getCategoryForService(serviceOrApi: string): string | null {
+export function getCategoryForService(serviceOrApi: string): string {
   const meta = findServiceMeta(serviceOrApi);
-  return meta?.category || null;
+  return meta?.category || 'Uncategorized';
 }
 
 export function getReleaseFeedUrls(serviceOrApi: string): string[] {
