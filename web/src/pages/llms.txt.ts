@@ -14,7 +14,7 @@ export const GET: APIRoute = async () => {
     '',
     '## Documentation & Endpoints',
     '- [GitHub Repository](https://github.com/max-ostapenko/google-cloud-radar): Open-source project repository and issue tracker',
-    '- [Breaking Changes Stream](https://google-cloud-radar.com/?impact=breaking): Dedicated backward-incompatible API triage filter',
+    '- [Breaking Changes Stream](https://google-cloud-radar.com/breaking): Dedicated backward-incompatible API triage filter',
     '- [API Velocity Benchmark](https://google-cloud-radar.com/stats): Rolling 90-day GCP velocity rankings and canary lead times',
     '',
     '## Recent API Changes and Breaking Updates',

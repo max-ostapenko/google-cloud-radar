@@ -16,11 +16,6 @@
         "type": 301
       },
       {
-        "source": "/breaking",
-        "destination": "/?impact=breaking",
-        "type": 302
-      },
-      {
         "source": "/services/looker",
         "destination": "/services/looker-core",
         "type": 301

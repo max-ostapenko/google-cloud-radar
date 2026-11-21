@@ -115,7 +115,7 @@ export default defineConfig({
   integrations: [
     sitemap({
       filter: (page) => {
-        if (page.includes('/breaking') || page.includes('/404')) return false;
+        if (page.includes('/404')) return false;
         const changeMatch = page.match(/\/changes\/([^/]+)/);
         if (changeMatch) {
           const slug = changeMatch[1];
@@ -147,7 +147,7 @@ export default defineConfig({
         } else if (item.url.includes('/services/')) {
           item.priority = 0.8;
           item.changefreq = 'daily';
-        } else if (item.url.includes('/stats')) {
+        } else if (item.url.includes('/stats') || item.url.includes('/breaking')) {
           item.priority = 0.8;
           item.changefreq = 'daily';
         }

@@ -37,7 +37,7 @@ The web app includes an in-browser **MiniSearch** engine running locally on the 
 |---|---|
 | `/` | Live Radar feed with interactive category filters, impact pills, and instant MiniSearch (`/`). Supports `?impact=breaking` for breaking changes and `?action=alerts` to open preferences modal. |
 | `/stats` | Trailing 90-day rolling benchmark with velocity rankings, lead times, and breaking change rates. |
-| `/breaking` | Legacy route redirecting to `/?impact=breaking` with active subscription status. |
+| `/breaking` | Dedicated static landing page listing breaking changes across monitored GCP services. |
 | `/timeline/[month]` | Month-specific timeline streams (e.g. `/timeline/2026-08/`). |
 | `/services/[service]` | Service hub with historical change timeline, official docs, and raw Discovery REST endpoints. |
 | `/changes/[slug]` | Deep permalinks with visual AST diffs, copyable RPC chips, social sharing, and impact reactions. |
