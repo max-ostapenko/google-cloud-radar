@@ -55,6 +55,9 @@ const { currentPath = '/' } = Astro.props;
   <div class="header-right">
     <nav class="nav-links">
       <a href="/stats" class={currentPath === '/stats' ? 'active' : ''}>Stats</a>
+      <a href="/rss.xml" class={currentPath === '/rss.xml' ? 'active' : ''}>RSS</a>
+      <a href="/api/feed.json" class={currentPath === '/api/feed.json' ? 'active' : ''}><span>JSON<span class="nav-label-ext"> Feed</span></span></a>
+      <a href="/llms.txt" class={currentPath === '/llms.txt' ? 'active' : ''}>LLM</a>
     </nav>
 
     <div class="auth-header-container" id="headerAuthContainer">
@@ -353,7 +356,7 @@ const { currentPath = '/' } = Astro.props;
   .nav-links {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
     font-size: 14px;
     font-weight: 500;
   }
@@ -366,12 +369,17 @@ const { currentPath = '/' } = Astro.props;
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
   }
 
   .nav-links a:hover, .nav-links a.active {
     color: var(--google-blue-text);
     background-color: var(--google-blue-subtle);
     text-decoration: none;
+  }
+
+  .nav-label-ext {
+    display: inline;
   }
 
 
@@ -602,6 +610,9 @@ const { currentPath = '/' } = Astro.props;
       padding: 0 10px;
       gap: 6px;
     }
+    .header-left {
+      min-width: auto;
+    }
     .brand-logo {
       gap: 8px;
     }
@@ -609,6 +620,9 @@ const { currentPath = '/' } = Astro.props;
       font-size: 14px;
     }
     .canary-tag {
+      display: none;
+    }
+    .nav-label-ext {
       display: none;
     }
     .nav-links {
@@ -632,31 +646,44 @@ const { currentPath = '/' } = Astro.props;
   }
 
   @media (max-width: 480px) {
+    .header-right {
+      gap: 6px;
+    }
     .header-alerts-btn span {
       display: none;
     }
     .header-alerts-btn {
       padding: 6px 8px;
     }
-  }
-
-  @media (max-width: 380px) {
-    .brand-title {
-      font-size: 13px;
-    }
-    .gcp-cloud-icon svg {
-      width: 20px;
-      height: 20px;
-    }
-    .nav-links a {
-      padding: 4px 5px;
-      font-size: 11px;
-    }
     .header-signin-btn span {
       display: none;
     }
     .header-signin-btn {
       padding: 6px 8px;
+    }
+    .nav-links {
+      gap: 2px;
+    }
+    .nav-links a {
+      padding: 4px 5px;
+      font-size: 11.5px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .brand-title {
+      font-size: 12.5px;
+    }
+    .gcp-cloud-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+    .nav-links {
+      gap: 2px;
+    }
+    .nav-links a {
+      padding: 3px 4px;
+      font-size: 11px;
     }
   }
 </style>
