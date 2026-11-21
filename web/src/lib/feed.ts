@@ -292,6 +292,7 @@ export interface SiblingVersionInfo {
   breaking: boolean;
   impact: 'low' | 'medium' | 'high';
   interesting_score?: number;
+  generated_at?: string;
   title: string;
   summary: string;
   rawContent: string;
@@ -364,6 +365,7 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
           : undefined;
       const lead_time_days =
         parsedLeadTime !== undefined && Number.isFinite(parsedLeadTime) ? parsedLeadTime : undefined;
+      const generated_at = f.generated_at?.timestampValue || f.generated_at?.stringValue;
       const official_release_date = f.official_release_date?.timestampValue || f.official_release_date?.stringValue;
       const official_release_notes_url = f.official_release_notes_url?.stringValue;
 
@@ -434,6 +436,7 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         interesting_score,
         status,
         lead_time_days,
+        generated_at,
         official_release_date,
         official_release_notes_url,
         reaction_counts,
@@ -519,6 +522,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
           : undefined;
       const lead_time_days =
         parsedLeadTime !== undefined && Number.isFinite(parsedLeadTime) ? parsedLeadTime : undefined;
+      const generated_at = doc.generated_at ? String(doc.generated_at) : undefined;
       const official_release_date = doc.official_release_date ? String(doc.official_release_date) : undefined;
       const official_release_notes_url = doc.official_release_notes_url ? String(doc.official_release_notes_url) : undefined;
       const breaking_reasons =
@@ -547,6 +551,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
         interesting_score,
         status,
         lead_time_days,
+        generated_at,
         official_release_date,
         official_release_notes_url,
         reaction_counts: { like_change: 0, released: 0, false_positive_or_duplicate: 0 },
@@ -611,6 +616,33 @@ export async function getActiveDataSource(): Promise<{ type: 'database' | 'files
 export async function getFeedEntryBySlug(slug: string): Promise<FeedEntry | undefined> {
   const entries = await getAllFeedEntries();
   return entries.find((e) => e.slug === slug);
+}
+
+/**
+ * Helper to compute publication timestamp Date for a feed entry.
+ * If entry.generated_at exists, parses it as a Date.
+ * If only entry.date exists (YYYY-MM-DD), appends T12:00:00.000Z so calendar date remains stable across negative UTC timezones.
+ */
+export function getPublishedTimestamp(entry: FeedEntryMeta): Date {
+  if (entry.generated_at) {
+    const parsed = new Date(entry.generated_at);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  if (entry.date) {
+    const rawDate = String(entry.date).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
+      return new Date(`${rawDate}T12:00:00.000Z`);
+    }
+    const parsed = new Date(rawDate);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  return new Date();
 }
 
 export interface ServiceInfo {
@@ -829,6 +861,7 @@ export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
       breaking: m.breaking,
       impact: m.impact,
       interesting_score: m.interesting_score,
+      generated_at: m.generated_at,
       title: m.title,
       summary: m.summary,
       rawContent: m.rawContent,
@@ -874,6 +907,7 @@ export function deduplicateFeedSiblingVersions(entries: FeedEntry[]): FeedEntry[
         ...entry,
         breaking: siblings.some((sib) => sib.breaking),
         impact: highestImpact,
+        generated_at: entry.generated_at || siblings.find((sib) => sib.generated_at)?.generated_at,
       };
     });
 }

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { deduplicateFeedSiblingVersions, getAllFeedEntries } from '../../lib/feed';
+import { deduplicateFeedSiblingVersions, getAllFeedEntries, getPublishedTimestamp } from '../../lib/feed';
 
 export const GET: APIRoute = async () => {
   const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
@@ -16,7 +16,7 @@ export const GET: APIRoute = async () => {
       url: `https://google-cloud-radar.com/changes/${entry.slug}`,
       title: entry.title,
       content_text: entry.summary,
-      date_published: `${entry.date}T00:00:00Z`,
+      date_published: getPublishedTimestamp(entry).toISOString(),
       tags: entry.tags,
       _gcp_metadata: {
         service: entry.service,
