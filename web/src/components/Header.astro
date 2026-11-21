@@ -48,11 +48,30 @@ const { currentPath = '/' } = Astro.props;
           autocomplete="off"
         />
         <span class="search-kbd">/</span>
+        <button type="button" id="mobileSearchCloseBtn" class="mobile-search-close-btn" aria-label="Close search">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
     </form>
   </div>
 
   <div class="header-right">
+    <button
+      id="mobileSearchToggle"
+      class="mobile-search-toggle"
+      aria-label="Toggle search bar"
+      title="Search"
+      type="button"
+    >
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </button>
+
     <nav class="nav-links">
       <a href="/stats" class={currentPath === '/stats' ? 'active' : ''}>Stats</a>
     </nav>
@@ -191,37 +210,74 @@ const { currentPath = '/' } = Astro.props;
 </script>
 
 <script is:inline>
-  // Keyboard shortcut '/' to search
-  window.addEventListener('keydown', (e) => {
-    if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
-      e.preventDefault();
-      const searchInput = document.getElementById('global-search-input');
-      if (searchInput) {
-        searchInput.focus();
-      }
-    }
-  });
-
-  // Cross-page search form navigation
-  function setupSearchForm() {
-    const searchForm = document.getElementById('global-search-form');
+  function setupHeaderSearch() {
+    const header = document.querySelector('.gcp-header');
+    const searchToggleBtn = document.getElementById('mobileSearchToggle');
+    const searchCloseBtn = document.getElementById('mobileSearchCloseBtn');
     const searchInput = document.getElementById('global-search-input');
-    if (!searchForm || !searchInput) return;
+    const searchForm = document.getElementById('global-search-form');
 
-    searchForm.addEventListener('submit', (e) => {
-      const q = searchInput.value.trim();
-      const isHome = window.location.pathname === '/' || window.location.pathname === '';
-      if (isHome) {
+    function expandMobileSearch() {
+      if (header) header.classList.add('search-expanded');
+      if (searchInput) searchInput.focus();
+    }
+
+    function collapseMobileSearch() {
+      if (header) header.classList.remove('search-expanded');
+      if (searchInput) searchInput.blur();
+    }
+
+    if (window.__radarSearchKeydownHandler) {
+      window.removeEventListener('keydown', window.__radarSearchKeydownHandler);
+    }
+    window.__radarSearchKeydownHandler = (e) => {
+      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
         e.preventDefault();
-      } else if (q) {
-        e.preventDefault();
-        window.location.href = `/?q=${encodeURIComponent(q)}`;
+        if (window.innerWidth <= 1024) {
+          expandMobileSearch();
+        } else if (searchInput) {
+          searchInput.focus();
+        }
+      } else if (e.key === 'Escape' && header?.classList.contains('search-expanded')) {
+        collapseMobileSearch();
+      }
+    };
+    window.addEventListener('keydown', window.__radarSearchKeydownHandler);
+
+    if (header?.dataset.searchBound === 'true') return;
+    if (header) header.dataset.searchBound = 'true';
+
+    searchToggleBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (header?.classList.contains('search-expanded')) {
+        collapseMobileSearch();
+      } else {
+        expandMobileSearch();
       }
     });
+
+    searchCloseBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      collapseMobileSearch();
+    });
+
+    // Cross-page search form navigation
+    if (searchForm && searchInput) {
+      searchForm.addEventListener('submit', (e) => {
+        const q = searchInput.value.trim();
+        const isHome = window.location.pathname === '/' || window.location.pathname === '';
+        if (isHome) {
+          e.preventDefault();
+        } else if (q) {
+          e.preventDefault();
+          window.location.href = `/?q=${encodeURIComponent(q)}`;
+        }
+      });
+    }
   }
 
-  setupSearchForm();
-  document.addEventListener('astro:page-load', setupSearchForm);
+  setupHeaderSearch();
+  document.addEventListener('astro:page-load', setupHeaderSearch);
 </script>
 
 <style>
@@ -557,6 +613,42 @@ const { currentPath = '/' } = Astro.props;
   }
 
 
+  .mobile-search-toggle {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+
+  .mobile-search-toggle:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+  }
+
+  .mobile-search-close-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    padding: 2px;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+
+  .mobile-search-close-btn:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-surface-hover);
+  }
+
   .mobile-sidebar-toggle {
     display: none;
     background: transparent;
@@ -580,7 +672,27 @@ const { currentPath = '/' } = Astro.props;
     .header-center {
       display: none;
     }
+    .mobile-search-toggle {
+      display: inline-flex;
+    }
     .creator-badge {
+      display: none;
+    }
+    .gcp-header.search-expanded .header-center {
+      display: flex;
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      max-width: none;
+      z-index: 100;
+      background-color: var(--bg-surface);
+    }
+    .gcp-header.search-expanded .mobile-search-close-btn {
+      display: inline-flex;
+    }
+    .gcp-header.search-expanded .search-kbd {
       display: none;
     }
   }
