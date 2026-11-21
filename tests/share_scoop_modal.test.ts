@@ -67,15 +67,21 @@ function createMockElement(id: string, initialInnerHTML = ''): MockElement {
   };
 }
 
+function extractAstroScript(source: string): string {
+  const openTag = '<script>';
+  const closeTag = '</script>';
+  const startIdx = source.indexOf(openTag);
+  const endIdx = startIdx === -1 ? -1 : source.indexOf(closeTag, startIdx + openTag.length);
+  if (startIdx === -1 || endIdx === -1) {
+    throw new Error('Could not find <script> block in ShareScoopModal.astro');
+  }
+  return source.slice(startIdx + openTag.length, endIdx);
+}
+
 function mountShareScoopModal() {
   const astroPath = path.resolve(process.cwd(), 'web/src/components/ShareScoopModal.astro');
   const source = fs.readFileSync(astroPath, 'utf-8');
-  const scriptMatch = source.match(/<script>([\s\S]*?)<\/script>/);
-  if (!scriptMatch) {
-    throw new Error('Could not find <script> block in ShareScoopModal.astro');
-  }
-
-  const transpiled = stripTypeScriptTypes(scriptMatch[1]);
+  const transpiled = stripTypeScriptTypes(extractAstroScript(source));
 
   const ids = [
     'globalShareModalBackdrop',
