@@ -8,6 +8,7 @@
 import crypto from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
 import process from 'node:process';
+import { extractStructuredDiffs } from './diff_preprocessor.ts';
 
 export const REMOTE_NAME = 'yoshi-fork';
 export const REPO_NAME = 'max-ostapenko/google-cloud-radar';
@@ -98,8 +99,172 @@ export function pushChanges(branch: string): void {
   runCmd('git', ['push', '-u', REMOTE_NAME, branch], { check: true });
 }
 
-export function createPr(branch: string): string {
+export function formatPrBody(diffs: Array<Record<string, any>>): string {
+  if (!diffs || diffs.length === 0) {
+    return PULL_REQUEST_BODY;
+  }
+
+  let totalAdded = 0;
+  let totalRemoved = 0;
+  let totalModified = 0;
+  let breakingServicesCount = 0;
+
+  for (const diff of diffs) {
+    const stats = diff._stats || {};
+    const addedCount = stats.added_count ?? diff.added?.length ?? 0;
+    const removedCount = stats.removed_count ?? diff.removed?.length ?? 0;
+    const modifiedCount = stats.modified_count ?? diff.modified?.length ?? 0;
+    const isBreaking = Boolean(diff.is_breaking || stats.is_breaking);
+
+    totalAdded += addedCount;
+    totalRemoved += removedCount;
+    totalModified += modifiedCount;
+    if (isBreaking) {
+      breakingServicesCount += 1;
+    }
+  }
+
+  const hasBreaking = breakingServicesCount > 0;
+  const breakingBadgeSummary = hasBreaking ? `${breakingServicesCount} 🚨` : 'None ✅';
+
+  let markdown = `${PULL_REQUEST_BODY}\n\n`;
+  markdown += `## 📊 Discovery Document Updates\n\n`;
+  markdown += `### Summary Statistics\n`;
+  markdown += `- **Services Updated:** ${diffs.length}\n`;
+  markdown += `- **Breaking Changes:** ${breakingBadgeSummary}\n`;
+  markdown += `- **Total Additions:** ${totalAdded}\n`;
+  markdown += `- **Total Removals:** ${totalRemoved}\n`;
+  markdown += `- **Total Modifications:** ${totalModified}\n\n`;
+
+  markdown += `### Service Updates\n\n`;
+  markdown += `| Service / API | Status | Added | Removed | Modified | Impacted Methods |\n`;
+  markdown += `| :--- | :--- | :--- | :--- | :--- | :--- |\n`;
+
+  const breakingDetails: string[] = [];
+
+  for (const diff of diffs) {
+    const apiName = diff.api || 'unknown';
+    const stats = diff._stats || {};
+    const addedCount = stats.added_count ?? diff.added?.length ?? 0;
+    const removedCount = stats.removed_count ?? diff.removed?.length ?? 0;
+    const modifiedCount = stats.modified_count ?? diff.modified?.length ?? 0;
+    const isBreaking = Boolean(diff.is_breaking || stats.is_breaking);
+    const breakingReasons: string[] = diff.breaking_reasons || stats.breaking_reasons || [];
+
+    const statusBadge = isBreaking ? '🚨 BREAKING' : '✅ Compatible';
+
+    let methodsDisplay = '-';
+    if (Array.isArray(diff.extracted_methods) && diff.extracted_methods.length > 0) {
+      const topMethods = diff.extracted_methods.slice(0, 3).map((m: string) => `\`${m}\``);
+      if (diff.extracted_methods.length > 3) {
+        topMethods.push(`+${diff.extracted_methods.length - 3} more`);
+      }
+      methodsDisplay = topMethods.join(', ');
+    } else if (Array.isArray(diff.target_paths) && diff.target_paths.length > 0) {
+      const topPaths = diff.target_paths.slice(0, 2).map((p: string) => `\`${p}\``);
+      if (diff.target_paths.length > 2) {
+        topPaths.push(`+${diff.target_paths.length - 2} more`);
+      }
+      methodsDisplay = topPaths.join(', ');
+    }
+
+    markdown += `| \`${apiName}\` | ${statusBadge} | ${addedCount} | ${removedCount} | ${modifiedCount} | ${methodsDisplay} |\n`;
+
+    if (isBreaking && breakingReasons.length > 0) {
+      breakingDetails.push(`- **\`${apiName}\`**:\n` + breakingReasons.map((r) => `  - ${r}`).join('\n'));
+    }
+  }
+
+  if (breakingDetails.length > 0) {
+    markdown += `\n### 🚨 Breaking Change Details\n\n`;
+    markdown += breakingDetails.join('\n\n') + '\n';
+  }
+
+  const jsonMetadata = {
+    version: '1.0',
+    generated_at: new Date().toISOString(),
+    has_breaking_changes: hasBreaking,
+    summary: {
+      total_services: diffs.length,
+      breaking_services: breakingServicesCount,
+      total_added: totalAdded,
+      total_removed: totalRemoved,
+      total_modified: totalModified,
+    },
+    services: diffs.map((diff) => {
+      const stats = diff._stats || {};
+      const addedCount = stats.added_count ?? diff.added?.length ?? 0;
+      const removedCount = stats.removed_count ?? diff.removed?.length ?? 0;
+      const modifiedCount = stats.modified_count ?? diff.modified?.length ?? 0;
+      const isBreaking = Boolean(diff.is_breaking || stats.is_breaking);
+
+      return {
+        api: diff.api,
+        is_breaking: isBreaking,
+        breaking_reasons: diff.breaking_reasons || stats.breaking_reasons || [],
+        extracted_methods: (diff.extracted_methods || []).slice(0, 50),
+        target_paths: (diff.target_paths || []).slice(0, 50),
+        stats: {
+          added: addedCount,
+          removed: removedCount,
+          modified: modifiedCount,
+        },
+      };
+    }),
+  };
+
+  const metadataComment = `\n<!-- AGENT_METADATA:\n${JSON.stringify(jsonMetadata, null, 2)}\n-->`;
+
+  let fullBody = markdown + metadataComment;
+
+  // Enforce total size limit of 60,000 characters
+  if (fullBody.length > 60000) {
+    let compactComment = `\n<!-- AGENT_METADATA:\n${JSON.stringify({
+      version: '1.0',
+      has_breaking_changes: hasBreaking,
+      summary: jsonMetadata.summary,
+      services: jsonMetadata.services.map((s) => ({
+        api: s.api,
+        is_breaking: s.is_breaking,
+        breaking_reasons: s.breaking_reasons,
+        methods_count: s.extracted_methods.length,
+        stats: s.stats,
+      })),
+    })}\n-->`;
+    if (compactComment.length > 30000) {
+      compactComment = `\n<!-- AGENT_METADATA:\n${JSON.stringify({
+        version: '1.0',
+        has_breaking_changes: hasBreaking,
+        summary: jsonMetadata.summary,
+        truncated: true,
+      })}\n-->`;
+    }
+    const suffix = '\n\n... (content truncated for size)\n' + compactComment;
+    const maxMarkdownLen = Math.max(0, 60000 - suffix.length);
+    fullBody = markdown.slice(0, maxMarkdownLen) + suffix;
+  }
+
+  return fullBody;
+}
+
+export function generatePrBody(diffs?: Array<Record<string, any>>): string {
+  if (diffs) {
+    return formatPrBody(diffs);
+  }
+
+  // Inspect worktree changes first (uncommitted / staged)
+  let detectedDiffs = extractStructuredDiffs('HEAD', 'WORKTREE');
+  if (detectedDiffs.length === 0) {
+    // Try inspecting latest committed diff (HEAD~1 against HEAD)
+    detectedDiffs = extractStructuredDiffs('HEAD~1', 'HEAD');
+  }
+
+  return formatPrBody(detectedDiffs);
+}
+
+export function createPr(branch: string, body?: string): string {
   console.log('Creating pull request.');
+  const prBody = body || generatePrBody();
   const prOutput = runCmd(
     'gh',
     [
@@ -112,7 +277,7 @@ export function createPr(branch: string): string {
       '--title',
       COMMIT_MESSAGE,
       '--body',
-      PULL_REQUEST_BODY,
+      prBody,
     ],
     { check: true }
   );
