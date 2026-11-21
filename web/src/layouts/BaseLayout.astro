@@ -78,6 +78,7 @@ const posthogHost = (import.meta.env.PUBLIC_POSTHOG_HOST || process.env.PUBLIC_P
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1a73e8" />
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex ? (
@@ -87,6 +88,7 @@ const posthogHost = (import.meta.env.PUBLIC_POSTHOG_HOST || process.env.PUBLIC_P
     )}
     {prevUrl && <link rel="prev" href={prevUrl} />}
     {nextUrl && <link rel="next" href={nextUrl} />}
+    <link rel="manifest" href="/site.webmanifest" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate icon" href="/favicon.ico" />
 
