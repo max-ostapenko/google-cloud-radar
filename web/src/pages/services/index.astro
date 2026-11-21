@@ -1,0 +1,1012 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { getServicesList, type ServiceInfo, slugify } from "../../lib/feed";
+import taxonomyData from "../../../../data/taxonomy.json";
+
+const services: ServiceInfo[] = await getServicesList();
+
+const totalServices = services.length;
+const totalUpdates = services.reduce((acc, curr) => acc + curr.count, 0);
+const totalBreaking = services.reduce((acc, curr) => acc + curr.breakingCount, 0);
+
+// Build lookup map of service aliases for client-side search filtering
+const aliasesMap: Record<string, string[]> = {};
+for (const [, svc] of Object.entries(taxonomyData.services as Record<string, any>)) {
+  if (svc.name) {
+    const slug = slugify(svc.name);
+    aliasesMap[slug] = svc.aliases || [];
+  }
+}
+
+interface ServiceWithAliases extends ServiceInfo {
+  aliases: string[];
+}
+
+const servicesWithAliases: ServiceWithAliases[] = services.map((s) => ({
+  ...s,
+  aliases: aliasesMap[s.slug] || [],
+}));
+
+// Group services by taxonomy ecosystems
+interface EcosystemGroup {
+  id: string;
+  name: string;
+  icon: string;
+  serviceCount: number;
+  breakingCount: number;
+  subgroups: {
+    category: string;
+    items: ServiceWithAliases[];
+  }[];
+  directItems: ServiceWithAliases[];
+}
+
+const taxonomyEcosystems = (taxonomyData.ecosystems || []) as {
+  id: string;
+  name: string;
+  icon?: string;
+  categories?: string[];
+  services?: string[];
+}[];
+
+const ecosystemGroups: EcosystemGroup[] = taxonomyEcosystems
+  .map((eco) => {
+    const ecoServices = servicesWithAliases.filter((s) => s.ecosystem === eco.name);
+    const serviceCount = ecoServices.length;
+    const ecoBreakingCount = ecoServices.reduce((acc, curr) => acc + curr.breakingCount, 0);
+
+    const catIds = eco.categories || [];
+    const categorizedServices = new Set<ServiceWithAliases>();
+
+    const subgroups = catIds
+      .map((catId) => {
+        const catDef = (taxonomyData.categories || []).find((c: any) => c.id === catId);
+        const catName = catDef ? catDef.name : catId;
+        const items = ecoServices.filter((s) => s.category === catName);
+        items.forEach((item) => categorizedServices.add(item));
+        return {
+          category: catName,
+          items: items.sort((a, b) => b.count - a.count || a.service.localeCompare(b.service)),
+        };
+      })
+      .filter((g) => g.items.length > 0);
+
+    const directItems = ecoServices
+      .filter((s) => !categorizedServices.has(s))
+      .sort((a, b) => b.count - a.count || a.service.localeCompare(b.service));
+
+    return {
+      id: eco.id,
+      name: eco.name,
+      icon: eco.icon || "grid",
+      serviceCount,
+      breakingCount: ecoBreakingCount,
+      subgroups,
+      directItems,
+    };
+  })
+  .filter((g) => g.serviceCount > 0);
+
+// Add any remaining monitored services under an "Other Services" fallback group
+const categorizedServiceSlugs = new Set(
+  ecosystemGroups.flatMap((g) => [
+    ...g.subgroups.flatMap((sg) => sg.items.map((i) => i.slug)),
+    ...g.directItems.map((i) => i.slug),
+  ])
+);
+const remainingServices = servicesWithAliases.filter((s) => !categorizedServiceSlugs.has(s.slug));
+
+if (remainingServices.length > 0) {
+  ecosystemGroups.push({
+    id: "other",
+    name: "Other Services",
+    icon: "grid",
+    serviceCount: remainingServices.length,
+    breakingCount: remainingServices.reduce((acc, curr) => acc + curr.breakingCount, 0),
+    subgroups: [],
+    directItems: remainingServices.sort((a, b) => b.count - a.count || a.service.localeCompare(b.service)),
+  });
+}
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, "") || "https://google-cloud-radar.com";
+
+const schemaData = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "Google Cloud Services Directory — Google Cloud Radar",
+  description: `Complete catalog of ${totalServices} monitored Google Cloud Platform services grouped by ecosystem and category with real-time API changelogs.`,
+  url: `${siteUrl}/services`,
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: totalServices,
+    itemListElement: services.map((s, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: s.service,
+      url: `${siteUrl}/services/${s.slug}`,
+    })),
+  },
+};
+---
+
+<BaseLayout
+  title="Google Cloud Services Directory — Google Cloud Radar"
+  description={`Browse all ${totalServices} monitored Google Cloud services grouped by ecosystem and category. Track real-time API changes, breaking changes, and pre-release signals.`}
+  schemaData={schemaData}
+>
+  <div class="services-directory-container">
+    <Breadcrumbs
+      items={[
+        { label: "Radar Feed", href: "/" },
+        { label: "Services Directory" },
+      ]}
+    />
+
+    <!-- Hero Header Banner -->
+    <header class="directory-hero">
+      <div class="hero-top-badge">
+        <span class="hero-pulse-dot"></span>
+        <span>Google Cloud Catalog · {totalServices} Services Monitored</span>
+      </div>
+      <h1 class="hero-title">Google Cloud Services Directory</h1>
+      <p class="hero-subtitle">
+        Explore all <strong>{totalServices} Google Cloud Platform services</strong> tracked by Google Cloud Radar. View continuous API diffs, method updates, and pre-release Canary signals.
+      </p>
+
+      <div class="hero-stats-row">
+        <div class="hero-stat-pill">
+          <span class="stat-num">{totalServices}</span>
+          <span class="stat-lbl">Services</span>
+        </div>
+        <div class="hero-stat-pill">
+          <span class="stat-num">{totalUpdates}</span>
+          <span class="stat-lbl">Detected Diffs</span>
+        </div>
+        <div class="hero-stat-pill">
+          <span class="stat-num text-red">{totalBreaking}</span>
+          <span class="stat-lbl">Breaking Changes</span>
+        </div>
+        <div class="hero-stat-pill">
+          <span class="stat-num text-blue">{ecosystemGroups.length}</span>
+          <span class="stat-lbl">Ecosystems</span>
+        </div>
+      </div>
+
+      <!-- Search & Filter Bar -->
+      <div class="search-filter-section">
+        <div class="search-input-box">
+          <svg class="search-box-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="search"
+            id="services-search-input"
+            placeholder="Filter by service name, alias, category, or ecosystem (e.g., vertex, bigquery, ai/ml)..."
+            aria-label="Filter Google Cloud services"
+            autocomplete="off"
+          />
+          <button id="clear-search-btn" class="clear-search-btn" type="button" aria-label="Clear search text" style="display: none;">
+            ✕
+          </button>
+        </div>
+
+        <div class="ecosystem-filter-pills" id="ecosystemPills">
+          <button type="button" class="ecosystem-filter-btn active" data-filter="all">
+            All Ecosystems ({totalServices})
+          </button>
+          {
+            ecosystemGroups.map((group) => (
+              <button type="button" class="ecosystem-filter-btn" data-filter={group.id}>
+                {group.name} ({group.serviceCount})
+              </button>
+            ))
+          }
+        </div>
+
+        <div id="results-summary" class="results-summary-text" style="display: none;">
+          Showing <strong id="visible-count">{totalServices}</strong> of {totalServices} services
+        </div>
+      </div>
+    </header>
+
+    <!-- Empty Search Results Container -->
+    <div id="no-search-results" class="no-results-card" style="display: none;">
+      <div class="no-results-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <line x1="8" y1="11" x2="14" y2="11"></line>
+        </svg>
+      </div>
+      <h3>No matching services found</h3>
+      <p>No Google Cloud service matched your search query or ecosystem filter.</p>
+      <button id="reset-search-btn" class="reset-search-btn" type="button">Reset Filters</button>
+    </div>
+
+    <!-- Ecosystem Catalog Grid -->
+    <div class="catalog-content">
+      {
+        ecosystemGroups.map((group) => (
+          <section class="ecosystem-catalog-section" data-ecosystem-section={group.id}>
+            <div class="ecosystem-section-header">
+              <div class="ecosystem-title-wrap">
+                <span class="ecosystem-icon-box">
+                  {group.icon === "cpu" && (
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="4" y="4" width="16" height="16" rx="2" />
+                      <rect x="9" y="9" width="6" height="6" />
+                      <line x1="9" y1="1" x2="9" y2="4" />
+                      <line x1="15" y1="1" x2="15" y2="4" />
+                      <line x1="9" y1="20" x2="9" y2="23" />
+                      <line x1="15" y1="20" x2="15" y2="23" />
+                      <line x1="20" y1="9" x2="23" y2="9" />
+                      <line x1="20" y1="14" x2="23" y2="14" />
+                      <line x1="1" y1="9" x2="4" y2="9" />
+                      <line x1="1" y1="14" x2="4" y2="14" />
+                    </svg>
+                  )}
+                  {group.icon === "database" && (
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                      <ellipse cx="12" cy="5" rx="9" ry="3" />
+                      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                    </svg>
+                  )}
+                  {group.icon === "server" && (
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                      <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                      <line x1="6" y1="6" x2="6.01" y2="6" />
+                      <line x1="6" y1="18" x2="6.01" y2="18" />
+                    </svg>
+                  )}
+                  {group.icon === "link" && (
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                  )}
+                  {group.icon === "sliders" && (
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="4" y1="21" x2="4" y2="14" />
+                      <line x1="4" y1="10" x2="4" y2="3" />
+                      <line x1="12" y1="21" x2="12" y2="12" />
+                      <line x1="12" y1="8" x2="12" y2="3" />
+                      <line x1="20" y1="21" x2="20" y2="16" />
+                      <line x1="20" y1="12" x2="20" y2="3" />
+                      <line x1="1" y1="14" x2="7" y2="14" />
+                      <line x1="9" y1="8" x2="15" y2="8" />
+                      <line x1="17" y1="16" x2="23" y2="16" />
+                    </svg>
+                  )}
+                  {group.icon === "briefcase" && (
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                    </svg>
+                  )}
+                  {group.icon === "trending-up" && (
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                      <polyline points="17 6 23 6 23 12" />
+                    </svg>
+                  )}
+                  {group.icon === "globe" && (
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="2" y1="12" x2="22" y2="12" />
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                    </svg>
+                  )}
+                  {group.icon === "smartphone" && (
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                      <line x1="12" y1="18" x2="12.01" y2="18" />
+                    </svg>
+                  )}
+                  {group.icon === "grid" && (
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="7" height="7" />
+                      <rect x="14" y="3" width="7" height="7" />
+                      <rect x="14" y="14" width="7" height="7" />
+                      <rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                  )}
+                </span>
+                <h2 class="ecosystem-heading">{group.name}</h2>
+                <span class="ecosystem-count-pill">{group.serviceCount} services</span>
+                {group.breakingCount > 0 && (
+                  <span class="ecosystem-breaking-pill" title={`${group.breakingCount} breaking changes in ${group.name}`}>
+                    {group.breakingCount} breaking
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Categorized Subgroups */}
+            {group.subgroups.map((sub) => (
+              <div class="subgroup-section">
+                <div class="subgroup-header">
+                  <span class="subgroup-title">{sub.category}</span>
+                  <span class="subgroup-count">({sub.items.length})</span>
+                </div>
+                <div class="services-cards-grid">
+                  {sub.items.map((s) => (
+                    <a
+                      href={`/services/${s.slug}`}
+                      class="service-card"
+                      data-service-card
+                      data-name={s.service.toLowerCase()}
+                      data-slug={s.slug}
+                      data-category={s.category.toLowerCase()}
+                      data-ecosystem={s.ecosystem.toLowerCase()}
+                      data-ecosystem-id={group.id}
+                      data-aliases={(s.aliases || []).join(" ").toLowerCase()}
+                    >
+                      <div class="card-top-row">
+                        <span class="card-cat-badge">{s.category || group.name}</span>
+                        {s.breakingCount > 0 && (
+                          <span class="card-breaking-badge" title={`${s.breakingCount} breaking changes`}>
+                            <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor" aria-hidden="true">
+                              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                            </svg>
+                            <span>{s.breakingCount}</span>
+                          </span>
+                        )}
+                      </div>
+                      <h3 class="card-service-title">{s.service}</h3>
+                      <div class="card-bottom-row">
+                        <span class="card-change-count">
+                          <strong>{s.count}</strong> {s.count === 1 ? "update" : "updates"}
+                        </span>
+                        <span class="card-arrow-icon">→</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {/* Direct items without subgroups */}
+            {group.directItems.length > 0 && (
+              <div class="subgroup-section">
+                {group.subgroups.length > 0 && (
+                  <div class="subgroup-header">
+                    <span class="subgroup-title">General Services</span>
+                    <span class="subgroup-count">({group.directItems.length})</span>
+                  </div>
+                )}
+                <div class="services-cards-grid">
+                  {group.directItems.map((s) => (
+                    <a
+                      href={`/services/${s.slug}`}
+                      class="service-card"
+                      data-service-card
+                      data-name={s.service.toLowerCase()}
+                      data-slug={s.slug}
+                      data-category={s.category.toLowerCase()}
+                      data-ecosystem={s.ecosystem.toLowerCase()}
+                      data-ecosystem-id={group.id}
+                      data-aliases={(s.aliases || []).join(" ").toLowerCase()}
+                    >
+                      <div class="card-top-row">
+                        <span class="card-cat-badge">{s.category || group.name}</span>
+                        {s.breakingCount > 0 && (
+                          <span class="card-breaking-badge" title={`${s.breakingCount} breaking changes`}>
+                            <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor" aria-hidden="true">
+                              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                            </svg>
+                            <span>{s.breakingCount}</span>
+                          </span>
+                        )}
+                      </div>
+                      <h3 class="card-service-title">{s.service}</h3>
+                      <div class="card-bottom-row">
+                        <span class="card-change-count">
+                          <strong>{s.count}</strong> {s.count === 1 ? "update" : "updates"}
+                        </span>
+                        <span class="card-arrow-icon">→</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  function initServiceSearch() {
+    const searchInput = document.getElementById("services-search-input") as HTMLInputElement | null;
+    if (!searchInput || searchInput.dataset.bound === "true") return;
+    searchInput.dataset.bound = "true";
+
+    const clearBtn = document.getElementById("clear-search-btn");
+    const filterPills = document.querySelectorAll(".ecosystem-filter-btn");
+    const cards = document.querySelectorAll("[data-service-card]");
+    const categoryGroups = document.querySelectorAll(".subgroup-section");
+    const ecosystemSections = document.querySelectorAll(".ecosystem-catalog-section");
+    const noResultsCard = document.getElementById("no-search-results");
+    const resetBtn = document.getElementById("reset-search-btn");
+    const resultsSummary = document.getElementById("results-summary");
+    const visibleCountEl = document.getElementById("visible-count");
+
+    let activeFilter = "all";
+
+    function performFiltering() {
+      const query = (searchInput?.value || "").trim().toLowerCase();
+      let visibleCount = 0;
+
+      if (clearBtn) {
+        clearBtn.style.display = query ? "inline-flex" : "none";
+      }
+
+      cards.forEach((cardEl) => {
+        const el = cardEl as HTMLElement;
+        const name = el.getAttribute("data-name") || "";
+        const slug = el.getAttribute("data-slug") || "";
+        const category = el.getAttribute("data-category") || "";
+        const ecosystem = el.getAttribute("data-ecosystem") || "";
+        const ecoId = el.getAttribute("data-ecosystem-id") || "";
+        const aliases = el.getAttribute("data-aliases") || "";
+
+        const matchesEco = activeFilter === "all" || ecoId === activeFilter;
+        const matchesQuery =
+          !query ||
+          name.includes(query) ||
+          slug.includes(query) ||
+          category.includes(query) ||
+          ecosystem.includes(query) ||
+          aliases.includes(query);
+
+        if (matchesEco && matchesQuery) {
+          el.style.display = "flex";
+          visibleCount++;
+        } else {
+          el.style.display = "none";
+        }
+      });
+
+      categoryGroups.forEach((groupEl) => {
+        const visibleSubCards = groupEl.querySelectorAll('[data-service-card]:not([style*="display: none"])');
+        (groupEl as HTMLElement).style.display = visibleSubCards.length > 0 ? "block" : "none";
+      });
+
+      ecosystemSections.forEach((ecoEl) => {
+        const visibleEcoCards = ecoEl.querySelectorAll('[data-service-card]:not([style*="display: none"])');
+        (ecoEl as HTMLElement).style.display = visibleEcoCards.length > 0 ? "block" : "none";
+      });
+
+      if (noResultsCard) {
+        noResultsCard.style.display = visibleCount === 0 ? "block" : "none";
+      }
+
+      if (resultsSummary && visibleCountEl) {
+        if (query || activeFilter !== "all") {
+          resultsSummary.style.display = "block";
+          visibleCountEl.textContent = String(visibleCount);
+        } else {
+          resultsSummary.style.display = "none";
+        }
+      }
+    }
+
+    searchInput.addEventListener("input", performFiltering);
+
+    clearBtn?.addEventListener("click", () => {
+      if (searchInput) searchInput.value = "";
+      performFiltering();
+      searchInput?.focus();
+    });
+
+    resetBtn?.addEventListener("click", () => {
+      if (searchInput) searchInput.value = "";
+      activeFilter = "all";
+      filterPills.forEach((pill) => pill.classList.remove("active"));
+      const allPill = document.querySelector('.ecosystem-filter-btn[data-filter="all"]');
+      allPill?.classList.add("active");
+      performFiltering();
+    });
+
+    filterPills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        filterPills.forEach((p) => p.classList.remove("active"));
+        pill.classList.add("active");
+        activeFilter = pill.getAttribute("data-filter") || "all";
+        performFiltering();
+      });
+    });
+  }
+
+  initServiceSearch();
+  document.addEventListener("astro:page-load", initServiceSearch);
+</script>
+
+<style>
+  .services-directory-container {
+    width: 100%;
+    padding-bottom: 60px;
+  }
+
+  /* Hero Header Banner */
+  .directory-hero {
+    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-surface-hover) 100%);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .hero-top-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue-text);
+    border: 1px solid var(--google-blue-border);
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 14px;
+  }
+
+  .hero-pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--google-blue);
+    animation: pulseDot 2s infinite ease-in-out;
+  }
+
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.3); }
+  }
+
+  .hero-title {
+    font-size: clamp(24px, 4vw, 32px);
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+  }
+
+  .hero-subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 780px;
+    margin-bottom: 24px;
+  }
+
+  .hero-subtitle strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .hero-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  .hero-stat-pill {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 8px 16px;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .stat-num {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    line-height: 1;
+  }
+
+  .stat-num.text-red {
+    color: var(--google-red);
+  }
+
+  .stat-num.text-blue {
+    color: var(--google-blue);
+  }
+
+  .stat-lbl {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-tertiary);
+  }
+
+  /* Search & Filter Section */
+  .search-filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .search-input-box {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-surface);
+    border: 1.5px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 10px 16px;
+    gap: 10px;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+
+  .search-input-box:focus-within {
+    border-color: var(--google-blue);
+    box-shadow: 0 0 0 3px var(--google-blue-subtle);
+  }
+
+  .search-box-icon {
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+
+  .search-input-box input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-size: 14px;
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    outline: none;
+  }
+
+  .search-input-box input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .clear-search-btn {
+    background: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .clear-search-btn:hover {
+    background: var(--google-red-subtle);
+    color: var(--google-red-text);
+    border-color: var(--google-red-border);
+  }
+
+  .ecosystem-filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .ecosystem-filter-btn {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .ecosystem-filter-btn:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+  }
+
+  .ecosystem-filter-btn.active {
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue-text);
+    border-color: var(--google-blue-border);
+    font-weight: 700;
+  }
+
+  .results-summary-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding-top: 4px;
+  }
+
+  .results-summary-text strong {
+    color: var(--google-blue-text);
+  }
+
+  /* Empty State */
+  .no-results-card {
+    text-align: center;
+    padding: 64px 24px;
+    background-color: var(--bg-surface);
+    border: 1px dashed var(--border-subtle);
+    border-radius: var(--radius-lg);
+    margin: 32px 0;
+  }
+
+  .no-results-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background-color: var(--bg-surface-hover);
+    color: var(--text-tertiary);
+    border-radius: 50%;
+    margin-bottom: 16px;
+  }
+
+  .no-results-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .no-results-card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    max-width: 480px;
+    margin: 0 auto 20px;
+    line-height: 1.5;
+  }
+
+  .reset-search-btn {
+    background-color: var(--google-blue);
+    color: #ffffff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+
+  .reset-search-btn:hover {
+    background-color: var(--google-blue-hover);
+  }
+
+  /* Ecosystem Sections */
+  .catalog-content {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .ecosystem-catalog-section {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ecosystem-section-header {
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .ecosystem-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .ecosystem-icon-box {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    background-color: var(--google-blue-subtle);
+    color: var(--google-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .ecosystem-heading {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+    margin: 0;
+  }
+
+  .ecosystem-count-pill {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+  }
+
+  .ecosystem-breaking-pill {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--google-red-text);
+    background-color: var(--google-red-subtle);
+    border: 1px solid var(--google-red-border);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-family: var(--font-mono);
+  }
+
+  /* Subgroups */
+  .subgroup-section {
+    margin-bottom: 24px;
+  }
+
+  .subgroup-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .subgroup-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .subgroup-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-tertiary);
+  }
+
+  .subgroup-count {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+  }
+
+  /* Service Cards Grid */
+  .services-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  .service-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  }
+
+  .service-card:hover {
+    border-color: var(--google-blue-border);
+    background-color: var(--bg-surface-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    text-decoration: none;
+  }
+
+  .card-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .card-cat-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--google-blue-text);
+    background-color: var(--google-blue-subtle);
+    padding: 2px 7px;
+    border-radius: var(--radius-full);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+  }
+
+  .card-breaking-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--google-red-text);
+    background-color: var(--google-red-subtle);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+  }
+
+  .card-service-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin-bottom: 16px;
+    letter-spacing: -0.2px;
+  }
+
+  .card-bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 10px;
+  }
+
+  .card-change-count {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .card-change-count strong {
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+  }
+
+  .card-arrow-icon {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    transition: transform 0.15s ease, color 0.15s ease;
+  }
+
+  .service-card:hover .card-arrow-icon {
+    color: var(--google-blue);
+    transform: translateX(3px);
+  }
+
+  @media (max-width: 768px) {
+    .directory-hero {
+      padding: 20px;
+    }
+
+    .ecosystem-catalog-section {
+      padding: 16px 20px;
+    }
+
+    .services-cards-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

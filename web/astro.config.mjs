@@ -144,7 +144,7 @@ export default defineConfig({
           item.priority = 1.0;
           item.changefreq = 'daily';
           item.lastmod = new Date().toISOString();
-        } else if (item.url.includes('/services/')) {
+        } else if (item.url.includes('/services')) {
           item.priority = 0.8;
           item.changefreq = 'daily';
         } else if (item.url.includes('/stats')) {

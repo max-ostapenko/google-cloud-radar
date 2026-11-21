@@ -54,6 +54,7 @@ const { currentPath = '/' } = Astro.props;
 
   <div class="header-right">
     <nav class="nav-links">
+      <a href="/services" class={currentPath.startsWith('/services') ? 'active' : ''}>Services</a>
       <a href="/stats" class={currentPath === '/stats' ? 'active' : ''}>Stats</a>
     </nav>
 
