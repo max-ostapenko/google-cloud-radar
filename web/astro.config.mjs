@@ -115,7 +115,7 @@ export default defineConfig({
   integrations: [
     sitemap({
       filter: (page) => {
-        if (page.includes('/breaking') || page.includes('/404')) return false;
+        if (page.includes('/404')) return false;
         const changeMatch = page.match(/\/changes\/([^/]+)/);
         if (changeMatch) {
           const slug = changeMatch[1];
