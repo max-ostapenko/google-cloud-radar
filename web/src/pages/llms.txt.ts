@@ -1,8 +1,14 @@
 import type { APIRoute } from 'astro';
-import { deduplicateFeedSiblingVersions, getAllFeedEntries } from '../lib/feed';
+import {
+  DEFAULT_SITE_URL,
+  deduplicateFeedSiblingVersions,
+  getAllFeedEntries,
+  serializeLlmsEntryLines,
+} from '../lib/feed';
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async (context) => {
   const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
+  const siteUrl = (context?.site ? context.site.toString() : DEFAULT_SITE_URL).replace(/\/+$/, '');
 
   const lines = [
     '# Google Cloud Radar',
@@ -14,23 +20,22 @@ export const GET: APIRoute = async () => {
     '',
     '## Documentation & Endpoints',
     '- [GitHub Repository](https://github.com/max-ostapenko/google-cloud-radar): Open-source project repository and issue tracker',
-    '- [Breaking Changes Stream](https://google-cloud-radar.com/?impact=breaking): Dedicated backward-incompatible API triage filter',
-    '- [API Velocity Benchmark](https://google-cloud-radar.com/stats): Rolling 90-day GCP velocity rankings and canary lead times',
+    `- [Breaking Changes Stream](${siteUrl}/?impact=breaking): Dedicated backward-incompatible API triage filter`,
+    `- [API Velocity Benchmark](${siteUrl}/stats): Rolling 90-day GCP velocity rankings and canary lead times`,
     '',
     '## Recent API Changes and Breaking Updates',
     '',
   ];
 
   for (const entry of entries.slice(0, 30)) {
-    lines.push(`### [${entry.date}] ${entry.service} (${entry.api})${entry.breaking ? ' [⚠️ BREAKING]' : ''}`);
-    lines.push(`- **Title:** ${entry.title}`);
-    lines.push(`- **Impact:** ${entry.impact} (Score: ${entry.interesting_score}/10)`);
-    lines.push(`- **Summary:** ${entry.summary}`);
-    if (entry.extractedMethods.length > 0) {
-      lines.push(`- **Methods:** ${entry.extractedMethods.join(', ')}`);
-    }
-    lines.push(`- [View Full Change Diff & Details](https://google-cloud-radar.com/changes/${entry.slug})`);
-    lines.push('');
+    lines.push(
+      ...serializeLlmsEntryLines(entry, {
+        includeServiceInHeading: true,
+        breakingBadgeText: '⚠️ BREAKING',
+        diffLinkLabel: 'View Full Change Diff & Details',
+        siteUrl,
+      })
+    );
   }
 
   return new Response(lines.join('\n'), {
