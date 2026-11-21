@@ -8,10 +8,22 @@ const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..');
 
 function extractJsonLdBlocks(html: string): Record<string, any>[] {
-  const matches = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g) || [];
-  return matches.map((block) =>
-    JSON.parse(block.replace(/<script[^>]*>/, '').replace('</script>', ''))
-  );
+  const openTag = '<script type="application/ld+json">';
+  const closeTag = '</script>';
+  const blocks: Record<string, any>[] = [];
+  let searchFrom = 0;
+
+  while (true) {
+    const startIdx = html.indexOf(openTag, searchFrom);
+    if (startIdx === -1) break;
+    const contentStart = startIdx + openTag.length;
+    const endIdx = html.indexOf(closeTag, contentStart);
+    if (endIdx === -1) break;
+    blocks.push(JSON.parse(html.slice(contentStart, endIdx)));
+    searchFrom = endIdx + closeTag.length;
+  }
+
+  return blocks;
 }
 
 describe('Sitemap and Schema Indexing Integration', () => {
