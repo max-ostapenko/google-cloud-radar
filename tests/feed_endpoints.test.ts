@@ -217,8 +217,21 @@ describe('llms.txt & Service llms.txt Endpoint Filtering & AST Rendering', () =>
     expect(text).toContain('Removed:');
     expect(text).toContain('Changed:');
 
-    // Non-breaking entries excluded
-    expect(text).not.toContain('Cloud Storage');
+    // Non-breaking change entries excluded from the stream
+    expect(text).not.toContain('Cloud Storage Bucket Lifecycle');
+    expect(text).not.toContain('storage.v1');
+  });
+
+  it('supports combined search filtering and stream pagination in llms.txt', async () => {
+    const request = new Request('https://google-cloud-radar.com/llms.txt?breaking=false&page=1&limit=1');
+    const response = await llmsTxtGET({ request } as any);
+    expect(response.status).toBe(200);
+
+    const text = await response.text();
+    expect(text).toContain('## API Changes and Breaking Updates (Page 1 of 2 - 2 Total Changes)');
+    expect(text).toContain('BigQuery Storage API Enhancements');
+    expect(text).not.toContain('Cloud Storage Bucket Lifecycle');
+    expect(text).toContain('[Next Page](https://google-cloud-radar.com/llms.txt?page=2&limit=1&breaking=false)');
   });
 
   it('renders AST diff details and filters per-service llms.txt endpoint', async () => {

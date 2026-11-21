@@ -19,6 +19,8 @@ export interface ServiceMeta {
   category?: string;
   category_id?: string;
   aliases?: string[];
+  doc_url?: string;
+  docUrl?: string;
   release_feed_url?: string;
   release_feed_urls?: string[];
 }
@@ -74,12 +76,16 @@ for (const [svcId, svcData] of Object.entries(_SERVICES_RAW)) {
     eco = SERVICE_TO_ECOSYSTEM[svcId] || {};
   }
 
+  const docUrl = svcData.docUrl || svcData.doc_url;
+
   const meta: ServiceMeta = {
     id: svcId,
     name: svcData.name || svcId,
     ecosystem: eco.name || 'More',
     ecosystem_id: eco.id || 'more',
     aliases: svcData.aliases || [],
+    doc_url: docUrl,
+    docUrl: docUrl,
     release_feed_url: svcData.release_feed_url,
     release_feed_urls: svcData.release_feed_urls || [],
   };
