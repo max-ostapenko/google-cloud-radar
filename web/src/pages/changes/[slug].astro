@@ -2,6 +2,8 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ReactionsBar from "../../components/ReactionsBar.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import CodeSnippets from "../../components/CodeSnippets.astro";
+import SchemaDiffViewer from "../../components/SchemaDiffViewer.astro";
 import { deduplicateFeedSiblingVersions, getAllFeedEntries, isIndexableChange, partitionSiblingNarratives, slugify, type FeedEntry } from "../../lib/feed";
 
 export async function getStaticPaths() {
@@ -436,6 +438,11 @@ const shouldIndex = isIndexableChange(entry);
                         </p>
                       </div>
                     )}
+
+                    <div class="card-components-section">
+                      <CodeSnippets snippets={sib.code_snippets} idPrefix={sib.version} />
+                      <SchemaDiffViewer schemaDiff={sib.schema_diff} />
+                    </div>
                   </section>
                 );
               })}
@@ -504,7 +511,14 @@ const shouldIndex = isIndexableChange(entry);
             )}
           </div>
         ) : (
-          <div class="markdown-body" set:html={entry.htmlContent} />
+          <>
+            <div class="markdown-body" set:html={entry.htmlContent} />
+
+            <div class="card-components-section">
+              <CodeSnippets snippets={entry.code_snippets} />
+              <SchemaDiffViewer schemaDiff={entry.schema_diff} />
+            </div>
+          </>
         )
       }
 
@@ -950,10 +964,14 @@ const shouldIndex = isIndexableChange(entry);
   }
 
   .markdown-body {
-    padding: 32px;
+    padding: 32px 32px 16px 32px;
     color: var(--text-primary);
     line-height: 1.7;
     font-size: 15px;
+  }
+
+  .card-components-section {
+    padding: 0 32px 16px 32px;
   }
 
   .version-tabs-container {
@@ -1377,6 +1395,7 @@ const shouldIndex = isIndexableChange(entry);
     }
     .version-panel-methods,
     .version-empty-specifics,
+    .card-components-section,
     .shared-changes-header,
     .shared-methods-block {
       padding-left: 20px;

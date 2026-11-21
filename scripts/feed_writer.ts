@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findServiceMeta } from './taxonomy.ts';
+import { generateCodeSnippets, generateSchemaDiffPayload } from './snippet_generator.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -231,6 +232,29 @@ export function writeInsight(
     .filter(Boolean);
   const diffSignature = insight.diff_signature || existing.diff_signature;
 
+  const codeSnippets =
+    insight.code_snippets ||
+    existing.code_snippets ||
+    generateCodeSnippets({
+      ...insight,
+      api,
+      service: serviceName,
+      summary,
+      breaking,
+      extracted_methods: extractedMethods,
+      target_paths: targetPaths,
+      breaking_reasons: breakingReasons,
+    });
+
+  const schemaDiff =
+    insight.schema_diff ||
+    existing.schema_diff ||
+    generateSchemaDiffPayload({
+      ...insight,
+      target_paths: targetPaths,
+      breaking_reasons: breakingReasons,
+    });
+
   const entry = {
     id: finalSlug,
     date: resolvedDate,
@@ -246,6 +270,8 @@ export function writeInsight(
     tags,
     extracted_methods: extractedMethods,
     target_paths: targetPaths,
+    code_snippets: codeSnippets,
+    schema_diff: schemaDiff,
     ...(diffSignature ? { diff_signature: diffSignature } : {}),
     ...(migrationSteps.length > 0 ? { migration_steps: migrationSteps } : {}),
     status: existing.status ?? 'canary',

@@ -50,6 +50,12 @@ describe('Feed Writer', () => {
     expect(doc.api).toBe('bigquery.v2');
     expect(doc.title).toBe('BigQuery adds a useful flag');
     expect(doc.service).toBe('BigQuery');
+    expect(doc.code_snippets).toHaveProperty('python');
+    expect(doc.code_snippets).toHaveProperty('typescript');
+    expect(doc.code_snippets).toHaveProperty('curl');
+    expect(doc.schema_diff).toHaveProperty('added');
+    expect(doc.schema_diff).toHaveProperty('removed');
+    expect(doc.schema_diff).toHaveProperty('modified');
 
     const indexPath = path.join(TMP_DATA_DIR, 'index.json');
     const index = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
@@ -276,6 +282,8 @@ describe('compareRevisions', () => {
       expect(doc.target_paths).toEqual(['schemas.Service.properties.template']);
       expect(doc.discovery_rest_url).toBe('https://run.googleapis.com/$discovery/rest?version=v2');
       expect(doc.documentation_link).toBe('https://cloud.google.com/run/');
+      expect(doc.code_snippets).toHaveProperty('python');
+      expect(doc.schema_diff).toHaveProperty('modified');
       expect(doc.reaction_counts).toBeUndefined();
       expect(doc.comments_count).toBeUndefined();
       expect(doc.stats).toBeUndefined();

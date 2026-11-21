@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Firestore } from '@google-cloud/firestore';
 import { getCategoryForService } from './taxonomy.ts';
+import { generateCodeSnippets, generateSchemaDiffPayload } from './snippet_generator.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,6 +49,9 @@ export function parseJsonChangeFile(filePath: string): Record<string, any> {
   const createdIso = `${dateStr}T00:00:00.000Z`;
   const nowIso = new Date().toISOString();
 
+  const codeSnippets = generateCodeSnippets(data);
+  const schemaDiff = generateSchemaDiffPayload(data);
+
   const doc: Record<string, any> = {
     id: slug,
     slug,
@@ -69,6 +73,8 @@ export function parseJsonChangeFile(filePath: string): Record<string, any> {
     tags,
     extracted_methods: extractedMethods,
     target_paths: targetPaths,
+    code_snippets: codeSnippets,
+    schema_diff: schemaDiff,
   };
 
   if (Array.isArray(data.breaking_reasons) && data.breaking_reasons.length > 0) {

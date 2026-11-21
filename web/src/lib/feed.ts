@@ -2,6 +2,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Marked } from 'marked';
 import taxonomyData from '../../../data/taxonomy.json';
+import {
+  generateCodeSnippets,
+  generateSchemaDiffPayload,
+  type CodeSnippets,
+  type SchemaDiffPayload,
+  type SchemaDiffEntry,
+} from '../../../scripts/snippet_generator.ts';
+
+export type { CodeSnippets, SchemaDiffPayload, SchemaDiffEntry };
 
 // Secure Marked instance that neutralizes embedded raw HTML while rendering valid Markdown
 const safeMarkdownParser = new Marked({
@@ -51,6 +60,9 @@ export interface FeedEntryMeta {
   comments_count?: number;
   discoveryRestUrl?: string;
   documentationLink?: string;
+  code_snippets?: CodeSnippets;
+  schema_diff?: SchemaDiffPayload;
+  target_paths?: string[];
   stats?: {
     upvotes?: number;
     impacted_users_count?: number;
@@ -298,6 +310,8 @@ export interface SiblingVersionInfo {
   detailsHtml: string;
   extractedMethods: string[];
   targetPaths?: string[];
+  code_snippets?: CodeSnippets;
+  schema_diff?: SchemaDiffPayload;
   discoveryRestUrl?: string;
   isPrimary: boolean;
 }
@@ -418,6 +432,19 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       const discoveryRestUrl = f.discovery_rest_url?.stringValue || discoMeta.discoveryRestUrl;
       const documentationLink = f.documentation_link?.stringValue || discoMeta.documentationLink;
 
+      const mockRecord = {
+        api,
+        service,
+        summary,
+        title,
+        breaking,
+        extracted_methods: extractedMethods,
+        target_paths: targetPaths,
+        breaking_reasons: breaking_reasons || [],
+      };
+      const codeSnippets = generateCodeSnippets(mockRecord);
+      const schemaDiff = generateSchemaDiffPayload(mockRecord);
+
       return {
         slug: getVersionlessChangeSlug(id, api, dateStr),
         docId: id,
@@ -447,6 +474,9 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         detailsHtml: htmlContent,
         extractedMethods,
         targetPaths,
+        target_paths: targetPaths,
+        code_snippets: codeSnippets,
+        schema_diff: schemaDiff,
         ecosystem,
         category,
       };
@@ -505,7 +535,11 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const summary = doc.summary || '';
       const details = doc.details || summary;
       const extractedMethods = Array.isArray(doc.extracted_methods) ? doc.extracted_methods : [];
-      const targetPaths = Array.isArray(doc.target_paths) ? doc.target_paths : [];
+      const targetPaths = Array.isArray(doc.target_paths)
+        ? doc.target_paths
+        : Array.isArray(doc.extracted_paths)
+        ? doc.extracted_paths
+        : [];
 
       const htmlContent = safeMarkdownParser.parse(details || summary, { async: false }) as string;
       const ecosystem = canonicalMeta?.ecosystem || (doc.ecosystem as Ecosystem) || getEcosystemForService(service || api);
@@ -530,6 +564,19 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const discoMeta = getDiscoveryMetaForApi(api || service);
       const discoveryRestUrl = doc.discovery_rest_url || discoMeta.discoveryRestUrl;
       const documentationLink = doc.documentation_link || discoMeta.documentationLink;
+
+      const normalizedRecord = {
+        ...doc,
+        api,
+        service,
+        summary,
+        breaking,
+        extracted_methods: extractedMethods,
+        target_paths: targetPaths,
+        breaking_reasons: breaking_reasons || [],
+      };
+      const codeSnippets = generateCodeSnippets(normalizedRecord);
+      const schemaDiff = generateSchemaDiffPayload(normalizedRecord);
 
       entries.push({
         slug,
@@ -560,6 +607,9 @@ export function getLocalFeedEntries(): FeedEntry[] {
         detailsHtml: htmlContent,
         extractedMethods,
         targetPaths,
+        target_paths: targetPaths,
+        code_snippets: codeSnippets,
+        schema_diff: schemaDiff,
         ecosystem,
         category,
       });
@@ -835,6 +885,8 @@ export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
       detailsHtml: m.detailsHtml,
       extractedMethods: m.extractedMethods,
       targetPaths: m.targetPaths,
+      code_snippets: m.code_snippets,
+      schema_diff: m.schema_diff,
       discoveryRestUrl: m.discoveryRestUrl,
       isPrimary: idx === 0,
     }));

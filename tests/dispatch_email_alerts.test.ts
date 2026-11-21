@@ -42,6 +42,19 @@ describe('dispatch_email_alerts', () => {
     expect(html).toContain('publishers.v1beta1.compact');
   });
 
+  it('includes inline Python code migration block for breaking changes', () => {
+    const breakingHtml = renderBreakingEmailHtml(sampleChange);
+    expect(breakingHtml).toContain('Code Migration Block (Python):');
+    expect(breakingHtml).toContain('from google.cloud import aiplatform_v1beta1');
+
+    const nonBreakingHtml = renderBreakingEmailHtml({
+      ...sampleChange,
+      breaking: false,
+      is_breaking: false,
+    });
+    expect(nonBreakingHtml).not.toContain('Code Migration Block (Python):');
+  });
+
   it('escapes special characters to prevent XSS in email template', () => {
     const maliciousChange = {
       slug: '2026-08-30-malicious',

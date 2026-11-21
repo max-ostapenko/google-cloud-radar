@@ -43,6 +43,15 @@ export const INSIGHT_RESPONSE_SCHEMA = {
       type: Type.INTEGER,
       description: 'Score from 1 to 10 indicating developer impact and significance',
     },
+    code_snippets: {
+      type: Type.OBJECT,
+      properties: {
+        python: { type: Type.STRING, description: 'Python code migration snippet' },
+        typescript: { type: Type.STRING, description: 'TypeScript code migration snippet' },
+        curl: { type: Type.STRING, description: 'cURL command migration snippet' },
+      },
+      required: ['python', 'typescript', 'curl'],
+    },
   },
   required: [
     'api',
@@ -54,6 +63,7 @@ export const INSIGHT_RESPONSE_SCHEMA = {
     'breaking',
     'tags',
     'interesting_score',
+    'code_snippets',
   ],
 };
 

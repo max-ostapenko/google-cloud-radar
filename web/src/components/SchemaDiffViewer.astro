@@ -1,0 +1,458 @@
+---
+import type { SchemaDiffPayload } from '../lib/feed';
+
+interface Props {
+  schemaDiff?: SchemaDiffPayload;
+  title?: string;
+}
+
+const { schemaDiff, title = "Interactive Schema Diff Viewer" } = Astro.props;
+
+const added = schemaDiff?.added || [];
+const removed = schemaDiff?.removed || [];
+const modified = schemaDiff?.modified || [];
+const breakingReasons = schemaDiff?.breaking_reasons || [];
+
+const totalCount = added.length + removed.length + modified.length;
+---
+
+<div class="schema-diff-viewer">
+  <!-- Header with Title & Filter Controls -->
+  <div class="diff-viewer-header">
+    <div class="header-left">
+      <svg class="diff-header-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span class="diff-title">{title}</span>
+      <span class="total-badge">{totalCount} {totalCount === 1 ? 'change' : 'changes'}</span>
+    </div>
+
+    <!-- Filter Category Tabs -->
+    <div class="diff-filter-tabs">
+      <button type="button" class="filter-tab active" data-filter="all">
+        <span>All</span>
+        <span class="tab-count">{totalCount}</span>
+      </button>
+      {added.length > 0 && (
+        <button type="button" class="filter-tab tab-added" data-filter="added">
+          <span>+ Added</span>
+          <span class="tab-count">{added.length}</span>
+        </button>
+      )}
+      {removed.length > 0 && (
+        <button type="button" class="filter-tab tab-removed" data-filter="removed">
+          <span>- Removed</span>
+          <span class="tab-count">{removed.length}</span>
+        </button>
+      )}
+      {modified.length > 0 && (
+        <button type="button" class="filter-tab tab-modified" data-filter="modified">
+          <span>~ Modified</span>
+          <span class="tab-count">{modified.length}</span>
+        </button>
+      )}
+    </div>
+  </div>
+
+  <!-- Real-time Filter / Search Input Bar -->
+  <div class="diff-search-bar">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <input
+      type="text"
+      class="diff-search-input"
+      placeholder="Filter schema paths or property names..."
+      aria-label="Filter schema diff paths"
+    />
+  </div>
+
+  <!-- Breaking Reasons Banner -->
+  {breakingReasons.length > 0 && (
+    <div class="breaking-reasons-callout">
+      <div class="callout-title">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+          <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+        </svg>
+        <span>Breaking Schema Mutations Detected ({breakingReasons.length}):</span>
+      </div>
+      <ul class="reasons-list">
+        {breakingReasons.map((reason) => (
+          <li>{reason}</li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  <!-- Diff Path Items List -->
+  <div class="diff-items-list">
+    {totalCount === 0 ? (
+      <div class="no-diffs-msg">No structured schema diff entries recorded for this change.</div>
+    ) : (
+      <>
+        <!-- Added Items -->
+        {added.map((item) => (
+          <div class="diff-item item-added" data-category="added" data-path={item.path}>
+            <div class="item-meta">
+              <span class="type-badge badge-added">+ ADDED</span>
+              <code class="path-code">{item.path}</code>
+            </div>
+            {item.value !== undefined && (
+              <div class="value-row">
+                <span class="val-label">New Value:</span>
+                <code class="val-code">{typeof item.value === 'object' ? JSON.stringify(item.value) : String(item.value)}</code>
+              </div>
+            )}
+          </div>
+        ))}
+
+        <!-- Removed Items -->
+        {removed.map((item) => (
+          <div class="diff-item item-removed" data-category="removed" data-path={item.path}>
+            <div class="item-meta">
+              <span class="type-badge badge-removed">- REMOVED</span>
+              <code class="path-code">{item.path}</code>
+            </div>
+            {item.old_value !== undefined && (
+              <div class="value-row">
+                <span class="val-label">Old Value:</span>
+                <code class="val-code old-val">{typeof item.old_value === 'object' ? JSON.stringify(item.old_value) : String(item.old_value)}</code>
+              </div>
+            )}
+          </div>
+        ))}
+
+        <!-- Modified Items -->
+        {modified.map((item) => (
+          <div class="diff-item item-modified" data-category="modified" data-path={item.path}>
+            <div class="item-meta">
+              <span class="type-badge badge-modified">~ MODIFIED</span>
+              <code class="path-code">{item.path}</code>
+            </div>
+            {(item.old !== undefined || item.new !== undefined) && (
+              <div class="value-delta">
+                <div class="delta-col old">
+                  <span class="val-label">Before:</span>
+                  <code class="val-code">{item.old !== undefined ? (typeof item.old === 'object' ? JSON.stringify(item.old) : String(item.old)) : 'N/A'}</code>
+                </div>
+                <div class="delta-arrow">→</div>
+                <div class="delta-col new">
+                  <span class="val-label">After:</span>
+                  <code class="val-code">{item.new !== undefined ? (typeof item.new === 'object' ? JSON.stringify(item.new) : String(item.new)) : 'N/A'}</code>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </>
+    )}
+  </div>
+</div>
+
+<script>
+  function setupSchemaDiffViewer() {
+    const viewers = document.querySelectorAll('.schema-diff-viewer');
+
+    viewers.forEach((viewer) => {
+      if (viewer.hasAttribute('data-initialized')) return;
+      viewer.setAttribute('data-initialized', 'true');
+
+      const filterTabs = viewer.querySelectorAll<HTMLButtonElement>('.filter-tab');
+      const searchInput = viewer.querySelector<HTMLInputElement>('.diff-search-input');
+      const items = viewer.querySelectorAll<HTMLElement>('.diff-item');
+
+      let currentCategory = 'all';
+      let currentQuery = '';
+
+      function filterItems() {
+        items.forEach((item) => {
+          const category = item.getAttribute('data-category');
+          const path = (item.getAttribute('data-path') || '').toLowerCase();
+
+          const matchesCategory = currentCategory === 'all' || category === currentCategory;
+          const matchesQuery = !currentQuery || path.includes(currentQuery);
+
+          if (matchesCategory && matchesQuery) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      }
+
+      filterTabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          filterTabs.forEach((t) => t.classList.remove('active'));
+          tab.classList.add('active');
+
+          currentCategory = tab.getAttribute('data-filter') || 'all';
+          filterItems();
+        });
+      });
+
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          currentQuery = (e.target as HTMLInputElement).value.trim().toLowerCase();
+          filterItems();
+        });
+      }
+    });
+  }
+
+  setupSchemaDiffViewer();
+  document.addEventListener('astro:page-load', setupSchemaDiffViewer);
+</script>
+
+<style>
+  .schema-diff-viewer {
+    margin: 24px 0;
+    border: 1px solid var(--border-subtle, #dadce0);
+    border-radius: var(--radius-lg, 8px);
+    background-color: var(--bg-surface, #ffffff);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+  }
+
+  .diff-viewer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background-color: var(--bg-surface-hover, #f8f9fa);
+    border-bottom: 1px solid var(--border-subtle, #e8eaed);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .diff-header-icon {
+    color: var(--google-blue, #1a73e8);
+  }
+
+  .diff-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary, #202124);
+  }
+
+  .total-badge {
+    font-size: 11px;
+    font-weight: 600;
+    background-color: var(--bg-surface, #ffffff);
+    border: 1px solid var(--border-subtle, #dadce0);
+    color: var(--text-secondary, #5f6368);
+    padding: 2px 8px;
+    border-radius: 12px;
+  }
+
+  .diff-filter-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--bg-surface, #ffffff);
+    border: 1px solid var(--border-subtle, #dadce0);
+    color: var(--text-secondary, #5f6368);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .filter-tab:hover {
+    background-color: var(--google-blue-subtle, #e8f0fe);
+    border-color: var(--google-blue-border, #aecbfa);
+    color: var(--google-blue, #1a73e8);
+  }
+
+  .filter-tab.active {
+    background-color: var(--google-blue, #1a73e8);
+    color: #ffffff;
+    border-color: var(--google-blue, #1a73e8);
+    font-weight: 600;
+  }
+
+  .tab-count {
+    font-size: 10px;
+    background-color: rgba(0, 0, 0, 0.08);
+    padding: 1px 5px;
+    border-radius: 8px;
+  }
+
+  .filter-tab.active .tab-count {
+    background-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+  }
+
+  .diff-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--bg-surface, #ffffff);
+    border-bottom: 1px solid var(--border-subtle, #e8eaed);
+    color: var(--text-tertiary, #80868b);
+  }
+
+  .diff-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 12.5px;
+    font-family: inherit;
+    color: var(--text-primary, #202124);
+    background: transparent;
+  }
+
+  .breaking-reasons-callout {
+    padding: 12px 16px;
+    background-color: #fce8e6;
+    border-bottom: 1px solid #f5c2c7;
+    color: #c5221f;
+  }
+
+  .callout-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 6px;
+  }
+
+  .reasons-list {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .reasons-list li {
+    margin-bottom: 2px;
+  }
+
+  .diff-items-list {
+    padding: 12px 16px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .no-diffs-msg {
+    padding: 16px;
+    text-align: center;
+    color: var(--text-tertiary, #80868b);
+    font-size: 13px;
+  }
+
+  .diff-item {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border-subtle, #e8eaed);
+    background-color: var(--bg-surface-hover, #f8f9fa);
+  }
+
+  .item-added {
+    border-left: 4px solid #1e8e3e;
+    background-color: #e6f4ea;
+  }
+
+  .item-removed {
+    border-left: 4px solid #d93025;
+    background-color: #fce8e6;
+  }
+
+  .item-modified {
+    border-left: 4px solid #f9ab00;
+    background-color: #fef7e0;
+  }
+
+  .item-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .type-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: var(--font-mono, monospace);
+  }
+
+  .badge-added { background-color: #ceedd5; color: #137333; }
+  .badge-removed { background-color: #fad2cf; color: #b3261e; }
+  .badge-modified { background-color: #feefc3; color: #b06000; }
+
+  .path-code {
+    font-family: var(--font-mono, monospace);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary, #202124);
+    word-break: break-all;
+  }
+
+  .value-row {
+    margin-top: 6px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .val-label {
+    color: var(--text-secondary, #5f6368);
+    font-weight: 500;
+  }
+
+  .val-code {
+    font-family: var(--font-mono, monospace);
+    font-size: 11.5px;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--border-subtle, #dadce0);
+    color: var(--text-primary, #202124);
+  }
+
+  .value-delta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 6px;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .delta-col {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .delta-arrow {
+    color: var(--text-tertiary, #80868b);
+    font-weight: 700;
+  }
+</style>

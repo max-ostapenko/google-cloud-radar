@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { Firestore } from '@google-cloud/firestore';
 import { isChangeWatchedBySubscriber } from './taxonomy.ts';
+import { generateCodeSnippets } from './snippet_generator.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -288,6 +289,22 @@ export function renderChangeCardHtml(change: Record<string, any>, isSingle = tru
 
       <!-- Extracted Methods -->
       ${methodsHtml}
+
+      <!-- Code Migration Snippet Block -->
+      ${
+        change.breaking || change.is_breaking
+          ? (() => {
+              const snippets = generateCodeSnippets(change);
+              const pyCode = escapeHtml(snippets.python);
+              return `
+              <div style="margin-top: 16px; margin-bottom: 16px; padding: 14px 16px; background-color: #1e1e1e; border: 1px solid #3c4043; border-radius: 6px; color: #d4d4d4; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; line-height: 1.5; overflow-x: auto;">
+                <strong style="display: block; margin-bottom: 8px; font-size: 11px; color: #8ab4f8; text-transform: uppercase; letter-spacing: 0.5px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">Code Migration Block (Python):</strong>
+                <pre style="margin: 0; padding: 0; font-family: inherit; font-size: inherit; white-space: pre-wrap; word-break: break-all; color: #e8eaed; background: transparent; border: none;"><code>${pyCode}</code></pre>
+              </div>
+              `;
+            })()
+          : ''
+      }
 
       <!-- Tags -->
       <div style="margin-top: 14px; margin-bottom: 20px;">

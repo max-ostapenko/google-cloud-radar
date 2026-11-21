@@ -12,6 +12,7 @@ import crypto from 'node:crypto';
 import { extractStructuredDiffs, extractMethodIdentifiersFromPaths } from './diff_preprocessor.ts';
 import { writeInsights, getRecentFeedEntries } from './feed_writer.ts';
 import { analyzeApiDiff } from './llm_client.ts';
+import { generateSchemaDiffPayload } from './snippet_generator.ts';
 
 export function computeDiffSignature(diff: Record<string, any>): string | null {
   const added = Array.isArray(diff.added) ? diff.added : null;
@@ -196,6 +197,7 @@ export async function runDiffToFeed(options: {
       const [methods, paths] = extractMethodAndPathMetadata(diff);
       insight.extracted_methods = Array.from(methods).sort();
       insight.target_paths = Array.from(paths).sort();
+      insight.schema_diff = generateSchemaDiffPayload(diff);
       insights.push(insight);
     } else {
       console.warn(`  No insight returned for ${api} (LLM unavailable or failed)`);

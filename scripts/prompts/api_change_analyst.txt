@@ -73,7 +73,12 @@ Respond with a single valid JSON object. No markdown fences. No extra text. No c
   "breaking": <true|false>,
   "migration_steps": ["<concrete action item for breaking or complex changes, or empty array>"],
   "tags": ["<relevant tag>", "..."],
-  "interesting_score": <integer 1-10>
+  "interesting_score": <integer 1-10>,
+  "code_snippets": {
+    "python": "<copyable Python migration snippet>",
+    "typescript": "<copyable TypeScript migration snippet>",
+    "curl": "<copyable cURL command snippet>"
+  }
 }
 
 ## interesting_score guide
