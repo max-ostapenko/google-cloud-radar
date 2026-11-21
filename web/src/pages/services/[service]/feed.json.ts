@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { deduplicateFeedSiblingVersions, getAllFeedEntries, getServicesList, slugify } from '../../../lib/feed';
+import { deduplicateFeedSiblingVersions, getAllFeedEntries, getPublishedTimestamp, getServicesList, slugify } from '../../../lib/feed';
 
 export async function getStaticPaths() {
   const services = await getServicesList();
@@ -34,7 +34,7 @@ export const GET: APIRoute = async ({ props }) => {
       url: `https://google-cloud-radar.com/changes/${entry.slug}`,
       title: entry.title,
       content_text: entry.summary,
-      date_published: `${entry.date}T00:00:00Z`,
+      date_published: getPublishedTimestamp(entry).toISOString(),
       tags: entry.tags,
       _gcp_metadata: {
         service: entry.service,
