@@ -255,7 +255,7 @@
       if (slackArea) slackArea.value = slackText;
       if (redditTitle) redditTitle.value = rTitle;
       if (redditBody) redditBody.value = rBody;
-      if (redditIntent) redditIntent.href = `https://www.reddit.com/r/googlecloud/submit?title=${encodeURIComponent(rTitle)}&text=${encodeURIComponent(rBody)}`;
+      if (redditIntent) redditIntent.href = `https://www.reddit.com/r/googlecloud/submit?url=${encodeURIComponent(permalink)}&title=${encodeURIComponent(rTitle)}`;
       if (agentArea) agentArea.value = agentText;
       if (agentCount) agentCount.textContent = `${agentText.length} chars · Agent Markdown`;
 
