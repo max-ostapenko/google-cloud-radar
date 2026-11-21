@@ -177,16 +177,14 @@
 </div>
 
 <script>
-  interface SharePayload {
-    slug: string;
-    title: string;
-    service: string;
-    api: string;
-    summary: string;
-    methods?: string[];
-    isBreaking?: boolean;
-    leadTimeDays?: number;
-  }
+  import {
+    buildBoundedRedditSubmitBody,
+    buildFullRedditBody,
+    buildRedditPostTitle,
+    buildRedditSubmitTitle,
+    buildRedditSubmitUrl,
+    type SharePayload,
+  } from '../lib/share';
 
   function initGlobalShareModal() {
     const backdrop = document.getElementById('globalShareModalBackdrop');
@@ -224,8 +222,10 @@
 
       const slackText = `*Google Cloud API Update: ${data.service} (${data.api})* ${data.isBreaking ? ':warning: *[BREAKING]*' : ''}\n*${data.title}*\n>${data.summary}\n${methods.length > 0 ? `*Targeted Methods:* \`${methods.slice(0, 2).join('`, `')}\`\n` : ''}> *Radar Permalink:* <${permalink}|Inspect Schema Diff & Methods>`;
 
-      const rTitle = `[Google Cloud Radar] ${data.service}: ${data.title}${data.isBreaking ? ' [Breaking Change]' : ''}`;
-      const rBody = `New API changes detected for **${data.service}** (\`${data.api}\`) ahead of official release notes:\n\n**Summary:**\n${data.summary}\n\n${methods.length > 0 ? `**Methods Updated:**\n${methods.map((m) => `- \`${m}\``).join('\n')}\n` : ''}Tracked live on Google Cloud Radar:\n${permalink}`;
+      const rTitle = buildRedditPostTitle(data);
+      const rBody = buildFullRedditBody(data);
+      const rSubmitTitle = buildRedditSubmitTitle(data);
+      const rSubmitBody = buildBoundedRedditSubmitBody(data);
 
       const agentText = [
         '---',
@@ -255,7 +255,7 @@
       if (slackArea) slackArea.value = slackText;
       if (redditTitle) redditTitle.value = rTitle;
       if (redditBody) redditBody.value = rBody;
-      if (redditIntent) redditIntent.href = `https://www.reddit.com/r/googlecloud/submit?title=${encodeURIComponent(rTitle)}&text=${encodeURIComponent(rBody)}`;
+      if (redditIntent) redditIntent.href = buildRedditSubmitUrl(rSubmitTitle, rSubmitBody);
       if (agentArea) agentArea.value = agentText;
       if (agentCount) agentCount.textContent = `${agentText.length} chars · Agent Markdown`;
 

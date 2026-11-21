@@ -5,6 +5,7 @@ import {
   formatFeedContentHtml,
   formatRssCustomData,
   getAllFeedEntries,
+  getPublishedTimestamp,
 } from '../lib/feed';
 
 export async function GET(context: APIContext) {
@@ -20,7 +21,7 @@ export async function GET(context: APIContext) {
     },
     items: entries.map((entry) => ({
       title: `${entry.breaking ? '⚠️ [BREAKING] ' : ''}${entry.title}`,
-      pubDate: new Date(entry.date),
+      pubDate: getPublishedTimestamp(entry),
       description: entry.summary,
       content: formatFeedContentHtml(entry),
       link: `${siteUrl}/changes/${entry.slug}`,

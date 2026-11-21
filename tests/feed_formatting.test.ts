@@ -104,7 +104,7 @@ describe('Feed Formatting Helpers', () => {
       expect(item.summary).toBe('Removed required parameter reservation from Jobs insert.');
       expect(item.content_text).toBe('Removed required parameter reservation from Jobs insert.');
       expect(item.content_html).toContain('<div class="methods"><h3>Impacted Methods</h3><ul>');
-      expect(item.date_published).toBe('2026-06-26T00:00:00Z');
+      expect(item.date_published).toBe('2026-06-26T12:00:00.000Z');
       expect(item.tags).toEqual(['breaking', 'jobs']);
       expect(item._gcp_metadata).toEqual({
         service: 'BigQuery',
@@ -116,6 +116,15 @@ describe('Feed Formatting Helpers', () => {
         status: 'canary',
         methods: ['google.cloud.bigquery.v2.JobsService.Insert', 'google.cloud.bigquery.v2.JobsService.Get'],
       });
+    });
+
+    it('uses generated_at ISO timestamp for date_published when available', () => {
+      const entryWithTimestamp: FeedEntry = {
+        ...sampleEntry,
+        generated_at: '2026-06-26T18:37:16.195Z',
+      };
+      const item = formatJsonFeedItem(entryWithTimestamp, 'https://google-cloud-radar.com');
+      expect(item.date_published).toBe('2026-06-26T18:37:16.195Z');
     });
   });
 });

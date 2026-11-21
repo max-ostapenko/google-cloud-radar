@@ -6,6 +6,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import {
   deduplicateFeedSiblingVersions,
   getAllFeedEntries,
+  getDiscoveryMetaForApi,
   getServicesList,
   slugify,
   type FeedEntry,
@@ -37,6 +38,7 @@ interface Props {
     count: number;
     category: string;
     ecosystem?: string;
+    docUrl?: string;
   };
   entries: FeedEntry[];
   allApis: string[];
@@ -55,7 +57,11 @@ const apisWithMeta = apisUsed.map((api) => {
   };
 });
 
-const primaryDocLink = `https://cloud.google.com/products`;
+const primaryDocLink =
+  serviceInfo.docUrl ||
+  entries.find((e) => e.documentationLink)?.documentationLink ||
+  getDiscoveryMetaForApi(serviceInfo.slug)?.documentationLink ||
+  "https://cloud.google.com/products";
 
 const serviceParts = [
   serviceInfo.ecosystem,
@@ -76,6 +82,7 @@ const breadcrumbItems = [
   description={`Track real-time unreleased API changes, breaking changes, and method updates for Google Cloud ${serviceInfo.service}.`}
   activeServiceSlug={serviceInfo.slug}
   activeCategory={serviceInfo.category}
+  ogImage="/og-image.png"
 >
   <div class="service-hub-container">
     <!-- Breadcrumb Navigation -->
