@@ -299,6 +299,7 @@ export interface SiblingVersionInfo {
   breaking: boolean;
   impact: 'low' | 'medium' | 'high';
   interesting_score?: number;
+  generated_at?: string;
   status?: ChangeStatus;
   lead_time_days?: number;
   official_release_date?: string;
@@ -389,6 +390,7 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
           : undefined;
       const lead_time_days =
         parsedLeadTime !== undefined && Number.isFinite(parsedLeadTime) ? parsedLeadTime : undefined;
+      const generated_at = f.generated_at?.timestampValue || f.generated_at?.stringValue;
       const official_release_date = normalizeReleaseDate(
         f.official_release_date?.timestampValue || f.official_release_date?.stringValue
       );
@@ -461,6 +463,7 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         interesting_score,
         status,
         lead_time_days,
+        generated_at,
         official_release_date,
         official_release_notes_url,
         reaction_counts,
@@ -546,6 +549,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
           : undefined;
       const lead_time_days =
         parsedLeadTime !== undefined && Number.isFinite(parsedLeadTime) ? parsedLeadTime : undefined;
+      const generated_at = doc.generated_at ? String(doc.generated_at) : undefined;
       const official_release_date = normalizeReleaseDate(doc.official_release_date);
       const official_release_notes_url = normalizeOptionalString(doc.official_release_notes_url);
       const breaking_reasons =
@@ -574,6 +578,7 @@ export function getLocalFeedEntries(): FeedEntry[] {
         interesting_score,
         status,
         lead_time_days,
+        generated_at,
         official_release_date,
         official_release_notes_url,
         reaction_counts: { like_change: 0, released: 0, false_positive_or_duplicate: 0 },
@@ -638,6 +643,33 @@ export async function getActiveDataSource(): Promise<{ type: 'database' | 'files
 export async function getFeedEntryBySlug(slug: string): Promise<FeedEntry | undefined> {
   const entries = await getAllFeedEntries();
   return entries.find((e) => e.slug === slug);
+}
+
+/**
+ * Helper to compute publication timestamp Date for a feed entry.
+ * If entry.generated_at exists, parses it as a Date.
+ * If only entry.date exists (YYYY-MM-DD), appends T12:00:00.000Z so calendar date remains stable across negative UTC timezones.
+ */
+export function getPublishedTimestamp(entry: FeedEntryMeta): Date {
+  if (entry.generated_at) {
+    const parsed = new Date(entry.generated_at);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  if (entry.date) {
+    const rawDate = String(entry.date).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
+      return new Date(`${rawDate}T12:00:00.000Z`);
+    }
+    const parsed = new Date(rawDate);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  return new Date();
 }
 
 export interface ServiceInfo {
@@ -868,6 +900,7 @@ export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
       breaking: m.breaking,
       impact: m.impact,
       interesting_score: m.interesting_score,
+      generated_at: m.generated_at,
       status: m.status,
       ...(m.lead_time_days !== undefined ? { lead_time_days: m.lead_time_days } : {}),
       ...(m.official_release_date !== undefined ? { official_release_date: m.official_release_date } : {}),
@@ -946,6 +979,7 @@ export function deduplicateFeedSiblingVersions(entries: FeedEntry[]): FeedEntry[
         ...entry,
         breaking: siblings.some((sib) => sib.breaking),
         impact: highestImpact,
+        generated_at: entry.generated_at || siblings.find((sib) => sib.generated_at)?.generated_at,
         status: resolvedStatus,
         ...(resolvedLeadTime !== undefined ? { lead_time_days: resolvedLeadTime } : {}),
         ...(resolvedReleaseDate !== undefined ? { official_release_date: resolvedReleaseDate } : {}),
@@ -1189,7 +1223,7 @@ export function serializeJsonFeedItem(
     ...(hasValidExternalUrl ? { external_url: officialReleaseNotesUrl } : {}),
     title: entry.title,
     content_text: entry.summary,
-    date_published: `${entry.date}T00:00:00Z`,
+    date_published: getPublishedTimestamp(entry).toISOString(),
     tags: entry.tags,
     _gcp_metadata: {
       service: entry.service,
@@ -1252,7 +1286,7 @@ export function serializeRssFeedItem(
   const baseUrl = (siteUrl || DEFAULT_SITE_URL).replace(/\/+$/, '');
   return {
     title: `${entry.breaking ? '⚠️ [BREAKING] ' : ''}${entry.title}`,
-    pubDate: new Date(entry.date),
+    pubDate: getPublishedTimestamp(entry),
     description: entry.summary,
     link: `${baseUrl}/changes/${entry.slug}`,
     customData: serializeRssCustomData(entry),

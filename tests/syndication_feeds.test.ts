@@ -87,7 +87,7 @@ describe('Syndication Feed Serializers & Release Lifecycle Metadata', () => {
       url: 'https://google-cloud-radar.com/changes/2026-11-10-bigquery',
       title: 'BigQuery Jobs API Update',
       content_text: 'Short summary of the BigQuery Jobs API update.',
-      date_published: '2026-11-10T00:00:00Z',
+      date_published: '2026-11-10T12:00:00.000Z',
       tags: ['bigquery', 'breaking-change'],
       _gcp_metadata: {
         service: 'BigQuery',
@@ -106,12 +106,15 @@ describe('Syndication Feed Serializers & Release Lifecycle Metadata', () => {
     expect('external_url' in canaryJson).toBe(false);
 
     const released = makeEntry({
+      generated_at: '2026-11-10T18:37:16.195Z',
       status: 'released',
       lead_time_days: 14,
       official_release_date: '2026-11-24T00:00:00.000Z',
       official_release_notes_url: 'https://docs.cloud.google.com/bigquery/docs/release-notes#November_24_2026',
     });
     const releasedJson = serializeJsonFeedItem(released);
+
+    expect(releasedJson.date_published).toBe('2026-11-10T18:37:16.195Z');
 
     expect(releasedJson.external_url).toBe(
       'https://docs.cloud.google.com/bigquery/docs/release-notes#November_24_2026'
