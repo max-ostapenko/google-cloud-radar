@@ -314,6 +314,8 @@ export interface SiblingVersionInfo {
   api: string;
   version: string;
   breaking: boolean;
+  breaking_reasons?: string[];
+  diff?: AstDiff;
   impact: 'low' | 'medium' | 'high';
   interesting_score?: number;
   generated_at?: string;
@@ -957,6 +959,8 @@ export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
       api: m.api,
       version: m.version || getApiBaseAndVersion(m.api).version,
       breaking: m.breaking,
+      ...(m.breaking_reasons ? { breaking_reasons: m.breaking_reasons } : {}),
+      ...(m.diff ? { diff: m.diff } : {}),
       impact: m.impact,
       interesting_score: m.interesting_score,
       generated_at: m.generated_at,
@@ -1034,12 +1038,38 @@ export function deduplicateFeedSiblingVersions(entries: FeedEntry[]): FeedEntry[
         normalizeOptionalString(lifecycleSource?.official_release_notes_url) ??
         normalizeOptionalString(siblings.find((sib) => sib.official_release_notes_url)?.official_release_notes_url);
 
+      const mergedBreakingReasons = Array.from(
+        new Set([
+          ...(entry.breaking_reasons || []),
+          ...siblings.flatMap((sib) => sib.breaking_reasons || []),
+        ])
+      );
+      const resolvedDiff =
+        entry.diff ??
+        siblings.find((sib) => sib.breaking && sib.diff)?.diff ??
+        siblings.find((sib) => sib.diff)?.diff;
+      const existingTargetPaths = entry.target_paths ?? entry.targetPaths;
+      const fallbackSiblingPaths =
+        siblings.find((sib) => sib.breaking && sib.targetPaths && sib.targetPaths.length > 0)?.targetPaths ??
+        siblings.find((sib) => sib.targetPaths && sib.targetPaths.length > 0)?.targetPaths;
+      const shouldUseSiblingPaths =
+        (!existingTargetPaths || existingTargetPaths.length === 0) &&
+        Array.isArray(fallbackSiblingPaths) &&
+        fallbackSiblingPaths.length > 0;
+
       return {
         ...entry,
         breaking: siblings.some((sib) => sib.breaking),
         impact: highestImpact,
         generated_at: entry.generated_at || siblings.find((sib) => sib.generated_at)?.generated_at,
         status: resolvedStatus,
+        ...(mergedBreakingReasons.length > 0 || entry.breaking_reasons !== undefined
+          ? { breaking_reasons: mergedBreakingReasons }
+          : {}),
+        ...(resolvedDiff !== undefined ? { diff: resolvedDiff } : {}),
+        ...(shouldUseSiblingPaths
+          ? { targetPaths: fallbackSiblingPaths, target_paths: fallbackSiblingPaths }
+          : {}),
         ...(resolvedLeadTime !== undefined ? { lead_time_days: resolvedLeadTime } : {}),
         ...(resolvedReleaseDate !== undefined ? { official_release_date: resolvedReleaseDate } : {}),
         ...(resolvedReleaseNotesUrl !== undefined
@@ -1225,6 +1255,8 @@ export function partitionSiblingNarratives(siblings: SiblingVersionInfo[]): Sibl
 
 const MAX_LLMS_TARGET_PATHS = 15;
 const MAX_LLMS_DIFF_ITEMS = 10;
+export const MAX_JSON_FEED_TARGET_PATHS = 50;
+export const MAX_JSON_FEED_DIFF_ITEMS = 25;
 
 function formatAstDiffItem(bucket: 'added' | 'removed' | 'changed', item: any): string {
   if (typeof item === 'string') return item;
@@ -1308,6 +1340,7 @@ export interface JsonFeedGcpMetadata {
   breaking: boolean;
   breaking_reasons?: string[];
   target_paths?: string[];
+  target_paths_total?: number;
   diff?: AstDiff;
   interesting_score: number;
   category: ServiceCategory;
@@ -1351,6 +1384,16 @@ export function serializeJsonFeedItem(
 
   const includeMachineDiff = Boolean(options.includeMachineDiff);
   const resolvedTargetPaths = entry.target_paths ?? entry.targetPaths;
+  const shouldIncludeTargetPaths = includeMachineDiff || resolvedTargetPaths !== undefined;
+  const rawTargetPaths = resolvedTargetPaths || [];
+  const boundedTargetPaths = rawTargetPaths.slice(0, MAX_JSON_FEED_TARGET_PATHS);
+  const shouldIncludeDiff = includeMachineDiff || entry.diff !== undefined;
+  const rawDiff = entry.diff || { added: [], removed: [], changed: [] };
+  const boundedDiff: AstDiff = {
+    added: (rawDiff.added || []).slice(0, MAX_JSON_FEED_DIFF_ITEMS),
+    removed: (rawDiff.removed || []).slice(0, MAX_JSON_FEED_DIFF_ITEMS),
+    changed: (rawDiff.changed || []).slice(0, MAX_JSON_FEED_DIFF_ITEMS),
+  };
 
   return {
     id: entry.slug,
@@ -1368,12 +1411,15 @@ export function serializeJsonFeedItem(
       ...(includeMachineDiff || entry.breaking_reasons !== undefined
         ? { breaking_reasons: entry.breaking_reasons || [] }
         : {}),
-      ...(includeMachineDiff || resolvedTargetPaths !== undefined
-        ? { target_paths: resolvedTargetPaths || [] }
+      ...(shouldIncludeTargetPaths
+        ? {
+            target_paths: boundedTargetPaths,
+            ...(rawTargetPaths.length > MAX_JSON_FEED_TARGET_PATHS
+              ? { target_paths_total: rawTargetPaths.length }
+              : {}),
+          }
         : {}),
-      ...(includeMachineDiff || entry.diff !== undefined
-        ? { diff: entry.diff || { added: [], removed: [], changed: [] } }
-        : {}),
+      ...(shouldIncludeDiff ? { diff: boundedDiff } : {}),
       interesting_score: entry.interesting_score,
       category: entry.category,
       status: releaseStatus,

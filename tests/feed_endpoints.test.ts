@@ -4,7 +4,12 @@ import path from 'node:path';
 import os from 'node:os';
 import * as feedModule from '../web/src/lib/feed';
 import {
+  MAX_JSON_FEED_DIFF_ITEMS,
+  MAX_JSON_FEED_TARGET_PATHS,
+  deduplicateFeedSiblingVersions,
+  enrichWithSiblingVersions,
   formatMachineFeedEntryDetails,
+  serializeJsonFeedItem,
   type FeedEntry,
 } from '../web/src/lib/feed';
 import { GET as llmsTxtGET } from '../web/src/pages/llms.txt';
@@ -310,6 +315,94 @@ describe('api/feed.json, api/breaking.json & Service feed.json Metadata', () => 
       "Property 'oldParam' in method 'models.tune' was removed",
     ]);
     expect(data.items[0]._gcp_metadata.diff.changed).toHaveLength(1);
+  });
+
+  it('bounds oversized target_paths and AST diff buckets in JSON feeds and records target_paths_total', () => {
+    const oversizedJsonEntry: FeedEntry = {
+      ...mockEntries[0],
+      target_paths: Array.from({ length: 120 }, (_, i) => `schemas.model.properties.field_${i}`),
+      targetPaths: Array.from({ length: 120 }, (_, i) => `schemas.model.properties.field_${i}`),
+      diff: {
+        added: Array.from({ length: 40 }, (_, i) => ({
+          path: `schemas.model.properties.added_${i}`,
+          value: 'string',
+        })),
+        removed: Array.from({ length: 30 }, (_, i) => ({
+          path: `schemas.model.properties.removed_${i}`,
+          old_value: 'string',
+        })),
+        changed: Array.from({ length: 28 }, (_, i) => ({
+          path: `schemas.model.properties.changed_${i}`,
+          old: 'a',
+          new: 'b',
+        })),
+      },
+    };
+
+    const item = serializeJsonFeedItem(oversizedJsonEntry, 'https://google-cloud-radar.com', {
+      includeMachineDiff: true,
+    });
+
+    expect(item._gcp_metadata.target_paths).toHaveLength(MAX_JSON_FEED_TARGET_PATHS);
+    expect(item._gcp_metadata.target_paths?.[0]).toBe('schemas.model.properties.field_0');
+    expect(item._gcp_metadata.target_paths?.[MAX_JSON_FEED_TARGET_PATHS - 1]).toBe(
+      `schemas.model.properties.field_${MAX_JSON_FEED_TARGET_PATHS - 1}`
+    );
+    expect(item._gcp_metadata.target_paths_total).toBe(120);
+    expect(item._gcp_metadata.diff?.added).toHaveLength(MAX_JSON_FEED_DIFF_ITEMS);
+    expect(item._gcp_metadata.diff?.removed).toHaveLength(MAX_JSON_FEED_DIFF_ITEMS);
+    expect(item._gcp_metadata.diff?.changed).toHaveLength(MAX_JSON_FEED_DIFF_ITEMS);
+  });
+
+  it('propagates breaking_reasons, diff, and target_paths from breaking sibling API versions during deduplication', () => {
+    const primaryNonBreakingV1: FeedEntry = {
+      ...mockEntries[1],
+      slug: '2026-11-13-aiplatform',
+      docId: '2026-11-13-aiplatform-v1',
+      date: '2026-11-13',
+      api: 'aiplatform.v1',
+      version: 'v1',
+      service: 'Vertex AI',
+      service_id: 'vertex-ai',
+      breaking: false,
+      breaking_reasons: undefined,
+      target_paths: [],
+      targetPaths: [],
+      diff: undefined,
+      siblingVersions: undefined,
+    };
+
+    const breakingSiblingV1beta1: FeedEntry = {
+      ...mockEntries[0],
+      slug: '2026-11-13-aiplatform',
+      docId: '2026-11-13-aiplatform-v1beta1',
+      date: '2026-11-13',
+      api: 'aiplatform.v1beta1',
+      version: 'v1beta1',
+      service: 'Vertex AI',
+      service_id: 'vertex-ai',
+      breaking: true,
+      breaking_reasons: ["Required parameter 'model' added in v1beta1"],
+      target_paths: ['resources.models.methods.predict.parameters.model'],
+      targetPaths: ['resources.models.methods.predict.parameters.model'],
+      diff: {
+        added: [{ path: 'resources.models.methods.predict.parameters.model.required', value: true }],
+        removed: [],
+        changed: [],
+      },
+      siblingVersions: undefined,
+    };
+
+    const deduplicated = deduplicateFeedSiblingVersions(
+      enrichWithSiblingVersions([primaryNonBreakingV1, breakingSiblingV1beta1])
+    );
+
+    expect(deduplicated).toHaveLength(1);
+    expect(deduplicated[0].api).toBe('aiplatform.v1');
+    expect(deduplicated[0].breaking).toBe(true);
+    expect(deduplicated[0].breaking_reasons).toEqual(["Required parameter 'model' added in v1beta1"]);
+    expect(deduplicated[0].target_paths).toEqual(['resources.models.methods.predict.parameters.model']);
+    expect(deduplicated[0].diff?.added).toHaveLength(1);
   });
 });
 
