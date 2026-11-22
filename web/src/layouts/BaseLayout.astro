@@ -13,6 +13,7 @@ interface Props {
   activeCategory?: string;
   ogType?: string;
   ogImage?: string;
+  image?: string;
   schemaData?: Record<string, any>;
   showSidebar?: boolean;
   noindex?: boolean;
@@ -28,7 +29,6 @@ const {
   activeServiceSlug = "",
   activeCategory = "",
   ogType = "website",
-  ogImage = "/og-image.png",
   schemaData,
   showSidebar = true,
   noindex = false,
@@ -37,6 +37,8 @@ const {
   prevUrl,
   nextUrl,
 } = Astro.props;
+
+const ogImage = Astro.props.ogImage || Astro.props.image || "/og-image.png";
 
 const rawPath = Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\/+$/, '');
 const canonicalURL = new URL(
@@ -91,6 +93,12 @@ const posthogHost = (import.meta.env.PUBLIC_POSTHOG_HOST || process.env.PUBLIC_P
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate icon" href="/favicon.ico" />
+    <link
+      rel="search"
+      type="application/opensearchdescription+xml"
+      title="Google Cloud Radar"
+      href="/opensearch.xml"
+    />
 
     <!-- Canonical Host Enforcement / Preview & Firebase default domain protection -->
     <script is:inline>
@@ -124,6 +132,15 @@ const posthogHost = (import.meta.env.PUBLIC_POSTHOG_HOST || process.env.PUBLIC_P
       title={activeServiceSlug ? `${title} — JSON Feed` : "Google Cloud Radar — JSON Feed 1.1"}
       href={activeServiceSlug ? `/services/${activeServiceSlug}/feed.json` : "/api/feed.json"}
     />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM Context Feed" />
+    {activeServiceSlug && (
+      <link
+        rel="alternate"
+        type="text/plain"
+        href={`/services/${activeServiceSlug}/llms.txt`}
+        title={`${title} — LLM Context Feed`}
+      />
+    )}
 
     <!-- Google Fonts Preconnect & Async Load -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

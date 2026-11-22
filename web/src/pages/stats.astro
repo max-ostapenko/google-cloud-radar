@@ -25,6 +25,18 @@ const schemaData = {
     "GCP API Revision Frequency",
     "Breaking Change Incompatibility Ratio",
   ],
+  distribution: [
+    {
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: "https://google-cloud-radar.com/api/feed.json",
+    },
+    {
+      "@type": "DataDownload",
+      encodingFormat: "application/rss+xml",
+      contentUrl: "https://google-cloud-radar.com/rss.xml",
+    },
+  ],
 };
 ---
 

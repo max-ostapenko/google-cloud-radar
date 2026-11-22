@@ -209,6 +209,21 @@ export function renderWeeklyDigestHtml(changes: any[], weekLabel?: string): stri
         `;
   }
 
+  const omittedCount = nonBreakingCount > 12 ? nonBreakingCount - 12 : 0;
+  let truncationBannerHtml = '';
+  if (omittedCount > 0) {
+    truncationBannerHtml = `
+        <div style="margin-top: 16px; padding: 14px 16px; background-color: #f8f9fa; border: 1px solid #e8eaed; border-radius: 8px; text-align: center;">
+          <div style="font-size: 13px; color: #5f6368; margin-bottom: 6px;">
+            Showing 12 of ${nonBreakingCount} non-breaking updates
+          </div>
+          <a href="https://google-cloud-radar.com" target="_blank" style="font-size: 13px; font-weight: 600; color: #1a73e8; text-decoration: none;">
+            View remaining on Radar →
+          </a>
+        </div>
+        `;
+  }
+
   const breakingSection = breakingChanges.length > 0
     ? `
               <div style="margin-bottom: 24px;">
@@ -227,6 +242,7 @@ export function renderWeeklyDigestHtml(changes: any[], weekLabel?: string): stri
                   🚀 New Features &amp; Schema Updates (${nonBreakingCount})
                 </h2>
                 ${regularItemsHtml}
+                ${truncationBannerHtml}
               </div>
       `
     : '';
