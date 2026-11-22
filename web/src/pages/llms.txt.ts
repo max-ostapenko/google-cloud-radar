@@ -1,13 +1,18 @@
 import type { APIRoute } from 'astro';
-import { deduplicateFeedSiblingVersions, getAllFeedEntries, getServicesList } from '../lib/feed';
+import {
+  DEFAULT_SITE_URL,
+  deduplicateFeedSiblingVersions,
+  getAllFeedEntries,
+  getServicesList,
+  serializeLlmsEntryLines,
+} from '../lib/feed';
 
-const BASE_URL = 'https://google-cloud-radar.com';
-
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async (context) => {
   const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
   const services = await getServicesList();
+  const siteUrl = (context?.site ? context.site.toString() : DEFAULT_SITE_URL).replace(/\/+$/, '');
 
-  const url = request?.url ? new URL(request.url) : new URL(`${BASE_URL}/llms.txt`);
+  const url = context?.request?.url ? new URL(context.request.url) : new URL(`${siteUrl}/llms.txt`);
   const pageParam = url.searchParams.get('page');
   const limitParam = url.searchParams.get('limit');
 
@@ -42,20 +47,20 @@ export const GET: APIRoute = async ({ request }) => {
     '',
     '## Documentation & Endpoints',
     '- [GitHub Repository](https://github.com/max-ostapenko/google-cloud-radar): Open-source project repository and issue tracker',
-    `- [Breaking Changes Stream](${BASE_URL}/?impact=breaking): Dedicated backward-incompatible API triage filter`,
-    `- [API Velocity Benchmark](${BASE_URL}/stats): Rolling 90-day GCP velocity rankings and canary lead times`,
-    `- [Paginated LLM Stream](${BASE_URL}/llms.txt?page=1): Paginated change history stream for AI agents (supports ?page=N&limit=50)`,
+    `- [Breaking Changes Stream](${siteUrl}/?impact=breaking): Dedicated backward-incompatible API triage filter`,
+    `- [API Velocity Benchmark](${siteUrl}/stats): Rolling 90-day GCP velocity rankings and canary lead times`,
+    `- [Paginated LLM Stream](${siteUrl}/llms.txt?page=1): Paginated change history stream for AI agents (supports ?page=N&limit=50)`,
     '',
     '## Machine-Readable Service Feeds & Endpoints',
-    `- [Global RSS Feed](${BASE_URL}/rss.xml): Standard RSS 2.0 feed of all GCP API updates`,
-    `- [Global Atom Feed](${BASE_URL}/atom.xml): Atom 1.0 feed of all GCP API updates`,
-    `- [Global JSON Feed](${BASE_URL}/api/feed.json): JSON Feed 1.1 specification format`,
-    `- [Velocity Stats JSON](${BASE_URL}/api/stats.json): Rolling 90-day GCP velocity metrics and benchmarks`,
+    `- [Global RSS Feed](${siteUrl}/rss.xml): Standard RSS 2.0 feed of all GCP API updates`,
+    `- [Global Atom Feed](${siteUrl}/atom.xml): Atom 1.0 feed of all GCP API updates`,
+    `- [Global JSON Feed](${siteUrl}/api/feed.json): JSON Feed 1.1 specification format`,
+    `- [Velocity Stats JSON](${siteUrl}/api/stats.json): Rolling 90-day GCP velocity metrics and benchmarks`,
   ];
 
   for (const svc of services) {
     lines.push(
-      `- [${svc.service} Feed](${BASE_URL}/services/${svc.slug}): Monitored service route (LLM Context: ${BASE_URL}/services/${svc.slug}/llms.txt, JSON Feed: ${BASE_URL}/services/${svc.slug}/feed.json, RSS: ${BASE_URL}/services/${svc.slug}/rss.xml, Atom: ${BASE_URL}/services/${svc.slug}/atom.xml)`
+      `- [${svc.service} Feed](${siteUrl}/services/${svc.slug}): Monitored service route (LLM Context: ${siteUrl}/services/${svc.slug}/llms.txt, JSON Feed: ${siteUrl}/services/${svc.slug}/feed.json, RSS: ${siteUrl}/services/${svc.slug}/rss.xml, Atom: ${siteUrl}/services/${svc.slug}/atom.xml)`
     );
   }
 
@@ -69,28 +74,27 @@ export const GET: APIRoute = async ({ request }) => {
   lines.push('');
 
   for (const entry of activeEntries) {
-    lines.push(`### [${entry.date}] ${entry.service} (${entry.api})${entry.breaking ? ' [⚠️ BREAKING]' : ''}`);
-    lines.push(`- **Title:** ${entry.title}`);
-    lines.push(`- **Impact:** ${entry.impact} (Score: ${entry.interesting_score}/10)`);
-    lines.push(`- **Summary:** ${entry.summary}`);
-    if (entry.extractedMethods && entry.extractedMethods.length > 0) {
-      lines.push(`- **Methods:** ${entry.extractedMethods.join(', ')}`);
-    }
-    lines.push(`- [View Full Change Diff & Details](${BASE_URL}/changes/${entry.slug})`);
-    lines.push('');
+    lines.push(
+      ...serializeLlmsEntryLines(entry, {
+        includeServiceInHeading: true,
+        breakingBadgeText: '⚠️ BREAKING',
+        diffLinkLabel: 'View Full Change Diff & Details',
+        siteUrl,
+      })
+    );
   }
 
   if (isPaginated) {
     lines.push('## Stream Pagination Links');
-    lines.push(`- [First Page](${BASE_URL}/llms.txt?page=1&limit=${limit})`);
+    lines.push(`- [First Page](${siteUrl}/llms.txt?page=1&limit=${limit})`);
     if (page > 1) {
-      lines.push(`- [Previous Page](${BASE_URL}/llms.txt?page=${page - 1}&limit=${limit})`);
+      lines.push(`- [Previous Page](${siteUrl}/llms.txt?page=${page - 1}&limit=${limit})`);
     }
     if (page < totalPages) {
-      lines.push(`- [Next Page](${BASE_URL}/llms.txt?page=${page + 1}&limit=${limit})`);
+      lines.push(`- [Next Page](${siteUrl}/llms.txt?page=${page + 1}&limit=${limit})`);
     }
-    lines.push(`- [Last Page](${BASE_URL}/llms.txt?page=${totalPages}&limit=${limit})`);
-    lines.push(`- [Full Unpaginated Stream](${BASE_URL}/llms.txt?page=all)`);
+    lines.push(`- [Last Page](${siteUrl}/llms.txt?page=${totalPages}&limit=${limit})`);
+    lines.push(`- [Full Unpaginated Stream](${siteUrl}/llms.txt?page=all)`);
     lines.push('');
   }
 

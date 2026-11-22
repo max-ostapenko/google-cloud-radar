@@ -1,5 +1,14 @@
 import type { APIRoute } from 'astro';
-import { deduplicateFeedSiblingVersions, getAllFeedEntries, getPublishedTimestamp, getServicesList, slugify } from '../../../lib/feed';
+import {
+  DEFAULT_SITE_URL,
+  deduplicateFeedSiblingVersions,
+  getAllFeedEntries,
+  getServicesList,
+  serializeJsonFeedItem,
+  slugify,
+  type FeedEntry,
+  type ServiceInfo,
+} from '../../../lib/feed';
 
 export async function getStaticPaths() {
   const services = await getServicesList();
@@ -19,34 +28,18 @@ export async function getStaticPaths() {
   });
 }
 
-export const GET: APIRoute = async ({ props }) => {
-  const { serviceInfo, entries } = props as { serviceInfo: any; entries: any[] };
+export const GET: APIRoute = async ({ props, site }) => {
+  const { serviceInfo, entries } = props as { serviceInfo: ServiceInfo; entries: FeedEntry[] };
+  const siteUrl = (site ? site.toString() : DEFAULT_SITE_URL).replace(/\/+$/, '');
 
   const responsePayload = {
     version: 'https://jsonfeed.org/version/1.1',
     title: `${serviceInfo.service} API Feed — Google Cloud Radar`,
-    home_page_url: `https://google-cloud-radar.com/services/${serviceInfo.slug}`,
-    feed_url: `https://google-cloud-radar.com/services/${serviceInfo.slug}/feed.json`,
+    home_page_url: `${siteUrl}/services/${serviceInfo.slug}`,
+    feed_url: `${siteUrl}/services/${serviceInfo.slug}/feed.json`,
     description: `Automated pre-release intelligence and real-time diffs for Google ${serviceInfo.service}.`,
     user_comment: 'Sourced from Google Discovery Service.',
-    items: entries.map((entry) => ({
-      id: entry.slug,
-      url: `https://google-cloud-radar.com/changes/${entry.slug}`,
-      title: entry.title,
-      content_text: entry.summary,
-      date_published: getPublishedTimestamp(entry).toISOString(),
-      tags: entry.tags,
-      _gcp_metadata: {
-        service: entry.service,
-        api: entry.api,
-        impact: entry.impact,
-        breaking: entry.breaking,
-        interesting_score: entry.interesting_score,
-        category: entry.category,
-        status: entry.status,
-        methods: entry.extractedMethods,
-      },
-    })),
+    items: entries.map((entry) => serializeJsonFeedItem(entry, siteUrl)),
   };
 
   return new Response(JSON.stringify(responsePayload, null, 2), {

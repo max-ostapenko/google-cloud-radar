@@ -300,6 +300,10 @@ export interface SiblingVersionInfo {
   impact: 'low' | 'medium' | 'high';
   interesting_score?: number;
   generated_at?: string;
+  status?: ChangeStatus;
+  lead_time_days?: number;
+  official_release_date?: string;
+  official_release_notes_url?: string;
   title: string;
   summary: string;
   rawContent: string;
@@ -328,6 +332,20 @@ export interface FeedEntry extends FeedEntryMeta {
 
 const DB_HOST = process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080';
 const PROJECT_ID = process.env.GCP_PROJECT || 'gcp-cloud-radar';
+
+export function normalizeReleaseDate(raw: unknown): string | undefined {
+  if (raw === null || raw === undefined) return undefined;
+  const trimmed = String(raw).trim();
+  if (!trimmed) return undefined;
+  const isoPrefix = trimmed.match(/^(\d{4}-\d{2}-\d{2})/);
+  return isoPrefix ? isoPrefix[1] : trimmed;
+}
+
+function normalizeOptionalString(raw: unknown): string | undefined {
+  if (raw === null || raw === undefined) return undefined;
+  const trimmed = String(raw).trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
 
 /**
  * Live Mock Firestore / Emulator REST Fetch
@@ -373,8 +391,10 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
       const lead_time_days =
         parsedLeadTime !== undefined && Number.isFinite(parsedLeadTime) ? parsedLeadTime : undefined;
       const generated_at = f.generated_at?.timestampValue || f.generated_at?.stringValue;
-      const official_release_date = f.official_release_date?.timestampValue || f.official_release_date?.stringValue;
-      const official_release_notes_url = f.official_release_notes_url?.stringValue;
+      const official_release_date = normalizeReleaseDate(
+        f.official_release_date?.timestampValue || f.official_release_date?.stringValue
+      );
+      const official_release_notes_url = normalizeOptionalString(f.official_release_notes_url?.stringValue);
 
       let breaking_reasons: string[] | undefined = undefined;
       if (f.breaking_reasons?.arrayValue?.values) {
@@ -530,8 +550,8 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const lead_time_days =
         parsedLeadTime !== undefined && Number.isFinite(parsedLeadTime) ? parsedLeadTime : undefined;
       const generated_at = doc.generated_at ? String(doc.generated_at) : undefined;
-      const official_release_date = doc.official_release_date ? String(doc.official_release_date) : undefined;
-      const official_release_notes_url = doc.official_release_notes_url ? String(doc.official_release_notes_url) : undefined;
+      const official_release_date = normalizeReleaseDate(doc.official_release_date);
+      const official_release_notes_url = normalizeOptionalString(doc.official_release_notes_url);
       const breaking_reasons =
         Array.isArray(doc.breaking_reasons) && doc.breaking_reasons.length > 0
           ? doc.breaking_reasons.map((r: any) => String(r)).filter(Boolean)
@@ -881,6 +901,12 @@ export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
       impact: m.impact,
       interesting_score: m.interesting_score,
       generated_at: m.generated_at,
+      status: m.status,
+      ...(m.lead_time_days !== undefined ? { lead_time_days: m.lead_time_days } : {}),
+      ...(m.official_release_date !== undefined ? { official_release_date: m.official_release_date } : {}),
+      ...(m.official_release_notes_url !== undefined
+        ? { official_release_notes_url: m.official_release_notes_url }
+        : {}),
       title: m.title,
       summary: m.summary,
       rawContent: m.rawContent,
@@ -922,11 +948,44 @@ export function deduplicateFeedSiblingVersions(entries: FeedEntry[]): FeedEntry[
         (acc, sib) => (IMPACT_ORDER[sib.impact] > IMPACT_ORDER[acc] ? sib.impact : acc),
         entry.impact
       );
+
+      const releasedSibling =
+        entry.status === 'released'
+          ? entry
+          : siblings.find((sib) => sib.status === 'released');
+      const nonCanarySibling =
+        entry.status && entry.status !== 'canary'
+          ? entry
+          : siblings.find((sib) => sib.status && sib.status !== 'canary');
+      const lifecycleSource = releasedSibling ?? nonCanarySibling;
+
+      const resolvedStatus: ChangeStatus = releasedSibling
+        ? 'released'
+        : (nonCanarySibling?.status ?? entry.status ?? 'canary');
+      const resolvedLeadTime =
+        entry.lead_time_days ??
+        lifecycleSource?.lead_time_days ??
+        siblings.find((sib) => sib.lead_time_days !== undefined && sib.lead_time_days !== null)?.lead_time_days;
+      const resolvedReleaseDate =
+        normalizeReleaseDate(entry.official_release_date) ??
+        normalizeReleaseDate(lifecycleSource?.official_release_date) ??
+        normalizeReleaseDate(siblings.find((sib) => sib.official_release_date)?.official_release_date);
+      const resolvedReleaseNotesUrl =
+        normalizeOptionalString(entry.official_release_notes_url) ??
+        normalizeOptionalString(lifecycleSource?.official_release_notes_url) ??
+        normalizeOptionalString(siblings.find((sib) => sib.official_release_notes_url)?.official_release_notes_url);
+
       return {
         ...entry,
         breaking: siblings.some((sib) => sib.breaking),
         impact: highestImpact,
         generated_at: entry.generated_at || siblings.find((sib) => sib.generated_at)?.generated_at,
+        status: resolvedStatus,
+        ...(resolvedLeadTime !== undefined ? { lead_time_days: resolvedLeadTime } : {}),
+        ...(resolvedReleaseDate !== undefined ? { official_release_date: resolvedReleaseDate } : {}),
+        ...(resolvedReleaseNotesUrl !== undefined
+          ? { official_release_notes_url: resolvedReleaseNotesUrl }
+          : {}),
       };
     });
 }
@@ -1103,4 +1162,237 @@ export function partitionSiblingNarratives(siblings: SiblingVersionInfo[]): Sibl
     uniqueHtmlBySlug,
     uniqueCountBySlug,
   };
+}
+
+export const DEFAULT_SITE_URL = 'https://google-cloud-radar.com';
+export const RADAR_XML_NAMESPACE = 'https://google-cloud-radar.com/ns/1.0';
+
+export function escapeXml(str: unknown): string {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+export interface JsonFeedGcpMetadata {
+  service: string;
+  api: string;
+  impact: 'low' | 'medium' | 'high';
+  breaking: boolean;
+  interesting_score: number;
+  category: ServiceCategory;
+  status: ChangeStatus;
+  lead_time_days: number | null;
+  official_release_date: string | null;
+  official_release_notes_url: string | null;
+  methods: string[];
+}
+
+export interface JsonFeedItem {
+  id: string;
+  url: string;
+  external_url?: string;
+  title: string;
+  content_text: string;
+  date_published: string;
+  tags: string[];
+  _gcp_metadata: JsonFeedGcpMetadata;
+}
+
+export function serializeJsonFeedItem(
+  entry: FeedEntry,
+  siteUrl: string = DEFAULT_SITE_URL
+): JsonFeedItem {
+  const baseUrl = (siteUrl || DEFAULT_SITE_URL).replace(/\/+$/, '');
+  const releaseStatus: ChangeStatus = entry.status || 'canary';
+  const leadTimeDays =
+    entry.lead_time_days !== undefined && entry.lead_time_days !== null && Number.isFinite(entry.lead_time_days)
+      ? entry.lead_time_days
+      : null;
+  const officialReleaseDate = normalizeReleaseDate(entry.official_release_date) ?? null;
+  const officialReleaseNotesUrl = normalizeOptionalString(entry.official_release_notes_url) ?? null;
+  const hasValidExternalUrl =
+    officialReleaseNotesUrl !== null && /^https?:\/\//i.test(officialReleaseNotesUrl);
+
+  return {
+    id: entry.slug,
+    url: `${baseUrl}/changes/${entry.slug}`,
+    ...(hasValidExternalUrl ? { external_url: officialReleaseNotesUrl } : {}),
+    title: entry.title,
+    content_text: entry.summary,
+    date_published: getPublishedTimestamp(entry).toISOString(),
+    tags: entry.tags,
+    _gcp_metadata: {
+      service: entry.service,
+      api: entry.api,
+      impact: entry.impact,
+      breaking: entry.breaking,
+      interesting_score: entry.interesting_score,
+      category: entry.category,
+      status: releaseStatus,
+      lead_time_days: leadTimeDays,
+      official_release_date: officialReleaseDate,
+      official_release_notes_url: officialReleaseNotesUrl,
+      methods: entry.extractedMethods,
+    },
+  };
+}
+
+export interface RssFeedItemPayload {
+  title: string;
+  pubDate: Date;
+  description: string;
+  link: string;
+  customData: string;
+}
+
+export function serializeRssCustomData(entry: FeedEntry): string {
+  const releaseStatus: ChangeStatus = entry.status || 'canary';
+  const hasLeadTime =
+    entry.lead_time_days !== undefined && entry.lead_time_days !== null && Number.isFinite(entry.lead_time_days);
+  const officialReleaseDate = normalizeReleaseDate(entry.official_release_date);
+  const officialReleaseNotesUrl = normalizeOptionalString(entry.official_release_notes_url);
+
+  const elements = [
+    `<category>${escapeXml(entry.category)}</category>`,
+    `<service>${escapeXml(entry.service)}</service>`,
+    `<api>${escapeXml(entry.api)}</api>`,
+    `<impact>${escapeXml(entry.impact)}</impact>`,
+    `<breaking>${escapeXml(entry.breaking)}</breaking>`,
+    `<interesting_score>${escapeXml(entry.interesting_score)}</interesting_score>`,
+    `<status>${escapeXml(releaseStatus)}</status>`,
+  ];
+
+  if (hasLeadTime) {
+    elements.push(`<lead_time_days>${escapeXml(entry.lead_time_days)}</lead_time_days>`);
+  }
+  if (officialReleaseDate) {
+    elements.push(`<official_release_date>${escapeXml(officialReleaseDate)}</official_release_date>`);
+  }
+  if (officialReleaseNotesUrl) {
+    elements.push(`<official_release_notes_url>${escapeXml(officialReleaseNotesUrl)}</official_release_notes_url>`);
+  }
+
+  return elements.join('');
+}
+
+export function serializeRssFeedItem(
+  entry: FeedEntry,
+  siteUrl: string = DEFAULT_SITE_URL
+): RssFeedItemPayload {
+  const baseUrl = (siteUrl || DEFAULT_SITE_URL).replace(/\/+$/, '');
+  return {
+    title: `${entry.breaking ? '⚠️ [BREAKING] ' : ''}${entry.title}`,
+    pubDate: getPublishedTimestamp(entry),
+    description: entry.summary,
+    link: `${baseUrl}/changes/${entry.slug}`,
+    customData: serializeRssCustomData(entry),
+  };
+}
+
+export function serializeAtomEntryXml(
+  entry: FeedEntry,
+  siteUrl: string = DEFAULT_SITE_URL
+): string {
+  const baseUrl = (siteUrl || DEFAULT_SITE_URL).replace(/\/+$/, '');
+  const releaseStatus: ChangeStatus = entry.status || 'canary';
+  const hasLeadTime =
+    entry.lead_time_days !== undefined && entry.lead_time_days !== null && Number.isFinite(entry.lead_time_days);
+  const officialReleaseDate = normalizeReleaseDate(entry.official_release_date);
+  const officialReleaseNotesUrl = normalizeOptionalString(entry.official_release_notes_url);
+  const updatedDate =
+    officialReleaseDate && officialReleaseDate >= entry.date ? officialReleaseDate : entry.date;
+
+  const extraLines: string[] = [];
+  if (officialReleaseNotesUrl && /^https?:\/\//i.test(officialReleaseNotesUrl)) {
+    extraLines.push(
+      `    <link href="${escapeXml(officialReleaseNotesUrl)}" rel="related" type="text/html" title="Official Release Notes" />`
+    );
+  }
+  if (hasLeadTime) {
+    extraLines.push(`    <radar:lead_time_days>${escapeXml(entry.lead_time_days)}</radar:lead_time_days>`);
+  }
+  if (officialReleaseDate) {
+    extraLines.push(`    <radar:official_release_date>${escapeXml(officialReleaseDate)}</radar:official_release_date>`);
+  }
+  if (officialReleaseNotesUrl) {
+    extraLines.push(
+      `    <radar:official_release_notes_url>${escapeXml(officialReleaseNotesUrl)}</radar:official_release_notes_url>`
+    );
+  }
+
+  return `
+  <entry>
+    <title>${entry.breaking ? '⚠️ [BREAKING] ' : ''}${escapeXml(entry.title)}</title>
+    <link href="${baseUrl}/changes/${entry.slug}" rel="alternate" type="text/html" />
+    <id>${baseUrl}/changes/${entry.slug}</id>
+    <published>${entry.date}T00:00:00Z</published>
+    <updated>${updatedDate}T00:00:00Z</updated>
+    <summary type="text">${escapeXml(entry.summary)}</summary>
+    <category term="${escapeXml(entry.category)}" />
+    <category term="${escapeXml(entry.service)}" />
+    <category term="${escapeXml(entry.api)}" />
+    <category term="${escapeXml(releaseStatus)}" />
+    <radar:status>${escapeXml(releaseStatus)}</radar:status>
+    <radar:impact>${escapeXml(entry.impact)}</radar:impact>
+    <radar:breaking>${escapeXml(entry.breaking)}</radar:breaking>
+    <radar:interesting_score>${escapeXml(entry.interesting_score)}</radar:interesting_score>${extraLines.length > 0 ? `\n${extraLines.join('\n')}` : ''}
+  </entry>`;
+}
+
+export interface LlmsEntryOptions {
+  includeServiceInHeading?: boolean;
+  breakingBadgeText?: string;
+  diffLinkLabel?: string;
+  siteUrl?: string;
+}
+
+export function serializeLlmsEntryLines(
+  entry: FeedEntry,
+  options: LlmsEntryOptions = {}
+): string[] {
+  const {
+    includeServiceInHeading = true,
+    breakingBadgeText = '⚠️ BREAKING',
+    diffLinkLabel = 'View Full Change Diff & Details',
+    siteUrl = DEFAULT_SITE_URL,
+  } = options;
+  const baseUrl = (siteUrl || DEFAULT_SITE_URL).replace(/\/+$/, '');
+  const releaseStatus: ChangeStatus = entry.status || 'canary';
+  const hasLeadTime =
+    entry.lead_time_days !== undefined && entry.lead_time_days !== null && Number.isFinite(entry.lead_time_days);
+  const officialReleaseDate = normalizeReleaseDate(entry.official_release_date);
+  const officialReleaseNotesUrl = normalizeOptionalString(entry.official_release_notes_url);
+
+  const headingTarget = includeServiceInHeading ? `${entry.service} (${entry.api})` : entry.api;
+  const statusDetails: string[] = [];
+  if (hasLeadTime) {
+    statusDetails.push(`Lead time: ${entry.lead_time_days}d`);
+  }
+  if (officialReleaseDate) {
+    statusDetails.push(`Official release: ${officialReleaseDate}`);
+  }
+  const statusLine = `- **Status:** ${releaseStatus}${statusDetails.length > 0 ? ` (${statusDetails.join(', ')})` : ''}`;
+
+  const lines = [
+    `### [${entry.date}] ${headingTarget}${entry.breaking ? ` [${breakingBadgeText}]` : ''}`,
+    `- **Title:** ${entry.title}`,
+    `- **Impact:** ${entry.impact} (Score: ${entry.interesting_score}/10)`,
+    statusLine,
+    `- **Summary:** ${entry.summary}`,
+  ];
+
+  if (entry.extractedMethods && entry.extractedMethods.length > 0) {
+    lines.push(`- **Methods:** ${entry.extractedMethods.join(', ')}`);
+  }
+  if (officialReleaseNotesUrl) {
+    lines.push(`- [Official Release Notes](${officialReleaseNotesUrl})`);
+  }
+  lines.push(`- [${diffLinkLabel}](${baseUrl}/changes/${entry.slug})`);
+  lines.push('');
+
+  return lines;
 }
