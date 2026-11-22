@@ -964,14 +964,20 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
 
     sidebarInput.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
-        const q = sidebarInput.value.trim();
+        e.preventDefault();
         const isHome = window.location.pathname === '/' || window.location.pathname === '';
         if (isHome) {
-          e.preventDefault();
-        } else if (q) {
-          e.preventDefault();
-          window.location.href = `/?q=${encodeURIComponent(q)}`;
+          return;
         }
+        const q = sidebarInput.value.trim();
+        const params = new URLSearchParams(window.location.search);
+        if (q) {
+          params.set('q', q);
+        } else {
+          params.delete('q');
+        }
+        const queryString = params.toString();
+        window.location.href = queryString ? `/?${queryString}` : '/';
       }
     });
   }

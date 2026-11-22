@@ -263,15 +263,27 @@ const { currentPath = '/' } = Astro.props;
 
     // Cross-page search form navigation
     if (searchForm && searchInput) {
+      const currentParams = new URLSearchParams(window.location.search);
+      const initialQ = currentParams.get('q');
+      if (initialQ && !searchInput.value) {
+        searchInput.value = initialQ;
+      }
+
       searchForm.addEventListener('submit', (e) => {
-        const q = searchInput.value.trim();
+        e.preventDefault();
         const isHome = window.location.pathname === '/' || window.location.pathname === '';
         if (isHome) {
-          e.preventDefault();
-        } else if (q) {
-          e.preventDefault();
-          window.location.href = `/?q=${encodeURIComponent(q)}`;
+          return;
         }
+        const q = searchInput.value.trim();
+        const params = new URLSearchParams(window.location.search);
+        if (q) {
+          params.set('q', q);
+        } else {
+          params.delete('q');
+        }
+        const queryString = params.toString();
+        window.location.href = queryString ? `/?${queryString}` : '/';
       });
     }
   }
