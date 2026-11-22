@@ -1,23 +1,19 @@
 import type { APIRoute } from 'astro';
-import { deduplicateFeedSiblingVersions, getAllFeedEntries } from '../lib/feed';
-
-function escapeXml(str: unknown): string {
-  if (str === null || str === undefined) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
+import {
+  DEFAULT_SITE_URL,
+  RADAR_XML_NAMESPACE,
+  deduplicateFeedSiblingVersions,
+  getAllFeedEntries,
+  serializeAtomEntryXml,
+} from '../lib/feed';
 
 export const GET: APIRoute = async (context) => {
   const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
-  const siteUrl = (context.site ? context.site.toString() : 'https://google-cloud-radar.com').replace(/\/+$/, '');
+  const siteUrl = (context.site ? context.site.toString() : DEFAULT_SITE_URL).replace(/\/+$/, '');
   const latestDate = entries[0]?.date ? `${entries[0].date}T00:00:00Z` : new Date().toISOString();
 
   const feedXml = `<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:radar="${RADAR_XML_NAMESPACE}">
   <title>Google Cloud Radar — Real-Time Google API &amp; Cloud Feed</title>
   <subtitle>Automated pre-release intelligence for Google APIs and Cloud services. Live API changes and breaking changes tracked from the Google Discovery Service.</subtitle>
   <link href="${siteUrl}/atom.xml" rel="self" type="application/atom+xml" />
@@ -28,18 +24,7 @@ export const GET: APIRoute = async (context) => {
     <name>Google Cloud Radar</name>
     <uri>https://github.com/max-ostapenko/google-cloud-radar</uri>
   </author>
-  ${entries.map((entry) => `
-  <entry>
-    <title>${entry.breaking ? '⚠️ [BREAKING] ' : ''}${escapeXml(entry.title)}</title>
-    <link href="${siteUrl}/changes/${entry.slug}" rel="alternate" type="text/html" />
-    <id>${siteUrl}/changes/${entry.slug}</id>
-    <published>${entry.date}T00:00:00Z</published>
-    <updated>${entry.date}T00:00:00Z</updated>
-    <summary type="text">${escapeXml(entry.summary)}</summary>
-    <category term="${escapeXml(entry.category)}" />
-    <category term="${escapeXml(entry.service)}" />
-    <category term="${escapeXml(entry.api)}" />
-  </entry>`).join('')}
+  ${entries.map((entry) => serializeAtomEntryXml(entry, siteUrl)).join('')}
 </feed>`;
 
   return new Response(feedXml, {

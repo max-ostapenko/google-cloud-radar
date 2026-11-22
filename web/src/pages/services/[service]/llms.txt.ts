@@ -1,11 +1,12 @@
 import type { APIRoute } from 'astro';
 import {
+  DEFAULT_SITE_URL,
   deduplicateFeedSiblingVersions,
   filterFeedEntries,
-  formatMachineFeedEntryDetails,
   getAllFeedEntries,
   getServicesList,
   parseLimitParam,
+  serializeLlmsEntryLines,
   slugify,
   type FeedEntry,
   type ServiceInfo,
@@ -31,6 +32,7 @@ export async function getStaticPaths() {
 
 export const GET: APIRoute = async (context) => {
   const { serviceInfo, entries: rawEntries } = context.props as { serviceInfo: ServiceInfo; entries: FeedEntry[] };
+  const siteUrl = (context?.site ? context.site.toString() : DEFAULT_SITE_URL).replace(/\/+$/, '');
   const reqUrl = context?.url ?? (context?.request?.url ? new URL(context.request.url) : null);
   const impact = reqUrl?.searchParams.get('impact');
   const breaking = reqUrl?.searchParams.get('breaking');
@@ -53,26 +55,24 @@ export const GET: APIRoute = async (context) => {
     `> Pre-release intelligence and real-time Discovery API diffs for ${serviceInfo.service} (${serviceInfo.category}).`,
     '',
     '## Endpoints',
-    `- [Service Hub](https://google-cloud-radar.com/services/${serviceInfo.slug})`,
-    `- [JSON Feed](https://google-cloud-radar.com/services/${serviceInfo.slug}/feed.json)`,
-    `- [RSS Feed](https://google-cloud-radar.com/services/${serviceInfo.slug}/rss.xml)`,
-    `- [Atom Feed](https://google-cloud-radar.com/services/${serviceInfo.slug}/atom.xml)`,
+    `- [Service Hub](${siteUrl}/services/${serviceInfo.slug})`,
+    `- [JSON Feed](${siteUrl}/services/${serviceInfo.slug}/feed.json)`,
+    `- [RSS Feed](${siteUrl}/services/${serviceInfo.slug}/rss.xml)`,
+    `- [Atom Feed](${siteUrl}/services/${serviceInfo.slug}/atom.xml)`,
     '',
     `## Recent Changes (${rawEntries.length} tracked, ${serviceInfo.breakingCount} breaking)`,
     '',
   ];
 
   for (const entry of entries) {
-    lines.push(`### [${entry.date}] ${entry.api}${entry.breaking ? ' [BREAKING]' : ''}`);
-    lines.push(`- **Title:** ${entry.title}`);
-    lines.push(`- **Impact:** ${entry.impact} (Score: ${entry.interesting_score}/10)`);
-    lines.push(`- **Summary:** ${entry.summary}`);
-    if (entry.extractedMethods && entry.extractedMethods.length > 0) {
-      lines.push(`- **Methods:** ${entry.extractedMethods.join(', ')}`);
-    }
-    lines.push(...formatMachineFeedEntryDetails(entry));
-    lines.push(`- [Full Change Diff](https://google-cloud-radar.com/changes/${entry.slug})`);
-    lines.push('');
+    lines.push(
+      ...serializeLlmsEntryLines(entry, {
+        includeServiceInHeading: false,
+        breakingBadgeText: 'BREAKING',
+        diffLinkLabel: 'Full Change Diff',
+        siteUrl,
+      })
+    );
   }
 
   return new Response(lines.join('\n'), {
