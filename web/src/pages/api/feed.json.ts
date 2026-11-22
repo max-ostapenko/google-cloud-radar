@@ -1,9 +1,14 @@
 import type { APIRoute } from 'astro';
-import { deduplicateFeedSiblingVersions, formatJsonFeedItem, getAllFeedEntries } from '../../lib/feed';
+import {
+  DEFAULT_SITE_URL,
+  deduplicateFeedSiblingVersions,
+  getAllFeedEntries,
+  serializeJsonFeedItem,
+} from '../../lib/feed';
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async (context) => {
   const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
-  const siteUrl = 'https://google-cloud-radar.com';
+  const siteUrl = (context?.site ? context.site.toString() : DEFAULT_SITE_URL).replace(/\/+$/, '');
 
   const responsePayload = {
     version: 'https://jsonfeed.org/version/1.1',
@@ -12,7 +17,7 @@ export const GET: APIRoute = async () => {
     feed_url: `${siteUrl}/api/feed.json`,
     description: 'Automated pre-release intelligence and real-time diffs for Google APIs and Cloud services.',
     user_comment: 'Sourced from Google Discovery Service.',
-    items: entries.map((entry) => formatJsonFeedItem(entry, siteUrl)),
+    items: entries.map((entry) => serializeJsonFeedItem(entry, siteUrl)),
   };
 
   return new Response(JSON.stringify(responsePayload, null, 2), {

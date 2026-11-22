@@ -114,6 +114,9 @@ describe('Feed Formatting Helpers', () => {
         interesting_score: 9,
         category: 'Big Data',
         status: 'canary',
+        lead_time_days: null,
+        official_release_date: null,
+        official_release_notes_url: null,
         methods: ['google.cloud.bigquery.v2.JobsService.Insert', 'google.cloud.bigquery.v2.JobsService.Get'],
       });
     });

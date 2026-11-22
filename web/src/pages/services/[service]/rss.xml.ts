@@ -1,13 +1,14 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import {
+  DEFAULT_SITE_URL,
   deduplicateFeedSiblingVersions,
-  formatFeedContentHtml,
-  formatRssCustomData,
   getAllFeedEntries,
-  getPublishedTimestamp,
   getServicesList,
+  serializeRssFeedItem,
   slugify,
+  type FeedEntry,
+  type ServiceInfo,
 } from '../../../lib/feed';
 
 export async function getStaticPaths() {
@@ -29,8 +30,8 @@ export async function getStaticPaths() {
 }
 
 export async function GET(context: APIContext) {
-  const { serviceInfo, entries } = context.props as { serviceInfo: any; entries: any[] };
-  const siteUrl = (context.site ? context.site.toString() : 'https://google-cloud-radar.com').replace(/\/+$/, '');
+  const { serviceInfo, entries } = context.props as { serviceInfo: ServiceInfo; entries: FeedEntry[] };
+  const siteUrl = (context.site ? context.site.toString() : DEFAULT_SITE_URL).replace(/\/+$/, '');
 
   return rss({
     title: `${serviceInfo.service} API Changes — Google Cloud Radar`,
@@ -39,14 +40,7 @@ export async function GET(context: APIContext) {
     xmlns: {
       atom: 'http://www.w3.org/2005/Atom',
     },
-    items: entries.map((entry) => ({
-      title: `${entry.breaking ? '⚠️ [BREAKING] ' : ''}${entry.title}`,
-      pubDate: getPublishedTimestamp(entry),
-      description: entry.summary,
-      content: formatFeedContentHtml(entry),
-      link: `${siteUrl}/changes/${entry.slug}`,
-      customData: formatRssCustomData(entry),
-    })),
+    items: entries.map((entry) => serializeRssFeedItem(entry, siteUrl)),
     customData: `<language>en-us</language><atom:link href="${siteUrl}/services/${serviceInfo.slug}/rss.xml" rel="self" type="application/rss+xml" />`,
   });
 }

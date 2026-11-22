@@ -1,10 +1,13 @@
 import type { APIRoute } from 'astro';
 import {
+  DEFAULT_SITE_URL,
   deduplicateFeedSiblingVersions,
-  formatJsonFeedItem,
   getAllFeedEntries,
   getServicesList,
+  serializeJsonFeedItem,
   slugify,
+  type FeedEntry,
+  type ServiceInfo,
 } from '../../../lib/feed';
 
 export async function getStaticPaths() {
@@ -25,9 +28,9 @@ export async function getStaticPaths() {
   });
 }
 
-export const GET: APIRoute = async ({ props }) => {
-  const { serviceInfo, entries } = props as { serviceInfo: any; entries: any[] };
-  const siteUrl = 'https://google-cloud-radar.com';
+export const GET: APIRoute = async ({ props, site }) => {
+  const { serviceInfo, entries } = props as { serviceInfo: ServiceInfo; entries: FeedEntry[] };
+  const siteUrl = (site ? site.toString() : DEFAULT_SITE_URL).replace(/\/+$/, '');
 
   const responsePayload = {
     version: 'https://jsonfeed.org/version/1.1',
@@ -36,7 +39,7 @@ export const GET: APIRoute = async ({ props }) => {
     feed_url: `${siteUrl}/services/${serviceInfo.slug}/feed.json`,
     description: `Automated pre-release intelligence and real-time diffs for Google ${serviceInfo.service}.`,
     user_comment: 'Sourced from Google Discovery Service.',
-    items: entries.map((entry) => formatJsonFeedItem(entry, siteUrl)),
+    items: entries.map((entry) => serializeJsonFeedItem(entry, siteUrl)),
   };
 
   return new Response(JSON.stringify(responsePayload, null, 2), {
