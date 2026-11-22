@@ -1223,83 +1223,23 @@ export function partitionSiblingNarratives(siblings: SiblingVersionInfo[]): Sibl
   };
 }
 
-export interface FeedQueryParams {
-  impact?: string | null;
-  breaking?: boolean | string | null;
-  service?: string | null;
-  api?: string | null;
-  since?: string | null;
-  limit?: number | string | null;
-}
+const MAX_LLMS_TARGET_PATHS = 15;
+const MAX_LLMS_DIFF_ITEMS = 10;
 
-export function parseLimitParam(
-  limitParam: string | number | null | undefined,
-  defaultLimit?: number
-): number | undefined {
-  if (limitParam === undefined || limitParam === null || limitParam === '') {
-    return defaultLimit;
+function formatAstDiffItem(bucket: 'added' | 'removed' | 'changed', item: any): string {
+  if (typeof item === 'string') return item;
+  if (!item?.path) return JSON.stringify(item);
+  if (bucket === 'added') {
+    return `${item.path}${item.value !== undefined ? `: ${JSON.stringify(item.value)}` : ''}`;
   }
-  const parsed = typeof limitParam === 'number' ? limitParam : parseInt(String(limitParam), 10);
-  if (isNaN(parsed)) {
-    return defaultLimit;
+  if (bucket === 'removed') {
+    return `${item.path}${item.old_value !== undefined ? ` (was: ${JSON.stringify(item.old_value)})` : ''}`;
   }
-  return Math.min(Math.max(parsed, 1), 100);
-}
-
-export function filterFeedEntries(entries: FeedEntry[], params: FeedQueryParams): FeedEntry[] {
-  let filtered = entries;
-
-  if (params.breaking !== undefined && params.breaking !== null && params.breaking !== '') {
-    const breakingVal = String(params.breaking).toLowerCase().trim();
-    if (breakingVal === 'true' || breakingVal === '1') {
-      filtered = filtered.filter((e) => e.breaking === true);
-    } else if (breakingVal === 'false' || breakingVal === '0') {
-      filtered = filtered.filter((e) => e.breaking === false);
-    }
-  }
-
-  if (params.impact) {
-    const impactVal = String(params.impact).toLowerCase().trim();
-    if (impactVal === 'breaking') {
-      filtered = filtered.filter((e) => e.breaking === true);
-    } else {
-      filtered = filtered.filter((e) => e.impact.toLowerCase() === impactVal);
-    }
-  }
-
-  if (params.service) {
-    const svcQuery = String(params.service).toLowerCase().trim();
-    const svcSlug = slugify(svcQuery);
-    filtered = filtered.filter((e) => {
-      const eServiceLower = e.service.toLowerCase();
-      const eServiceSlug = e.service_id || slugify(e.service);
-      return (
-        eServiceLower === svcQuery ||
-        eServiceSlug === svcSlug ||
-        eServiceLower.includes(svcQuery) ||
-        (e.api && e.api.toLowerCase().includes(svcQuery)) ||
-        Boolean(e.siblingVersions?.some((s) => s.api.toLowerCase().includes(svcQuery)))
-      );
-    });
-  }
-
-  if (params.api) {
-    const apiQuery = String(params.api).toLowerCase().trim();
-    filtered = filtered.filter(
-      (e) =>
-        (e.api && e.api.toLowerCase().includes(apiQuery)) ||
-        Boolean(e.siblingVersions?.some((s) => s.api.toLowerCase().includes(apiQuery)))
-    );
-  }
-
-  if (params.since) {
-    const sinceDate = String(params.since).trim();
-    if (/^\d{4}-\d{2}-\d{2}/.test(sinceDate)) {
-      filtered = filtered.filter((e) => e.date >= sinceDate.slice(0, 10));
-    }
-  }
-
-  return filtered;
+  return `${item.path}${
+    item.old !== undefined || item.new !== undefined
+      ? `: ${JSON.stringify(item.old)} -> ${JSON.stringify(item.new)}`
+      : ''
+  }`;
 }
 
 export function formatMachineFeedEntryDetails(entry: FeedEntry): string[] {
@@ -1315,8 +1255,11 @@ export function formatMachineFeedEntryDetails(entry: FeedEntry): string[] {
   const paths = entry.target_paths || entry.targetPaths || [];
   if (paths.length > 0) {
     lines.push(`- **Target Paths:**`);
-    for (const p of paths) {
+    for (const p of paths.slice(0, MAX_LLMS_TARGET_PATHS)) {
       lines.push(`  - \`${p}\``);
+    }
+    if (paths.length > MAX_LLMS_TARGET_PATHS) {
+      lines.push(`  - ... (+${paths.length - MAX_LLMS_TARGET_PATHS} more)`);
     }
   }
 
@@ -1324,44 +1267,19 @@ export function formatMachineFeedEntryDetails(entry: FeedEntry): string[] {
     const { added = [], removed = [], changed = [] } = entry.diff;
     if (added.length > 0 || removed.length > 0 || changed.length > 0) {
       lines.push(`- **AST Diff:**`);
-      if (added.length > 0) {
-        lines.push(`  - **Added:**`);
-        for (const item of added) {
-          const str =
-            typeof item === 'string'
-              ? item
-              : item.path
-              ? `${item.path}${item.value !== undefined ? `: ${JSON.stringify(item.value)}` : ''}`
-              : JSON.stringify(item);
-          lines.push(`    - \`${str}\``);
+      const buckets: Array<{ key: 'added' | 'removed' | 'changed'; label: string; items: any[] }> = [
+        { key: 'added', label: 'Added', items: added },
+        { key: 'removed', label: 'Removed', items: removed },
+        { key: 'changed', label: 'Changed', items: changed },
+      ];
+      for (const { key, label, items } of buckets) {
+        if (items.length === 0) continue;
+        lines.push(`  - **${label}:**`);
+        for (const item of items.slice(0, MAX_LLMS_DIFF_ITEMS)) {
+          lines.push(`    - \`${formatAstDiffItem(key, item)}\``);
         }
-      }
-      if (removed.length > 0) {
-        lines.push(`  - **Removed:**`);
-        for (const item of removed) {
-          const str =
-            typeof item === 'string'
-              ? item
-              : item.path
-              ? `${item.path}${item.old_value !== undefined ? ` (was: ${JSON.stringify(item.old_value)})` : ''}`
-              : JSON.stringify(item);
-          lines.push(`    - \`${str}\``);
-        }
-      }
-      if (changed.length > 0) {
-        lines.push(`  - **Changed:**`);
-        for (const item of changed) {
-          const str =
-            typeof item === 'string'
-              ? item
-              : item.path
-              ? `${item.path}${
-                  item.old !== undefined || item.new !== undefined
-                    ? `: ${JSON.stringify(item.old)} -> ${JSON.stringify(item.new)}`
-                    : ''
-                }`
-              : JSON.stringify(item);
-          lines.push(`    - \`${str}\``);
+        if (items.length > MAX_LLMS_DIFF_ITEMS) {
+          lines.push(`    - ... and ${items.length - MAX_LLMS_DIFF_ITEMS} more`);
         }
       }
     }

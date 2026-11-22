@@ -4,13 +4,13 @@ import path from 'node:path';
 import os from 'node:os';
 import * as feedModule from '../web/src/lib/feed';
 import {
-  filterFeedEntries,
-  parseLimitParam,
+  formatMachineFeedEntryDetails,
   type FeedEntry,
 } from '../web/src/lib/feed';
 import { GET as llmsTxtGET } from '../web/src/pages/llms.txt';
 import { GET as serviceLlmsTxtGET } from '../web/src/pages/services/[service]/llms.txt';
 import { GET as apiFeedJsonGET } from '../web/src/pages/api/feed.json';
+import { GET as apiBreakingJsonGET } from '../web/src/pages/api/breaking.json';
 import { GET as serviceFeedJsonGET } from '../web/src/pages/services/[service]/feed.json';
 import { rebuildIndexFromChanges, writeInsight } from '../scripts/feed_writer';
 import { parseJsonChangeFile } from '../scripts/seed_prod_firestore';
@@ -142,54 +142,51 @@ const mockEntries: FeedEntry[] = [
   },
 ];
 
-describe('Machine Feed Query Filtering & Limit Clamping', () => {
-  it('filters by breaking parameter', () => {
-    const breakingOnly = filterFeedEntries(mockEntries, { breaking: 'true' });
-    expect(breakingOnly).toHaveLength(1);
-    expect(breakingOnly[0].service).toBe('Vertex AI');
+describe('Bounded AST Diff & Target Path Formatting for llms.txt', () => {
+  it('truncates target_paths after 15 items and each AST diff bucket after 10 items', () => {
+    const oversizedEntry: FeedEntry = {
+      ...mockEntries[0],
+      target_paths: Array.from({ length: 18 }, (_, i) => `schemas.model.properties.field_${i}`),
+      targetPaths: Array.from({ length: 18 }, (_, i) => `schemas.model.properties.field_${i}`),
+      diff: {
+        added: Array.from({ length: 14 }, (_, i) => ({
+          path: `schemas.model.properties.added_${i}`,
+          value: 'string',
+        })),
+        removed: Array.from({ length: 12 }, (_, i) => ({
+          path: `schemas.model.properties.removed_${i}`,
+          old_value: 'string',
+        })),
+        changed: Array.from({ length: 11 }, (_, i) => ({
+          path: `schemas.model.properties.changed_${i}`,
+          old: 'a',
+          new: 'b',
+        })),
+      },
+    };
 
-    const nonBreaking = filterFeedEntries(mockEntries, { breaking: 'false' });
-    expect(nonBreaking).toHaveLength(2);
-  });
+    const output = formatMachineFeedEntryDetails(oversizedEntry).join('\n');
 
-  it('filters by impact parameter (including impact=breaking)', () => {
-    const highImpact = filterFeedEntries(mockEntries, { impact: 'high' });
-    expect(highImpact).toHaveLength(1);
-    expect(highImpact[0].api).toBe('aiplatform.v1');
+    expect(output).toContain('field_0');
+    expect(output).toContain('field_14');
+    expect(output).not.toContain('field_15');
+    expect(output).toContain('... (+3 more)');
 
-    const breakingImpact = filterFeedEntries(mockEntries, { impact: 'breaking' });
-    expect(breakingImpact).toHaveLength(1);
-    expect(breakingImpact[0].breaking).toBe(true);
-  });
+    expect(output).toContain('added_9');
+    expect(output).not.toContain('added_10');
+    expect(output).toContain('... and 4 more');
 
-  it('filters by service and api parameter (including sibling versions)', () => {
-    const vertex = filterFeedEntries(mockEntries, { service: 'vertex-ai' });
-    expect(vertex).toHaveLength(1);
+    expect(output).toContain('removed_9');
+    expect(output).not.toContain('removed_10');
+    expect(output).toContain('... and 2 more');
 
-    const bigquery = filterFeedEntries(mockEntries, { api: 'bigquery' });
-    expect(bigquery).toHaveLength(1);
-
-    const siblingBeta = filterFeedEntries(mockEntries, { api: 'aiplatform.v1beta1' });
-    expect(siblingBeta).toHaveLength(1);
-    expect(siblingBeta[0].slug).toBe('2026-09-15-aiplatform');
-  });
-
-  it('filters by since date parameter', () => {
-    const sinceAug = filterFeedEntries(mockEntries, { since: '2026-08-01' });
-    expect(sinceAug).toHaveLength(2);
-  });
-
-  it('clamps limit parameter between 1 and 100', () => {
-    expect(parseLimitParam('0', 30)).toBe(1);
-    expect(parseLimitParam('-10', 30)).toBe(1);
-    expect(parseLimitParam('150', 30)).toBe(100);
-    expect(parseLimitParam('25', 30)).toBe(25);
-    expect(parseLimitParam(undefined, 30)).toBe(30);
-    expect(parseLimitParam('invalid', 30)).toBe(30);
+    expect(output).toContain('changed_9');
+    expect(output).not.toContain('changed_10');
+    expect(output).toContain('... and 1 more');
   });
 });
 
-describe('llms.txt & Service llms.txt Endpoint Filtering & AST Rendering', () => {
+describe('llms.txt & Service llms.txt Structured AST Rendering', () => {
   beforeEach(() => {
     vi.spyOn(feedModule, 'getAllFeedEntries').mockResolvedValue(mockEntries);
   });
@@ -198,14 +195,15 @@ describe('llms.txt & Service llms.txt Endpoint Filtering & AST Rendering', () =>
     vi.restoreAllMocks();
   });
 
-  it('renders structured AST diff and breaking reasons in llms.txt text response', async () => {
-    const request = new Request('https://google-cloud-radar.com/llms.txt?breaking=true');
+  it('renders structured AST diff, breaking reasons, and /api/breaking.json link in llms.txt', async () => {
+    const request = new Request('https://google-cloud-radar.com/llms.txt');
     const response = await llmsTxtGET({ request } as any);
     expect(response.status).toBe(200);
     expect(response.headers.get('Content-Type')).toContain('text/plain');
 
     const text = await response.text();
     expect(text).toContain('# Google Cloud Radar');
+    expect(text).toContain('https://google-cloud-radar.com/api/breaking.json');
     expect(text).toContain('Recent API Changes and Breaking Updates');
 
     expect(text).toContain('Vertex AI');
@@ -216,28 +214,12 @@ describe('llms.txt & Service llms.txt Endpoint Filtering & AST Rendering', () =>
     expect(text).toContain('Added:');
     expect(text).toContain('Removed:');
     expect(text).toContain('Changed:');
-
-    // Non-breaking change entries excluded from the stream
-    expect(text).not.toContain('Cloud Storage Bucket Lifecycle');
-    expect(text).not.toContain('storage.v1');
-  });
-
-  it('supports combined search filtering and stream pagination in llms.txt', async () => {
-    const request = new Request('https://google-cloud-radar.com/llms.txt?breaking=false&page=1&limit=1');
-    const response = await llmsTxtGET({ request } as any);
-    expect(response.status).toBe(200);
-
-    const text = await response.text();
-    expect(text).toContain('## API Changes and Breaking Updates (Page 1 of 2 - 2 Total Changes)');
     expect(text).toContain('BigQuery Storage API Enhancements');
-    expect(text).not.toContain('Cloud Storage Bucket Lifecycle');
-    expect(text).toContain('[Next Page](https://google-cloud-radar.com/llms.txt?page=2&limit=1&breaking=false)');
+    expect(text).toContain('Cloud Storage Bucket Lifecycle');
   });
 
-  it('renders AST diff details and filters per-service llms.txt endpoint', async () => {
-    const request = new Request('https://google-cloud-radar.com/services/vertex-ai/llms.txt?breaking=true');
+  it('renders AST diff details in per-service llms.txt endpoint', async () => {
     const response = await serviceLlmsTxtGET({
-      request,
       props: {
         serviceInfo: {
           service: 'Vertex AI',
@@ -259,7 +241,7 @@ describe('llms.txt & Service llms.txt Endpoint Filtering & AST Rendering', () =>
   });
 });
 
-describe('api/feed.json & Service feed.json Endpoint Filtering & Metadata', () => {
+describe('api/feed.json, api/breaking.json & Service feed.json Metadata', () => {
   beforeEach(() => {
     vi.spyOn(feedModule, 'getAllFeedEntries').mockResolvedValue(mockEntries);
   });
@@ -268,16 +250,16 @@ describe('api/feed.json & Service feed.json Endpoint Filtering & Metadata', () =
     vi.restoreAllMocks();
   });
 
-  it('returns JSON feed with target_paths, breaking_reasons, and diff in _gcp_metadata', async () => {
-    const request = new Request('https://google-cloud-radar.com/api/feed.json?impact=high');
+  it('returns global JSON feed with target_paths, breaking_reasons, and diff in _gcp_metadata', async () => {
+    const request = new Request('https://google-cloud-radar.com/api/feed.json');
     const response = await apiFeedJsonGET({ request } as any);
     expect(response.status).toBe(200);
     expect(response.headers.get('Content-Type')).toContain('application/feed+json');
 
     const data = await response.json();
     expect(data.version).toBe('https://jsonfeed.org/version/1.1');
-    expect(Array.isArray(data.items)).toBe(true);
-    expect(data.items).toHaveLength(1);
+    expect(data.feed_url).toBe('https://google-cloud-radar.com/api/feed.json');
+    expect(data.items).toHaveLength(3);
 
     const item = data.items[0];
     expect(item._gcp_metadata).toBeDefined();
@@ -295,10 +277,23 @@ describe('api/feed.json & Service feed.json Endpoint Filtering & Metadata', () =
     });
   });
 
+  it('returns static /api/breaking.json containing only breaking entries with structured AST diffs', async () => {
+    const request = new Request('https://google-cloud-radar.com/api/breaking.json');
+    const response = await apiBreakingJsonGET({ request } as any);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Content-Type')).toContain('application/feed+json');
+
+    const data = await response.json();
+    expect(data.version).toBe('https://jsonfeed.org/version/1.1');
+    expect(data.feed_url).toBe('https://google-cloud-radar.com/api/breaking.json');
+    expect(data.items).toHaveLength(1);
+    expect(data.items[0].id).toBe('2026-09-15-aiplatform');
+    expect(data.items[0]._gcp_metadata.breaking).toBe(true);
+    expect(data.items[0]._gcp_metadata.diff).toEqual(mockEntries[0].diff);
+  });
+
   it('includes breaking_reasons, target_paths, and diff in per-service feed.json', async () => {
-    const request = new Request('https://google-cloud-radar.com/services/vertex-ai/feed.json?limit=1');
     const response = await serviceFeedJsonGET({
-      request,
       props: {
         serviceInfo: {
           service: 'Vertex AI',
@@ -310,7 +305,7 @@ describe('api/feed.json & Service feed.json Endpoint Filtering & Metadata', () =
 
     expect(response.status).toBe(200);
     const data = await response.json();
-    expect(data.items).toHaveLength(1);
+    expect(data.items).toHaveLength(2);
     expect(data.items[0]._gcp_metadata.breaking_reasons).toEqual([
       "Property 'oldParam' in method 'models.tune' was removed",
     ]);

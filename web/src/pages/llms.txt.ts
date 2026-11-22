@@ -2,36 +2,19 @@ import type { APIRoute } from 'astro';
 import {
   DEFAULT_SITE_URL,
   deduplicateFeedSiblingVersions,
-  filterFeedEntries,
   getAllFeedEntries,
   getServicesList,
-  parseLimitParam,
   serializeLlmsEntryLines,
 } from '../lib/feed';
 
 export const GET: APIRoute = async (context) => {
-  const rawEntries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
+  const entries = deduplicateFeedSiblingVersions(await getAllFeedEntries());
   const services = await getServicesList();
   const siteUrl = (context?.site ? context.site.toString() : DEFAULT_SITE_URL).replace(/\/+$/, '');
 
-  const url =
-    context?.url ??
-    (context?.request?.url ? new URL(context.request.url) : new URL(`${siteUrl}/llms.txt`));
-  const impact = url.searchParams.get('impact');
-  const breaking = url.searchParams.get('breaking');
-  const service = url.searchParams.get('service');
-  const api = url.searchParams.get('api');
-  const since = url.searchParams.get('since');
+  const url = context?.request?.url ? new URL(context.request.url) : new URL(`${siteUrl}/llms.txt`);
   const pageParam = url.searchParams.get('page');
   const limitParam = url.searchParams.get('limit');
-
-  const entries = filterFeedEntries(rawEntries, {
-    impact,
-    breaking,
-    service,
-    api,
-    since,
-  });
 
   let activeEntries = entries;
   let isPaginated = false;
@@ -52,11 +35,6 @@ export const GET: APIRoute = async (context) => {
     totalPages = Math.max(1, Math.ceil(entries.length / limit));
     const start = (page - 1) * limit;
     activeEntries = entries.slice(start, start + limit);
-  } else if (limitParam && (!pageParam || pageParam.toLowerCase() !== 'all')) {
-    const parsedLimit = parseLimitParam(limitParam);
-    if (parsedLimit !== undefined) {
-      activeEntries = entries.slice(0, parsedLimit);
-    }
   }
 
   const lines = [
@@ -77,6 +55,7 @@ export const GET: APIRoute = async (context) => {
     `- [Global RSS Feed](${siteUrl}/rss.xml): Standard RSS 2.0 feed of all GCP API updates`,
     `- [Global Atom Feed](${siteUrl}/atom.xml): Atom 1.0 feed of all GCP API updates`,
     `- [Global JSON Feed](${siteUrl}/api/feed.json): JSON Feed 1.1 specification format`,
+    `- [Breaking Changes JSON Feed](${siteUrl}/api/breaking.json): Pre-rendered JSON Feed 1.1 of breaking API changes with structured AST diffs`,
     `- [Velocity Stats JSON](${siteUrl}/api/stats.json): Rolling 90-day GCP velocity metrics and benchmarks`,
   ];
 
@@ -107,24 +86,16 @@ export const GET: APIRoute = async (context) => {
   }
 
   if (isPaginated) {
-    const filterQuery = new URLSearchParams();
-    if (impact) filterQuery.set('impact', impact);
-    if (breaking) filterQuery.set('breaking', breaking);
-    if (service) filterQuery.set('service', service);
-    if (api) filterQuery.set('api', api);
-    if (since) filterQuery.set('since', since);
-    const extraSuffix = filterQuery.toString() ? `&${filterQuery.toString()}` : '';
-
     lines.push('## Stream Pagination Links');
-    lines.push(`- [First Page](${siteUrl}/llms.txt?page=1&limit=${limit}${extraSuffix})`);
+    lines.push(`- [First Page](${siteUrl}/llms.txt?page=1&limit=${limit})`);
     if (page > 1) {
-      lines.push(`- [Previous Page](${siteUrl}/llms.txt?page=${page - 1}&limit=${limit}${extraSuffix})`);
+      lines.push(`- [Previous Page](${siteUrl}/llms.txt?page=${page - 1}&limit=${limit})`);
     }
     if (page < totalPages) {
-      lines.push(`- [Next Page](${siteUrl}/llms.txt?page=${page + 1}&limit=${limit}${extraSuffix})`);
+      lines.push(`- [Next Page](${siteUrl}/llms.txt?page=${page + 1}&limit=${limit})`);
     }
-    lines.push(`- [Last Page](${siteUrl}/llms.txt?page=${totalPages}&limit=${limit}${extraSuffix})`);
-    lines.push(`- [Full Unpaginated Stream](${siteUrl}/llms.txt?page=all${extraSuffix})`);
+    lines.push(`- [Last Page](${siteUrl}/llms.txt?page=${totalPages}&limit=${limit})`);
+    lines.push(`- [Full Unpaginated Stream](${siteUrl}/llms.txt?page=all)`);
     lines.push('');
   }
 

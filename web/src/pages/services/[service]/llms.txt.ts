@@ -2,10 +2,8 @@ import type { APIRoute } from 'astro';
 import {
   DEFAULT_SITE_URL,
   deduplicateFeedSiblingVersions,
-  filterFeedEntries,
   getAllFeedEntries,
   getServicesList,
-  parseLimitParam,
   serializeLlmsEntryLines,
   slugify,
   type FeedEntry,
@@ -30,25 +28,9 @@ export async function getStaticPaths() {
   });
 }
 
-export const GET: APIRoute = async (context) => {
-  const { serviceInfo, entries: rawEntries } = context.props as { serviceInfo: ServiceInfo; entries: FeedEntry[] };
-  const siteUrl = (context?.site ? context.site.toString() : DEFAULT_SITE_URL).replace(/\/+$/, '');
-  const reqUrl = context?.url ?? (context?.request?.url ? new URL(context.request.url) : null);
-  const impact = reqUrl?.searchParams.get('impact');
-  const breaking = reqUrl?.searchParams.get('breaking');
-  const api = reqUrl?.searchParams.get('api');
-  const since = reqUrl?.searchParams.get('since');
-  const limitParam = reqUrl?.searchParams.get('limit');
-  const limit = parseLimitParam(limitParam, 30) ?? 30;
-
-  const filteredEntries = filterFeedEntries(rawEntries, {
-    impact,
-    breaking,
-    api,
-    since,
-  });
-
-  const entries = filteredEntries.slice(0, limit);
+export const GET: APIRoute = async ({ props, site }) => {
+  const { serviceInfo, entries } = props as { serviceInfo: ServiceInfo; entries: FeedEntry[] };
+  const siteUrl = (site ? site.toString() : DEFAULT_SITE_URL).replace(/\/+$/, '');
 
   const lines = [
     `# ${serviceInfo.service} — Google Cloud Radar`,
@@ -60,11 +42,11 @@ export const GET: APIRoute = async (context) => {
     `- [RSS Feed](${siteUrl}/services/${serviceInfo.slug}/rss.xml)`,
     `- [Atom Feed](${siteUrl}/services/${serviceInfo.slug}/atom.xml)`,
     '',
-    `## Recent Changes (${rawEntries.length} tracked, ${serviceInfo.breakingCount} breaking)`,
+    `## Recent Changes (${entries.length} tracked, ${serviceInfo.breakingCount} breaking)`,
     '',
   ];
 
-  for (const entry of entries) {
+  for (const entry of entries.slice(0, 30)) {
     lines.push(
       ...serializeLlmsEntryLines(entry, {
         includeServiceInHeading: false,
@@ -83,4 +65,3 @@ export const GET: APIRoute = async (context) => {
     },
   });
 };
-
