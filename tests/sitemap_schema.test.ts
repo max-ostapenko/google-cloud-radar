@@ -27,11 +27,11 @@ function extractJsonLdBlocks(html: string): Record<string, any>[] {
 }
 
 describe('Sitemap and Schema Indexing Integration', () => {
-  it('astro.config.mjs sitemap filter allows /breaking, excludes /404, and filters non-indexable change pages', () => {
+  it('astro.config.mjs sitemap filter excludes /breaking and /404, and filters non-indexable change pages', () => {
     const configPath = path.resolve(REPO_ROOT, 'web/astro.config.mjs');
     const configContent = fs.readFileSync(configPath, 'utf-8');
 
-    expect(configContent).not.toContain("page.includes('/breaking')");
+    expect(configContent).toContain("page.includes('/breaking')");
     expect(configContent).toContain("page.includes('/404')");
     expect(configContent).toContain('isIndexableChangeDoc');
   });
@@ -70,12 +70,12 @@ describe('Sitemap and Schema Indexing Integration', () => {
     expect(breadcrumbsTemplate).toContain('position: index + 1');
   });
 
-  it('generated dist output (when built) contains /breaking in sitemap-0.xml and excludes /404', () => {
+  it('generated dist output (when built) excludes /breaking and /404 from sitemap-0.xml', () => {
     const sitemapPath = path.resolve(REPO_ROOT, 'web/dist/sitemap-0.xml');
     if (!fs.existsSync(sitemapPath)) return;
 
     const content = fs.readFileSync(sitemapPath, 'utf-8');
-    expect(content).toContain('<loc>https://google-cloud-radar.com/breaking</loc>');
+    expect(content).not.toContain('<loc>https://google-cloud-radar.com/breaking</loc>');
     expect(content).not.toContain('https://google-cloud-radar.com/404');
   });
 
