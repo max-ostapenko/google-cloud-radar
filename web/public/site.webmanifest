@@ -1,0 +1,22 @@
+{
+  "name": "Google Cloud Radar",
+  "short_name": "Cloud Radar",
+  "description": "Live pre-release intelligence for Google Cloud Platform. Real-time API changes, breaking changes, and method deprecations diffed from the Discovery Service.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a73e8",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    }
+  ]
+}
