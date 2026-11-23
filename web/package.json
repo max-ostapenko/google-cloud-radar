@@ -17,7 +17,6 @@
     "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.4.7",
     "firebase": "^13.1.0",
-    "gray-matter": "^4.0.3",
     "marked": "^18.1.0",
     "minisearch": "^7.2.0"
   },
