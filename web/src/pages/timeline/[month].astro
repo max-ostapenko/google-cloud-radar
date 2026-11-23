@@ -48,6 +48,10 @@ const schemaData = {
   name: pageTitle,
   description: pageDesc,
   url: `${siteOrigin}/timeline/${group.key}`,
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": `${siteOrigin}/timeline/${group.key}`,
+  },
   isPartOf: {
     "@type": "WebSite",
     "@id": `${siteOrigin}/#website`,

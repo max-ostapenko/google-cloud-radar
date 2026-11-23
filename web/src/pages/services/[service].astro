@@ -75,14 +75,47 @@ const breadcrumbItems = [
   { label: "Radar Feed", href: "/" },
   { label: serviceParts.join(" / ") },
 ];
+
+const siteOrigin = (Astro.site ? Astro.site.toString() : 'https://google-cloud-radar.com').replace(/\/+$/, '');
+const serviceUrl = `${siteOrigin}/services/${serviceInfo.slug}`;
+const pageDescription = `Track real-time unreleased API changes, breaking changes, and method updates for Google Cloud ${serviceInfo.service}.`;
+
+const schemaData = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: `${serviceInfo.service} API Changelog & Signals`,
+  description: pageDescription,
+  url: serviceUrl,
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": serviceUrl,
+  },
+  isPartOf: {
+    "@type": "WebSite",
+    "@id": `${siteOrigin}/#website`,
+    name: "Google Cloud Radar",
+    url: siteOrigin,
+  },
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: entries.length,
+    itemListElement: entries.slice(0, 50).map((entry, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      url: `${siteOrigin}/changes/${entry.slug}`,
+      name: entry.title,
+    })),
+  },
+};
 ---
 
 <BaseLayout
   title={`${serviceInfo.service} API Changelog & Signals — Google Cloud Radar`}
-  description={`Track real-time unreleased API changes, breaking changes, and method updates for Google Cloud ${serviceInfo.service}.`}
+  description={pageDescription}
   activeServiceSlug={serviceInfo.slug}
   activeCategory={serviceInfo.category}
   ogImage="/og-image.png"
+  schemaData={schemaData}
 >
   <div class="service-hub-container">
     <!-- Breadcrumb Navigation -->

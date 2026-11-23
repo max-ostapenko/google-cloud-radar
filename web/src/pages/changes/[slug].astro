@@ -32,6 +32,10 @@ const formattedDate = new Date(entry.date + "T00:00:00Z").toLocaleDateString(
 // JSON-LD TechArticle schema for rich SEO
 const permalinkUrl = `https://google-cloud-radar.com/changes/${entry.slug}`;
 const ogImageUrl = `https://google-cloud-radar.com/changes/${entry.slug}/og.png`;
+const modifiedDateRaw = entry.official_release_date || entry.date;
+const dateModifiedIso = modifiedDateRaw.includes("T")
+  ? modifiedDateRaw
+  : `${modifiedDateRaw}T00:00:00Z`;
 
 const schemaData = {
   "@context": "https://schema.org",
@@ -39,7 +43,7 @@ const schemaData = {
   headline: entry.title,
   description: entry.summary,
   datePublished: `${entry.date}T00:00:00Z`,
-  dateModified: `${entry.date}T00:00:00Z`,
+  dateModified: dateModifiedIso,
   mainEntityOfPage: {
     "@type": "WebPage",
     "@id": permalinkUrl,
