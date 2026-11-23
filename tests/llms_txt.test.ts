@@ -52,28 +52,19 @@ describe('LLMs.txt Context Stream & Discovery', () => {
     expect(text).toContain('/llms.txt, JSON Feed:');
   });
 
-  it('supports stream pagination query parameters and navigation links', async () => {
-    const requestPage1 = new Request('https://google-cloud-radar.com/llms.txt?page=1&limit=15');
-    const responsePage1 = await GET({ request: requestPage1 } as any);
-    const textPage1 = await responsePage1.text();
+  it('serves the complete static stream without ?page= pagination links', async () => {
+    const baseResponse = await GET({ request: new Request('https://google-cloud-radar.com/llms.txt') } as any);
+    const baseText = await baseResponse.text();
+    const baseMatches = baseText.match(/^### \[/gm);
+    expect(baseMatches).not.toBeNull();
 
-    expect(textPage1).toContain('## API Changes and Breaking Updates (Page 1 of');
-    const page1Matches = textPage1.match(/^### \[/gm);
-    expect(page1Matches).not.toBeNull();
-    expect(page1Matches!.length).toBe(15);
+    const queryResponse = await GET({ request: new Request('https://google-cloud-radar.com/llms.txt?page=1&limit=15') } as any);
+    const queryText = await queryResponse.text();
+    const queryMatches = queryText.match(/^### \[/gm);
 
-    expect(textPage1).toContain('## Stream Pagination Links');
-    expect(textPage1).toContain('[First Page](https://google-cloud-radar.com/llms.txt?page=1&limit=15)');
-    expect(textPage1).not.toContain('[Previous Page]');
-    expect(textPage1).toContain('[Next Page](https://google-cloud-radar.com/llms.txt?page=2&limit=15)');
-    expect(textPage1).toContain('[Full Unpaginated Stream](https://google-cloud-radar.com/llms.txt?page=all)');
-
-    const requestPage2 = new Request('https://google-cloud-radar.com/llms.txt?page=2&limit=15');
-    const responsePage2 = await GET({ request: requestPage2 } as any);
-    const textPage2 = await responsePage2.text();
-
-    expect(textPage2).toContain('## API Changes and Breaking Updates (Page 2 of');
-    expect(textPage2).toContain('[Previous Page](https://google-cloud-radar.com/llms.txt?page=1&limit=15)');
+    expect(queryMatches).toEqual(baseMatches);
+    expect(queryText).not.toContain('?page=');
+    expect(queryText).not.toContain('## Stream Pagination Links');
   });
 
   it('BaseLayout includes alternate link discovery tag in head', () => {
