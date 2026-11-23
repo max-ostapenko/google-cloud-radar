@@ -381,13 +381,21 @@ const schemaData = {
     const documents: any[] = [];
     cards.forEach((card) => {
       const slug = card.getAttribute('data-slug') || '';
-      const title = card.querySelector('.change-title')?.textContent || '';
-      const service = card.querySelector('.service-name')?.textContent || '';
-      const summary = card.querySelector('.change-summary')?.textContent || '';
+      const title = card.querySelector('.card-title')?.textContent?.trim() || '';
+      const service = card.querySelector('.service-name')?.textContent?.trim() || '';
+      const summaryEl = card.querySelector('.card-summary');
+      const summary = summaryEl
+        ? summaryEl.textContent?.trim() || ''
+        : Array.from(card.querySelectorAll('.card-version-summary'))
+            .map((el) => el.textContent?.trim() || '')
+            .filter(Boolean)
+            .join(' ');
       const category = card.getAttribute('data-category') || '';
       const text = card.getAttribute('data-text') || '';
       const breaking = card.getAttribute('data-breaking') === 'true';
       const impact = card.getAttribute('data-impact') || 'medium';
+      const methods = card.getAttribute('data-methods') || '';
+      const breaking_reasons = card.getAttribute('data-breaking-reasons') || '';
 
       documents.push({
         id: slug,
@@ -399,16 +407,20 @@ const schemaData = {
         text,
         breaking,
         impact,
+        methods,
+        breaking_reasons,
       });
     });
 
     miniSearchInstance = new MiniSearch({
-      fields: ['text', 'title', 'service', 'summary', 'category', 'slug'],
+      fields: ['text', 'title', 'service', 'summary', 'category', 'slug', 'methods', 'breaking_reasons'],
       storeFields: ['id'],
       searchOptions: {
         boost: {
           service: 3.0,
           title: 2.5,
+          methods: 2.5,
+          breaking_reasons: 2.0,
           text: 1.8,
           summary: 1.0,
         },

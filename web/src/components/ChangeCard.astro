@@ -22,6 +22,13 @@ const siblings = entry.siblingVersions && entry.siblingVersions.length > 1 ? ent
 const { baseApi } = getApiBaseAndVersion(entry.api);
 const allApisText = siblings ? siblings.map((s) => s.api).join(' ') : entry.api;
 const allTitlesText = siblings ? siblings.map((s) => `${s.api} ${s.title}`).join(' ') : `${entry.api} ${entry.title}`;
+const allSummariesText = siblings ? siblings.map((s) => s.summary).filter(Boolean).join(' ') : entry.summary;
+const allMethods = siblings
+  ? Array.from(new Set(siblings.flatMap((s) => s.extractedMethods || [])))
+  : (entry.extractedMethods || []);
+const allBreakingReasons = siblings
+  ? Array.from(new Set(siblings.flatMap((s) => s.breaking_reasons || [])))
+  : (entry.breaking_reasons || []);
 ---
 
 <article 
@@ -34,7 +41,9 @@ const allTitlesText = siblings ? siblings.map((s) => `${s.api} ${s.title}`).join
   data-impact={entry.impact}
   data-date={entry.date}
   data-score={entry.interesting_score}
-  data-text={`${allTitlesText} ${entry.summary} ${entry.service} ${entry.tags.join(' ')}`.toLowerCase()}
+  data-methods={allMethods.join(' ')}
+  data-breaking-reasons={allBreakingReasons.join(' ')}
+  data-text={`${allTitlesText} ${allSummariesText} ${entry.service} ${(entry.tags || []).join(' ')} ${allMethods.join(' ')} ${allBreakingReasons.join(' ')}`.toLowerCase()}
 >
   <div class="card-top">
     <div class="card-meta-left">

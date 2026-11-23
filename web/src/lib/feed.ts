@@ -297,6 +297,7 @@ export interface SiblingVersionInfo {
   api: string;
   version: string;
   breaking: boolean;
+  breaking_reasons?: string[];
   impact: 'low' | 'medium' | 'high';
   interesting_score?: number;
   generated_at?: string;
@@ -401,6 +402,11 @@ export async function fetchFromFirestore(): Promise<FeedEntry[] | null> {
         const parsedReasons = f.breaking_reasons.arrayValue.values
           .map((v: any) => v.stringValue)
           .filter(Boolean);
+        if (parsedReasons.length > 0) {
+          breaking_reasons = parsedReasons;
+        }
+      } else if (Array.isArray(f.breaking_reasons)) {
+        const parsedReasons = f.breaking_reasons.map((r: any) => String(r)).filter(Boolean);
         if (parsedReasons.length > 0) {
           breaking_reasons = parsedReasons;
         }
@@ -555,7 +561,9 @@ export function getLocalFeedEntries(): FeedEntry[] {
       const breaking_reasons =
         Array.isArray(doc.breaking_reasons) && doc.breaking_reasons.length > 0
           ? doc.breaking_reasons.map((r: any) => String(r)).filter(Boolean)
-          : undefined;
+          : typeof doc.breaking_reasons === 'string' && doc.breaking_reasons.trim().length > 0
+            ? [doc.breaking_reasons.trim()]
+            : undefined;
       const stats = doc.stats || undefined;
 
       const discoMeta = getDiscoveryMetaForApi(api || service);
@@ -898,6 +906,7 @@ export function enrichWithSiblingVersions(entries: FeedEntry[]): FeedEntry[] {
       api: m.api,
       version: m.version || getApiBaseAndVersion(m.api).version,
       breaking: m.breaking,
+      ...(m.breaking_reasons ? { breaking_reasons: m.breaking_reasons } : {}),
       impact: m.impact,
       interesting_score: m.interesting_score,
       generated_at: m.generated_at,
