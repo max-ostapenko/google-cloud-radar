@@ -104,6 +104,23 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
   </div>
 
   <div class="sidebar-menu">
+    <div class="sidebar-search">
+      <div class="sidebar-search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="search"
+          id="sidebar-search-input"
+          class="sidebar-search-input"
+          placeholder="Filter APIs & services..."
+          aria-label="Filter APIs and services"
+          autocomplete="off"
+        />
+      </div>
+    </div>
+
     <!-- Hierarchy: Top Level Ecosystems (Collapsible) -->
     <div class="ecosystem-container">
       {ecosystemList.map((eco) => (
@@ -418,6 +435,46 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
   .sidebar-menu {
     padding: 12px 8px;
     flex: 1;
+  }
+
+  .sidebar-search {
+    margin-bottom: 12px;
+  }
+
+  .sidebar-search-box {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 6px 10px;
+    gap: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .sidebar-search-box:focus-within {
+    border-color: var(--google-blue);
+    background-color: var(--bg-surface);
+    box-shadow: 0 0 0 2px var(--google-blue-subtle);
+  }
+
+  .sidebar-search-box .search-icon {
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+
+  .sidebar-search-input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-size: 12px;
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    outline: none;
+  }
+
+  .sidebar-search-input::placeholder {
+    color: var(--text-tertiary);
   }
 
   /* Ecosystem Containers (Collapsible) */
@@ -839,9 +896,96 @@ const ecosystemList: EcosystemGroup[] = (taxonomyData.ecosystems || []).map((eco
     });
   }
 
+  function initSidebarSearch() {
+    const sidebarInput = document.getElementById('sidebar-search-input') as HTMLInputElement | null;
+    const globalInput = document.getElementById('global-search-input') as HTMLInputElement | null;
+    if (!sidebarInput || sidebarInput.dataset.searchBound === 'true') return;
+    sidebarInput.dataset.searchBound = 'true';
+
+    function filterSidebarList(query: string) {
+      const q = query.trim().toLowerCase();
+      const ecoSections = document.querySelectorAll<HTMLDetailsElement>('details.ecosystem-section');
+
+      ecoSections.forEach((eco) => {
+        const serviceLinks = eco.querySelectorAll<HTMLAnchorElement>('.service-link');
+        let visibleCount = 0;
+
+        serviceLinks.forEach((link) => {
+          const serviceName = link.querySelector('.service-name')?.textContent || '';
+          if (!q || serviceName.toLowerCase().includes(q)) {
+            (link.parentElement as HTMLElement).style.display = '';
+            visibleCount++;
+          } else {
+            (link.parentElement as HTMLElement).style.display = 'none';
+          }
+        });
+
+        const categories = eco.querySelectorAll<HTMLElement>('.category-group');
+        categories.forEach((cat) => {
+          const visibleLinksInCat = cat.querySelectorAll<HTMLElement>('li:not([style*="display: none"])');
+          if (!q || visibleLinksInCat.length > 0) {
+            cat.style.display = '';
+          } else {
+            cat.style.display = 'none';
+          }
+        });
+
+        if (!q || visibleCount > 0) {
+          eco.style.display = '';
+          if (q) eco.open = true;
+        } else {
+          eco.style.display = 'none';
+        }
+      });
+    }
+
+    sidebarInput.addEventListener('input', () => {
+      const val = sidebarInput.value;
+      if (globalInput && globalInput.value !== val) {
+        globalInput.value = val;
+        globalInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      filterSidebarList(val);
+    });
+
+    if (globalInput) {
+      globalInput.addEventListener('input', () => {
+        if (sidebarInput.value !== globalInput.value) {
+          sidebarInput.value = globalInput.value;
+          filterSidebarList(sidebarInput.value);
+        }
+      });
+
+      if (globalInput.value) {
+        sidebarInput.value = globalInput.value;
+        filterSidebarList(globalInput.value);
+      }
+    }
+
+    sidebarInput.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const isHome = window.location.pathname === '/' || window.location.pathname === '';
+        if (isHome) {
+          return;
+        }
+        const q = sidebarInput.value.trim();
+        const params = new URLSearchParams(window.location.search);
+        if (q) {
+          params.set('q', q);
+        } else {
+          params.delete('q');
+        }
+        const queryString = params.toString();
+        window.location.href = queryString ? `/?${queryString}` : '/';
+      }
+    });
+  }
+
   function initSidebar() {
     initSidebarDrawer();
     initEcosystemCollapse();
+    initSidebarSearch();
   }
 
   initSidebar();
