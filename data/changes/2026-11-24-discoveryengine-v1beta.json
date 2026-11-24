@@ -1,0 +1,31 @@
+{
+  "id": "2026-11-24-discoveryengine-v1beta",
+  "date": "2026-11-24",
+  "api": "discoveryengine.v1beta",
+  "service": "Vertex AI Agent Builder",
+  "title": "Enhanced Observability & Project Provisioning",
+  "summary": "Discovery Engine gains new observability controls, allowing you to persist agent artifacts to GCS and enable user principal logging. Project provisioning also gets a new 'pre-provision' mode for more flexible setup workflows.",
+  "details": "The `GoogleCloudDiscoveryengineV1alphaObservabilityConfig` schema now includes two new optional fields: `artifactGcsBucket` (string) to specify a Cloud Storage bucket for persisting agent-generated artifacts, and `userPrincipalLoggingEnabled` (boolean) to log end-user identities in activity logs even when sensitive logging is off. These provide better debugging and auditing capabilities for agent interactions. Additionally, the `GoogleCloudDiscoveryengineV1betaProvisionProjectRequest` now accepts an optional `preProvisionMode` (boolean). When set to `true`, this flag allows you to run only common project-level pre-provisioning steps without affecting customer, collection, or user store data, streamlining initial project setup for specific automation needs.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "observability",
+    "provisioning",
+    "logging",
+    "storage"
+  ],
+  "extracted_methods": [],
+  "target_paths": [
+    "schemas.googleclouddiscoveryenginev1alphaobservabilityconfig.properties.artifactgcsbucket.description",
+    "schemas.googleclouddiscoveryenginev1alphaobservabilityconfig.properties.artifactgcsbucket.type",
+    "schemas.googleclouddiscoveryenginev1alphaobservabilityconfig.properties.userprincipalloggingenabled.description",
+    "schemas.googleclouddiscoveryenginev1alphaobservabilityconfig.properties.userprincipalloggingenabled.type",
+    "schemas.googleclouddiscoveryenginev1betaprovisionprojectrequest.properties.preprovisionmode.description",
+    "schemas.googleclouddiscoveryenginev1betaprovisionprojectrequest.properties.preprovisionmode.type"
+  ],
+  "diff_signature": "9e12c604c6d65b488f5bcb6c",
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-24T20:33:13.866Z"
+}
