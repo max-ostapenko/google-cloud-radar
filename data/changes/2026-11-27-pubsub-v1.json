@@ -1,0 +1,28 @@
+{
+  "id": "2026-11-27-pubsub-v1",
+  "date": "2026-11-27",
+  "api": "pubsub.v1",
+  "service": "Cloud Pub/Sub",
+  "title": "Zstd Compression Reinstated for Pub/Sub Messages",
+  "summary": "Good news! Zstd compression support for Pub/Sub messages, which was recently rolled back, has now been reinstated. Developers can once again leverage Zstd for potentially better compression ratios and performance.",
+  "details": "The `schemas.Compression` object's `compressionAlgorithm` property once again includes `ZSTD` as an available enum value. This re-enables the ability for publishers to specify Zstd compression for their messages, offering an alternative to `GZIP` for optimizing data transfer and storage efficiency. This feature was previously introduced on 2026-11-11 and then temporarily removed on 2026-11-12.",
+  "impact": "medium",
+  "breaking": false,
+  "interesting_score": 7,
+  "tags": [
+    "compression",
+    "messages",
+    "performance"
+  ],
+  "extracted_methods": [
+    "schemas.Compression"
+  ],
+  "target_paths": [
+    "schemas.compression.properties.compressionalgorithm.enum[2]",
+    "schemas.compression.properties.compressionalgorithm.enumdescriptions[2]"
+  ],
+  "diff_signature": "84d9a1f854c3640d91da497b",
+  "status": "canary",
+  "lead_time_days": null,
+  "generated_at": "2026-11-27T07:33:16.780Z"
+}
